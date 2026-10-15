@@ -1,0 +1,251 @@
+# Changelog
+
+All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
+
+## [0.2.0] — 2026-10-15
+
+Milestone M1: the shot core and the lab view. **The validation exit criteria are not met.** The validation section below says why.
+
+### Validation
+The full report is in `docs/validation/m1-validation.md`; the calibration method is in `docs/validation/calibration.md`.
+- **Calibration** used Schmieder 2023, Waszkiewicz 2026 (long-time flow against pressure), Corrochano 2017 and Vaca Guerra 2024.
+  - The pipeline (`python/scripts/m1-pipeline.sh`) is path-independent and records the solver, inputs and toolchain it ran on.
+  - Nine values feed the app. Among them, the bare reference permeability is 1.24e-13 m², but the two datasets disagree about 3×.
+  - θ stays at 0 by mechanism; the data cannot choose it.
+- **Held-out tests:** Cameron 2020, Smrke 2024 and the Waszkiewicz transient.
+- **Exit criteria (PLAN §12), all failed under strict criteria:**
+  - V1: λ is within ±10% for 57 of 60 experiment–analyte pairs; leave-one-out gives 59 of 60.
+  - V3: the EY peak lands at the edge of the grind range, at 21.9%.
+  - V4: the flow rise is too fast. It reaches 90% of final flow at 6.7 s against 25.8 s measured, with first drops at 1.8 s against 12.8 s.
+- **Known bias:** shot times come out at 0.43–0.47× the measured times. That holds even for a calibration case, so most of it is the missing slow start-up (dry-bed uptake, gas, headspace filling, preinfusion), not the permeability value.
+  - Generic 18 → 36 g, 9 bar recipes run in 10.5–13 s.
+  - The app says so under the results.
+- **Passing:** V2 dispersion; time falling with coarser grind; EY tracking shot time; tier 0 within 0.4% of tier 1 on time and 0.5 points on EY.
+- **Honesty fixes after an independent review of the calibration and validation:**
+  - Stricter verdicts.
+  - A prior bound that had come from held-out data was re-derived without it.
+  - Pump-limited calibration shots are flagged.
+  - Lenient held-out checks were tightened.
+  - Non-commercial-licence data was trimmed to the values used.
+  - CI checks that the report regenerates from its JSON.
+
+### Added
+- The M1 contract (`docs/model/m1-contract.md`), covering three JSON documents and five API functions in Rust, JavaScript and Python:
+  - **Recipe:** gear and shot as a person describes them.
+  - **ShotSpec:** the complete physics, in SI units.
+  - **ShotResult:** what the shot produces.
+- `puckcore::shot`: the shot types, with serde behind an optional feature.
+- **The shot solver** (`puckcore::shot::simulate_shot`, specified in `docs/model/shot-model.md`, decisions in ADR 0009). Tier 1 implements the full M1 model; tier 0 is the same physics coarsened.
+  - **Geometry:** any axisymmetric basket, with columns as radial annuli (stream tubes) of the real geometry.
+  - **Flow:** Darcy series resistance with the permeability closure (relative Kozeny–Carman, poroelastic saturation, swelling, gas, fines layer), extract viscosity and density, and a sharp wetting front after the headspace fills.
+  - **Machine:** pressure and flow control, ideal or vibratory pumps with an optional over-pressure valve, and pressurised orifices.
+  - **Extraction:** surface pools with saturation, and diffusing kernels (BDF2/backward Euler, ADR 0005). Bed liquid moves by exponentially fitted advection–dispersion, porosity grows with dissolution, and species ride along as linear passengers.
+  - **Also:** a lumped thermal node, stop rules and a decaying post-stop drip.
+  - **Numerics:** each step is one implicit tridiagonal M-matrix solve per column. Pool regimes are resolved by policy iteration. Conservation and positivity hold by construction and are checked every step.
+  - **Schemas:** `data/schema/shot-spec.schema.json` and `shot-result.schema.json`, tested against the Rust types.
+  - New spec and result fields are listed in `docs/model/m1-contract.md` §8.
+  - `puckcore::shot::validate_shot_spec` runs the solver's spec check without simulating.
+  - **Second round, after an independent review of the solver:**
+    - **Wetting front:** water soaking into the grounds now carries its solute into the particle pores. Before, the solute was precipitated: the liquid became supersaturated and local EY reached −18.6%, diverging with the grid. First-drop TDS now equals saturation on every grid.
+    - **Drip:** it drains only the water left in the headspace, and a vented (3-way valve) group gives none. Before, a basket with 1 mL of headspace dripped 6 g, and long drip times allowed kilograms.
+    - **Bounds:** every input is bounded and the model size is capped. Failures return errors instead of panicking. Mass-balance and positivity checks warn and fail at set thresholds. A new diagnostic compares cup solute with the integral of the outflow.
+    - **θ (dissolution porosity share)** defaults to 0. Insoluble cell walls hold each particle's outer size, so dissolution opens intraparticle pores. The old proportional default (0.27) produced most of the flow rise and had no mechanism.
+    - **Partition basis:** coefficients follow Corrochano's definition (per particle envelope volume). Kernel re-uptake is capped at the initial content by default.
+    - **Heterogeneity:** strata are now equal-probability with conditional means; at σ = 0.7, 8 and 64 columns agree within 0.04 EY points.
+    - **Tier 0** carries 3 strata plus the edge and 2-shell coarse kernels. Its EY is within 1–4% of tier 1 in every tested regime; before, it was off by 25% for uneven beds.
+    - **Species** with identical parameters share one solve.
+  - **Third round, after a verification review:**
+    - **Stiff pools:** a step whose pool regimes do not converge is now rejected and retried at half the step. A capped iteration had made some valid fine-grid, coarse-step specs fail.
+    - **Front cell:** only the wetted share of its particles exchanges, and very high partition coefficients are rejected. Before, the liquid could exceed saturation.
+    - **Imbibed water** is no longer counted twice as liquid volume. EY now barely depends on the wetting-uptake parameter: 21.8–22.1% instead of 20.2–21.8%.
+    - **Total work** is bounded, and mass stops land within 0.2 mg.
+    - 20,000 random specs and 576 stiff-grid cases pass. Native and WebAssembly are byte-identical on 71,087 numbers.
+- New crate `crates/puckmodel`: recipe types, a placeholder builder and presets, and the JSON API. Both bindings expose `presets`, `registry`, `buildShotSpec`/`build_shot_spec`, `simulateShot`/`simulate_shot` and `simulateRecipe`/`simulate_recipe`.
+- WebAssembly `lastPanic()` returns the message of the most recent Rust panic, which otherwise surfaces only as an `unreachable` trap. The hook is dependency-free and writes nothing to the console.
+- ADR 0008: the model crate and the JSON boundary. ADR 0009: shot solver numerics, and why κ₀ is a bare, calibrated permeability.
+- **Input models v1** (`crates/puckmodel`, documented in `docs/model/input-models.md`). Every value comes from the parameter registry; recipe overrides win, an unknown id is an error naming it, and `data/calibration/current.yaml` applies when present. Every spec field records its provenance.
+  - **Grinder → PSD:** a three-mode log-normal mixture from a burr family and gap, or a grinder preset and dial setting. It gives 30 size classes (2–60) and a 200-point curve. Measured PSDs are used as given.
+  - **Bean v1:** species contents (caffeine, trigonelline, 5-CQA, acids), roast and blend effects on density, porosity and extractable fraction, and CO₂ by age.
+  - **Basket:** any axisymmetric wall profile, plain or pressurised; bed height from frustum volumes.
+  - **Prep:** porosity, base permeability from the PSD, and heterogeneity from distribution, screens and papers.
+  - **Machine:** pressure, flow and full-pump phases with ramps, limits and exits; ideal or vibratory pumps with an optional over-pressure valve; brew temperature, headspace, drip, a thermal node and stop rules.
+- **Input-model hardening** (after an independent review):
+  - Plausibility bounds on every recipe field, shared by the builder and the schema.
+  - Errors name the recipe field or override responsible; "internal error" no longer occurs for user input.
+  - One precedence rule: recipe, then override, then calibration, then preset, then derived, then registry. Each provenance token names the real source.
+  - The export refuses calibrations the builder would ignore.
+  - CO₂ is anchored to the measured ground residual.
+  - The edge multiplier accounts for basket taper.
+  - The builder runs the solver's own spec check.
+- **Third input-model round:**
+  - θ comes from the registry and can be overridden.
+  - Pump fields left out are filled from a same-type preset pump.
+  - New recipe field `machine.vent_headspace`, set on the presets: the E61 group vents; the AMZCHEF Ultra is assumed not to, unverified.
+  - Registry ranges match the solver's bounds.
+- The base permeability's porosity dependence uses the exponent calibrated on Corrochano's density series (α ≈ 0.33) instead of the full Kozeny–Carman ratio. A porosity override had moved permeability about 6× too much. Defaults are unchanged.
+- **Grinder → PSD refit to measured PSDs only** (dry laser and Camsizer: Corrochano, Smrke, Cameron, Waszkiewicz). A logit fines relation lets fine settings reach Turkish-like grinds. The EK43 dial is refitted to Cameron (now grade B).
+- **Presets** (`data/presets/`, schema `data/schema/preset.schema.json`):
+  - 3 grinder families and 7 grinders;
+  - 12 baskets by geometry: 58, 54, 53, 51 and 49 mm, plain and pressurised;
+  - 10 machine programs: flat 9 bar, declining, spring lever, blooming, turbo, flow-controlled, allongé, vibratory, E61 and the AMZCHEF Ultra;
+  - 6 beans.
+  - The owner's AMZCHEF presets are flagged unverified and estimated.
+- **Registry:** 70 model records in `data/params/model.yaml`, mostly estimated (grade D). Later rounds bring the registry to 226 parameters.
+- `python -m puckworks_tools.export [--check]` validates the presets and the registry, applies calibration, and writes `crates/puckmodel/generated/presets.json` and `registry.json`.
+- New optional recipe fields: listed in `docs/model/m1-contract.md` §8.
+- **Validation datasets** (`data/datasets/`, 17 new). Each records its licence, method, source checksum and uncertainty.
+  - Schmieder 2023 (CC BY 4.0): the design, all 288 fraction rows, the kinetic fits and per-shot data. Its "pressure" column turns out to be the mean of each shot's peak pressure.
+  - Waszkiewicz 2026 (CC BY 4.0): flow against time at 11 pressures, long-time flow against pressure, TDS fractions and the PSD.
+  - Cameron 2020 and Corrochano 2017 (cited facts): EY against grind, PSDs, the two-class model, permeabilities and a partition coefficient.
+  - Smrke 2024 (CC BY 4.0): PSDs and shots, digitised from the figures.
+  - Vaca Guerra 2024: residence-time scalars only. The article is CC BY-NC-ND, so its curves are not included.
+- **Calibration and validation tooling** (`puckworks-tools`):
+  - Case builders turn each experiment into a recipe through the input models, then set the paper's conditions: 65 cases from six sources.
+  - `calibrate` refuses to write `data/calibration/` until the real solver is in place.
+  - `validate` writes the validation report.
+  - `shot-fixtures [--check]` maintains the golden shot file `data/fixtures/shot_cases.json`.
+  - `export` now runs the export module.
+  - 9 calibration parameters, tagged fitted, in `data/params/calibration.yaml`.
+  - The Python tools now depend on SciPy (BSD-3-Clause).
+  - Documentation: `docs/validation/case-builders.md` and `calibration.md`.
+- **CI:** `python.yml` checks that the generated presets and registry are current, and checks the golden shot file against the native build.
+- **The shot lab** (`web/src/shot/`): the Lab view opens on it, and the M0 kernel verification demo becomes a second tab.
+  - **Recipe editor:** every recipe block, as a preset or from scratch.
+    - Custom basket profiles are drawn to scale with the bed height, and "edit a copy" turns any preset into a custom basket.
+    - Measured PSDs can be pasted as CSV or TSV.
+    - Machine programs and pumps (ideal, or vibratory with an over-pressure valve) have their own editors.
+    - A searchable registry browser handles sandbox overrides.
+    - Preset flags and builder notes appear next to the inputs they concern, and errors next to the field they name.
+    - Recipes import and export as JSON. Named saves and the draft stay in the browser's local storage.
+  - **Runs:** a debounced tier-0 preview while editing, and tier 1 on Run. Superseding and cancelling are race-free, and two workers keep a long run from blocking the preview.
+  - **Outputs:**
+    - 12 summary tiles and solver warnings;
+    - a shot graph of small multiples with a shared crosshair and a table view;
+    - up to 6 pinned runs, with a table of recipe differences;
+    - the PSD with the solver's size classes, and EY per class;
+    - a compound table with provenance;
+    - a puck cross-section heatmap on the real basket geometry, with a time scrubber;
+    - 1D sweeps over any recipe input or registry parameter;
+    - the provenance and ShotSpec panels;
+    - exports: result JSON, series and sweep CSV, recipe and spec.
+  - **Accessibility:** colour-vision-checked palettes in both themes, keyboard-readable heatmap cells, table alternatives for charts, and no horizontal scroll at 390 px.
+  - **After an independent review:**
+    - Hidden grinder calibration no longer leaks into presets.
+    - Pump placeholders show the values the model actually uses.
+    - Unknown override ids can be removed instead of locking the lab.
+    - A stale-preview race is fixed.
+    - PSD paste refuses cumulative columns, and decimal commas work in every field.
+    - Input ranges are read from the recipe schema, and builder errors focus their field.
+    - Engine failures are told apart from input errors and include the Rust panic message.
+    - Loads can be undone, and focus no longer drops to the page.
+    - The tiles carry a model-status caveat.
+    - The cross-section shows the wetting front (dry cells grey, partly wetted cells hatched) on the solver's real cell edges, for any number of columns.
+    - A checkbox sets the 3-way valve.
+  - **Tests:** 192 new web tests (376 in total). The Chrome end-to-end test now runs a shot, the cross-section and a sweep (48 checks). A cross-language replay checks `data/fixtures/shot_cases.json` bit for bit in WebAssembly.
+  - **Measured in the browser worker** (32 s shot): tier 0 takes 4.7–4.9 ms warm, tier 1 643–662 ms. The main bundle is 440 KB (142 KB gzipped).
+- **Measurements:**
+  - A recipe simulated through Python and WebAssembly gives identical summaries; built specs are bit-identical.
+  - The release WebAssembly module grows from 49.9 KB to 904 KB (284 KB gzipped) with serde, the input models, the solver and 215 KB of embedded presets and registry.
+  - 51 Rust tests in `puckmodel` (one more, the full 7,200-combination sweep, is opt-in) and 59 new Python tests.
+  - A random sweep of 10,000 recipes found one panic, now fixed.
+  - **Solver verification:**
+    - Darcy flow, orifice, pump and wetting time agree with closed forms to round-off; Washburn to 6.6e-4.
+    - Perfect sink against Crank: 3.1e-4 at τ = 0.01, 3.6e-6 at τ = 0.6.
+    - Conservation within 1e-14; 20,000 random specs pass (worst 8e-12).
+  - **Solver speed,** final (native / WebAssembly, on a loaded machine): tier 1 takes 16 / 20 ms for the default spec and 343 / 471 ms with 30 classes + 4 species; tier 0 takes 2.6 / 3.2 ms (7.2 ms in WebAssembly with 30 classes + 4 species).
+  - **Determinism:** native and WebAssembly agree bit for bit on 170,654 numbers from replayed shot fixtures.
+  - **Final test counts:** 190 Rust tests (plus one opt-in sweep), 326 Python and 430 web tests, and 55 end-to-end checks in Chrome. Every check passes on the release tree.
+  - **Final sizes:** the release WebAssembly module is 971 KB (317 KB gzipped) with the calibrated registry embedded; the main JavaScript bundle is 475 KB (153 KB gzipped).
+  - **In the browser** (end-to-end test): the tier-0 preview takes 8–29 ms; a tier-1 run takes 495 ms for an 11 s shot.
+
+### Changed
+- `docs/PLAN.md`:
+  - New design principle 7, "general by design": the owner's gear is only the first set of presets. Any basket profile (straight, tapered, stepped; plain or pressurised), any grinder (family or measured PSD) and any machine program can be described from scratch.
+  - D10 records the owner's 58 mm basket, pressure gauge and scale.
+  - §15 now asks whether that basket is plain or pressurised.
+- `deny.toml` lists `puckmodel` among our own GPL crates.
+- `Cargo.toml` optimises `puckcore` in debug and test builds. The tests take seconds instead of minutes, and results are unchanged.
+- `scripts/build_wasm.sh` drops the function-name section from release builds: 1,009 KB → 904 KB (284 KB gzipped). ADR 0008 records the measurements.
+
+## [0.1.0] — 2026-10-14
+
+Milestone M0: foundations.
+
+### Added
+- **Numerical core** (`crates/puckcore`, Rust, no dependencies). It solves diffusion out of a sphere into a perfect sink:
+  - finite volumes, with shell conductances exact for parabolic profiles, on equal-volume or uniform shells;
+  - backward Euler, BDF2 and Crank–Nicolson (Rannacher start-up), with start-up sub-stepping and per-scheme mass accounting;
+  - a reusable tridiagonal LU solver, and deterministic `exp`/`cbrt` built from basic IEEE-754 operations.
+  - Documented in `docs/model/particle-kernel.md` and ADR 0005.
+- **Bindings.** WebAssembly (`crates/puckcore-wasm`, wasm-bindgen 0.2.129) and Python (`crates/puckcore-py`, PyO3 abi3, module `puckcore`). `scripts/build_wasm.sh` checks that the wasm-bindgen CLI matches the crate pin.
+- **Web app** (`web/`, TypeScript, Vite, React):
+  - mode tabs, with a Lab "particle kernel verification" demo that runs the engine in a Web Worker and transfers decimated results;
+  - an auto-run guard (at most 200,000 steps and 50 million shell-steps) and worker recycling after large runs;
+  - a meta-tag CSP for the page, and a footer linking the source and third-party notices. CI builds fail without a real source URL.
+- **Parameter registry** (`data/params/`): 143 parameters transcribed from the research notes. Each has a source, an evidence grade, a tag, a prior and a range; derived entries record which entries they come from. Tags: 56 measured, 37 fitted, 28 estimated, 22 derived. Grades: 49 A, 42 B, 45 C, 7 D. JSON schemas and a unit vocabulary sit in `data/schema/`, alongside the first dataset (Schmieder 2023 centre point, CC BY 4.0).
+- **Project tools** (`python/`, `puckworks-tools`): `validate-registry`, `fixtures [--check]` (the golden file `data/fixtures/sphere_cases.json`), `verify` (the report in `docs/validation/`), and `check-versions [--release]`.
+- **CI.** Four GitHub Actions workflows:
+  - `rust.yml`: rustfmt, clippy, tests, the WebAssembly build and cargo-deny licences;
+  - `python.yml`;
+  - `web.yml`: lint, types, tests, build, licences and an end-to-end test in Chrome;
+  - `pages.yml`: deploys only a build that passed `web.yml`.
+- **Project files.** `LICENSE` (canonical GPL-2.0 text), `CONTRIBUTING.md`, `.gitignore`, `rust-toolchain.toml` (Rust 1.99.0) and `deny.toml`.
+- **Decision records.** `docs/decisions/` 0001–0007: ADRs, the Rust core, the web stack, GitHub Pages hosting, kernel numerics, the parameter registry, and licensing policy.
+
+### Measurements
+- **Verification** on the reference case (a = 150 µm, D = 1e-10 m²/s, 60 s, 64 equal-volume shells, 2000 BDF2 steps):
+  - max error against Crank's analytic solution 5.14e-4 (target < 1e-3; the M0 placeholder solver gave 1.03e-2);
+  - error at τ = 0.1: −4.99e-6;
+  - mass balance 5.4e-14.
+- **Observed convergence orders.** Space: 1.98 on equal-volume shells and 2.00 on uniform shells. Time: 1.00 for backward Euler, and 2.00 for BDF2 and Crank–Nicolson.
+- **Runtime** on the reference case: 0.63 ms native, 0.68 ms through Python, 0.72 ms in WebAssembly. The release WebAssembly module is 49.9 KB.
+- **Determinism.** Native and WebAssembly outputs are bit-identical: 255,640 values in the core's own check, and 893,206 in an independent review. The golden file matches exactly across all 4,203 values.
+- **Tests.** 41 Rust, 136 Python and 184 web unit tests pass, and the Chrome end-to-end test passes.
+
+### Changed
+- Core validation now rejects τ = D·t_end/a² above 1e200 (overflow guard). Extreme but valid inputs are evaluated as (D/a)·(t/a).
+- `docs/PLAN.md`:
+  - D10 records the owner's gear: AMZCHEF Ultra machine and AMZCHEF single-dose grinder, no refractometer yet. It previously said "refractometer".
+  - G2 and §13 are adjusted to match.
+  - New decision D14 sets hosting on GitHub Pages.
+  - §15 marks the answered questions as resolved and lists the unverified equipment specs.
+  - §16 records that the owner handles git.
+  - The swelling relaxation time is now ≈ 20–30 s; it previously said 10–30 s.
+
+### Fixed
+Three independent read-only reviews of the M0 work found issues, all fixed before release:
+- **Web app:**
+  - auto-run could allocate about 320 MB from one keystroke;
+  - the deployed source link pointed at a placeholder;
+  - cancel and debounce races;
+  - the deploy path skipped the licence check;
+  - focus was lost on Cancel;
+  - the CSP claim was overstated.
+- **Registry:** fitted diffusivities were tagged "measured"; two grades were overstated; the dispersion prior was centred on a contradicted assumption; priors cut off cited values; linked quantities were over-determined.
+- **Core:** documented error bounds were inaccurate; tests depended on the platform maths library; a mass-balance bound was brittle; the overflow check rejected one valid extreme input.
+- **Research notes:**
+  - note 02 mislabelled Schmieder's 15-run mean caffeine (4.57 mg/g) as the centre point, and presented a derived EY (19.4%) as reported;
+  - note 01's swelling relaxation time was inconsistent with its own data;
+  - note 03 now flags a source conflict over the E65S grind scale.
+
+## [0.0.1] — 2026-10-13
+
+### Added
+- `docs/PLAN.md`: the consolidated plan and goals, including 13 locked decisions from the planning Q&A:
+  - all four roles in scope: dial-in assistant, sandbox, visual explainer, public website;
+  - a hybrid particle model: ~30-class continuum plus a 3D micro-view;
+  - physics + ML, with forward simulation and an inverse solver;
+  - an empirical grinder model first;
+  - bean descriptors + presets;
+  - ~30 non-volatile and ~25 aroma species;
+  - explainable taste that learns from the user's own ratings;
+  - no user data collection, ever;
+  - GPL-2.0-or-later, under the name Puckworks.
+- Research notes in `docs/research/`: 01 extraction and flow physics; 02 chemistry and sensory; 03 grinding, PSD and data sources.
+- `README.md`.
+
+### Findings that shaped the plan
+- **Permeability is calibrated, not predicted.** In-shot permeability back-calculated from published shots is (2–15)×10⁻¹⁵ m². That is 10–1000× below Kozeny–Carman estimates from measured particle sizes.
+- **Most compound kinetics are estimated.** Espresso extraction rates have been measured for only four species. For a 20 g dose the characteristic beverage mass is λ = 16.1 g for trigonelline, 17.5 g for TDS, 20.8 g for 5-CQA and 23.1 g for caffeine (Schmieder 2023). All other species are estimated by kinetic class.
+- **The grinder model starts empirical.** No published model maps burr geometry to particle-size distribution.
+- **The taste model is explainable and personal.** No espresso dataset links chemistry or TDS/EY to taste, so the model shows uncertainty bands and is personalized in the browser.

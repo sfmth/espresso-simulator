@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+[package]
+name = "puckmodel"
+description = "Puckworks recipes, presets, parameter registry and JSON API"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+puckcore = { workspace = true, features = ["serde"] }
+serde.workspace = true
+# float_roundtrip: parse every float back to the exact f64 it was written from,
+# so specs and recipes survive JSON round trips bit for bit (no extra crates).
+serde_json = { workspace = true, features = ["float_roundtrip"] }

@@ -1,0 +1,74 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for kinetics.csv. The data come from the CC BY 4.0 article cited below (see `licence`);
+# this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: schmieder2023-kinetics
+title: >-
+  Fitted extraction kinetics c(m) = c0·exp(−m/λ) of trigonelline, caffeine, 5-CQA and TDS for all 15
+  experiments of the Schmieder et al. (2023) design (Table A1)
+citation: >-
+  Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of
+  flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12(15):2871.
+  Appendix A, Table A1.
+doi: "10.3390/foods12152871"
+url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10418593/"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-14"
+research_note_ref: ["02 §3.1", "02 §3.2"]
+
+obtained: >-
+  Parsed by script (python/puckworks_tools/sources/schmieder2023.py) from the HTML of Table A1 on the
+  PMC article page (PMC10418593, saved 2026-10-14, sha256
+  d110be83bc74c4699d05dbedafbe9898e946967b77df44355edf627cc6052c30). Values as printed; numbers
+  printed as "2.47 × 10⁻²" are converted exactly. The centre-point rows agree with the M0 dataset
+  schmieder2023-centre-point, which was copied by hand from the PDF.
+
+uncertainty: >-
+  Transcription: none (parsed by script, cross-checked with the hand-copied centre point). Statistical:
+  c0_se and lambda_se_g are the standard errors of the least-squares fit printed in Table A1; the fit
+  was made to the pooled replicates of each experiment (3 shots, 6 at the centre point) at the six
+  analysed fractions, with the fraction's accumulated mid-mass as abscissa.
+
+columns:
+  - name: experiment
+    type: integer
+    description: Experiment number of the design (schmieder2023-design).
+  - name: analyte
+    type: string
+    description: "trigonelline, caffeine, cqa5 (5-caffeoylquinic acid) or tds (total dissolved solids)."
+  - name: c0
+    type: number
+    units_column: c0_unit
+    description: Fitted initial outlet concentration c0.
+  - name: c0_se
+    type: number
+    units_column: c0_unit
+    description: Standard error of c0.
+  - name: c0_unit
+    type: string
+    description: Unit of c0 and c0_se (mg/g for the three species, g/g for TDS).
+  - name: lambda_g
+    type: number
+    units: g
+    description: Fitted characteristic beverage mass λ (concentration falls by a factor e every λ grams).
+  - name: lambda_se_g
+    type: number
+    units: g
+    description: Standard error of λ.
+  - name: adj_r2
+    type: number
+    units: "1"
+    description: Adjusted R² of the fit.
+
+files:
+  - path: kinetics.csv
+    format: csv
+    description: 60 rows, 15 experiments × 4 analytes.
+
+notes: >-
+  The fit equation is the article's Eq. 2, c(m∑) = c0·exp(−m∑/λ), with m∑ the accumulated beverage
+  mass at the middle of each analysed fraction (Eq. 1). Cup masses follow from Eq. 3 (first fraction
+  measured, the rest integrated from the fit); see schmieder2023-replicates. Table A1's reduced
+  chi-square (in squared concentration units, which the unit vocabulary lacks) is not copied.
+  Attribution: cite the article above when redistributing (CC BY 4.0).

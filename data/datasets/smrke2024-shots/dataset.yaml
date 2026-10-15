@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for shots.csv. The data are digitised from a CC BY 4.0 article (see `licence`); this
+# metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: smrke2024-shots
+title: >-
+  Extraction time and extraction yield of 46 espresso shots at six burr gaps, with and without added
+  fines, 9 bar, 20 g in, 40 g out (Smrke et al. 2024, Fig. 3)
+citation: >-
+  Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics.
+  Sci. Rep. 14:5612. Figure 3 (setting labels from Figure 7).
+doi: "10.1038/s41598-024-55831-x"
+url: "https://www.nature.com/articles/s41598-024-55831-x"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-14"
+research_note_ref: ["03 §5.2", "01 §9"]
+
+obtained: >-
+  Digitised by script (python/puckworks_tools/sources/smrke2024.py, using sources/raster.py) from the
+  full-size Fig. 3 image (PNG, 1180 × 1216 px, sha256
+  569a59433e547df5b465972e09f124b52f5d1d68215618a9a2fe9f1092f5ece2): axes from the 5 x and 5 y tick
+  marks; markers separated by colour (black: no added fines; blue: 1 g; magenta: 2 g; red: 4 g);
+  overlapping markers of one colour fitted jointly with k discs (k from the blob area), and pixels
+  covered by markers of another colour ignored. Grinder settings are not shown in Fig. 3: they were
+  assigned from the well-separated time clusters of each fines group and confirmed against Fig. 7,
+  which labels every shot with its setting at the same extraction times (cluster boundaries in the
+  importer). The data are available from the authors only on request.
+
+uncertainty: >-
+  Digitisation: axis-fit residuals 0.02 s and 0.002 points; isolated markers are good to about
+  ±0.3 px (±0.03 s, ±0.003 EY points), markers flagged `overlapping` (fitted jointly or partly hidden)
+  to about ±1.5 px (±0.12 s, ±0.015 points); allow ±0.15 s and ±0.02 points overall. Statistical: one
+  point per shot; the paper reports triplicates, and Fig. 3 shows 4 shots for three conditions and 1
+  for 190 µm with 4 g of fines. Extraction time is the machine's displayed shot time; EY from a VST
+  refractometer (filtered, 0.45 µm) and the beverage mass.
+
+columns:
+  - name: grinder_setting_um
+    type: integer
+    description: Bentwood Vertical 63 setting (burr gap, µm).
+  - name: fines_added_g
+    type: integer
+    description: Sieved fines added to the 20 g dose (0, 1, 2 or 4 g, replacing the same mass of coffee).
+  - name: extraction_time_s
+    type: number
+    units: s
+    description: Extraction time to 40 g, as displayed by the machine.
+  - name: ey_percent
+    type: number
+    units: "%"
+    description: Extraction yield.
+  - name: overlapping
+    type: string
+    description: "true if the marker overlapped others (centre less certain), false otherwise."
+
+files:
+  - path: shots.csv
+    format: csv
+    description: 46 shots.
+
+notes: >-
+  Setup: Victoria Arduino Black Eagle at 9 bar, manually stopped at 40 g; 20 g in a VST 20 g basket;
+  20 kgf tamp; Bentwood Vertical 63 at 160, 170, 180, 190, 210 and 250 µm, with 1, 2 or 4 g of sieved
+  fines at 190, 210 and 250 µm (PSDs: smrke2024-psd). The brew temperature is not reported. The
+  article's points: added fines lengthen the shot (lower bed permeability) without changing the
+  EY–time relation; shots of under 10–15 s reach 17–18% EY, over 80% of the highest EY observed.
+  Used for validation check V5 (held out). Attribution: cite the article (CC BY 4.0).

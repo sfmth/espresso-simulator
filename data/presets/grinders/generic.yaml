@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Generic grinders whose "setting" is simply the burr gap in micrometres, one per family. They are a
+# family plus a typical burr size and speed; burr diameter and rpm have no systematic effect in the
+# evidence (03 §2.1) and are recorded for reference only.
+schema: puckworks.preset-file/1
+kind: grinder
+description: Generic grinders, one per burr family, with the setting given as the burr gap.
+presets:
+  - id: generic-flat-unimodal-64
+    name: Generic 64 mm flat burrs, unimodal geometry
+    description: A typical 64 mm flat grinder with low-fines ("unimodal") burrs; set the burr gap directly.
+    flags: [generic, estimated]
+    notes:
+      - "The setting is the burr gap in µm. Burr diameter and rpm are recorded but have no systematic effect in the evidence (03 §2.1)."
+      - "The default gap puts X50 at about 240–270 µm, where published espresso grinds lie by particle size (X50 ≈ 200–360 µm: Smrke 2024, Cameron 2020, Corrochano 2017); it is not derived from shot times. Gaps below about 100 µm give Turkish-like grinds."
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+    evidence_grade: D
+    tag: estimated
+    family: flat-unimodal
+    burr_diameter_mm: 64
+    rpm: 1400
+    dial: {label: "µm of burr gap", min: 20, max: 1500, default: 170, ref: 0, gap_at_ref_um: 0, gap_per_unit_um: 1}
+
+  - id: generic-flat-traditional-64
+    name: Generic 64 mm flat burrs, traditional geometry
+    description: A typical 64 mm flat espresso grinder with conventional burrs; set the burr gap directly.
+    flags: [generic, estimated]
+    notes:
+      - "The setting is the burr gap in µm. Burr diameter and rpm are recorded but have no systematic effect in the evidence (03 §2.1)."
+      - "The default gap puts X50 at about 240–270 µm, where published espresso grinds lie by particle size (X50 ≈ 200–360 µm: Smrke 2024, Cameron 2020, Corrochano 2017); it is not derived from shot times. Gaps below about 100 µm give Turkish-like grinds."
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+    evidence_grade: D
+    tag: estimated
+    family: flat-traditional
+    burr_diameter_mm: 64
+    rpm: 1400
+    dial: {label: "µm of burr gap", min: 20, max: 1500, default: 190, ref: 0, gap_at_ref_um: 0, gap_per_unit_um: 1}
+
+  - id: generic-conical-50
+    name: Generic 50 mm conical burrs
+    description: A typical home conical grinder (electric or hand); set the burr gap directly.
+    flags: [generic, estimated]
+    notes:
+      - "The setting is the burr gap in µm. Burr diameter and rpm are recorded but have no systematic effect in the evidence (03 §2.1)."
+      - "The default gap puts X50 at about 240–270 µm, where published espresso grinds lie by particle size (X50 ≈ 200–360 µm: Smrke 2024, Cameron 2020, Corrochano 2017); it is not derived from shot times. Gaps below about 100 µm give Turkish-like grinds."
+      - "Hand grinders often state µm per click (e.g. 8.8 µm for a 1Zpresso J-Max, 03 §2.2); multiply your clicks from burr contact by that step to get the gap."
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+      - citation: "1Zpresso. J-series specifications."
+        url: "https://1zpresso.coffee/j/"
+    evidence_grade: D
+    tag: estimated
+    family: conical
+    burr_diameter_mm: 50
+    rpm: 400
+    dial: {label: "µm of burr gap", min: 20, max: 1500, default: 190, ref: 0, gap_at_ref_um: 0, gap_per_unit_um: 1}

@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Web app CI: builds the WebAssembly engine from the Rust core, then lints,
+# type-checks, tests and builds the browser app, checks the licences of all it
+# ships, and runs the demo in a real browser.
+#
+# Pull requests run it directly. Pushes to main run it through pages.yml,
+# which calls this workflow and deploys only if every step here passes; that
+# way main is checked once, and the site is the exact build that was checked.
+name: Web
+
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      pages-artifact:
+        description: Upload web/dist as the GitHub Pages artifact once every check has passed.
+        type: boolean
+        default: false
+
+# Third-party actions are pinned to commit SHAs (the tag is in the comment), so a
+# moved tag cannot change what runs.
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+    concurrency:
+      group: web-checks-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    env:
+      # Every CI build must link its source (vite.config.ts); Actions provides the URL.
+      PUCKWORKS_REQUIRE_SOURCE_URL: '1'
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Installs the toolchain pinned in rust-toolchain.toml and caches cargo builds.
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
+        with:
+          target: wasm32-unknown-unknown
+          # Warnings are the Rust workflow's concern; this job only needs the WASM build.
+          build-warnings: ''
+          cache-shared-key: web-wasm
+
+      # Fails if Cargo.lock is out of date, so the engine is built from the locked versions.
+      - name: Fetch the locked Rust dependencies
+        working-directory: .
+        run: cargo fetch --locked --target wasm32-unknown-unknown
+
+      # Must match the wasm-bindgen crate version in Cargo.toml (scripts/build_wasm.sh checks).
+      - name: Install wasm-bindgen CLI
+        uses: taiki-e/install-action@1168f6810a3cb30a3514bf5756a3b7f0422c6df8 # v2.87.28
+        with:
+          tool: wasm-bindgen@0.2.129
+
+      - name: Build the WebAssembly engine
+        working-directory: .
+        run: bash scripts/build_wasm.sh
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      # npm production dependencies and the Rust crates in the engine (cargo metadata --locked).
+      - run: npm run licenses
+
+      # Headless browser smoke test of the build (system Chrome, no download).
+      - name: Browser smoke test
+        run: node scripts/e2e.mjs
+
+      - name: Keep the browser test's screenshots
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-test-results
+          path: web/test-results/
+          if-no-files-found: ignore
+
+      - name: Upload the site for GitHub Pages
+        if: inputs.pages-artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: web/dist

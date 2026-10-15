@@ -1,0 +1,393 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:puckworks:schema:shot-result:1",
+  "title": "Puckworks shot result (puckworks.shot-result/1)",
+  "description": "Everything a simulated shot produces, in SI units with unit suffixes; TDS and EY are fractions. The Rust type crates/puckcore/src/shot/result.rs (ShotResult) is the source of truth. Output documents tolerate unknown fields for forward compatibility; fields are only ever added. Every number is finite.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "description": "Schema id.",
+      "const": "puckworks.shot-result/1"
+    },
+    "core_version": {
+      "description": "Version of the core that produced the result.",
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/Summary"
+    },
+    "series": {
+      "$ref": "#/$defs/Series"
+    },
+    "spatial": {
+      "$ref": "#/$defs/Spatial"
+    },
+    "diagnostics": {
+      "$ref": "#/$defs/Diagnostics"
+    }
+  },
+  "$defs": {
+    "Summary": {
+      "description": "Headline numbers.",
+      "type": "object",
+      "properties": {
+        "stop_reason": {
+          "description": "Why the shot ended: \"beverage_mass\", \"time\", \"max_duration\" or \"choked\" (for 5 s the flow stayed below 0.01 mL/s and below a tenth of the flow the program asked for).",
+          "type": "string"
+        },
+        "shot_time_s": {
+          "description": "Time from pump start to the stop, s.",
+          "type": "number"
+        },
+        "first_drops_s": {
+          "description": "Time of the first drops at the outlet, s (null if none fell).",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "beverage_mass_kg": {
+          "description": "Beverage mass in the cup, including the post-stop drip, kg.",
+          "type": "number"
+        },
+        "drip_mass_kg": {
+          "description": "Beverage mass added by the post-stop drip (at most the headspace water), kg.",
+          "type": "number"
+        },
+        "tds": {
+          "description": "Total dissolved solids of the cup, mass fraction.",
+          "type": "number"
+        },
+        "ey": {
+          "description": "Extraction yield: dissolved solids in the cup / dry dose.",
+          "type": "number"
+        },
+        "max_pressure_pa": {
+          "description": "Highest inlet pressure, Pa.",
+          "type": "number"
+        },
+        "bed_height_m": {
+          "description": "Bed height after dosing and tamping, m.",
+          "type": "number"
+        },
+        "headspace_m3": {
+          "description": "Headspace volume above the bed, m³.",
+          "type": "number"
+        },
+        "species": {
+          "description": "Per-species totals in the cup.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SpeciesTotal"
+          }
+        },
+        "uniformity": {
+          "$ref": "#/$defs/Uniformity"
+        }
+      }
+    },
+    "SpeciesTotal": {
+      "description": "Cup total of one species.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Species id.",
+          "type": "string"
+        },
+        "mass_kg": {
+          "description": "Mass in the cup, kg.",
+          "type": "number"
+        },
+        "extracted_fraction": {
+          "description": "Share of the species' extractable content that reached the cup.",
+          "type": "number"
+        }
+      }
+    },
+    "Uniformity": {
+      "description": "Mass-weighted statistics of local EY over all bed cells (weights: the dry solid mass of each cell). Local EY counts what has left the particles, so its mean exceeds the cup EY by what is still in the bed liquid.",
+      "type": "object",
+      "properties": {
+        "ey_std": {
+          "description": "Standard deviation.",
+          "type": "number"
+        },
+        "ey_min": {
+          "description": "Minimum.",
+          "type": "number"
+        },
+        "ey_max": {
+          "description": "Maximum.",
+          "type": "number"
+        },
+        "ey_mean": {
+          "description": "Mass-weighted mean.",
+          "type": "number"
+        }
+      }
+    },
+    "Series": {
+      "description": "Time series at numerics.output_interval_s spacing, plus the stop and the end of the drip.",
+      "type": "object",
+      "properties": {
+        "t_s": {
+          "description": "Times, s.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "pressure_pa": {
+          "description": "Pressure at the top of the bed, Pa (gauge).",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "flow_in_m3_s": {
+          "description": "Pump flow into the headspace, m³/s (0 during the drip).",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "flow_out_m3_s": {
+          "description": "Flow leaving the basket, m³/s.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "beverage_mass_kg": {
+          "description": "Beverage mass in the cup, kg.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "tds_cup": {
+          "description": "TDS of the cup so far (mass fraction).",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "tds_outlet": {
+          "description": "TDS of the extract leaving the basket now (mass fraction).",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "ey": {
+          "description": "Extraction yield so far.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "outlet_temp_c": {
+          "description": "Temperature of the extract leaving the basket (the lumped bed node), °C.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "species_cup_kg": {
+          "description": "Cumulative cup mass of each tracked species, kg.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SpeciesSeries"
+          }
+        },
+        "wetted_fraction": {
+          "description": "Wetted share of the bed volume.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "SpeciesSeries": {
+      "description": "One species' cumulative cup mass over time.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Species id.",
+          "type": "string"
+        },
+        "values": {
+          "description": "Cup mass at each time, kg.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "Spatial": {
+      "description": "Spatial state of the bed. Tier 0 reports its columns (three strata, one without spread, plus the edge annulus), 8 cells and two merged size classes.",
+      "type": "object",
+      "properties": {
+        "depth_m": {
+          "description": "Depth of each cell centre below the bed top, m.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "depth_edges_m": {
+          "description": "Depth of each cell face below the bed top, m (cells + 1 values, from 0 to the bed height).",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "columns": {
+          "description": "The parallel columns, from the centre outward.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ColumnInfo"
+          }
+        },
+        "snapshots": {
+          "description": "Snapshots spread over the shot (the last one at the end).",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Snapshot"
+          }
+        },
+        "class_ey": {
+          "description": "Extraction yield of each size class at the end.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClassEy"
+          }
+        }
+      }
+    },
+    "ColumnInfo": {
+      "description": "One parallel column (radial annulus or permeability stratum). Column i takes the fixed share f_i of the cross-section at every height: at height h it spans radii r(h)√F_{i−1} to r(h)√F_i, where F_i is the cumulative share and r(h) the wall radius, so A_i(z) = f_i·A(z).",
+      "type": "object",
+      "properties": {
+        "inner_radius_m": {
+          "description": "Inner radius of the annulus at the floor, m.",
+          "type": "number"
+        },
+        "outer_radius_m": {
+          "description": "Outer radius of the annulus at the floor, m.",
+          "type": "number"
+        },
+        "area_fraction": {
+          "description": "Share of the bed cross-section.",
+          "type": "number"
+        },
+        "permeability_multiplier": {
+          "description": "Permeability multiplier relative to κ₀.",
+          "type": "number"
+        }
+      }
+    },
+    "Snapshot": {
+      "description": "Bed state at one instant; arrays are [column][depth cell].",
+      "type": "object",
+      "properties": {
+        "t_s": {
+          "description": "Time, s.",
+          "type": "number"
+        },
+        "local_ey": {
+          "description": "Local extraction yield of the solids in each cell: the net soluble loss of the cell's particles over their dry mass. Negative only where particles re-absorbed more than they lost (possible with solubles.kernel_loading_cap = false).",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "liquid_conc_kg_m3": {
+          "description": "Concentration of lumped solubles in the bed liquid (intergranular plus imbibed water), kg/m³ (0 where dry).",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "wetted_fraction": {
+          "description": "Wetted share of each cell: 0 dry, 1 wet, in between where the wetting front is.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "ClassEy": {
+      "description": "Extraction yield of one size class: mass that left its particles over its dry mass.",
+      "type": "object",
+      "properties": {
+        "radius_m": {
+          "description": "Class radius, m.",
+          "type": "number"
+        },
+        "ey": {
+          "description": "Extraction yield.",
+          "type": "number"
+        }
+      }
+    },
+    "Diagnostics": {
+      "description": "Solver diagnostics.",
+      "type": "object",
+      "properties": {
+        "mass_balance_error": {
+          "description": "Relative error in the soluble mass balance (particles + liquid + cup): the largest over the run's check points, over the lumped solubles and every tracked species, each relative to its initial mass.",
+          "type": "number"
+        },
+        "steps": {
+          "description": "Time steps taken.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "description": "Human-readable warnings (e.g. choked shot, stop rule never fired, a spread the columns cannot represent, mass balance above 1e-9, a negative concentration).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "min_concentration_kg_m3": {
+          "description": "Smallest concentration seen in any step (bed liquid, kernel shells and surface pools, lumped and species, each species at its own mass fraction), kg/m³; a positivity check.",
+          "type": "number"
+        },
+        "tier": {
+          "description": "Fidelity tier that produced the result.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "outflow_integral_error": {
+          "description": "Quadrature consistency of the outlet accounting: the relative difference between the cup's solute (the implicit outflow of every step) and the trapezoidal integral of outlet flow × outlet concentration at the step ends. Both integrate the same q·c, so it checks the bookkeeping of the outlet, not the bed; it is first order in the step (about 3e-3 at Δt = 0.05 s).",
+          "type": "number"
+        },
+        "max_regime_solves": {
+          "description": "Most bed-liquid solves any column needed in one step (the policy iteration over pool regimes and caps; 1–3 is typical).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_steps": {
+          "description": "Steps rejected and retried: a regime iteration that did not converge (retried at half the step) or a mass target overshot by more than 0.1 mg (re-landed).",
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

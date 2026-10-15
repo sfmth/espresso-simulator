@@ -1,0 +1,815 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:puckworks:schema:shot-spec:1",
+  "title": "Puckworks shot spec (puckworks.shot-spec/1)",
+  "description": "Complete physical description of one espresso shot, in SI units with the unit in every field name (temperatures in °C). The Rust type crates/puckcore/src/shot/spec.rs (ShotSpec) is the source of truth and its doc comments define the fields; the contract is docs/model/m1-contract.md and the model docs/model/shot-model.md. Input documents reject unknown fields; missing fields take the Rust Default values (the registry's central values where they exist). Enums are internally tagged with \"type\" in snake_case. Every number must be finite. Every number has a plausibility range (shown here; shot-model.md §2.1). Bounds that depend on other fields (perforated radius ≤ floor radius, the dose fits the basket, volume fractions sum to 1, step and output counts, the model size columns × depth cells × size classes × (kernel shells + 1) × (1 + species) ≤ 1e7, the total work steps × model size ≤ 1e10, and the liquid's water content at max(c_sat, K·s₀)) are checked by the solver, which names the offending field.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "description": "Schema id.",
+      "const": "puckworks.shot-spec/1"
+    },
+    "basket": {
+      "$ref": "#/$defs/BasketGeometry"
+    },
+    "bed": {
+      "$ref": "#/$defs/BedSpec"
+    },
+    "solubles": {
+      "$ref": "#/$defs/SolublesSpec"
+    },
+    "hydraulics": {
+      "$ref": "#/$defs/HydraulicsSpec"
+    },
+    "thermal": {
+      "$ref": "#/$defs/ThermalSpec"
+    },
+    "machine": {
+      "$ref": "#/$defs/MachineSpec"
+    },
+    "numerics": {
+      "$ref": "#/$defs/NumericsSpec"
+    }
+  },
+  "$defs": {
+    "BasketGeometry": {
+      "description": "Axisymmetric basket geometry. Straight, tapered and stepped baskets of any diameter are all described by profile_m (PLAN design principle 7).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile_m": {
+          "description": "Inner wall profile as [height above the basket floor, inner radius], m. 2–256 points; heights start at 0, strictly increase and stay within 200 mm; radii within 1–100 mm. The radius is linear between points.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 256,
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 0.2
+              },
+              {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 0.1
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": false
+          }
+        },
+        "perforated_radius_m": {
+          "description": "Radius of the perforated area on the floor, m (0.1–100 mm, at most the floor radius). With open_area_fraction it sets the hole area of the floor.",
+          "type": "number",
+          "minimum": 0.0001,
+          "maximum": 0.1
+        },
+        "open_area_fraction": {
+          "description": "Open (hole) fraction of the perforated area, (0, 1]. Below 1 the holes act as an orifice plate in series with the puck, ΔP = ρQ²/(2 C_d² A_h²) with A_h = open fraction · π r_perf² and C_d = 0.61; 1 means the holes add no resistance.",
+          "type": "number",
+          "minimum": 0.0001,
+          "maximum": 1
+        },
+        "outlet": {
+          "$ref": "#/$defs/Outlet"
+        },
+        "extra_headspace_m3": {
+          "description": "Volume between the basket rim and the shower screen that must fill with water before pressure builds, m³ (0–1 L). The basket volume above the bed is added to this by the solver.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.001
+        }
+      }
+    },
+    "Outlet": {
+      "description": "Basket outlet.",
+      "oneOf": [
+        {
+          "description": "Ordinary perforated floor.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "holes"
+            }
+          }
+        },
+        {
+          "description": "Dual-wall basket: the extract leaves through one orifice, which adds a quadratic resistance ΔP = ρQ²/(2 C_d² A_o²) in series with the puck.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "orifice_diameter_m",
+            "discharge_coefficient"
+          ],
+          "properties": {
+            "type": {
+              "const": "pressurised"
+            },
+            "orifice_diameter_m": {
+              "description": "Orifice diameter, m (0.01–50 mm).",
+              "type": "number",
+              "minimum": 1e-05,
+              "maximum": 0.05
+            },
+            "discharge_coefficient": {
+              "description": "Discharge coefficient C_d, 0.05–1, typically 0.6–0.8.",
+              "type": "number",
+              "minimum": 0.05,
+              "maximum": 1
+            }
+          }
+        }
+      ]
+    },
+    "BedSpec": {
+      "description": "The coffee bed. It fills the basket from the floor until its volume equals dose / ((1 − ε)(1 − ε_p) ρ_s).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dose_kg": {
+          "description": "Dry dose, kg (1 g to 1 kg).",
+          "type": "number",
+          "minimum": 0.001,
+          "maximum": 1
+        },
+        "intergranular_porosity": {
+          "description": "Intergranular (between-particle) porosity after tamping, 0.01–0.95.",
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 0.95
+        },
+        "intraparticle_porosity": {
+          "description": "Intraparticle porosity ε_p, 0.01–0.95 (the default 0.56 follows from the dry bulk density; Corrochano, who measured K, takes the swollen envelope equal to the dry one).",
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 0.95
+        },
+        "skeletal_density_kg_m3": {
+          "description": "Skeletal (solid) density, kg/m³ (500–3000).",
+          "type": "number",
+          "minimum": 500,
+          "maximum": 3000
+        },
+        "size_classes": {
+          "description": "Particle size classes (1–200). Volume fractions sum to 1 (within 1e-3; renormalised).",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/$defs/SizeClass"
+          }
+        },
+        "heterogeneity": {
+          "$ref": "#/$defs/Heterogeneity"
+        }
+      }
+    },
+    "SizeClass": {
+      "description": "One particle size class. Particles are spheres; each has a broken-cell surface pool of thickness solubles.cell_size_m around an intact kernel.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "radius_m",
+        "volume_fraction"
+      ],
+      "properties": {
+        "radius_m": {
+          "description": "Representative particle radius, m (0.1 µm to 5 mm).",
+          "type": "number",
+          "minimum": 1e-07,
+          "maximum": 0.005
+        },
+        "volume_fraction": {
+          "description": "Share of the solid volume in this class.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1.001
+        }
+      }
+    },
+    "Heterogeneity": {
+      "description": "Bed heterogeneity: parallel 1D columns sharing one inlet pressure (PLAN §7.3, module P). Columns are radial annuli of the basket: the outer annulus is the edge column; the inner annuli share the rest of the area equally and carry stratified log-normal permeability multipliers.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "description": "Number of parallel columns (radial annuli × permeability strata), 1–64. Tier 0 uses three strata (one without spread) plus the edge annulus. A spread needs at least two inner columns; with fewer the solver warns that it is not represented.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "sigma_ln_permeability": {
+          "description": "Standard deviation of ln(permeability multiplier) across the inner columns, 0–3. The inner columns are equal-probability strata of the log-normal, each carrying its conditional mean, m_k = n·[Φ(z_{k+1} − σ) − Φ(z_k − σ)] with z_k = Φ⁻¹(k/n); the multipliers have an area-weighted mean of exactly 1.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "edge_area_fraction": {
+          "description": "Share of the bed in the outer annulus, 0–0.9. 0 means no edge column. With a single column the edge enters through the area-weighted multiplier (1 − f) + f·edge_multiplier.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.9
+        },
+        "edge_multiplier": {
+          "description": "Extra permeability multiplier of the outer annulus, 0.01–100 (< 1 when the holes stop short of the wall; about 1 with a bottom paper filter).",
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 100
+        },
+        "prewet_nonuniformity": {
+          "description": "Pre-wetting non-uniformity from headspace and shower screen, 0–1. It widens the permeability spread: the inner columns use σ = √(sigma_ln_permeability² + prewet_nonuniformity²).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "SolublesSpec": {
+      "description": "Soluble content and extraction kinetics.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "extractable_fraction": {
+          "description": "Extractable solubles per dry dose (maximum EY), kg/kg, 0–0.6. They are spread uniformly through the solid.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.6
+        },
+        "cell_size_m": {
+          "description": "Thickness δ of the broken-cell shell on each particle, m (0–1 mm). It sets the fast surface pool, a volume share 1 − ((a − δ)/a)³ of a particle of radius a; particles thinner than this are all surface. 0 means no surface pool.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.001
+        },
+        "saturation_kg_m3": {
+          "description": "Saturation concentration capping surface dissolution, kg/m³ (1–2000): the surface flux is k·(min(c_pool, c_sat) − c) (Grudeva form).",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "partition_coefficient": {
+          "description": "Partition coefficient K = c_liquid/C_s at equilibrium, 0.01–100, with C_s the soluble mass per particle envelope volume (pore solution and matrix-bound solute together; Corrochano 2017, who takes the swollen envelope equal to the dry one). The kernel boundary value in pore-liquid terms is c/(K·ε_p(1 − u_w)), exact when no solute stays bound to the matrix; at equilibrium a kernel holds the liquid at K·s₀. K·s₀ above c_sat lets the liquid exceed saturation (warned), and v̄·max(c_sat, K·s₀) must stay below 0.9.",
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 100
+        },
+        "kernel_diffusivity_m2_s": {
+          "description": "Effective diffusivity of lumped solubles in intact kernels, m²/s (1e-16–1e-7), at reference_temp_c. It scales with temperature as T/μ_water(T) (Stokes–Einstein).",
+          "type": "number",
+          "minimum": 1e-16,
+          "maximum": 1e-07
+        },
+        "surface_rate_m_s": {
+          "description": "Surface (broken-cell) dissolution coefficient, m/s (0–1).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reference_temp_c": {
+          "description": "Temperature at which the diffusivities apply, °C (0–150).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "species": {
+          "description": "Individually tracked species (in addition to the lumped solubles), at most 64.",
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/SpeciesSpec"
+          }
+        },
+        "solute_specific_volume_m3_kg": {
+          "description": "Apparent specific volume of the dissolved solids, m³/kg (0–0.002): a liquid holding c kg/m³ has density ρ_w(1 − v̄c) + c. Used to turn outflow volume into beverage mass and concentration into TDS (w/w).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.002
+        },
+        "kernel_loading_cap": {
+          "description": "Cap kernel uptake at the initial content (default true): the kernel boundary value is min(c/(K·ε_c), u₀) with ε_c = ε_p(1 − u_w), so kernels never load above their initial pore concentration u₀ = s₀/ε_c. A modelling assumption beyond the data (K was measured in dilute batch extraction). false keeps the linear partition at all concentrations; the solver then warns when K·s₀ < c_sat.",
+          "type": "boolean"
+        }
+      }
+    },
+    "SpeciesSpec": {
+      "description": "A tracked species: a linear passenger on the lumped solution's flow and temperature history, with its own kernel diffusivity and partition coefficient. Its surface share dissolves congruently with the lumped surface pool of the same class.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Identifier, e.g. \"caffeine\", \"trigonelline\", \"cqa5\", \"acids\"; non-empty and unique.",
+          "type": "string",
+          "minLength": 1
+        },
+        "mass_fraction": {
+          "description": "Extractable mass of the species per dry dose, kg/kg (0–0.6).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.6
+        },
+        "kernel_diffusivity_m2_s": {
+          "description": "Effective kernel diffusivity, m²/s (1e-16–1e-7), at the reference temperature.",
+          "type": "number",
+          "minimum": 1e-16,
+          "maximum": 1e-07
+        },
+        "partition_coefficient": {
+          "description": "Partition coefficient on the same basis as the lumped one (per swollen particle envelope volume), 0.01–100.",
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 100
+        },
+        "surface_fraction_scale": {
+          "description": "Multiplier on the geometric surface-pool fraction (1 = same as lumped), 0–100; the species' surface share of a class is min(1, scale · pool fraction).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "HydraulicsSpec": {
+      "description": "Flow through the bed (PLAN §7.3, module H).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "permeability_m2": {
+          "description": "Bare base permeability κ₀ of the wetted bed, m² (1e-18–1e-10; default 2.4e-14, hydraulics.permeability.reference, ADR 0009, to be calibrated). The local permeability is κ₀ · column multiplier · KC(ε)/KC(ε₀) · f_poro(ΔP) · swelling · gas, so κ₀ excludes compaction, viscosity and swelling (unlike back-calculated in-shot values).",
+          "type": "number",
+          "minimum": 1e-18,
+          "maximum": 1e-10
+        },
+        "poroelastic_pc_pa": {
+          "description": "Poroelastic saturation pressure P_c, Pa (1e4–1e8); null disables compaction. The factor f = [1 − (1 − x)⁴]/(4x), x = ΔP_bed/P_c (1/(4x) for x ≥ 1), reproduces Q/Q_c = 1 − (1 − ΔP/P_c)⁴ (Waszkiewicz 2026).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 10000.0,
+          "maximum": 100000000.0
+        },
+        "dissolution_kozeny_carman": {
+          "description": "Update permeability with local porosity as solubles dissolve (relative Kozeny–Carman, KC(ε) = ε³/(1 − ε)²).",
+          "type": "boolean"
+        },
+        "swelling": {
+          "description": "Swelling: permeability factor 1 − A·(1 − e^(−t/τ)), t since the cell wetted; A in [0, 1).",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Relaxation"
+            }
+          ]
+        },
+        "gas": {
+          "description": "Gas (CO₂): permeability factor 1 − A·e^(−t/τ), t since the cell wetted; A in [0, 1).",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Relaxation"
+            }
+          ]
+        },
+        "fines_layer": {
+          "description": "Fines migration: outlet resistance A·R_bed(0)·(1 − e^(−t/τ)), t since the column's first drops; R_bed(0) is the column's fully wetted resistance with water at the brew temperature.",
+          "allOf": [
+            {
+              "$ref": "#/$defs/FinesLayer"
+            }
+          ]
+        },
+        "axial_dispersion_m2_s": {
+          "description": "Axial dispersion coefficient, m²/s (0–1e-3).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.001
+        },
+        "viscosity": {
+          "$ref": "#/$defs/Viscosity"
+        },
+        "wetting_uptake": {
+          "description": "Share u_w of the particles' pore liquid that is mobile, 0–0.9: it fills from the front, which advances at q/φ_T with φ_T = ε + (1 − ε)·ε_p·u_w, and mixes with the intergranular liquid within its cell; the pools and kernels hold the solubles in the rest, ε_p(1 − u_w) of the particle volume. Mobile and particle liquid together fill the total porosity.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.9
+        },
+        "dissolution_porosity_share": {
+          "description": "Share θ of the dissolved solid volume that becomes intergranular pore space, [0, 1]: ε = ε₀ + θ·EY_local·(1 − ε₀), never decreasing. null (the default) means θ = 0: solubles leave from inside cells whose insoluble walls keep the particle envelope, so dissolution raises the intraparticle porosity, not ε (registry hydraulics.dissolution_porosity_share, mode 0). 1 is particles shrinking at constant envelope density (Lee 2023), the upper bound.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "Relaxation": {
+      "description": "Amplitude and time constant of an exponential relaxation (swelling, gas).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amplitude",
+        "tau_s"
+      ],
+      "properties": {
+        "amplitude": {
+          "description": "Amplitude in [0, 1); 0 disables the effect.",
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "tau_s": {
+          "description": "Time constant, s (0–600; 0 makes the change immediate).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 600
+        }
+      }
+    },
+    "FinesLayer": {
+      "description": "Amplitude and time constant of the fines layer (the Rust type Relaxation).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amplitude",
+        "tau_s"
+      ],
+      "properties": {
+        "amplitude": {
+          "description": "Amplitude relative to the column's wetted resistance, 0–100; 0 disables the effect.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "tau_s": {
+          "description": "Time constant, s (0–600; 0 makes the change immediate).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 600
+        }
+      }
+    },
+    "Viscosity": {
+      "description": "Extract viscosity: μ = μ_water(T) · exp(a1·w + a2·w²)^γ, with w the solute mass fraction and γ the temperature exponent. μ_water(T) is the Kestin–Sokolov–Wakeham (1978) correlation.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ln_relative_a1": {
+          "description": "a1 (−50–50): Moreno 2015's coffee solutions at 4 °C give a1 ≈ 4.2, a2 ≈ 11.8.",
+          "type": "number",
+          "minimum": -50,
+          "maximum": 50
+        },
+        "ln_relative_a2": {
+          "description": "a2 (−50–50).",
+          "type": "number",
+          "minimum": -50,
+          "maximum": 50
+        },
+        "temperature_exponent": {
+          "description": "Exponent γ ≤ 1 shrinking the relative viscosity at brewing temperature.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "ThermalSpec": {
+      "description": "Lumped thermal model (PLAN §7.3, module H): one node for bed, basket and portafilter, (C + ρ_w c_w V_water) dT/dt = ρ_w c_w Q (T_water − T) − h (T − T_ambient). Temperatures must lie in 0–150 °C, the range of the water correlations.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "water_temp_c": {
+          "description": "Brew water temperature, °C.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "initial_bed_temp_c": {
+          "description": "Initial temperature of bed and basket, °C.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "heat_capacity_j_k": {
+          "description": "Lumped heat capacity of bed, basket and portafilter, J/K (1–1e5; the water held in the wetted bed is added by the solver).",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100000.0
+        },
+        "heat_loss_w_k": {
+          "description": "Heat loss to the surroundings, W/K (0–1000).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000.0
+        },
+        "ambient_temp_c": {
+          "description": "Temperature of the surroundings, °C.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 150
+        }
+      }
+    },
+    "MachineSpec": {
+      "description": "Machine program, pump and stop rule (PLAN §7.3, module M). The headspace fills first (at zero pressure); then pressure and flow follow from the program, the pump and the bed.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phases": {
+          "description": "Phases (1–64), run in order; the last runs until the stop rule fires (its exit conditions are ignored).",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/Phase"
+          }
+        },
+        "pump": {
+          "$ref": "#/$defs/Pump"
+        },
+        "stop": {
+          "$ref": "#/$defs/StopRule"
+        }
+      }
+    },
+    "Phase": {
+      "description": "One phase of the machine program.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "control": {
+          "$ref": "#/$defs/Control"
+        },
+        "ramp_s": {
+          "description": "Linear ramp from the previous target, s (0–3600): the target moves linearly from the value of the controlled quantity when the phase starts (0 for the first phase) to the phase target.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "limit": {
+          "description": "Flow limit (m³/s, at most 1e-4) under pressure control, or pressure limit (Pa, at most 2e7) under flow control. Ignored for pump_full.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "exit": {
+          "$ref": "#/$defs/PhaseExit"
+        }
+      }
+    },
+    "Control": {
+      "description": "Controlled quantity in a phase.",
+      "oneOf": [
+        {
+          "description": "Hold the inlet pressure, Pa. While the headspace fills (zero pressure) the pump delivers its flow limit if the target is above 0.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "target_pa"
+          ],
+          "properties": {
+            "type": {
+              "const": "pressure"
+            },
+            "target_pa": {
+              "description": "Target inlet pressure, Pa (0–2e7).",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 20000000.0
+            }
+          }
+        },
+        {
+          "description": "Hold the pump flow, m³/s.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "target_m3_s"
+          ],
+          "properties": {
+            "type": {
+              "const": "flow"
+            },
+            "target_m3_s": {
+              "description": "Target pump flow, m³/s (0–1e-4).",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.0001
+            }
+          }
+        },
+        {
+          "description": "Run the pump at full power; pressure follows from the pump curve and the bed.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "pump_full"
+            }
+          }
+        }
+      ]
+    },
+    "PhaseExit": {
+      "description": "Phase exit conditions; the first one met ends the phase. They are checked at the end of every time step; time and mass conditions land a step on the event.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "time_s": {
+          "description": "Time since the phase started, s (at most 3600).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 3600
+        },
+        "beverage_mass_kg": {
+          "description": "Beverage mass in the cup, kg (at most 10).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 10
+        },
+        "pressure_pa": {
+          "description": "Inlet pressure reached, Pa (at most 2e7).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 20000000.0
+        }
+      }
+    },
+    "Pump": {
+      "description": "Pump characteristics.",
+      "oneOf": [
+        {
+          "description": "Follows the program exactly within these limits (profiling machines).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "max_flow_m3_s",
+            "max_pressure_pa"
+          ],
+          "properties": {
+            "type": {
+              "const": "ideal"
+            },
+            "max_flow_m3_s": {
+              "description": "Largest flow, m³/s (at most 1e-4).",
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 0.0001
+            },
+            "max_pressure_pa": {
+              "description": "Largest pressure, Pa (at most 2e7).",
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 20000000.0
+            }
+          }
+        },
+        {
+          "description": "Vibratory pump: Q = Q_free·(1 − P/P_stall), optionally capped by an over-pressure valve.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "free_flow_m3_s",
+            "stall_pressure_pa"
+          ],
+          "properties": {
+            "type": {
+              "const": "vibratory"
+            },
+            "free_flow_m3_s": {
+              "description": "Free flow Q_free at zero pressure, m³/s (at most 1e-4).",
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 0.0001
+            },
+            "stall_pressure_pa": {
+              "description": "Stall pressure P_stall, Pa (at most 2e7).",
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 20000000.0
+            },
+            "opv_pa": {
+              "description": "Over-pressure valve setting, Pa (at most 2e7; null: none).",
+              "type": [
+                "number",
+                "null"
+              ],
+              "exclusiveMinimum": 0,
+              "maximum": 20000000.0
+            }
+          }
+        }
+      ]
+    },
+    "StopRule": {
+      "description": "When the shot ends. The first condition met stops the pump; the extract then drips for a while (drip_tau_s): the inlet pressure decays as P_stop·e^(−t/τ) and the simulation runs 8τ more, or until the water left in the headspace has drained into the puck. Without a condition the shot runs to numerics.max_duration_s.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "time_s": {
+          "description": "Shot time, s (at most 3600).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 3600
+        },
+        "beverage_mass_kg": {
+          "description": "Beverage mass on the scale, kg (at most 10).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 10
+        },
+        "drip_tau_s": {
+          "description": "Time constant of the post-stop drip, s (0 = none, at most 60).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 60
+        },
+        "vent_headspace": {
+          "description": "The machine vents the headspace at the stop (a three-way solenoid valve): its water leaves through the valve, none reaches the puck, and there is no drip. Default false.",
+          "type": "boolean"
+        }
+      }
+    },
+    "NumericsSpec": {
+      "description": "Numerical settings (PLAN §7.2 fidelity tiers).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tier": {
+          "description": "0 = reduced preview model (3 permeability strata plus the edge annulus, 8 depth cells, 2 size classes, two-shell coarse kernels), 1 = standard model.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "depth_cells": {
+          "description": "Depth cells per column (tier 1), 2–1000.",
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 1000
+        },
+        "max_dt_s": {
+          "description": "Largest time step, s (at most 0.5). Steps also land on every output time, so the step is at most output_interval_s. (max_duration_s + 8·drip_tau_s)/min(max_dt_s, output_interval_s) ≤ 2e6.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 0.5
+        },
+        "max_duration_s": {
+          "description": "Hard stop, s (at most 3600): the pump stops here if the stop rule has not fired.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 3600
+        },
+        "output_interval_s": {
+          "description": "Spacing of the output time series, s (at most 3600). (max_duration_s + 8·drip_tau_s)/output_interval_s ≤ 2e6, and that times (10 + species) ≤ 1e7.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 3600
+        },
+        "snapshot_count": {
+          "description": "Number of spatial snapshots, evenly spread over the shot (at most 1000, and snapshots × columns × depth cells ≤ 1e6).",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "kernel_shells": {
+          "description": "Radial shells per intact kernel in tier 1 (equal-volume grid, 2–64). Tier 0 uses two for coarse classes and one (the linear driving force) for fines.",
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 64
+        }
+      }
+    }
+  }
+}

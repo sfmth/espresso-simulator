@@ -1,0 +1,105 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for flow.csv. The data come from the authors' CC BY 4.0 Zenodo archive (see `licence`);
+# this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: waszkiewicz2026-flow-transient
+title: >-
+  Pump pressure, basket pressure, cup mass and mass flow rate versus time for espresso brewed at 11
+  constant pressures, 1 to 13 bar (Waszkiewicz et al. 2026)
+citation: >-
+  Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M.
+  (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113.
+  Data: Waszkiewicz R. et al. (2025) Under pressure: Poroelastic regulation of flow in espresso
+  brewing, Zenodo, v1.0.1, doi:10.5281/zenodo.18046315.
+doi: "10.5281/zenodo.18046315"
+url: "https://github.com/RadostW/espresso"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-14"
+research_note_ref: ["01 §3.7", "01 §4.11", "01 §9"]
+
+obtained: >-
+  Converted by script (python/puckworks_tools/sources/waszkiewicz2026.py) from
+  formatted_measurements/time_dependent.csv (sha256
+  40e76f43e1584912b55afcc4f15c28b797bf3ac6c3c380765b408cddd33d9fe9) of the Zenodo archive
+  RadostW/espresso-v1.0.1.zip (sha256 b59f0a6cda2edaafd5e2d58bbf48a460a67352e73e50a2f20c2796327566d2db),
+  keeping every 5th point of the authors' 1000-point common time grid (spacing 0.5005 s) and the last
+  point (100 s). n_runs counts the runs per pressure group in the archive's per-run export
+  (formatted_measurements/debug_time_dependent.csv, sha256
+  ba65882793d6d9e4781565f2fc36bb61910da6b69b23afc10be46da235f47861). Values as stored; no digitising.
+
+uncertainty: >-
+  Transcription: none. Statistical: the *_sem_* columns are the standard errors of the mean across the
+  runs of each pressure group, as computed by the authors (pandas "sem"). Processing by the authors
+  (format_measurements_time_dependent.py): 10 Hz scale and pressure logs; t = 0 is the end of the
+  pressure rise (the last of the first 500 samples whose pump pressure differs from the run's median by
+  more than 10% or 50 kPa); flow is the time derivative of the cup mass, smoothed with a Savitzky–Golay
+  filter (31 samples, ≈3 s, order 1), so features shorter than about 3 s are blurred; each run is
+  interpolated to the common grid before averaging. Basket pressure = pump pressure − (aQ² + bQ + c),
+  the brewing group's measured pressure drop (fit_parameters/brewer_calibration.csv: a = 0.017184,
+  b = 0.036709, c = 0.28316, with Q in g/s and pressures in bar).
+
+columns:
+  - name: pressure_group_bar
+    type: number
+    units: bar
+    description: >-
+      Pressure group: the median pump pressure of the run, rounded to 0.5 bar by the authors (1, 2, 3.5,
+      4, 5, 6, 7, 8, 9, 11, 13).
+  - name: time_s
+    type: number
+    units: s
+    description: Time since the end of the pressure rise (see uncertainty).
+  - name: pump_pressure_bar
+    type: number
+    units: bar
+    description: Mean pressure at the pump outlet (sensor p2), gauge.
+  - name: pump_pressure_sem_bar
+    type: number
+    units: bar
+    description: Standard error of the mean pump pressure.
+  - name: basket_pressure_bar
+    type: number
+    units: bar
+    description: Mean pressure above the puck, from the pump pressure minus the group's pressure drop.
+  - name: basket_pressure_sem_bar
+    type: number
+    units: bar
+    description: Standard error of the mean basket pressure.
+  - name: mass_g
+    type: number
+    units: g
+    description: Mean beverage mass in the cup.
+  - name: mass_sem_g
+    type: number
+    units: g
+    description: Standard error of the mean cup mass.
+  - name: flow_g_s
+    type: number
+    units: g/s
+    description: Mean mass flow rate into the cup (smoothed derivative of the cup mass).
+  - name: flow_sem_g_s
+    type: number
+    units: g/s
+    description: Standard error of the mean flow rate.
+  - name: n_runs
+    type: integer
+    description: Number of runs averaged in the pressure group (57 in total).
+
+files:
+  - path: flow.csv
+    format: csv
+    description: 2211 rows, 11 pressure groups × 201 times from 0 to 100 s.
+
+notes: >-
+  Setup (article §II): two-group Sanremo Zoe Competition (heat-exchanger machine) with a pressure
+  regulator; scale under the cup (HX711) and a pressure sensor at the pump outlet, both at 10 Hz;
+  IMS Competizione basket B682TCH26.5E (58 mm inner diameter, 26.5 mm high); 18.50 ± 0.05 g of a
+  light to medium-light single-origin Brazil (Igarape; roast colour 85.5 on a Lebrew RoastSee C1),
+  ground on a Fiorenzato F64 EVO at setting 1.9 (PSD: waszkiewicz2026-psd), Weber blind shaker 10 s,
+  needle WDT, Perfex automatic tamper at 20 kg; dry bed 14 mm high. Each shot ran for at least 120 s
+  (the analysis keeps 100 s). The brew temperature is not reported (the discussion mentions a
+  90–96 °C window). The authors note that the flow rises for 10–20 s after the first drops at every
+  pressure, then saturates or falls slightly. The archive's README states GPLv3 for the code; the
+  Zenodo record licenses the archive CC BY 4.0, which covers these data files. Attribution: cite the
+  article and the Zenodo record.

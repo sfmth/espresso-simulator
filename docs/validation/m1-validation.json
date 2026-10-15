@@ -1,0 +1,7837 @@
+{
+ "schema": "puckworks.validation-report/1",
+ "created": "2026-10-15",
+ "tools_version": "0.2.0",
+ "core_version": "0.2.0",
+ "solver": {
+  "puckcore_version": "0.2.0",
+  "extension_sha256": "46169ec3327724a3",
+  "extension_built": "2026-10-15T11:08:27-07:00",
+  "sources_sha256": {
+   "crates/puckcore/src": "164c715d8321929e",
+   "crates/puckmodel/src": "b1bb6c6ab6559863",
+   "crates/puckmodel/generated": "80b431ea23626448",
+   "crates/puckcore-py": "563a9328b2a48052"
+  },
+  "files_sha256": {
+   "Cargo.lock": "e05060c85f55b91d"
+  },
+  "python": {
+   "version": "3.14.7",
+   "numpy": "2.5.4",
+   "scipy": "1.18.1"
+  }
+ },
+ "calibration_solver": {
+  "puckcore_version": "0.2.0",
+  "extension_sha256": "0ddc4b4708182e5c",
+  "extension_built": "2026-10-15T10:09:08-07:00",
+  "sources_sha256": {
+   "crates/puckcore/src": "164c715d8321929e",
+   "crates/puckmodel/src": "b1bb6c6ab6559863",
+   "crates/puckmodel/generated": "0726fc64e5d9775d",
+   "crates/puckcore-py": "563a9328b2a48052"
+  },
+  "files_sha256": {
+   "Cargo.lock": "e05060c85f55b91d"
+  },
+  "python": {
+   "version": "3.14.7",
+   "numpy": "2.5.4",
+   "scipy": "1.18.1"
+  }
+ },
+ "placeholder": false,
+ "solver_warnings": [
+  "a large run: up to 6.36e3 steps \u00d7 1.73e5 values = 1.10e9 (expect several seconds or more)",
+  "a large run: up to 6.77e3 steps \u00d7 1.73e5 values = 1.17e9 (expect several seconds or more)"
+ ],
+ "calibration_file": "data/calibration/current.yaml",
+ "parameters": {
+  "model.extraction.broken_shell_thickness": {
+   "value": 25.0,
+   "units": "um",
+   "mode": "override",
+   "calibrated": false,
+   "sd": null,
+   "prior_sd_ratio": null,
+   "at_bound": null
+  },
+  "extraction.saturation.lumped": {
+   "value": 341.853,
+   "units": "kg/m^3",
+   "mode": "override",
+   "calibrated": true,
+   "sd": 14.0753,
+   "prior_sd_ratio": 0.348272,
+   "at_bound": false
+  },
+  "model.species.caffeine.surface_fraction_scale": {
+   "value": 0.509781,
+   "units": "1",
+   "mode": "override",
+   "calibrated": true,
+   "sd": 0.0559807,
+   "prior_sd_ratio": 0.193923,
+   "at_bound": true
+  },
+  "model.species.trigonelline.surface_fraction_scale": {
+   "value": 1.30118,
+   "units": "1",
+   "mode": "override",
+   "calibrated": true,
+   "sd": 0.0475881,
+   "prior_sd_ratio": 0.1099,
+   "at_bound": false
+  },
+  "model.species.cqa5.surface_fraction_scale": {
+   "value": 0.742208,
+   "units": "1",
+   "mode": "override",
+   "calibrated": true,
+   "sd": 0.039184,
+   "prior_sd_ratio": 0.135737,
+   "at_bound": false
+  },
+  "calibration.schmieder2023.extractable_fraction": {
+   "value": 28.3343,
+   "units": "%",
+   "mode": "spec",
+   "calibrated": true,
+   "sd": 0.286823,
+   "prior_sd_ratio": 0.0827986,
+   "at_bound": false
+  },
+  "calibration.schmieder2023.content.caffeine": {
+   "value": 1.26098,
+   "units": "%",
+   "mode": "spec",
+   "calibrated": true,
+   "sd": 0.0125269,
+   "prior_sd_ratio": 0.0542429,
+   "at_bound": false
+  },
+  "calibration.schmieder2023.content.trigonelline": {
+   "value": 0.66987,
+   "units": "%",
+   "mode": "spec",
+   "calibrated": true,
+   "sd": 0.00810688,
+   "prior_sd_ratio": 0.028083,
+   "at_bound": false
+  },
+  "calibration.schmieder2023.content.cqa5": {
+   "value": 0.874928,
+   "units": "%",
+   "mode": "spec",
+   "calibrated": true,
+   "sd": 0.00951438,
+   "prior_sd_ratio": 0.0274657,
+   "at_bound": false
+  },
+  "calibration.schmieder2023.permeability.gl1_4": {
+   "value": 2.7746000000000015e-14,
+   "units": "m^2",
+   "mode": "spec",
+   "calibrated": true,
+   "sd": 2.75843e-15,
+   "prior_sd_ratio": 0.0846239,
+   "at_bound": false
+  },
+  "calibration.schmieder2023.permeability.gl1_7": {
+   "value": 3.046930000000002e-14,
+   "units": "m^2",
+   "mode": "spec",
+   "calibrated": true,
+   "sd": 3.14027e-15,
+   "prior_sd_ratio": 0.0877277,
+   "at_bound": false
+  },
+  "calibration.schmieder2023.permeability.gl2_0": {
+   "value": 3.972770000000003e-14,
+   "units": "m^2",
+   "mode": "spec",
+   "calibrated": true,
+   "sd": 3.64435e-15,
+   "prior_sd_ratio": 0.0780835,
+   "at_bound": false
+  },
+  "model.hydraulics.viscosity_temperature_exponent": {
+   "value": 0.302021,
+   "units": "1",
+   "mode": "override",
+   "calibrated": true,
+   "sd": 0.0315221,
+   "prior_sd_ratio": 0.287358,
+   "at_bound": false
+  },
+  "hydraulics.poroelastic.critical_pressure": {
+   "value": 12.4613,
+   "units": "bar",
+   "mode": "override",
+   "calibrated": true,
+   "sd": 1.26719,
+   "prior_sd_ratio": 0.422396,
+   "at_bound": false
+  },
+  "extraction.dispersion.axial_coefficient": {
+   "value": 3.866199999999998e-06,
+   "units": "m^2/s",
+   "mode": "override",
+   "calibrated": true,
+   "sd": 2.94513e-07,
+   "prior_sd_ratio": 0.129608,
+   "at_bound": false
+  },
+  "calibration.waszkiewicz2026.permeability": {
+   "value": 1.8798699999999962e-14,
+   "units": "m^2",
+   "mode": "spec",
+   "calibrated": true,
+   "sd": 1.59855e-15,
+   "prior_sd_ratio": 0.0723819,
+   "at_bound": false
+  },
+  "hydraulics.kozeny_carman.density_exponent": {
+   "value": 0.243571,
+   "units": "1",
+   "mode": "override",
+   "calibrated": true,
+   "sd": 0.0389484,
+   "prior_sd_ratio": 0.0449737,
+   "at_bound": false
+  },
+  "hydraulics.permeability.reference": {
+   "value": 1.24415e-13,
+   "units": "m^2",
+   "mode": "pooled",
+   "calibrated": true,
+   "sd": null,
+   "prior_sd_ratio": null,
+   "at_bound": null
+  }
+ },
+ "reference_permeability": {
+  "id": "hydraulics.permeability.reference",
+  "value_m2": 1.24415e-13,
+  "pooling": "geometric mean over datasets, each dataset the geometric mean of its estimates; estimate i = fitted bare \u03ba\u2080,i / builder scaling of case i, (D32_i/D32_ref)\u00b2\u00b7KC(\u03b5)/KC(\u03b5_ref)",
+  "datasets": {
+   "schmieder2023": 7.22044e-14,
+   "waszkiewicz2026": 2.14379e-13
+  },
+  "estimates": [
+   {
+    "parameter": "calibration.schmieder2023.permeability.gl1_4",
+    "dataset": "schmieder2023",
+    "scaling_basis": "grinder preset mahlkoenig-e65s at GL 1.4",
+    "cases": 5,
+    "kappa0_m2": 2.7746e-14,
+    "kappa0_sd_log": 0.099417,
+    "builder_scaling": 0.41431,
+    "builder_scaling_spread": 0.0,
+    "sauter_ratio": 0.643669,
+    "base_id_read_by_builder": "hydraulics.permeability.reference",
+    "kappa_ref_m2": 6.69693e-14
+   },
+   {
+    "parameter": "calibration.schmieder2023.permeability.gl1_7",
+    "dataset": "schmieder2023",
+    "scaling_basis": "grinder preset mahlkoenig-e65s at GL 1.7",
+    "cases": 5,
+    "kappa0_m2": 3.04693e-14,
+    "kappa0_sd_log": 0.103063,
+    "builder_scaling": 0.446983,
+    "builder_scaling_spread": 0.0,
+    "sauter_ratio": 0.668568,
+    "base_id_read_by_builder": "hydraulics.permeability.reference",
+    "kappa_ref_m2": 6.81665e-14
+   },
+   {
+    "parameter": "calibration.schmieder2023.permeability.gl2_0",
+    "dataset": "schmieder2023",
+    "scaling_basis": "grinder preset mahlkoenig-e65s at GL 2.0",
+    "cases": 5,
+    "kappa0_m2": 3.97277e-14,
+    "kappa0_sd_log": 0.0917332,
+    "builder_scaling": 0.481782,
+    "builder_scaling_spread": 0.0,
+    "sauter_ratio": 0.694105,
+    "base_id_read_by_builder": "hydraulics.permeability.reference",
+    "kappa_ref_m2": 8.246e-14
+   },
+   {
+    "parameter": "calibration.waszkiewicz2026.permeability",
+    "dataset": "waszkiewicz2026",
+    "scaling_basis": "the case's own PSD",
+    "cases": 11,
+    "kappa0_m2": 1.87987e-14,
+    "kappa0_sd_log": 0.085035,
+    "builder_scaling": 0.0876891,
+    "builder_scaling_spread": 0.0,
+    "sauter_ratio": 0.296123,
+    "base_id_read_by_builder": "hydraulics.permeability.reference",
+    "kappa_ref_m2": 2.14379e-13
+   }
+  ],
+  "log_sd": 0.552215,
+  "max_over_min": 3.20115
+ },
+ "calibration_blocks": {
+  "V1": {
+   "dataset": "schmieder2023",
+   "datasets": [
+    "schmieder2023-design",
+    "schmieder2023-fractions",
+    "schmieder2023-kinetics",
+    "schmieder2023-replicates"
+   ],
+   "cases": 15,
+   "residuals": 315,
+   "rms": 1.89452,
+   "chi2": 1130.6,
+   "chi2_per_residual": 3.58922,
+   "weight": 1.0,
+   "failures": [],
+   "pump_limited": {
+    "transition_s": {
+     "1": 2.4,
+     "2": 3.5,
+     "3": 3.1,
+     "4": 2.1,
+     "5": 2.9,
+     "6": 2.8,
+     "7": 2.9,
+     "8": 2.7,
+     "9": 2.5,
+     "10": 1.8,
+     "11": 1.5,
+     "12": 3.7,
+     "13": 3.7,
+     "14": 2.8,
+     "15": 2.5
+    },
+    "pour_s": {
+     "1": 0.0,
+     "2": 0.0,
+     "3": 0.0,
+     "4": 0.0,
+     "5": 0.0,
+     "6": 0.0,
+     "7": 0.0,
+     "8": 0.0,
+     "9": 0.0,
+     "10": 0.0,
+     "11": 0.0,
+     "12": 4.71,
+     "13": 0.0,
+     "14": 0.0,
+     "15": 0.0
+    },
+    "pour_capped": [
+     12
+    ]
+   }
+  },
+  "V2": {
+   "dataset": "vacaguerra2024",
+   "datasets": [
+    "vacaguerra2024-rtd"
+   ],
+   "cases": 5,
+   "residuals": 5,
+   "rms": 3.74992,
+   "chi2": 70.3096,
+   "chi2_per_residual": 14.0619,
+   "weight": 1.0,
+   "failures": []
+  },
+  "V4": {
+   "dataset": "waszkiewicz2026",
+   "datasets": [
+    "waszkiewicz2026-flow-pressure",
+    "waszkiewicz2026-psd"
+   ],
+   "cases": 11,
+   "residuals": 11,
+   "rms": 3.60804,
+   "chi2": 143.197,
+   "chi2_per_residual": 13.0179,
+   "weight": 1.0,
+   "failures": []
+  },
+  "V6": {
+   "dataset": "corrochano2017",
+   "datasets": [
+    "corrochano2017-permeability",
+    "corrochano2017-psd",
+    "corrochano2017-properties"
+   ],
+   "cases": 12,
+   "residuals": 8,
+   "rms": 1.68861,
+   "chi2": 22.8112,
+   "chi2_per_residual": 2.85141,
+   "weight": 1.0,
+   "failures": []
+  }
+ },
+ "reduced_chi2": 4.23196,
+ "sensitivity": {
+  "reference_datasets": {
+   "schmieder2023": 7.22044e-14,
+   "waszkiewicz2026": 2.14379e-13
+  },
+  "variants": {
+   "transition ramp 1 s": {
+    "blocks": [
+     "V1"
+    ],
+    "options": {
+     "case_options": {
+      "transition_ramp_s": 1.0
+     }
+    },
+    "structural": false,
+    "held": {
+     "model.hydraulics.viscosity_temperature_exponent": 0.302021,
+     "hydraulics.poroelastic.critical_pressure": 12.4613,
+     "extraction.dispersion.axial_coefficient": 3.8662e-06
+    },
+    "cost": 776.324,
+    "optimizer": {
+     "success": true,
+     "message": "`xtol` termination condition is satisfied.",
+     "evaluations": 18
+    },
+    "nuisance": {
+     "calibration.schmieder2023.extractable_fraction": 28.6398,
+     "calibration.schmieder2023.content.caffeine": 1.25776,
+     "calibration.schmieder2023.content.trigonelline": 0.657405,
+     "calibration.schmieder2023.content.cqa5": 0.869918,
+     "calibration.schmieder2023.permeability.gl1_4": 2.8979e-14,
+     "calibration.schmieder2023.permeability.gl1_7": 2.97529e-14,
+     "calibration.schmieder2023.permeability.gl2_0": 3.94162e-14
+    },
+    "shared": {
+     "extraction.saturation.lumped": 310.612,
+     "model.species.caffeine.surface_fraction_scale": 0.501454,
+     "model.species.trigonelline.surface_fraction_scale": 1.50416,
+     "model.species.cqa5.surface_fraction_scale": 0.846305
+    },
+    "kappa_ref_by_dataset": {
+     "schmieder2023": 7.24893e-14,
+     "waszkiewicz2026": 2.14379e-13
+    },
+    "schmieder_kappa_ref_m2": 7.24893e-14,
+    "pooled_kappa_ref_m2": 1.2466e-13,
+    "pressures": [
+     {
+      "experiment": 1,
+      "data_bar": 2.7,
+      "pour_bar": 1.43281,
+      "shot_bar": 3.65432
+     },
+     {
+      "experiment": 2,
+      "data_bar": 5.3,
+      "pour_bar": 7.63741,
+      "shot_bar": 7.65615
+     },
+     {
+      "experiment": 3,
+      "data_bar": 3.9,
+      "pour_bar": 3.10783,
+      "shot_bar": 4.3339
+     },
+     {
+      "experiment": 4,
+      "data_bar": 3.3,
+      "pour_bar": 2.11016,
+      "shot_bar": 3.42681
+     },
+     {
+      "experiment": 5,
+      "data_bar": 3.6,
+      "pour_bar": 3.29026,
+      "shot_bar": 4.19714
+     },
+     {
+      "experiment": 6,
+      "data_bar": 3.0,
+      "pour_bar": 2.84882,
+      "shot_bar": 4.01069
+     },
+     {
+      "experiment": 7,
+      "data_bar": 3.4,
+      "pour_bar": 2.97643,
+      "shot_bar": 4.09623
+     },
+     {
+      "experiment": 8,
+      "data_bar": 2.9,
+      "pour_bar": 1.63239,
+      "shot_bar": 3.91979
+     },
+     {
+      "experiment": 9,
+      "data_bar": 2.8,
+      "pour_bar": 1.20959,
+      "shot_bar": 3.73834
+     },
+     {
+      "experiment": 10,
+      "data_bar": 2.9,
+      "pour_bar": 1.1288,
+      "shot_bar": 3.22856
+     },
+     {
+      "experiment": 11,
+      "data_bar": 2.6,
+      "pour_bar": 0.851563,
+      "shot_bar": 3.08772
+     },
+     {
+      "experiment": 12,
+      "data_bar": 8.4,
+      "pour_bar": 9.88651,
+      "shot_bar": 9.88703
+     },
+     {
+      "experiment": 13,
+      "data_bar": 7.6,
+      "pour_bar": 6.32698,
+      "shot_bar": 6.33316
+     },
+     {
+      "experiment": 14,
+      "data_bar": 3.6,
+      "pour_bar": 3.97483,
+      "shot_bar": 3.98932
+     },
+     {
+      "experiment": 15,
+      "data_bar": 3.5,
+      "pour_bar": 3.34993,
+      "shot_bar": 3.71914
+     }
+    ],
+    "v1_cost": 776.324,
+    "pressure_rms": 1.46391,
+    "lambda_within": 49,
+    "cup_within": 162,
+    "pump": {
+     "transition_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 0.0,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 0.0,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": []
+    }
+   },
+   "transition ramp 0.3 s": {
+    "blocks": [
+     "V1"
+    ],
+    "options": {
+     "case_options": {
+      "transition_ramp_s": 0.3
+     }
+    },
+    "structural": false,
+    "held": {
+     "model.hydraulics.viscosity_temperature_exponent": 0.302021,
+     "hydraulics.poroelastic.critical_pressure": 12.4613,
+     "extraction.dispersion.axial_coefficient": 3.8662e-06
+    },
+    "cost": 839.389,
+    "optimizer": {
+     "success": true,
+     "message": "`xtol` termination condition is satisfied.",
+     "evaluations": 12
+    },
+    "nuisance": {
+     "calibration.schmieder2023.extractable_fraction": 28.65,
+     "calibration.schmieder2023.content.caffeine": 1.25596,
+     "calibration.schmieder2023.content.trigonelline": 0.65643,
+     "calibration.schmieder2023.content.cqa5": 0.869526,
+     "calibration.schmieder2023.permeability.gl1_4": 2.7953e-14,
+     "calibration.schmieder2023.permeability.gl1_7": 2.99732e-14,
+     "calibration.schmieder2023.permeability.gl2_0": 4.10339e-14
+    },
+    "shared": {
+     "extraction.saturation.lumped": 303.005,
+     "model.species.caffeine.surface_fraction_scale": 0.502323,
+     "model.species.trigonelline.surface_fraction_scale": 1.53358,
+     "model.species.cqa5.surface_fraction_scale": 0.869024
+    },
+    "kappa_ref_by_dataset": {
+     "schmieder2023": 7.27689e-14,
+     "waszkiewicz2026": 2.14379e-13
+    },
+    "schmieder_kappa_ref_m2": 7.27689e-14,
+    "pooled_kappa_ref_m2": 1.249e-13,
+    "pressures": [
+     {
+      "experiment": 1,
+      "data_bar": 2.7,
+      "pour_bar": 1.42325,
+      "shot_bar": 2.73328
+     },
+     {
+      "experiment": 2,
+      "data_bar": 5.3,
+      "pour_bar": 7.20457,
+      "shot_bar": 7.21751
+     },
+     {
+      "experiment": 3,
+      "data_bar": 3.9,
+      "pour_bar": 3.29719,
+      "shot_bar": 3.29719
+     },
+     {
+      "experiment": 4,
+      "data_bar": 3.3,
+      "pour_bar": 2.60933,
+      "shot_bar": 2.60933
+     },
+     {
+      "experiment": 5,
+      "data_bar": 3.6,
+      "pour_bar": 3.26107,
+      "shot_bar": 3.26107
+     },
+     {
+      "experiment": 6,
+      "data_bar": 3.0,
+      "pour_bar": 2.81275,
+      "shot_bar": 2.81291
+     },
+     {
+      "experiment": 7,
+      "data_bar": 3.4,
+      "pour_bar": 2.94073,
+      "shot_bar": 2.94073
+     },
+     {
+      "experiment": 8,
+      "data_bar": 2.9,
+      "pour_bar": 2.56501,
+      "shot_bar": 2.56501
+     },
+     {
+      "experiment": 9,
+      "data_bar": 2.8,
+      "pour_bar": 2.5248,
+      "shot_bar": 2.5248
+     },
+     {
+      "experiment": 10,
+      "data_bar": 2.9,
+      "pour_bar": 2.6493,
+      "shot_bar": 2.6493
+     },
+     {
+      "experiment": 11,
+      "data_bar": 2.6,
+      "pour_bar": 2.58086,
+      "shot_bar": 2.58086
+     },
+     {
+      "experiment": 12,
+      "data_bar": 8.4,
+      "pour_bar": 12.0,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 13,
+      "data_bar": 7.6,
+      "pour_bar": 7.4564,
+      "shot_bar": 7.46057
+     },
+     {
+      "experiment": 14,
+      "data_bar": 3.6,
+      "pour_bar": 3.67277,
+      "shot_bar": 3.67328
+     },
+     {
+      "experiment": 15,
+      "data_bar": 3.5,
+      "pour_bar": 3.11949,
+      "shot_bar": 3.12096
+     }
+    ],
+    "v1_cost": 839.389,
+    "pressure_rms": 1.1746,
+    "lambda_within": 49,
+    "cup_within": 161,
+    "pump": {
+     "transition_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 0.0,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 4.69,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": [
+      12
+     ]
+    }
+   },
+   "upstream pressure loss 0.4 bar": {
+    "blocks": [
+     "V1"
+    ],
+    "options": {
+     "pressure_offset_bar": 0.4
+    },
+    "structural": false,
+    "held": {
+     "model.hydraulics.viscosity_temperature_exponent": 0.302021,
+     "hydraulics.poroelastic.critical_pressure": 12.4613,
+     "extraction.dispersion.axial_coefficient": 3.8662e-06
+    },
+    "cost": 547.439,
+    "optimizer": {
+     "success": true,
+     "message": "`xtol` termination condition is satisfied.",
+     "evaluations": 26
+    },
+    "nuisance": {
+     "calibration.schmieder2023.extractable_fraction": 28.3428,
+     "calibration.schmieder2023.content.caffeine": 1.26258,
+     "calibration.schmieder2023.content.trigonelline": 0.67172,
+     "calibration.schmieder2023.content.cqa5": 0.87605,
+     "calibration.schmieder2023.permeability.gl1_4": 2.91814e-14,
+     "calibration.schmieder2023.permeability.gl1_7": 3.28139e-14,
+     "calibration.schmieder2023.permeability.gl2_0": 4.36446e-14
+    },
+    "shared": {
+     "extraction.saturation.lumped": 349.644,
+     "model.species.caffeine.surface_fraction_scale": 0.502203,
+     "model.species.trigonelline.surface_fraction_scale": 1.27672,
+     "model.species.cqa5.surface_fraction_scale": 0.73154
+    },
+    "kappa_ref_by_dataset": {
+     "schmieder2023": 7.76621e-14,
+     "waszkiewicz2026": 2.14379e-13
+    },
+    "schmieder_kappa_ref_m2": 7.76621e-14,
+    "pooled_kappa_ref_m2": 1.29031e-13,
+    "pressures": [
+     {
+      "experiment": 1,
+      "data_bar": 2.7,
+      "pour_bar": 1.25722,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 2,
+      "data_bar": 5.3,
+      "pour_bar": 4.95461,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 3,
+      "data_bar": 3.9,
+      "pour_bar": 3.06489,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 4,
+      "data_bar": 3.3,
+      "pour_bar": 1.75082,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 5,
+      "data_bar": 3.6,
+      "pour_bar": 2.7727,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 6,
+      "data_bar": 3.0,
+      "pour_bar": 2.3884,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 7,
+      "data_bar": 3.4,
+      "pour_bar": 2.50892,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 8,
+      "data_bar": 2.9,
+      "pour_bar": 1.59933,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 9,
+      "data_bar": 2.8,
+      "pour_bar": 1.18681,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 10,
+      "data_bar": 2.9,
+      "pour_bar": 0.987032,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 11,
+      "data_bar": 2.6,
+      "pour_bar": 0.748777,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 12,
+      "data_bar": 8.4,
+      "pour_bar": 8.81563,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 13,
+      "data_bar": 7.6,
+      "pour_bar": 5.93805,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 14,
+      "data_bar": 3.6,
+      "pour_bar": 3.07012,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 15,
+      "data_bar": 3.5,
+      "pour_bar": 2.56732,
+      "shot_bar": 12.0
+     }
+    ],
+    "v1_cost": 547.439,
+    "pressure_rms": 1.34592,
+    "lambda_within": 57,
+    "cup_within": 167,
+    "pump": {
+     "transition_s": {
+      "1": 2.3,
+      "2": 3.3,
+      "3": 3.1,
+      "4": 1.8,
+      "5": 2.8,
+      "6": 2.7,
+      "7": 2.7,
+      "8": 2.6,
+      "9": 2.5,
+      "10": 1.5,
+      "11": 1.2,
+      "12": 3.7,
+      "13": 3.6,
+      "14": 2.4,
+      "15": 2.1
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 0.0,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": []
+    }
+   },
+   "whole-shot peak pressure": {
+    "blocks": [
+     "V1"
+    ],
+    "options": {
+     "pressure": "max"
+    },
+    "structural": false,
+    "held": {
+     "model.hydraulics.viscosity_temperature_exponent": 0.302021,
+     "hydraulics.poroelastic.critical_pressure": 12.4613,
+     "extraction.dispersion.axial_coefficient": 3.8662e-06
+    },
+    "cost": 490.856,
+    "optimizer": {
+     "success": true,
+     "message": "`xtol` termination condition is satisfied.",
+     "evaluations": 21
+    },
+    "nuisance": {
+     "calibration.schmieder2023.extractable_fraction": 28.3278,
+     "calibration.schmieder2023.content.caffeine": 1.26782,
+     "calibration.schmieder2023.content.trigonelline": 0.668085,
+     "calibration.schmieder2023.content.cqa5": 0.876573,
+     "calibration.schmieder2023.permeability.gl1_4": 8.5166e-14,
+     "calibration.schmieder2023.permeability.gl1_7": 9.61476e-14,
+     "calibration.schmieder2023.permeability.gl2_0": 9.58607e-14
+    },
+    "shared": {
+     "extraction.saturation.lumped": 349.519,
+     "model.species.caffeine.surface_fraction_scale": 0.602794,
+     "model.species.trigonelline.surface_fraction_scale": 1.26537,
+     "model.species.cqa5.surface_fraction_scale": 0.746915
+    },
+    "kappa_ref_by_dataset": {
+     "schmieder2023": 2.0644e-13,
+     "waszkiewicz2026": 2.14379e-13
+    },
+    "schmieder_kappa_ref_m2": 2.0644e-13,
+    "pooled_kappa_ref_m2": 2.10372e-13,
+    "pressures": [
+     {
+      "experiment": 1,
+      "data_bar": 2.7,
+      "pour_bar": 0.379347,
+      "shot_bar": 3.0629
+     },
+     {
+      "experiment": 2,
+      "data_bar": 5.3,
+      "pour_bar": 0.949595,
+      "shot_bar": 3.22139
+     },
+     {
+      "experiment": 3,
+      "data_bar": 3.9,
+      "pour_bar": 0.751053,
+      "shot_bar": 3.64706
+     },
+     {
+      "experiment": 4,
+      "data_bar": 3.3,
+      "pour_bar": 0.69202,
+      "shot_bar": 3.11883
+     },
+     {
+      "experiment": 5,
+      "data_bar": 3.6,
+      "pour_bar": 0.722282,
+      "shot_bar": 3.21343
+     },
+     {
+      "experiment": 6,
+      "data_bar": 3.0,
+      "pour_bar": 0.606701,
+      "shot_bar": 3.01836
+     },
+     {
+      "experiment": 7,
+      "data_bar": 3.4,
+      "pour_bar": 0.662252,
+      "shot_bar": 3.13395
+     },
+     {
+      "experiment": 8,
+      "data_bar": 2.9,
+      "pour_bar": 0.47019,
+      "shot_bar": 3.57476
+     },
+     {
+      "experiment": 9,
+      "data_bar": 2.8,
+      "pour_bar": 0.362674,
+      "shot_bar": 3.34782
+     },
+     {
+      "experiment": 10,
+      "data_bar": 2.9,
+      "pour_bar": 0.414527,
+      "shot_bar": 3.10039
+     },
+     {
+      "experiment": 11,
+      "data_bar": 2.6,
+      "pour_bar": 0.32003,
+      "shot_bar": 2.98045
+     },
+     {
+      "experiment": 12,
+      "data_bar": 8.4,
+      "pour_bar": 1.16004,
+      "shot_bar": 3.90289
+     },
+     {
+      "experiment": 13,
+      "data_bar": 7.6,
+      "pour_bar": 1.0025,
+      "shot_bar": 3.62766
+     },
+     {
+      "experiment": 14,
+      "data_bar": 3.6,
+      "pour_bar": 1.07797,
+      "shot_bar": 3.35753
+     },
+     {
+      "experiment": 15,
+      "data_bar": 3.5,
+      "pour_bar": 0.900802,
+      "shot_bar": 3.12609
+     }
+    ],
+    "v1_cost": 490.856,
+    "pressure_rms": 2.00345,
+    "lambda_within": 58,
+    "cup_within": 169,
+    "pump": {
+     "transition_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 0.0,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 0.0,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": []
+    }
+   },
+   "pressure classification margin 1 bar": {
+    "blocks": [
+     "V1"
+    ],
+    "options": {
+     "exit_margin_bar": 1.0
+    },
+    "structural": false,
+    "held": {
+     "model.hydraulics.viscosity_temperature_exponent": 0.302021,
+     "hydraulics.poroelastic.critical_pressure": 12.4613,
+     "extraction.dispersion.axial_coefficient": 3.8662e-06
+    },
+    "cost": 546.596,
+    "optimizer": {
+     "success": true,
+     "message": "`xtol` termination condition is satisfied.",
+     "evaluations": 18
+    },
+    "nuisance": {
+     "calibration.schmieder2023.extractable_fraction": 28.3636,
+     "calibration.schmieder2023.content.caffeine": 1.2625,
+     "calibration.schmieder2023.content.trigonelline": 0.671594,
+     "calibration.schmieder2023.content.cqa5": 0.87593,
+     "calibration.schmieder2023.permeability.gl1_4": 2.78539e-14,
+     "calibration.schmieder2023.permeability.gl1_7": 3.14899e-14,
+     "calibration.schmieder2023.permeability.gl2_0": 4.45683e-14
+    },
+    "shared": {
+     "extraction.saturation.lumped": 349.562,
+     "model.species.caffeine.surface_fraction_scale": 0.50058,
+     "model.species.trigonelline.surface_fraction_scale": 1.2812,
+     "model.species.cqa5.surface_fraction_scale": 0.734107
+    },
+    "kappa_ref_by_dataset": {
+     "schmieder2023": 7.59519e-14,
+     "waszkiewicz2026": 2.14379e-13
+    },
+    "schmieder_kappa_ref_m2": 7.59519e-14,
+    "pooled_kappa_ref_m2": 1.27603e-13,
+    "pressures": [
+     {
+      "experiment": 1,
+      "data_bar": 2.7,
+      "pour_bar": 1.32143,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 2,
+      "data_bar": 5.3,
+      "pour_bar": 5.67837,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 3,
+      "data_bar": 3.9,
+      "pour_bar": 3.3386,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 4,
+      "data_bar": 3.3,
+      "pour_bar": 1.70416,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 5,
+      "data_bar": 3.6,
+      "pour_bar": 2.95899,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 6,
+      "data_bar": 3.0,
+      "pour_bar": 2.56136,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 7,
+      "data_bar": 3.4,
+      "pour_bar": 2.69179,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 8,
+      "data_bar": 2.9,
+      "pour_bar": 1.69701,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 9,
+      "data_bar": 2.8,
+      "pour_bar": 1.25461,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 10,
+      "data_bar": 2.9,
+      "pour_bar": 0.963584,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 11,
+      "data_bar": 2.6,
+      "pour_bar": 0.73159,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 12,
+      "data_bar": 8.4,
+      "pour_bar": 12.0,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 13,
+      "data_bar": 7.6,
+      "pour_bar": 7.53214,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 14,
+      "data_bar": 3.6,
+      "pour_bar": 2.96387,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 15,
+      "data_bar": 3.5,
+      "pour_bar": 2.48522,
+      "shot_bar": 12.0
+     }
+    ],
+    "v1_cost": 546.596,
+    "pressure_rms": 1.13135,
+    "lambda_within": 57,
+    "cup_within": 167,
+    "pump": {
+     "transition_s": {
+      "1": 2.3,
+      "2": 3.4,
+      "3": 3.1,
+      "4": 1.6,
+      "5": 2.9,
+      "6": 2.7,
+      "7": 2.8,
+      "8": 2.6,
+      "9": 2.5,
+      "10": 1.4,
+      "11": 1.1,
+      "12": 3.7,
+      "13": 3.6,
+      "14": 2.3,
+      "15": 1.9
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 3.6,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": [
+      12
+     ]
+    }
+   },
+   "pump-capped pour pressures excluded": {
+    "blocks": [
+     "V1"
+    ],
+    "options": {
+     "exclude_pressure_experiments": [
+      12
+     ]
+    },
+    "structural": false,
+    "held": {
+     "model.hydraulics.viscosity_temperature_exponent": 0.302021,
+     "hydraulics.poroelastic.critical_pressure": 12.4613,
+     "extraction.dispersion.axial_coefficient": 3.8662e-06
+    },
+    "cost": 562.009,
+    "optimizer": {
+     "success": true,
+     "message": "`xtol` termination condition is satisfied.",
+     "evaluations": 13
+    },
+    "nuisance": {
+     "calibration.schmieder2023.extractable_fraction": 28.3343,
+     "calibration.schmieder2023.content.caffeine": 1.26098,
+     "calibration.schmieder2023.content.trigonelline": 0.66987,
+     "calibration.schmieder2023.content.cqa5": 0.874928,
+     "calibration.schmieder2023.permeability.gl1_4": 2.7746e-14,
+     "calibration.schmieder2023.permeability.gl1_7": 3.04693e-14,
+     "calibration.schmieder2023.permeability.gl2_0": 3.97277e-14
+    },
+    "shared": {
+     "extraction.saturation.lumped": 341.853,
+     "model.species.caffeine.surface_fraction_scale": 0.509781,
+     "model.species.trigonelline.surface_fraction_scale": 1.30118,
+     "model.species.cqa5.surface_fraction_scale": 0.742208
+    },
+    "kappa_ref_by_dataset": {
+     "schmieder2023": 7.22043e-14,
+     "waszkiewicz2026": 2.14379e-13
+    },
+    "schmieder_kappa_ref_m2": 7.22043e-14,
+    "pooled_kappa_ref_m2": 1.24415e-13,
+    "pressures": [
+     {
+      "experiment": 1,
+      "data_bar": 2.7,
+      "pour_bar": 1.37511,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 2,
+      "data_bar": 5.3,
+      "pour_bar": 6.40718,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 3,
+      "data_bar": 3.9,
+      "pour_bar": 3.35282,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 4,
+      "data_bar": 3.3,
+      "pour_bar": 1.9827,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 5,
+      "data_bar": 3.6,
+      "pour_bar": 3.12129,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 6,
+      "data_bar": 3.0,
+      "pour_bar": 2.69342,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 7,
+      "data_bar": 3.4,
+      "pour_bar": 2.83313,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 8,
+      "data_bar": 2.9,
+      "pour_bar": 1.70523,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 9,
+      "data_bar": 2.8,
+      "pour_bar": 1.26029,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 10,
+      "data_bar": 2.9,
+      "pour_bar": 1.10119,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 11,
+      "data_bar": 2.6,
+      "pour_bar": 0.832057,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 12,
+      "data_bar": 8.4,
+      "pour_bar": 12.0,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 13,
+      "data_bar": 7.6,
+      "pour_bar": 7.64346,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 14,
+      "data_bar": 3.6,
+      "pour_bar": 3.6459,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 15,
+      "data_bar": 3.5,
+      "pour_bar": 3.00003,
+      "shot_bar": 12.0
+     }
+    ],
+    "v1_cost": 562.009,
+    "pressure_rms": 1.40121,
+    "lambda_within": 57,
+    "cup_within": 167,
+    "pump": {
+     "transition_s": {
+      "1": 2.4,
+      "2": 3.5,
+      "3": 3.1,
+      "4": 2.1,
+      "5": 2.9,
+      "6": 2.8,
+      "7": 2.9,
+      "8": 2.7,
+      "9": 2.5,
+      "10": 1.8,
+      "11": 1.5,
+      "12": 3.7,
+      "13": 3.7,
+      "14": 2.8,
+      "15": 2.5
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 4.71,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": [
+      12
+     ]
+    }
+   },
+   "dissolution share \u03b8 = 0.27 (old proportional rule)": {
+    "blocks": [
+     "V1",
+     "V2",
+     "V4",
+     "V6"
+    ],
+    "options": {
+     "spec_fields": {
+      "hydraulics.dissolution_porosity_share": 0.27
+     }
+    },
+    "structural": true,
+    "held": {},
+    "cost": 822.278,
+    "optimizer": {
+     "success": true,
+     "message": "`xtol` termination condition is satisfied.",
+     "evaluations": 21
+    },
+    "nuisance": {
+     "calibration.schmieder2023.extractable_fraction": 30.7446,
+     "calibration.schmieder2023.content.caffeine": 1.36255,
+     "calibration.schmieder2023.content.trigonelline": 0.72181,
+     "calibration.schmieder2023.content.cqa5": 0.945125,
+     "calibration.schmieder2023.permeability.gl1_4": 1.53626e-14,
+     "calibration.schmieder2023.permeability.gl1_7": 1.58174e-14,
+     "calibration.schmieder2023.permeability.gl2_0": 2.12711e-14,
+     "calibration.waszkiewicz2026.permeability": 6.99066e-15
+    },
+    "shared": {
+     "extraction.saturation.lumped": 349.995,
+     "model.species.caffeine.surface_fraction_scale": 0.574212,
+     "model.species.trigonelline.surface_fraction_scale": 1.38928,
+     "model.species.cqa5.surface_fraction_scale": 0.809812,
+     "model.hydraulics.viscosity_temperature_exponent": 0.221535,
+     "hydraulics.poroelastic.critical_pressure": 11.5515,
+     "extraction.dispersion.axial_coefficient": 3.55553e-06,
+     "hydraulics.kozeny_carman.density_exponent": 0.469129
+    },
+    "kappa_ref_by_dataset": {
+     "schmieder2023": 3.86938e-14,
+     "waszkiewicz2026": 7.9721e-14
+    },
+    "schmieder_kappa_ref_m2": 3.86938e-14,
+    "pooled_kappa_ref_m2": 5.55402e-14,
+    "pressures": [
+     {
+      "experiment": 1,
+      "data_bar": 2.7,
+      "pour_bar": 1.34987,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 2,
+      "data_bar": 5.3,
+      "pour_bar": 12.0,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 3,
+      "data_bar": 3.9,
+      "pour_bar": 3.47659,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 4,
+      "data_bar": 3.3,
+      "pour_bar": 1.97993,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 5,
+      "data_bar": 3.6,
+      "pour_bar": 3.49495,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 6,
+      "data_bar": 3.0,
+      "pour_bar": 3.08186,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 7,
+      "data_bar": 3.4,
+      "pour_bar": 3.26684,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 8,
+      "data_bar": 2.9,
+      "pour_bar": 1.46005,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 9,
+      "data_bar": 2.8,
+      "pour_bar": 1.19118,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 10,
+      "data_bar": 2.9,
+      "pour_bar": 0.925266,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 11,
+      "data_bar": 2.6,
+      "pour_bar": 0.756322,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 12,
+      "data_bar": 8.4,
+      "pour_bar": 12.0,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 13,
+      "data_bar": 7.6,
+      "pour_bar": 12.0,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 14,
+      "data_bar": 3.6,
+      "pour_bar": 3.74339,
+      "shot_bar": 12.0
+     },
+     {
+      "experiment": 15,
+      "data_bar": 3.5,
+      "pour_bar": 3.01643,
+      "shot_bar": 12.0
+     }
+    ],
+    "v1_cost": 692.483,
+    "pressure_rms": 2.3467,
+    "lambda_within": 54,
+    "cup_within": 160,
+    "pump": {
+     "transition_s": {
+      "1": 2.8,
+      "2": 3.8,
+      "3": 3.4,
+      "4": 2.6,
+      "5": 3.4,
+      "6": 3.3,
+      "7": 3.3,
+      "8": 2.9,
+      "9": 2.8,
+      "10": 2.3,
+      "11": 2.0,
+      "12": 3.8,
+      "13": 3.8,
+      "14": 3.2,
+      "15": 2.9
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.9,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 1.5,
+      "13": 0.5,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": [
+      2,
+      12,
+      13
+     ]
+    }
+   }
+  }
+ },
+ "nuisance": {
+  "calibration.schmieder2023.extractable_fraction": 28.3343,
+  "calibration.schmieder2023.content.caffeine": 1.26098,
+  "calibration.schmieder2023.content.trigonelline": 0.66987,
+  "calibration.schmieder2023.content.cqa5": 0.874928,
+  "calibration.schmieder2023.permeability.gl1_4": 2.7746e-14,
+  "calibration.schmieder2023.permeability.gl1_7": 3.04693e-14,
+  "calibration.schmieder2023.permeability.gl2_0": 3.97277e-14,
+  "calibration.waszkiewicz2026.permeability": 1.87987e-14
+ },
+ "fixed": {
+  "extraction.diffusivity.caffeine.particle_80c": {
+   "value": 1.9e-10,
+   "units": "m^2/s",
+   "reason": "Species kernel diffusivities trade off with the coffee's contents (correlation \u22120.89 to \u22120.95): their posterior SD was 2\u201312\u00d7 the prior's, and free fits drifted 2\u20135\u00d7 outside the literature priors (caffeine to 8\u00d710\u207b\u00b9\u00b9, trigonelline to the 1\u00d710\u207b\u2079 bound). The species surface-pool scales carry the species' \u03bb instead."
+  },
+  "model.species.trigonelline.diffusivity_80c": {
+   "value": 2.8e-10,
+   "units": "m^2/s",
+   "reason": "Not identified by V1 (see the caffeine diffusivity)."
+  },
+  "model.species.cqa5.diffusivity_80c": {
+   "value": 1.55e-10,
+   "units": "m^2/s",
+   "reason": "Not identified by V1 (see the caffeine diffusivity)."
+  },
+  "extraction.diffusivity.lumped.corrochano_80c": {
+   "value": 1.26e-10,
+   "units": "m^2/s",
+   "reason": "Weakly identified by V1 (posterior SD 1.15\u00d7 the prior's; it trades off with the extractable fraction); fixing it did not raise the cost."
+  },
+  "extraction.surface_rate.grudeva2026": {
+   "value": 0.001,
+   "units": "m/s",
+   "reason": "Not identified by V1 (posterior SD 44\u00d7 the prior's once the lumped diffusivity is fixed); the surface flux is fast at any value in its range, so only the surface pool's size matters."
+  },
+  "model.hydraulics.swelling_pore_closure": {
+   "value": 0.1,
+   "units": "1",
+   "reason": "Not identified by V1 (posterior SD 1.6\u00d7 the prior's when added at the V1 optimum); the residuals lean towards less swelling (Wald z 2.4 towards 0)."
+  },
+  "model.hydraulics.gas_amplitude_max": {
+   "value": 0.5,
+   "units": "1",
+   "reason": "Weakly identified by V1 (posterior SD 0.4\u20130.7\u00d7 the prior's) with no evidence against the registry value (Wald z 0.8); the CO\u2082 model is being re-anchored in the input models."
+  },
+  "hydraulics.dissolution_porosity_share": {
+   "value": 0.0,
+   "units": "1",
+   "reason": "\u03b8 is fixed at its mechanistic default, 0 (the insoluble cell walls hold the particle envelope), not chosen by fit quality: it is collinear with the bed permeability, whose fitted values move to absorb it. `calibrate --sensitivity` reports the \u03b8 = 0.27 case as a structural sensitivity."
+  },
+  "model.extraction.broken_shell_thickness": {
+   "value": 25.0,
+   "units": "um",
+   "reason": "Pruned by the identifiability rule in the calibration run: posterior SD 0.90\u00d7 the prior's (fitted value 34.62 before pruning)."
+  }
+ },
+ "weakly_identified": [],
+ "tier": 1,
+ "n_classes": 16,
+ "calibration": {
+  "blocks": {
+   "V1": {
+    "dataset": "schmieder2023",
+    "cases": 15,
+    "residuals": 315,
+    "rms": 1.8945244517411357,
+    "cost": 565.3026064735953,
+    "failures": [],
+    "pressure_rms": 1.5499766415349696,
+    "v1": {
+     "rows": [
+      {
+       "experiment": 1,
+       "analyte": "trigonelline",
+       "lambda_model": 14.35223193097547,
+       "lambda_data": 14.76344,
+       "cups": {
+        "20": [
+         77.17512107771017,
+         81.18514
+        ],
+        "40": [
+         95.89748367492682,
+         102.09753333333333
+        ],
+        "60": [
+         100.54441553773479,
+         107.48540666666668
+        ]
+       }
+      },
+      {
+       "experiment": 1,
+       "analyte": "caffeine",
+       "lambda_model": 21.10207085140458,
+       "lambda_data": 20.52467,
+       "cups": {
+        "20": [
+         134.24598507721808,
+         133.98495
+        ],
+        "40": [
+         185.21016925449635,
+         184.59824666666668
+        ],
+        "60": [
+         204.96402767535298,
+         203.72206333333335
+        ]
+       }
+      },
+      {
+       "experiment": 1,
+       "analyte": "cqa5",
+       "lambda_model": 19.16619583498862,
+       "lambda_data": 19.11304,
+       "cups": {
+        "20": [
+         88.80184844757656,
+         90.8216
+        ],
+        "40": [
+         119.24046097379676,
+         122.72780999999999
+        ],
+        "60": [
+         129.96149980308533,
+         133.94013333333334
+        ]
+       }
+      },
+      {
+       "experiment": 1,
+       "analyte": "tds",
+       "lambda_model": 16.554841198461403,
+       "lambda_data": 15.70033,
+       "cups": {
+        "20": [
+         2.982320638076312,
+         3.20081
+        ],
+        "40": [
+         3.8498780199812153,
+         4.0961766666666675
+        ],
+        "60": [
+         4.109071765951032,
+         4.346636666666666
+        ]
+       }
+      },
+      {
+       "experiment": 2,
+       "analyte": "trigonelline",
+       "lambda_model": 16.97441909343241,
+       "lambda_data": 16.40303,
+       "cups": {
+        "20": [
+         78.23183239602307,
+         74.86208666666666
+        ],
+        "40": [
+         101.98516292127856,
+         97.08744666666666
+        ],
+        "60": [
+         109.2968876885508,
+         103.69131666666668
+        ]
+       }
+      },
+      {
+       "experiment": 2,
+       "analyte": "caffeine",
+       "lambda_model": 22.457874989965614,
+       "lambda_data": 23.93518,
+       "cups": {
+        "20": [
+         129.76418244185538,
+         129.39218666666667
+        ],
+        "40": [
+         181.9855002122455,
+         183.92963666666665
+        ],
+        "60": [
+         203.41856020678856,
+         208.18001
+        ]
+       }
+      },
+      {
+       "experiment": 2,
+       "analyte": "cqa5",
+       "lambda_model": 20.964363953096452,
+       "lambda_data": 21.1787,
+       "cups": {
+        "20": [
+         87.26407145433164,
+         82.2752
+        ],
+        "40": [
+         120.14420819127247,
+         114.40053666666667
+        ],
+        "60": [
+         132.80954506662357,
+         126.94506666666666
+        ]
+       }
+      },
+      {
+       "experiment": 2,
+       "analyte": "tds",
+       "lambda_model": 18.52155361774209,
+       "lambda_data": 17.83024,
+       "cups": {
+        "20": [
+         2.9597965271014384,
+         2.8747833333333332
+        ],
+        "40": [
+         3.9465460437141906,
+         3.8123533333333337
+        ],
+        "60": [
+         4.281701074300352,
+         4.118153333333333
+        ]
+       }
+      },
+      {
+       "experiment": 3,
+       "analyte": "trigonelline",
+       "lambda_model": 15.833978169328125,
+       "lambda_data": 14.93682,
+       "cups": {
+        "20": [
+         78.84911522822806,
+         72.15532666666667
+        ],
+        "40": [
+         100.64677593915674,
+         91.05250333333333
+        ],
+        "60": [
+         106.81059279026151,
+         96.03925
+        ]
+       }
+      },
+      {
+       "experiment": 3,
+       "analyte": "caffeine",
+       "lambda_model": 21.72047956316667,
+       "lambda_data": 21.96458,
+       "cups": {
+        "20": [
+         133.5296117099925,
+         126.89898000000001
+        ],
+        "40": [
+         185.4622330346291,
+         177.87125
+        ],
+        "60": [
+         206.1420283519883,
+         198.39244
+        ]
+       }
+      },
+      {
+       "experiment": 3,
+       "analyte": "cqa5",
+       "lambda_model": 20.153246785938027,
+       "lambda_data": 19.62703,
+       "cups": {
+        "20": [
+         89.03471986142868,
+         81.30070666666666
+        ],
+        "40": [
+         121.12297265591356,
+         110.54355
+        ],
+        "60": [
+         133.01768643168612,
+         121.09642000000001
+        ]
+       }
+      },
+      {
+       "experiment": 3,
+       "analyte": "tds",
+       "lambda_model": 17.658653464118885,
+       "lambda_data": 16.59384,
+       "cups": {
+        "20": [
+         3.0070665330006867,
+         2.8123766666666667
+        ],
+        "40": [
+         3.950390235863668,
+         3.6534333333333335
+        ],
+        "60": [
+         4.254327193670041,
+         3.9071133333333337
+        ]
+       }
+      },
+      {
+       "experiment": 4,
+       "analyte": "trigonelline",
+       "lambda_model": 15.699683035787515,
+       "lambda_data": 15.99516,
+       "cups": {
+        "20": [
+         77.98988179792052,
+         77.98808000000001
+        ],
+        "40": [
+         99.3074465488789,
+         100.33859666666667
+        ],
+        "60": [
+         105.27072437083795,
+         106.74520333333334
+        ]
+       }
+      },
+      {
+       "experiment": 4,
+       "analyte": "caffeine",
+       "lambda_model": 22.472564433041313,
+       "lambda_data": 23.05736,
+       "cups": {
+        "20": [
+         129.2337866596301,
+         129.38616666666667
+        ],
+        "40": [
+         180.92828679945805,
+         183.73279666666667
+        ],
+        "60": [
+         202.15748078558988,
+         206.71518
+        ]
+       }
+      },
+      {
+       "experiment": 4,
+       "analyte": "cqa5",
+       "lambda_model": 20.158854954962386,
+       "lambda_data": 20.80018,
+       "cups": {
+        "20": [
+         87.29061758978416,
+         88.99074333333333
+        ],
+        "40": [
+         118.70228635218886,
+         123.03373666666666
+        ],
+        "60": [
+         130.34941402779373,
+         136.05924666666667
+        ]
+       }
+      },
+      {
+       "experiment": 4,
+       "analyte": "tds",
+       "lambda_model": 17.41751231977185,
+       "lambda_data": 17.31233,
+       "cups": {
+        "20": [
+         2.9571797231969525,
+         2.9843699999999997
+        ],
+        "40": [
+         3.8697204809259342,
+         3.924393333333333
+        ],
+        "60": [
+         4.159164858255356,
+         4.220496666666667
+        ]
+       }
+      },
+      {
+       "experiment": 5,
+       "analyte": "trigonelline",
+       "lambda_model": 15.696433489902196,
+       "lambda_data": 15.42548,
+       "cups": {
+        "20": [
+         79.01576957652777,
+         81.89851333333333
+        ],
+        "40": [
+         100.69872084075712,
+         104.27162
+        ],
+        "60": [
+         106.76261076537956,
+         110.39984333333332
+        ]
+       }
+      },
+      {
+       "experiment": 5,
+       "analyte": "caffeine",
+       "lambda_model": 21.538711312385047,
+       "lambda_data": 21.59864,
+       "cups": {
+        "20": [
+         132.53167206008152,
+         134.84263
+        ],
+        "40": [
+         183.80439208812257,
+         188.15171666666666
+        ],
+        "60": [
+         204.0633725941128,
+         209.29907666666668
+        ]
+       }
+      },
+      {
+       "experiment": 5,
+       "analyte": "cqa5",
+       "lambda_model": 19.767885970990577,
+       "lambda_data": 19.75796,
+       "cups": {
+        "20": [
+         88.75650986029233,
+         88.91426666666666
+        ],
+        "40": [
+         120.2473770817165,
+         121.17030333333334
+        ],
+        "60": [
+         131.69698628848946,
+         132.91040999999998
+        ]
+       }
+      },
+      {
+       "experiment": 5,
+       "analyte": "tds",
+       "lambda_model": 17.342420250085453,
+       "lambda_data": 17.98499,
+       "cups": {
+        "20": [
+         3.004045778700919,
+         2.9868733333333335
+        ],
+        "40": [
+         3.9309900722923143,
+         3.9647400000000004
+        ],
+        "60": [
+         4.223544842599506,
+         4.285966666666667
+        ]
+       }
+      },
+      {
+       "experiment": 6,
+       "analyte": "trigonelline",
+       "lambda_model": 15.738682562043948,
+       "lambda_data": 15.7859,
+       "cups": {
+        "20": [
+         79.13935262356019,
+         78.94809666666667
+        ],
+        "40": [
+         100.88564166693278,
+         101.06244666666667
+        ],
+        "60": [
+         106.98808191375753,
+         107.27477
+        ]
+       }
+      },
+      {
+       "experiment": 6,
+       "analyte": "caffeine",
+       "lambda_model": 21.81404365850599,
+       "lambda_data": 22.39093,
+       "cups": {
+        "20": [
+         133.6327884231041,
+         133.00672333333333
+        ],
+        "40": [
+         185.88346268343756,
+         187.22678
+        ],
+        "60": [
+         206.77224399363226,
+         209.34167666666667
+        ]
+       }
+      },
+      {
+       "experiment": 6,
+       "analyte": "cqa5",
+       "lambda_model": 20.08325332956863,
+       "lambda_data": 20.60333,
+       "cups": {
+        "20": [
+         89.3091961770031,
+         87.17215
+        ],
+        "40": [
+         121.43663167516199,
+         120.02803666666667
+        ],
+        "60": [
+         133.30475108686036,
+         132.41994333333332
+        ]
+       }
+      },
+      {
+       "experiment": 6,
+       "analyte": "tds",
+       "lambda_model": 17.574141329986983,
+       "lambda_data": 17.3144,
+       "cups": {
+        "20": [
+         3.0173045219581636,
+         3.05307
+        ],
+        "40": [
+         3.9602367393480677,
+         4.010073333333334
+        ],
+        "60": [
+         4.262397354243714,
+         4.310616666666667
+        ]
+       }
+      },
+      {
+       "experiment": 7,
+       "analyte": "trigonelline",
+       "lambda_model": 15.818067689904089,
+       "lambda_data": 16.08737,
+       "cups": {
+        "20": [
+         78.58197823700688,
+         75.907865
+        ],
+        "40": [
+         100.38036499933327,
+         98.27636166666667
+        ],
+        "60": [
+         106.53656082956515,
+         104.87515
+        ]
+       }
+      },
+      {
+       "experiment": 7,
+       "analyte": "caffeine",
+       "lambda_model": 21.870056654003868,
+       "lambda_data": 23.09434,
+       "cups": {
+        "20": [
+         132.49124499175295,
+         129.04041333333333
+        ],
+        "40": [
+         184.50952692191217,
+         183.82101333333333
+        ],
+        "60": [
+         205.35429238296328,
+         207.088705
+        ]
+       }
+      },
+      {
+       "experiment": 7,
+       "analyte": "cqa5",
+       "lambda_model": 20.1396392974718,
+       "lambda_data": 20.77137,
+       "cups": {
+        "20": [
+         88.57438551569395,
+         86.48994
+        ],
+        "40": [
+         120.60083247300787,
+         120.03798
+        ],
+        "60": [
+         132.4646779938175,
+         133.05828833333334
+        ]
+       }
+      },
+      {
+       "experiment": 7,
+       "analyte": "tds",
+       "lambda_model": 17.612412573130445,
+       "lambda_data": 17.47261,
+       "cups": {
+        "20": [
+         2.9932613683999976,
+         2.9240100000000004
+        ],
+        "40": [
+         3.9337112909974574,
+         3.8761999999999994
+        ],
+        "60": [
+         4.235822633213657,
+         4.187098333333333
+        ]
+       }
+      },
+      {
+       "experiment": 8,
+       "analyte": "trigonelline",
+       "lambda_model": 13.95499818536301,
+       "lambda_data": 13.12089,
+       "cups": {
+        "20": [
+         77.17647541297157,
+         78.23610333333333
+        ],
+        "40": [
+         95.24301700409097,
+         95.26227
+        ],
+        "60": [
+         99.55278226158596,
+         98.97988666666667
+        ]
+       }
+      },
+      {
+       "experiment": 8,
+       "analyte": "caffeine",
+       "lambda_model": 20.487574633411665,
+       "lambda_data": 18.92703,
+       "cups": {
+        "20": [
+         134.98610736275774,
+         132.11638666666667
+        ],
+        "40": [
+         184.94380073226338,
+         177.81876666666668
+        ],
+        "60": [
+         203.7648346113599,
+         193.63467
+        ]
+       }
+      },
+      {
+       "experiment": 8,
+       "analyte": "cqa5",
+       "lambda_model": 18.61121899535305,
+       "lambda_data": 17.29798,
+       "cups": {
+        "20": [
+         89.09452474754683,
+         86.7444
+        ],
+        "40": [
+         118.82936702661317,
+         113.98773
+        ],
+        "60": [
+         128.98165262837892,
+         122.55134333333332
+        ]
+       }
+      },
+      {
+       "experiment": 8,
+       "analyte": "tds",
+       "lambda_model": 16.051551122226922,
+       "lambda_data": 13.16232,
+       "cups": {
+        "20": [
+         2.987699356461339,
+         3.1542433333333335
+        ],
+        "40": [
+         3.828377660128488,
+         3.836206666666667
+        ],
+        "60": [
+         4.070204895378864,
+         3.9877366666666667
+        ]
+       }
+      },
+      {
+       "experiment": 9,
+       "analyte": "trigonelline",
+       "lambda_model": 14.495426392659924,
+       "lambda_data": 15.63306,
+       "cups": {
+        "20": [
+         76.48362867454675,
+         80.05868333333333
+        ],
+        "40": [
+         95.2394362735663,
+         102.21184333333333
+        ],
+        "60": [
+         99.95919602062015,
+         108.35678666666666
+        ]
+       }
+      },
+      {
+       "experiment": 9,
+       "analyte": "caffeine",
+       "lambda_model": 21.134736547989682,
+       "lambda_data": 21.67685,
+       "cups": {
+        "20": [
+         134.84931564930764,
+         139.80319333333333
+        ],
+        "40": [
+         186.05189531326002,
+         195.20891666666668
+        ],
+        "60": [
+         205.92725004070493,
+         217.20566
+        ]
+       }
+      },
+      {
+       "experiment": 9,
+       "analyte": "cqa5",
+       "lambda_model": 19.563047645330794,
+       "lambda_data": 19.92738,
+       "cups": {
+        "20": [
+         88.60097393915679,
+         92.58599
+        ],
+        "40": [
+         119.52563370302943,
+         126.42643333333332
+        ],
+        "60": [
+         130.6508950419544,
+         138.82266666666666
+        ]
+       }
+      },
+      {
+       "experiment": 9,
+       "analyte": "tds",
+       "lambda_model": 16.93742392884615,
+       "lambda_data": 16.50264,
+       "cups": {
+        "20": [
+         2.969628919929221,
+         3.2224533333333336
+        ],
+        "40": [
+         3.8542058965985238,
+         4.179406666666666
+        ],
+        "60": [
+         4.125795584435424,
+         4.46397
+        ]
+       }
+      },
+      {
+       "experiment": 10,
+       "analyte": "trigonelline",
+       "lambda_model": 15.270992214269631,
+       "lambda_data": 14.07208,
+       "cups": {
+        "20": [
+         76.37400586789377,
+         77.98951666666666
+        ],
+        "40": [
+         96.57467848729569,
+         96.55994333333335
+        ],
+        "60": [
+         102.02700994138506,
+         101.06627666666667
+        ]
+       }
+      },
+      {
+       "experiment": 10,
+       "analyte": "caffeine",
+       "lambda_model": 22.5815018092393,
+       "lambda_data": 19.75409,
+       "cups": {
+        "20": [
+         129.60233264656173,
+         127.04229
+        ],
+        "40": [
+         181.97511367189819,
+         172.91146333333333
+        ],
+        "60": [
+         203.57539469375254,
+         189.57710333333333
+        ]
+       }
+      },
+      {
+       "experiment": 10,
+       "analyte": "cqa5",
+       "lambda_model": 20.22905867270716,
+       "lambda_data": 18.48345,
+       "cups": {
+        "20": [
+         86.64419550522871,
+         87.50148666666666
+        ],
+        "40": [
+         118.0220614560788,
+         116.96294333333333
+        ],
+        "60": [
+         129.69678340742493,
+         126.94533
+        ]
+       }
+      },
+      {
+       "experiment": 10,
+       "analyte": "tds",
+       "lambda_model": 17.47020952717571,
+       "lambda_data": 15.62012,
+       "cups": {
+        "20": [
+         2.925408953793381,
+         2.91734
+        ],
+        "40": [
+         3.8331466413662643,
+         3.71965
+        ],
+        "60": [
+         4.122066541031025,
+         3.9428466666666666
+        ]
+       }
+      },
+      {
+       "experiment": 11,
+       "analyte": "trigonelline",
+       "lambda_model": 14.431241649552366,
+       "lambda_data": 15.04329,
+       "cups": {
+        "20": [
+         75.92965699603577,
+         83.86166333333334
+        ],
+        "40": [
+         94.40500195866242,
+         106.05974333333334
+        ],
+        "60": [
+         99.02574259290732,
+         111.93786
+        ]
+       }
+      },
+      {
+       "experiment": 11,
+       "analyte": "caffeine",
+       "lambda_model": 22.132944542774776,
+       "lambda_data": 21.14279,
+       "cups": {
+        "20": [
+         130.77101175218675,
+         135.26441333333332
+        ],
+        "40": [
+         182.4322123492639,
+         187.78031333333334
+        ],
+        "60": [
+         203.3599763168387,
+         208.17397000000003
+        ]
+       }
+      },
+      {
+       "experiment": 11,
+       "analyte": "cqa5",
+       "lambda_model": 19.642792842325733,
+       "lambda_data": 19.56499,
+       "cups": {
+        "20": [
+         86.99798422383628,
+         94.87603
+        ],
+        "40": [
+         117.38634198938645,
+         129.01628
+        ],
+        "60": [
+         128.36413500666703,
+         141.30505000000002
+        ]
+       }
+      },
+      {
+       "experiment": 11,
+       "analyte": "tds",
+       "lambda_model": 16.818920642300945,
+       "lambda_data": 16.03038,
+       "cups": {
+        "20": [
+         2.9267024354935898,
+         3.1940233333333334
+        ],
+        "40": [
+         3.7889611107116714,
+         4.113356666666667
+        ],
+        "60": [
+         4.051505025534306,
+         4.37844
+        ]
+       }
+      },
+      {
+       "experiment": 12,
+       "analyte": "trigonelline",
+       "lambda_model": 15.88176257218874,
+       "lambda_data": 15.48473,
+       "cups": {
+        "20": [
+         78.83043410732841,
+         68.96616666666667
+        ],
+        "40": [
+         100.81076249841811,
+         88.31873
+        ],
+        "60": [
+         107.04989917631916,
+         93.76475
+        ]
+       }
+      },
+      {
+       "experiment": 12,
+       "analyte": "caffeine",
+       "lambda_model": 21.30732170323599,
+       "lambda_data": 23.57685,
+       "cups": {
+        "20": [
+         131.4834185128461,
+         120.37260666666667
+        ],
+        "40": [
+         181.78853903776394,
+         172.42121666666665
+        ],
+        "60": [
+         201.46577409996084,
+         194.95764666666665
+        ]
+       }
+      },
+      {
+       "experiment": 12,
+       "analyte": "cqa5",
+       "lambda_model": 19.775568808574764,
+       "lambda_data": 20.79431,
+       "cups": {
+        "20": [
+         88.2315100961891,
+         77.05384666666667
+        ],
+        "40": [
+         119.55848774872725,
+         106.85100999999999
+        ],
+        "60": [
+         130.9529870336735,
+         118.39009
+        ]
+       }
+      },
+      {
+       "experiment": 12,
+       "analyte": "tds",
+       "lambda_model": 17.363340271192413,
+       "lambda_data": 17.38228,
+       "cups": {
+        "20": [
+         2.988085687105714,
+         2.6674633333333335
+        ],
+        "40": [
+         3.9124579288435357,
+         3.52722
+        ],
+        "60": [
+         4.2046065785036495,
+         3.8058799999999997
+        ]
+       }
+      },
+      {
+       "experiment": 13,
+       "analyte": "trigonelline",
+       "lambda_model": 15.881802059314634,
+       "lambda_data": 15.53493,
+       "cups": {
+        "20": [
+         79.9318470867929,
+         72.84741666666667
+        ],
+        "40": [
+         102.31865589462772,
+         93.23832
+        ],
+        "60": [
+         108.67319231346704,
+         98.97870333333333
+        ]
+       }
+      },
+      {
+       "experiment": 13,
+       "analyte": "caffeine",
+       "lambda_model": 21.486504243370476,
+       "lambda_data": 23.15069,
+       "cups": {
+        "20": [
+         133.83680425126116,
+         129.18442333333334
+        ],
+        "40": [
+         185.6442466551347,
+         183.95871333333332
+        ],
+        "60": [
+         206.0683752029707,
+         207.21940666666669
+        ]
+       }
+      },
+      {
+       "experiment": 13,
+       "analyte": "cqa5",
+       "lambda_model": 19.9954917897122,
+       "lambda_data": 20.40671,
+       "cups": {
+        "20": [
+         89.76913965943197,
+         82.99791333333333
+        ],
+        "40": [
+         122.1249746585576,
+         114.40165
+        ],
+        "60": [
+         134.02533778241835,
+         126.30379666666666
+        ]
+       }
+      },
+      {
+       "experiment": 13,
+       "analyte": "tds",
+       "lambda_model": 17.520072370851103,
+       "lambda_data": 17.58935,
+       "cups": {
+        "20": [
+         3.0369040930435003,
+         2.891906666666667
+        ],
+        "40": [
+         3.9899297415647257,
+         3.8269566666666663
+        ],
+        "60": [
+         4.294254075547208,
+         4.130673333333333
+        ]
+       }
+      },
+      {
+       "experiment": 14,
+       "analyte": "trigonelline",
+       "lambda_model": 16.121872446967213,
+       "lambda_data": 16.63498,
+       "cups": {
+        "20": [
+         77.48866744212252,
+         75.10204666666668
+        ],
+        "40": [
+         99.47079708090017,
+         97.82659000000001
+        ],
+        "60": [
+         105.82857634072168,
+         104.7131
+        ]
+       }
+      },
+      {
+       "experiment": 14,
+       "analyte": "caffeine",
+       "lambda_model": 21.951665680436562,
+       "lambda_data": 24.1222,
+       "cups": {
+        "20": [
+         126.16421429988223,
+         122.55899
+        ],
+        "40": [
+         175.64465351620444,
+         176.2580966666667
+        ],
+        "60": [
+         195.53997954815205,
+         199.79936333333333
+        ]
+       }
+      },
+      {
+       "experiment": 14,
+       "analyte": "cqa5",
+       "lambda_model": 19.875844438933164,
+       "lambda_data": 21.56882,
+       "cups": {
+        "20": [
+         85.73669040465101,
+         81.83710333333333
+        ],
+        "40": [
+         116.27145065530793,
+         115.45935666666666
+        ],
+        "60": [
+         127.43461164596629,
+         128.65926
+        ]
+       }
+      },
+      {
+       "experiment": 14,
+       "analyte": "tds",
+       "lambda_model": 17.404316872008668,
+       "lambda_data": 18.4123,
+       "cups": {
+        "20": [
+         2.9168054505305334,
+         2.7490833333333335
+        ],
+        "40": [
+         3.820230697975136,
+         3.6792933333333333
+        ],
+        "60": [
+         4.10653441065132,
+         3.9943766666666662
+        ]
+       }
+      },
+      {
+       "experiment": 15,
+       "analyte": "trigonelline",
+       "lambda_model": 15.784288521778073,
+       "lambda_data": 16.37875,
+       "cups": {
+        "20": [
+         78.0826393136606,
+         76.21548333333334
+        ],
+        "40": [
+         99.75048317887546,
+         98.91180666666666
+        ],
+        "60": [
+         105.85327622883115,
+         105.67417333333333
+        ]
+       }
+      },
+      {
+       "experiment": 15,
+       "analyte": "caffeine",
+       "lambda_model": 21.82442142263023,
+       "lambda_data": 23.78621,
+       "cups": {
+        "20": [
+         128.08946981948338,
+         127.54692999999999
+        ],
+        "40": [
+         178.30130273491565,
+         182.74301666666665
+        ],
+        "60": [
+         198.38374918971616,
+         206.64024666666668
+        ]
+       }
+      },
+      {
+       "experiment": 15,
+       "analyte": "cqa5",
+       "lambda_model": 19.653659457731173,
+       "lambda_data": 21.01016,
+       "cups": {
+        "20": [
+         86.80531934357883,
+         86.89275333333335
+        ],
+        "40": [
+         117.52434036055342,
+         120.72138333333334
+        ],
+        "60": [
+         128.62783452931217,
+         131.42094333333333
+        ]
+       }
+      },
+      {
+       "experiment": 15,
+       "analyte": "tds",
+       "lambda_model": 17.159932838558614,
+       "lambda_data": 17.69504,
+       "cups": {
+        "20": [
+         2.9466706309597295,
+         2.9326566666666665
+        ],
+        "40": [
+         3.848698166110672,
+         3.8848800000000003
+        ],
+        "60": [
+         4.1299187392681,
+         4.19424
+        ]
+       }
+      }
+     ],
+     "lambda_within": 57,
+     "lambda_total": 60,
+     "cup_within": 167,
+     "cup_total": 180,
+     "lambda_max_error": 0.21950774044597932,
+     "cup_max_error": 0.14506301648867392,
+     "lambda_by_analyte": "trigonelline 15/15, caffeine 14/15, 5-CQA 15/15, TDS 13/15",
+     "cup_by_analyte": "trigonelline 38/45, caffeine 45/45, 5-CQA 42/45, TDS 42/45",
+     "lambda_worst": {
+      "experiment": 8,
+      "analyte": "tds",
+      "error": 0.21950774044597932
+     }
+    },
+    "pump_limited": {
+     "transition_s": {
+      "1": 2.4,
+      "2": 3.5,
+      "3": 3.1,
+      "4": 2.1,
+      "5": 2.9,
+      "6": 2.8,
+      "7": 2.9,
+      "8": 2.7,
+      "9": 2.5,
+      "10": 1.8,
+      "11": 1.5,
+      "12": 3.7,
+      "13": 3.7,
+      "14": 2.8,
+      "15": 2.5
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 4.71,
+      "13": 0.0,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": [
+      12
+     ]
+    }
+   },
+   "V2": {
+    "dataset": "vacaguerra2024",
+    "cases": 5,
+    "residuals": 5,
+    "rms": 3.7499214768873386,
+    "cost": 35.1547777070523,
+    "failures": [],
+    "bodenstein": [
+     {
+      "case": "vacaguerra2024/A_30g",
+      "model": 13.193679083969116,
+      "data": 8.7
+     },
+     {
+      "case": "vacaguerra2024/B_30g",
+      "model": 15.180344508072292,
+      "data": 10.01
+     },
+     {
+      "case": "vacaguerra2024/C_30g",
+      "model": 12.20284928301631,
+      "data": 10.36
+     },
+     {
+      "case": "vacaguerra2024/D_30g",
+      "model": 12.05334441993558,
+      "data": 8.98
+     },
+     {
+      "case": "vacaguerra2024/B_60g",
+      "model": 15.473212890864682,
+      "data": 7.74
+     }
+    ],
+    "bodenstein_above_data": 5
+   },
+   "V4": {
+    "dataset": "waszkiewicz2026",
+    "cases": 11,
+    "residuals": 11,
+    "rms": 3.6080321298890943,
+    "cost": 71.59842717671619,
+    "failures": [],
+    "qp": [
+     {
+      "pressure_bar": 0.758036,
+      "model": 0.33975734844672684,
+      "data": 0.108605,
+      "sem": 0.014919
+     },
+     {
+      "pressure_bar": 1.48972,
+      "model": 0.6811512329433987,
+      "data": 0.413504,
+      "sem": 0.049848
+     },
+     {
+      "pressure_bar": 3.102528,
+      "model": 1.2478466063177307,
+      "data": 1.079496,
+      "sem": 0.109268
+     },
+     {
+      "pressure_bar": 3.686597,
+      "model": 1.3924160536967833,
+      "data": 1.642029,
+      "sem": 0.062696
+     },
+     {
+      "pressure_bar": 4.504768,
+      "model": 1.5512549317001258,
+      "data": 2.057772,
+      "sem": 0.049536
+     },
+     {
+      "pressure_bar": 5.585387,
+      "model": 1.6973866826123407,
+      "data": 1.93775,
+      "sem": 0.07973
+     },
+     {
+      "pressure_bar": 6.744804,
+      "model": 1.7934698372869353,
+      "data": 1.920566,
+      "sem": 0.021761
+     },
+     {
+      "pressure_bar": 7.534863,
+      "model": 1.8328432867771232,
+      "data": 1.850565,
+      "sem": 0.037112
+     },
+     {
+      "pressure_bar": 8.716916,
+      "model": 1.8650961900930891,
+      "data": 1.824924,
+      "sem": 0.038851
+     },
+     {
+      "pressure_bar": 10.419167,
+      "model": 1.879817145495468,
+      "data": 1.776579,
+      "sem": 0.042978
+     },
+     {
+      "pressure_bar": 12.39155,
+      "model": 1.881245804459699,
+      "data": 1.587489,
+      "sem": 0.017191
+     }
+    ]
+   },
+   "V6": {
+    "dataset": "corrochano2017",
+    "cases": 12,
+    "residuals": 8,
+    "rms": 1.688610582921794,
+    "cost": 11.40562280302192,
+    "failures": [],
+    "ratios": [
+     {
+      "grind": "B",
+      "density": 400.0,
+      "model": 0.7338403854800432,
+      "data": 0.6363636363636364,
+      "factor": 1.1531777486114965
+     },
+     {
+      "grind": "B",
+      "density": 480.0,
+      "model": 0.3089091323574896,
+      "data": 0.33766233766233766,
+      "factor": 0.9148462765971808
+     },
+     {
+      "grind": "C",
+      "density": 400.0,
+      "model": 0.7427539839311459,
+      "data": 0.8571428571428571,
+      "factor": 0.8665463145863369
+     },
+     {
+      "grind": "C",
+      "density": 480.0,
+      "model": 0.3158934944730056,
+      "data": 0.35,
+      "factor": 0.9025528413514445
+     },
+     {
+      "grind": "D",
+      "density": 400.0,
+      "model": 0.7539205851945693,
+      "data": 0.7916666666666667,
+      "factor": 0.9523207391931401
+     },
+     {
+      "grind": "D",
+      "density": 480.0,
+      "model": 0.3306184708760177,
+      "data": 0.2666666666666667,
+      "factor": 1.2398192657850662
+     },
+     {
+      "grind": "E",
+      "density": 400.0,
+      "model": 0.7602506903626312,
+      "data": 1.2941176470588234,
+      "factor": 0.5874664425529423
+     },
+     {
+      "grind": "E",
+      "density": 480.0,
+      "model": 0.3422423661704605,
+      "data": 0.2647058823529411,
+      "factor": 1.292915605532851
+     }
+    ]
+   }
+  },
+  "checks": [
+   {
+    "check": "V1 \u03bb within \u00b110% (fit)",
+    "status": "fail",
+    "target": "\u03bb within \u00b110% for all 15 experiments \u00d7 4 analytes",
+    "detail": "57/60 experiment\u2013analyte pairs within \u00b110% (trigonelline 15/15, caffeine 14/15, 5-CQA 15/15, TDS 13/15)",
+    "within": 57,
+    "total": 60
+   },
+   {
+    "check": "V1 cup masses within \u00b110% (fit)",
+    "status": "fail",
+    "target": "cup masses within \u00b110%",
+    "detail": "167/180 cup masses (20, 40, 60 g) within \u00b110% (trigonelline 38/45, caffeine 45/45, 5-CQA 42/45, TDS 42/45)",
+    "within": 167,
+    "total": 180
+   },
+   {
+    "check": "V1 leave-one-condition-out (\u00b115%)",
+    "status": "fail",
+    "target": "\u03bb and cup masses of each left-out experiment within \u00b115%",
+    "detail": "\u03bb 59/60, cup masses 179/180 within \u00b115% when predicted without their own experiment",
+    "within": 238,
+    "total": 240
+   },
+   {
+    "check": "V2 Bodenstein number 8\u201317",
+    "status": "pass",
+    "target": "Bo within 8\u201317",
+    "detail": "model Bo = 13.2, 15.2, 12.2, 12.1, 15.5 (data 8.7, 10.0, 10.4, 9.0, 7.7; the model is above the data in 5 of 5; the held-out compound curves were not run)"
+   },
+   {
+    "check": "V4 long-time flow vs pressure (fit)",
+    "status": "info",
+    "target": "calibration (no pass/fail target)",
+    "detail": "RMS error 0.242 g/s over 11 pressures"
+   },
+   {
+    "check": "V6 relative change of \u03ba with density within \u00d71.5",
+    "status": "fail",
+    "target": "\u03ba(\u03c1)/\u03ba(360 kg/m\u00b3), model within \u00d71.5 of data for 4 grinds \u00d7 2 densities",
+    "detail": "model/data ratio factors 1.15, 0.91, 0.87, 0.90, 0.95, 1.24, 0.59, 1.29"
+   }
+  ]
+ },
+ "held_out": {
+  "v3": {
+   "rows": [
+    {
+     "grind_setting": 1.1,
+     "ey_model": 21.85977619898046,
+     "ey_data": 21.333,
+     "ey_bar": 0.419,
+     "time_model": 15.9,
+     "time_data": 37.6,
+     "time_bar": 2.9,
+     "stop": "beverage_mass"
+    },
+    {
+     "grind_setting": 1.3,
+     "ey_model": 21.556142468129035,
+     "ey_data": 21.952,
+     "ey_bar": 0.331,
+     "time_model": 14.639203294176887,
+     "time_data": 35.7,
+     "time_bar": 4.73,
+     "stop": "beverage_mass"
+    },
+    {
+     "grind_setting": 1.5,
+     "ey_model": 21.21550313915001,
+     "ey_data": 22.167,
+     "ey_bar": 0.31,
+     "time_model": 13.476256815226742,
+     "time_data": 33.9,
+     "time_bar": 5.49,
+     "stop": "beverage_mass"
+    },
+    {
+     "grind_setting": 1.7,
+     "ey_model": 20.99016726936063,
+     "ey_data": 23.069,
+     "ey_bar": 0.273,
+     "time_model": 13.0212627749917,
+     "time_data": 30.5,
+     "time_bar": 0.71,
+     "stop": "beverage_mass"
+    },
+    {
+     "grind_setting": 1.9,
+     "ey_model": 20.757493791252156,
+     "ey_data": 22.537,
+     "ey_bar": 0.123,
+     "time_model": 12.582007673212116,
+     "time_data": 28.5,
+     "time_bar": 3.17,
+     "stop": "beverage_mass"
+    },
+    {
+     "grind_setting": 2.1,
+     "ey_model": 20.294780975252046,
+     "ey_data": 21.601,
+     "ey_bar": 0.045,
+     "time_model": 11.803528548106623,
+     "time_data": 26.6,
+     "time_bar": 3.46,
+     "stop": "beverage_mass"
+    },
+    {
+     "grind_setting": 2.3,
+     "ey_model": 19.295682000274013,
+     "ey_data": 20.704,
+     "ey_bar": 0.047,
+     "time_model": 11.139077336970768,
+     "time_data": 24.0,
+     "time_bar": 0.22,
+     "stop": "beverage_mass"
+    }
+   ],
+   "rms_ey": 1.3372305188322204,
+   "rms_time": 18.026980087117302,
+   "bias_time": -17.748380508187882,
+   "time_ratio": 0.42903578636089934
+  },
+  "v4_transient": {
+   "drops_model_s": 1.7988979965376588,
+   "drops_data_s": 12.761996808290156,
+   "rise_model": {
+    "q2": 0.9585382235286943,
+    "q15": 2.0995794465784847,
+    "ratio_15_2": 2.1903972059134404,
+    "t90_s": 6.701102003462292,
+    "q_end": 1.8650961900930891
+   },
+   "rise_data": {
+    "q2": 0.1298584666679228,
+    "q15": 0.7902525695713613,
+    "ratio_15_2": 6.0854913033296025,
+    "t90_s": 25.776542191709844,
+    "q_end": 1.824924
+   },
+   "time_to_mass_model_s": 22.244784973708008,
+   "time_to_mass_data_s": 47.69420628329427,
+   "long_time_model_g_s": 1.8650961900930891,
+   "long_time_data_g_s": 1.824924,
+   "time_to_mass_ratio": 0.4664043435711736,
+   "tds_model": [
+    {
+     "time_mid_s": 2.5,
+     "tds_percent": 21.978850873728238
+    },
+    {
+     "time_mid_s": 7.5,
+     "tds_percent": 12.597385289208603
+    },
+    {
+     "time_mid_s": 12.5,
+     "tds_percent": 8.960852217755903
+    },
+    {
+     "time_mid_s": 17.5,
+     "tds_percent": 6.189824612544823
+    },
+    {
+     "time_mid_s": 22.5,
+     "tds_percent": 3.983874757865484
+    },
+    {
+     "time_mid_s": 27.5,
+     "tds_percent": 2.662470404687605
+    },
+    {
+     "time_mid_s": 32.5,
+     "tds_percent": 1.8746834510544026
+    },
+    {
+     "time_mid_s": 37.5,
+     "tds_percent": 1.3276314215739347
+    },
+    {
+     "time_mid_s": 42.5,
+     "tds_percent": 0.9453986591202107
+    },
+    {
+     "time_mid_s": 47.5,
+     "tds_percent": 0.6864976814279596
+    },
+    {
+     "time_mid_s": 52.5,
+     "tds_percent": 0.5062521765136178
+    },
+    {
+     "time_mid_s": 57.5,
+     "tds_percent": 0.3774323650251578
+    }
+   ],
+   "flow_model": {
+    "t_s": [
+     -5.1000000000000005,
+     -5.000000000000001,
+     -4.900000000000001,
+     -4.800000000000002,
+     -4.700000000000002,
+     -4.600000000000002,
+     -4.500000000000003,
+     -4.400000000000003,
+     -4.300000000000003,
+     -4.200000000000004,
+     -4.100000000000004,
+     -4.000000000000004,
+     -3.900000000000005,
+     -3.800000000000005,
+     -3.7000000000000055,
+     -3.600000000000006,
+     -3.500000000000006,
+     -3.4000000000000066,
+     -3.300000000000007,
+     -3.2000000000000073,
+     -3.1000000000000076,
+     -3.000000000000008,
+     -2.9000000000000083,
+     -2.8000000000000087,
+     -2.700000000000009,
+     -2.6000000000000094,
+     -2.5000000000000098,
+     -2.40000000000001,
+     -2.3000000000000105,
+     -2.200000000000011,
+     -2.100000000000011,
+     -2.0000000000000115,
+     -1.900000000000012,
+     -1.8000000000000123,
+     -1.7000000000000126,
+     -1.600000000000013,
+     -1.5000000000000133,
+     -1.4000000000000137,
+     -1.300000000000014,
+     -1.2000000000000144,
+     -1.1000000000000147,
+     -1.000000000000015,
+     -0.9000000000000155,
+     -0.8000000000000158,
+     -0.7000000000000162,
+     -0.6000000000000165,
+     -0.5000000000000169,
+     -0.40000000000001723,
+     -0.3000000000000176,
+     -0.20000000000001794,
+     -0.1000000000000183,
+     -1.865174681370263e-14,
+     0.09999999999998099,
+     0.19999999999998064,
+     0.2999999999999803,
+     0.3999999999999799,
+     0.49999999999997957,
+     0.5999999999999792,
+     0.6999999999999789,
+     0.7999999999999785,
+     0.8999999999999782,
+     0.9999999999999778,
+     1.0999999999999774,
+     1.199999999999977,
+     1.2999999999999767,
+     1.3999999999999764,
+     1.499999999999976,
+     1.5999999999999757,
+     1.6999999999999753,
+     1.799999999999975,
+     1.8999999999999746,
+     1.9999999999999742,
+     2.099999999999974,
+     2.1999999999999735,
+     2.299999999999973,
+     2.399999999999973,
+     2.4999999999999725,
+     2.599999999999972,
+     2.6999999999999718,
+     2.7999999999999714,
+     2.899999999999971,
+     2.9999999999999707,
+     3.0999999999999703,
+     3.19999999999997,
+     3.2999999999999696,
+     3.3999999999999693,
+     3.499999999999969,
+     3.5999999999999686,
+     3.699999999999968,
+     3.799999999999968,
+     3.8999999999999675,
+     3.999999999999967,
+     4.099999999999967,
+     4.199999999999966,
+     4.299999999999966,
+     4.399999999999966,
+     4.499999999999965,
+     4.599999999999965,
+     4.699999999999965,
+     4.799999999999964,
+     4.899999999999964,
+     4.999999999999964,
+     5.099999999999963,
+     5.199999999999963,
+     5.2999999999999625,
+     5.399999999999962,
+     5.499999999999962,
+     5.5999999999999615,
+     5.699999999999961,
+     5.799999999999961,
+     5.89999999999996,
+     5.99999999999996,
+     6.09999999999996,
+     6.199999999999959,
+     6.299999999999959,
+     6.399999999999959,
+     6.499999999999958,
+     6.599999999999958,
+     6.6999999999999575,
+     6.799999999999957,
+     6.899999999999957,
+     6.9999999999999565,
+     7.099999999999956,
+     7.199999999999956,
+     7.299999999999955,
+     7.399999999999955,
+     7.499999999999955,
+     7.599999999999954,
+     7.699999999999954,
+     7.799999999999954,
+     7.899999999999953,
+     7.999999999999953,
+     8.099999999999952,
+     8.199999999999953,
+     8.299999999999951,
+     8.399999999999952,
+     8.49999999999995,
+     8.599999999999952,
+     8.69999999999995,
+     8.799999999999951,
+     8.899999999999949,
+     8.99999999999995,
+     9.099999999999948,
+     9.19999999999995,
+     9.299999999999947,
+     9.399999999999949,
+     9.499999999999947,
+     9.599999999999948,
+     9.699999999999946,
+     9.799999999999947,
+     9.899999999999945,
+     9.999999999999947,
+     10.099999999999945,
+     10.199999999999946,
+     10.299999999999944,
+     10.399999999999945,
+     10.499999999999943,
+     10.599999999999945,
+     10.699999999999942,
+     10.799999999999944,
+     10.899999999999942,
+     10.999999999999943,
+     11.099999999999941,
+     11.199999999999939,
+     11.29999999999994,
+     11.399999999999942,
+     11.49999999999994,
+     11.599999999999937,
+     11.699999999999939,
+     11.79999999999994,
+     11.899999999999938,
+     11.999999999999936,
+     12.099999999999937,
+     12.199999999999939,
+     12.299999999999937,
+     12.399999999999935,
+     12.499999999999936,
+     12.599999999999937,
+     12.699999999999935,
+     12.799999999999933,
+     12.899999999999935,
+     12.999999999999936,
+     13.099999999999934,
+     13.199999999999932,
+     13.299999999999933,
+     13.399999999999935,
+     13.499999999999932,
+     13.59999999999993,
+     13.699999999999932,
+     13.799999999999933,
+     13.899999999999931,
+     13.999999999999929,
+     14.09999999999993,
+     14.199999999999932,
+     14.29999999999993,
+     14.399999999999928,
+     14.499999999999929,
+     14.59999999999993,
+     14.699999999999928,
+     14.799999999999926,
+     14.899999999999928,
+     14.999999999999929,
+     15.099999999999927,
+     15.199999999999925,
+     15.299999999999926,
+     15.399999999999928,
+     15.499999999999925,
+     15.599999999999923,
+     15.699999999999925,
+     15.799999999999926,
+     15.899999999999924,
+     15.999999999999922,
+     16.099999999999923,
+     16.199999999999925,
+     16.299999999999923,
+     16.39999999999992,
+     16.499999999999922,
+     16.599999999999923,
+     16.69999999999992,
+     16.79999999999992,
+     16.89999999999992,
+     16.999999999999922,
+     17.09999999999992,
+     17.199999999999918,
+     17.29999999999992,
+     17.39999999999992,
+     17.49999999999992,
+     17.599999999999916,
+     17.699999999999918,
+     17.79999999999992,
+     17.899999999999917,
+     17.999999999999915,
+     18.099999999999916,
+     18.199999999999918,
+     18.299999999999915,
+     18.399999999999913,
+     18.499999999999915,
+     18.599999999999916,
+     18.699999999999914,
+     18.799999999999912,
+     18.899999999999913,
+     18.999999999999915,
+     19.099999999999913,
+     19.19999999999991,
+     19.299999999999912,
+     19.399999999999913,
+     19.49999999999991,
+     19.59999999999991,
+     19.69999999999991,
+     19.799999999999912,
+     19.89999999999991,
+     19.999999999999908,
+     20.09999999999991,
+     20.19999999999991,
+     20.29999999999991,
+     20.399999999999906,
+     20.499999999999908,
+     20.59999999999991,
+     20.699999999999907,
+     20.799999999999905,
+     20.899999999999906,
+     20.999999999999908,
+     21.099999999999905,
+     21.199999999999903,
+     21.299999999999905,
+     21.399999999999906,
+     21.499999999999904,
+     21.599999999999902,
+     21.699999999999903,
+     21.799999999999905,
+     21.899999999999903,
+     21.9999999999999,
+     22.099999999999902,
+     22.199999999999903,
+     22.2999999999999,
+     22.3999999999999,
+     22.4999999999999,
+     22.599999999999902,
+     22.6999999999999,
+     22.799999999999898,
+     22.8999999999999,
+     22.9999999999999,
+     23.0999999999999,
+     23.199999999999896,
+     23.299999999999898,
+     23.3999999999999,
+     23.499999999999897,
+     23.599999999999895,
+     23.699999999999896,
+     23.799999999999898,
+     23.899999999999896,
+     23.999999999999893,
+     24.099999999999895,
+     24.199999999999896,
+     24.299999999999894,
+     24.399999999999892,
+     24.499999999999893,
+     24.599999999999895,
+     24.699999999999893,
+     24.79999999999989,
+     24.899999999999892,
+     24.999999999999893,
+     25.09999999999989,
+     25.19999999999989,
+     25.29999999999989,
+     25.399999999999892,
+     25.49999999999989,
+     25.599999999999888,
+     25.69999999999989,
+     25.79999999999989,
+     25.89999999999989,
+     25.999999999999886,
+     26.099999999999888,
+     26.19999999999989,
+     26.299999999999887,
+     26.399999999999885,
+     26.499999999999886,
+     26.599999999999888,
+     26.699999999999886,
+     26.799999999999883,
+     26.899999999999885,
+     26.999999999999886,
+     27.099999999999888,
+     27.199999999999882,
+     27.299999999999883,
+     27.399999999999885,
+     27.49999999999988,
+     27.59999999999988,
+     27.699999999999882,
+     27.799999999999883,
+     27.899999999999885,
+     27.99999999999988,
+     28.09999999999988,
+     28.199999999999882,
+     28.299999999999876,
+     28.399999999999878,
+     28.49999999999988,
+     28.59999999999988,
+     28.699999999999882,
+     28.799999999999876,
+     28.899999999999878,
+     28.99999999999988,
+     29.099999999999874,
+     29.199999999999875,
+     29.299999999999876,
+     29.399999999999878,
+     29.49999999999988,
+     29.599999999999874,
+     29.699999999999875,
+     29.799999999999876,
+     29.89999999999987,
+     29.999999999999872,
+     30.099999999999874,
+     30.199999999999875,
+     30.299999999999876,
+     30.39999999999987,
+     30.499999999999872,
+     30.599999999999874,
+     30.699999999999868,
+     30.79999999999987,
+     30.89999999999987,
+     30.999999999999872,
+     31.099999999999874,
+     31.199999999999868,
+     31.29999999999987,
+     31.39999999999987,
+     31.499999999999865,
+     31.599999999999866,
+     31.699999999999868,
+     31.79999999999987,
+     31.89999999999987,
+     31.999999999999865,
+     32.099999999999866,
+     32.19999999999987,
+     32.29999999999986,
+     32.399999999999864,
+     32.499999999999865,
+     32.599999999999866,
+     32.69999999999987,
+     32.79999999999986,
+     32.899999999999864,
+     32.999999999999865,
+     33.09999999999986,
+     33.19999999999986,
+     33.29999999999986,
+     33.399999999999864,
+     33.499999999999865,
+     33.59999999999986,
+     33.69999999999986,
+     33.79999999999986,
+     33.89999999999986,
+     33.99999999999986,
+     34.09999999999986,
+     34.19999999999986,
+     34.29999999999986,
+     34.39999999999986,
+     34.49999999999986,
+     34.59999999999986,
+     34.699999999999854,
+     34.799999999999855,
+     34.89999999999986,
+     34.99999999999986,
+     35.09999999999986,
+     35.199999999999854,
+     35.299999999999855,
+     35.39999999999986,
+     35.49999999999985,
+     35.59999999999985,
+     35.699999999999854,
+     35.799999999999855,
+     35.89999999999986,
+     35.99999999999985,
+     36.09999999999985,
+     36.199999999999854,
+     36.29999999999985,
+     36.39999999999985,
+     36.49999999999985,
+     36.59999999999985,
+     36.699999999999854,
+     36.79999999999985,
+     36.89999999999985,
+     36.99999999999985,
+     37.099999999999845,
+     37.19999999999985,
+     37.29999999999985,
+     37.39999999999985,
+     37.49999999999985,
+     37.599999999999845,
+     37.69999999999985,
+     37.79999999999985,
+     37.89999999999984,
+     37.999999999999844,
+     38.099999999999845,
+     38.19999999999985,
+     38.29999999999985,
+     38.39999999999984,
+     38.499999999999844,
+     38.599999999999845,
+     38.69999999999984,
+     38.79999999999984,
+     38.89999999999984,
+     38.999999999999844,
+     39.099999999999845,
+     39.19999999999984,
+     39.29999999999984,
+     39.39999999999984,
+     39.49999999999984,
+     39.59999999999984,
+     39.69999999999984,
+     39.79999999999984,
+     39.89999999999984,
+     39.99999999999984,
+     40.09999999999984,
+     40.19999999999984,
+     40.299999999999834,
+     40.399999999999835,
+     40.49999999999984,
+     40.59999999999984,
+     40.69999999999984,
+     40.799999999999834,
+     40.899999999999835,
+     40.99999999999984,
+     41.09999999999983,
+     41.19999999999983,
+     41.299999999999834,
+     41.399999999999835,
+     41.49999999999984,
+     41.59999999999983,
+     41.69999999999983,
+     41.799999999999834,
+     41.89999999999983,
+     41.99999999999983,
+     42.09999999999983,
+     42.19999999999983,
+     42.299999999999834,
+     42.39999999999983,
+     42.49999999999983,
+     42.59999999999983,
+     42.699999999999825,
+     42.79999999999983,
+     42.89999999999983,
+     42.99999999999983,
+     43.09999999999983,
+     43.199999999999825,
+     43.29999999999983,
+     43.39999999999983,
+     43.49999999999982,
+     43.599999999999824,
+     43.699999999999825,
+     43.79999999999983,
+     43.89999999999983,
+     43.99999999999982,
+     44.099999999999824,
+     44.199999999999825,
+     44.29999999999982,
+     44.39999999999982,
+     44.49999999999982,
+     44.599999999999824,
+     44.699999999999825,
+     44.79999999999982,
+     44.89999999999982,
+     44.99999999999982,
+     45.09999999999982,
+     45.19999999999982,
+     45.29999999999982,
+     45.39999999999982,
+     45.49999999999982,
+     45.59999999999982,
+     45.69999999999982,
+     45.79999999999982,
+     45.899999999999814,
+     45.999999999999815,
+     46.09999999999982,
+     46.19999999999982,
+     46.29999999999982,
+     46.399999999999814,
+     46.499999999999815,
+     46.59999999999982,
+     46.69999999999981,
+     46.79999999999981,
+     46.899999999999814,
+     46.999999999999815,
+     47.09999999999982,
+     47.19999999999981,
+     47.29999999999981,
+     47.399999999999814,
+     47.49999999999981,
+     47.59999999999981,
+     47.69999999999981,
+     47.79999999999981,
+     47.899999999999814,
+     47.99999999999981,
+     48.09999999999981,
+     48.19999999999981,
+     48.299999999999805,
+     48.39999999999981,
+     48.49999999999981,
+     48.59999999999981,
+     48.69999999999981,
+     48.799999999999805,
+     48.89999999999981,
+     48.99999999999981,
+     49.0999999999998,
+     49.199999999999804,
+     49.299999999999805,
+     49.39999999999981,
+     49.49999999999981,
+     49.5999999999998,
+     49.699999999999804,
+     49.799999999999805,
+     49.8999999999998,
+     49.9999999999998,
+     50.0999999999998,
+     50.199999999999804,
+     50.299999999999805,
+     50.3999999999998,
+     50.4999999999998,
+     50.5999999999998,
+     50.6999999999998,
+     50.7999999999998,
+     50.8999999999998,
+     50.9999999999998,
+     51.0999999999998,
+     51.1999999999998,
+     51.2999999999998,
+     51.3999999999998,
+     51.499999999999794,
+     51.599999999999795,
+     51.6999999999998,
+     51.7999999999998,
+     51.8999999999998,
+     51.999999999999794,
+     52.099999999999795,
+     52.1999999999998,
+     52.29999999999979,
+     52.39999999999979,
+     52.499999999999794,
+     52.599999999999795,
+     52.6999999999998,
+     52.79999999999979,
+     52.89999999999979,
+     52.999999999999794,
+     53.09999999999979,
+     53.19999999999979,
+     53.29999999999979,
+     53.39999999999979,
+     53.499999999999794,
+     53.59999999999979,
+     53.69999999999979,
+     53.79999999999979,
+     53.899999999999785,
+     53.99999999999979,
+     54.09999999999979,
+     54.19999999999979,
+     54.29999999999979,
+     54.399999999999785,
+     54.49999999999979,
+     54.59999999999979,
+     54.69999999999978,
+     54.799999999999784,
+     54.899999999999785,
+     54.99999999999979,
+     55.09999999999979,
+     55.19999999999978,
+     55.299999999999784,
+     55.399999999999785,
+     55.49999999999978,
+     55.59999999999978,
+     55.69999999999978,
+     55.799999999999784,
+     55.899999999999785,
+     55.99999999999978,
+     56.09999999999978,
+     56.19999999999978,
+     56.29999999999978,
+     56.39999999999978,
+     56.49999999999978,
+     56.59999999999978,
+     56.69999999999978,
+     56.79999999999978,
+     56.89999999999978,
+     56.99999999999978,
+     57.099999999999774,
+     57.199999999999775,
+     57.29999999999978,
+     57.39999999999978,
+     57.49999999999978,
+     57.599999999999774,
+     57.699999999999775,
+     57.79999999999978,
+     57.89999999999977,
+     57.99999999999977,
+     58.099999999999774,
+     58.199999999999775,
+     58.29999999999978,
+     58.39999999999977,
+     58.49999999999977,
+     58.599999999999774,
+     58.69999999999977,
+     58.79999999999977,
+     58.89999999999977,
+     58.999999999999766,
+     59.099999999999774,
+     59.19999999999977,
+     59.29999999999978,
+     59.39999999999977,
+     59.499999999999766,
+     59.599999999999774,
+     59.69999999999977,
+     59.79999999999976,
+     59.89999999999977,
+     59.999999999999766,
+     60.09999999999976,
+     60.19999999999977,
+     60.29999999999976,
+     60.39999999999977,
+     60.499999999999766,
+     60.59999999999976,
+     60.69999999999977,
+     60.79999999999976,
+     60.89999999999977,
+     60.999999999999766,
+     61.09999999999976,
+     61.19999999999977,
+     61.29999999999976,
+     61.39999999999976,
+     61.499999999999766,
+     61.59999999999976,
+     61.699999999999754,
+     61.79999999999976,
+     61.89999999999976,
+     61.999999999999766,
+     62.09999999999976,
+     62.199999999999754,
+     62.29999999999976,
+     62.39999999999976,
+     62.499999999999766,
+     62.59999999999976,
+     62.699999999999754,
+     62.79999999999976,
+     62.89999999999976,
+     62.99999999999975,
+     63.09999999999976,
+     63.199999999999754,
+     63.29999999999975,
+     63.39999999999976,
+     63.49999999999975,
+     63.59999999999976,
+     63.699999999999754,
+     63.79999999999975,
+     63.89999999999976,
+     63.99999999999975,
+     64.09999999999977,
+     64.19999999999976,
+     64.29999999999976,
+     64.39999999999976,
+     64.49999999999976,
+     64.59999999999975,
+     64.69999999999976,
+     64.79999999999976,
+     64.89999999999975,
+     64.99999999999976,
+     65.09999999999975,
+     65.19999999999976,
+     65.29999999999976,
+     65.39999999999975,
+     65.49999999999976,
+     65.59999999999975,
+     65.69999999999976,
+     65.79999999999976,
+     65.89999999999975,
+     65.99999999999976,
+     66.09999999999975,
+     66.19999999999975,
+     66.29999999999976,
+     66.39999999999975,
+     66.49999999999974,
+     66.59999999999975,
+     66.69999999999975,
+     66.79999999999976,
+     66.89999999999975,
+     66.99999999999974,
+     67.09999999999975,
+     67.19999999999975,
+     67.29999999999976,
+     67.39999999999975,
+     67.49999999999974,
+     67.59999999999975,
+     67.69999999999975,
+     67.79999999999974,
+     67.89999999999975,
+     67.99999999999974,
+     68.09999999999974,
+     68.19999999999975,
+     68.29999999999974,
+     68.39999999999975,
+     68.49999999999974,
+     68.59999999999974,
+     68.69999999999975,
+     68.79999999999974,
+     68.89999999999975,
+     68.99999999999974,
+     69.09999999999974,
+     69.19999999999975,
+     69.29999999999974,
+     69.39999999999974,
+     69.49999999999974,
+     69.59999999999974,
+     69.69999999999973,
+     69.79999999999974,
+     69.89999999999974,
+     69.99999999999974,
+     70.09999999999974,
+     70.19999999999973,
+     70.29999999999974,
+     70.39999999999974,
+     70.49999999999974,
+     70.59999999999974,
+     70.69999999999973,
+     70.79999999999974,
+     70.89999999999974,
+     70.99999999999973,
+     71.09999999999974,
+     71.19999999999973,
+     71.29999999999973,
+     71.39999999999974,
+     71.49999999999973,
+     71.59999999999974,
+     71.69999999999973,
+     71.79999999999973,
+     71.89999999999974,
+     71.99999999999973,
+     72.09999999999974,
+     72.19999999999973,
+     72.29999999999973,
+     72.39999999999974,
+     72.49999999999973,
+     72.59999999999972,
+     72.69999999999973,
+     72.79999999999973,
+     72.89999999999972,
+     72.99999999999973,
+     73.09999999999972,
+     73.19999999999973,
+     73.29999999999973,
+     73.39999999999972,
+     73.49999999999973,
+     73.59999999999972,
+     73.69999999999973,
+     73.79999999999973,
+     73.89999999999972,
+     73.99999999999973,
+     74.09999999999972,
+     74.19999999999972,
+     74.29999999999973,
+     74.39999999999972,
+     74.49999999999972,
+     74.59999999999972,
+     74.69999999999972,
+     74.79999999999973,
+     74.89999999999972,
+     74.99999999999972,
+     75.09999999999972,
+     75.19999999999972,
+     75.29999999999973,
+     75.39999999999972,
+     75.49999999999972,
+     75.59999999999972,
+     75.69999999999972,
+     75.79999999999971,
+     75.89999999999972,
+     75.99999999999972,
+     76.09999999999971,
+     76.19999999999972,
+     76.29999999999971,
+     76.39999999999972,
+     76.49999999999972,
+     76.59999999999971,
+     76.69999999999972,
+     76.79999999999971,
+     76.89999999999972,
+     76.99999999999972,
+     77.09999999999971,
+     77.19999999999972,
+     77.29999999999971,
+     77.39999999999971,
+     77.49999999999972,
+     77.59999999999971,
+     77.6999999999997,
+     77.79999999999971,
+     77.89999999999971,
+     77.99999999999972,
+     78.09999999999971,
+     78.1999999999997,
+     78.29999999999971,
+     78.39999999999971,
+     78.49999999999972,
+     78.59999999999971,
+     78.6999999999997,
+     78.79999999999971,
+     78.89999999999971,
+     78.9999999999997,
+     79.09999999999971,
+     79.1999999999997,
+     79.2999999999997,
+     79.39999999999971,
+     79.4999999999997,
+     79.59999999999971,
+     79.6999999999997,
+     79.7999999999997,
+     79.89999999999971,
+     79.9999999999997,
+     80.09999999999971,
+     80.1999999999997,
+     80.2999999999997,
+     80.39999999999971,
+     80.4999999999997,
+     80.5999999999997,
+     80.6999999999997,
+     80.7999999999997,
+     80.8999999999997,
+     80.9999999999997,
+     81.0999999999997,
+     81.1999999999997,
+     81.2999999999997,
+     81.3999999999997,
+     81.4999999999997,
+     81.5999999999997,
+     81.6999999999997,
+     81.7999999999997,
+     81.8999999999997,
+     81.9999999999997,
+     82.0999999999997,
+     82.19999999999969,
+     82.2999999999997,
+     82.3999999999997,
+     82.49999999999969,
+     82.5999999999997,
+     82.69999999999969,
+     82.7999999999997,
+     82.8999999999997,
+     82.99999999999969,
+     83.0999999999997,
+     83.19999999999969,
+     83.2999999999997,
+     83.3999999999997,
+     83.49999999999969,
+     83.5999999999997,
+     83.69999999999969,
+     83.79999999999968,
+     83.8999999999997,
+     83.99999999999969,
+     84.09999999999968,
+     84.19999999999969,
+     84.29999999999968,
+     84.3999999999997,
+     84.49999999999969,
+     84.59999999999968,
+     84.69999999999969,
+     84.79999999999968,
+     84.8999999999997,
+     84.99999999999969,
+     85.09999999999968,
+     85.19999999999969,
+     85.29999999999968,
+     85.39999999999968,
+     85.49999999999969,
+     85.59999999999968,
+     85.69999999999968,
+     85.79999999999968,
+     85.89999999999968,
+     85.99999999999969,
+     86.09999999999968,
+     86.19999999999968,
+     86.29999999999968,
+     86.39999999999968,
+     86.49999999999969,
+     86.59999999999968,
+     86.69999999999968,
+     86.79999999999968,
+     86.89999999999968,
+     86.99999999999967,
+     87.09999999999968,
+     87.19999999999968,
+     87.29999999999967,
+     87.39999999999968,
+     87.49999999999967,
+     87.59999999999968,
+     87.69999999999968,
+     87.79999999999967,
+     87.89999999999968,
+     87.99999999999967,
+     88.09999999999968,
+     88.19999999999968,
+     88.29999999999967,
+     88.39999999999968,
+     88.49999999999967,
+     88.59999999999967,
+     88.69999999999968,
+     88.79999999999967,
+     88.89999999999966,
+     88.99999999999967,
+     89.09999999999967,
+     89.19999999999968,
+     89.29999999999967,
+     89.39999999999966,
+     89.49999999999967,
+     89.59999999999967,
+     89.69999999999968,
+     89.79999999999967,
+     89.89999999999966,
+     89.99999999999967,
+     90.09999999999967,
+     90.19999999999966,
+     90.29999999999967,
+     90.39999999999966,
+     90.49999999999966,
+     90.59999999999967,
+     90.69999999999966,
+     90.79999999999967,
+     90.89999999999966,
+     90.99999999999966,
+     91.09999999999967,
+     91.19999999999966,
+     91.29999999999967,
+     91.39999999999966,
+     91.49999999999966,
+     91.59999999999967,
+     91.69999999999966,
+     91.79999999999966,
+     91.89999999999966,
+     91.99999999999966,
+     92.09999999999965,
+     92.19999999999966,
+     92.29999999999966,
+     92.39999999999966,
+     92.49999999999966,
+     92.59999999999965,
+     92.69999999999966,
+     92.79999999999966,
+     92.89999999999966,
+     92.99999999999966,
+     93.09999999999965,
+     93.19999999999966,
+     93.29999999999966,
+     93.39999999999965,
+     93.49999999999966,
+     93.59999999999965,
+     93.69999999999965,
+     93.79999999999966,
+     93.89999999999965,
+     93.99999999999966,
+     94.09999999999965,
+     94.19999999999965,
+     94.29999999999966,
+     94.39999999999965,
+     94.49999999999966,
+     94.59999999999965,
+     94.69999999999965,
+     94.79999999999966,
+     94.89999999999965,
+     94.99999999999964,
+     95.09999999999965,
+     95.19999999999965,
+     95.29999999999964,
+     95.39999999999965,
+     95.49999999999964,
+     95.59999999999965,
+     95.69999999999965,
+     95.79999999999964,
+     95.89999999999965,
+     95.99999999999964,
+     96.09999999999965,
+     96.19999999999965,
+     96.29999999999964,
+     96.39999999999965,
+     96.49999999999964,
+     96.59999999999964,
+     96.69999999999965,
+     96.79999999999964,
+     96.89999999999964,
+     96.99999999999964,
+     97.09999999999964,
+     97.19999999999965,
+     97.29999999999964,
+     97.39999999999964,
+     97.49999999999964,
+     97.59999999999964,
+     97.69999999999965,
+     97.79999999999964,
+     97.89999999999964,
+     97.99999999999964,
+     98.09999999999964,
+     98.19999999999963,
+     98.29999999999964,
+     98.39999999999964,
+     98.49999999999963,
+     98.59999999999964,
+     98.69999999999963,
+     98.79999999999964,
+     98.89999999999964,
+     98.99999999999963,
+     99.09999999999964,
+     99.19999999999963,
+     99.29999999999964,
+     99.39999999999964,
+     99.49999999999963,
+     99.59999999999964,
+     99.69999999999963,
+     99.79999999999963,
+     99.89999999999964,
+     99.99999999999963,
+     100.09999999999962,
+     100.19999999999963,
+     100.29999999999963,
+     100.39999999999964,
+     100.49999999999963,
+     100.59999999999962,
+     100.69999999999963,
+     100.79999999999963,
+     100.89999999999964,
+     100.99999999999963,
+     101.09999999999962,
+     101.19999999999963,
+     101.29999999999963,
+     101.39999999999962,
+     101.49999999999963,
+     101.59999999999962,
+     101.69999999999962,
+     101.79999999999963,
+     101.89999999999962,
+     101.99999999999963,
+     102.09999999999962,
+     102.19999999999962,
+     102.29999999999963,
+     102.39999999999962,
+     102.49999999999963,
+     102.59999999999962,
+     102.69999999999962,
+     102.79999999999963,
+     102.89999999999962,
+     102.99999999999962,
+     103.09999999999962,
+     103.19999999999962,
+     103.29999999999961,
+     103.39999999999962,
+     103.49999999999962,
+     103.59999999999962,
+     103.69999999999962,
+     103.79999999999961,
+     103.89999999999962,
+     103.99999999999962,
+     104.09999999999962,
+     104.19999999999962,
+     104.29999999999961,
+     104.39999999999962,
+     104.49999999999962,
+     104.59999999999961,
+     104.69999999999962,
+     104.79999999999961,
+     104.89999999999961,
+     104.99999999999962,
+     105.09999999999961,
+     105.19999999999962,
+     105.29999999999961,
+     105.39999999999961,
+     105.49999999999962,
+     105.59999999999961,
+     105.69999999999962,
+     105.79999999999961,
+     105.89999999999961,
+     105.99999999999962,
+     106.09999999999961,
+     106.1999999999996,
+     106.29999999999961,
+     106.39999999999961,
+     106.4999999999996,
+     106.59999999999961,
+     106.6999999999996,
+     106.79999999999961,
+     106.89999999999961,
+     106.9999999999996,
+     107.09999999999961,
+     107.1999999999996,
+     107.29999999999961,
+     107.39999999999961,
+     107.4999999999996,
+     107.59999999999961,
+     107.6999999999996,
+     107.7999999999996,
+     107.89999999999961,
+     107.9999999999996,
+     108.0999999999996,
+     108.1999999999996,
+     108.2999999999996,
+     108.39999999999961,
+     108.4999999999996,
+     108.5999999999996,
+     108.6999999999996,
+     108.7999999999996,
+     108.89999999999961,
+     108.9999999999996,
+     109.0999999999996,
+     109.1999999999996,
+     109.2999999999996,
+     109.3999999999996,
+     109.4999999999996,
+     109.5999999999996,
+     109.69999999999959,
+     109.7999999999996,
+     109.8999999999996,
+     109.9999999999996,
+     110.0999999999996,
+     110.19999999999959,
+     110.2999999999996,
+     110.3999999999996,
+     110.4999999999996,
+     110.5999999999996,
+     110.69999999999959,
+     110.7999999999996,
+     110.8999999999996,
+     110.99999999999959,
+     111.0999999999996,
+     111.19999999999959,
+     111.29999999999959,
+     111.3999999999996,
+     111.49999999999959,
+     111.5999999999996,
+     111.69999999999959,
+     111.79999999999959,
+     111.8999999999996,
+     111.99999999999959,
+     112.0999999999996,
+     112.19999999999959,
+     112.29999999999959,
+     112.3999999999996,
+     112.49999999999959,
+     112.59999999999958,
+     112.69999999999959,
+     112.79999999999959,
+     112.89999999999958,
+     112.99999999999959,
+     113.09999999999958,
+     113.19999999999959,
+     113.29999999999959,
+     113.39999999999958,
+     113.49999999999959,
+     113.59999999999958,
+     113.69999999999959,
+     113.79999999999959,
+     113.89999999999958,
+     113.99999999999959,
+     114.09999999999958,
+     114.19999999999958,
+     114.29999999999959,
+     114.39999999999958,
+     114.49999999999957,
+     114.59999999999958,
+     114.69999999999958,
+     114.79999999999959,
+     114.89999999999958,
+     114.99999999999957,
+     115.09999999999958,
+     115.19999999999958,
+     115.29999999999959,
+     115.39999999999958,
+     115.49999999999957,
+     115.59999999999958,
+     115.69999999999958,
+     115.79999999999957,
+     115.89999999999958,
+     115.99999999999957,
+     116.09999999999957,
+     116.19999999999958,
+     116.29999999999957,
+     116.39999999999958,
+     116.49999999999957,
+     116.59999999999957,
+     116.69999999999958,
+     116.79999999999957,
+     116.89999999999958,
+     116.99999999999957,
+     117.09999999999957,
+     117.19999999999958,
+     117.29999999999957,
+     117.39999999999957,
+     117.49999999999957,
+     117.59999999999957,
+     117.69999999999956,
+     117.79999999999957,
+     117.89999999999957,
+     117.99999999999957,
+     118.09999999999957,
+     118.19999999999956,
+     118.29999999999957,
+     118.39999999999957,
+     118.49999999999957,
+     118.59999999999957,
+     118.69999999999956,
+     118.79999999999957,
+     118.89999999999957,
+     118.99999999999956,
+     119.09999999999957,
+     119.19999999999956,
+     119.29999999999956,
+     119.39999999999957,
+     119.49999999999956,
+     119.59999999999957,
+     119.69999999999956,
+     119.79999999999956,
+     119.89999999999957,
+     119.99999999999956,
+     120.09999999999957,
+     120.19999999999956,
+     120.29999999999956,
+     120.39999999999957,
+     120.49999999999956,
+     120.59999999999955,
+     120.69999999999956,
+     120.79999999999956,
+     120.89999999999955,
+     120.99999999999956,
+     121.09999999999955,
+     121.19999999999956,
+     121.29999999999956,
+     121.39999999999955,
+     121.49999999999956,
+     121.59999999999955,
+     121.69999999999956,
+     121.79999999999956,
+     121.89999999999955,
+     121.99999999999956,
+     122.09999999999955,
+     122.19999999999955,
+     122.29999999999956,
+     122.39999999999955,
+     122.49999999999955,
+     122.59999999999955,
+     122.69999999999955,
+     122.79999999999956,
+     122.89999999999955,
+     122.99999999999955,
+     123.09999999999954,
+     123.19999999999956,
+     123.29999999999956,
+     123.39999999999955,
+     123.49999999999955,
+     123.59999999999954,
+     123.69999999999956,
+     123.79999999999956,
+     123.89999999999955,
+     123.99999999999955,
+     124.09999999999954,
+     124.19999999999953,
+     124.29999999999956,
+     124.39999999999955,
+     124.49999999999955,
+     124.59999999999954,
+     124.69999999999953,
+     124.79999999999956,
+     124.89999999999955,
+     124.99999999999955,
+     125.09999999999954,
+     125.19999999999953,
+     125.29999999999953,
+     125.39999999999955,
+     125.49999999999955,
+     125.59999999999954,
+     125.69999999999953,
+     125.79999999999953,
+     125.89999999999955,
+     125.99999999999955,
+     126.09999999999954,
+     126.19999999999953,
+     126.29999999999953,
+     126.39999999999955,
+     126.49999999999955,
+     126.59999999999954,
+     126.69999999999953,
+     126.79999999999953,
+     126.89999999999955,
+     126.99999999999955,
+     127.09999999999954,
+     127.19999999999953,
+     127.29999999999953,
+     127.39999999999952,
+     127.49999999999955,
+     127.59999999999954,
+     127.69999999999953,
+     127.79999999999953,
+     127.89999999999952,
+     127.99999999999955,
+     128.09999999999954,
+     128.19999999999953,
+     128.29999999999953,
+     128.39999999999952,
+     128.49999999999952,
+     128.59999999999954,
+     128.69999999999953,
+     128.79999999999953,
+     128.89999999999952,
+     128.99999999999952,
+     129.09999999999954,
+     129.19999999999953,
+     129.29999999999953,
+     129.39999999999952,
+     129.49999999999952,
+     129.59999999999954,
+     129.69999999999953,
+     129.79999999999953,
+     129.89999999999952,
+     129.99999999999952,
+     130.09999999999954,
+     130.19999999999953,
+     130.29999999999953,
+     130.39999999999952,
+     130.49999999999952,
+     130.5999999999995,
+     130.69999999999953,
+     130.79999999999953,
+     130.89999999999952,
+     130.99999999999952,
+     131.0999999999995,
+     131.19999999999953,
+     131.29999999999953,
+     131.39999999999952,
+     131.49999999999952,
+     131.5999999999995,
+     131.6999999999995,
+     131.79999999999953,
+     131.89999999999952,
+     131.99999999999952,
+     132.0999999999995,
+     132.1999999999995,
+     132.29999999999953,
+     132.39999999999952,
+     132.49999999999952,
+     132.5999999999995,
+     132.6999999999995,
+     132.79999999999953,
+     132.89999999999952,
+     132.99999999999952,
+     133.0999999999995,
+     133.1999999999995,
+     133.29999999999953,
+     133.39999999999952,
+     133.49999999999952,
+     133.5999999999995,
+     133.6999999999995,
+     133.7999999999995,
+     133.89999999999952,
+     133.99999999999952,
+     134.0999999999995,
+     134.1999999999995,
+     134.2999999999995,
+     134.39999999999952,
+     134.49999999999952,
+     134.5999999999995,
+     134.6999999999995,
+     134.7999999999995,
+     134.8999999999995,
+     134.99999999999952,
+     135.0999999999995,
+     135.1999999999995,
+     135.2999999999995,
+     135.3999999999995,
+     135.49999999999952,
+     135.5999999999995,
+     135.6999999999995,
+     135.7999999999995,
+     135.8999999999995,
+     135.99999999999952,
+     136.0999999999995,
+     136.1999999999995,
+     136.2999999999995,
+     136.3999999999995,
+     136.49999999999952,
+     136.5999999999995,
+     136.6999999999995,
+     136.7999999999995,
+     136.8999999999995
+    ],
+    "q_g_s": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.00011765619279110806,
+     0.008235971171511498,
+     0.0243366092894708,
+     0.040647339596270794,
+     0.057173149449774606,
+     0.07392152500353301,
+     0.09089835377260545,
+     0.10811181113548761,
+     0.12556903116609366,
+     0.14327898251266635,
+     0.16125028306114747,
+     0.1794928598291325,
+     0.19801710713089055,
+     0.21683394400152742,
+     0.23595592827076367,
+     0.2573359219511103,
+     0.2835200469076767,
+     0.3126110906506821,
+     0.3421301806407834,
+     0.37209972368075755,
+     0.4025464149891982,
+     0.4334730208860393,
+     0.4648889573735999,
+     0.4966631692373316,
+     0.5286340902531406,
+     0.560769234657962,
+     0.5935260071763584,
+     0.6297071505993177,
+     0.6688264690171947,
+     0.7080714588559271,
+     0.7474419341703775,
+     0.7868134225464611,
+     0.8183038984750582,
+     0.8419437015182223,
+     0.8655033356455961,
+     0.8889671774873996,
+     0.91233583669745,
+     0.9356156311375949,
+     0.9587936460555851,
+     0.9830280645339898,
+     1.009731448192479,
+     1.0377404670158443,
+     1.065646998032627,
+     1.093452856786975,
+     1.1211442441596366,
+     1.1486997558257634,
+     1.1741829183354051,
+     1.1950581730332426,
+     1.213212781846918,
+     1.231131603873194,
+     1.2487980980105515,
+     1.2661558085794944,
+     1.2831572481172566,
+     1.2997832954089654,
+     1.3161739272312678,
+     1.3330833340365613,
+     1.3519556522159257,
+     1.3717372959023961,
+     1.38820891391332,
+     1.4018621409115612,
+     1.4155156232959918,
+     1.4291615228752774,
+     1.4427958708061832,
+     1.456415399538767,
+     1.4700144995751088,
+     1.4835975076308408,
+     1.4971695423372189,
+     1.5107195746101048,
+     1.5242400886868712,
+     1.537736070499819,
+     1.550034632922236,
+     1.5596966831613464,
+     1.5678594320409325,
+     1.5759217803906098,
+     1.5838757563518193,
+     1.5917236992465857,
+     1.599475260375405,
+     1.607112666444477,
+     1.6146196626369764,
+     1.6220016616595148,
+     1.6300844433997561,
+     1.639529622258788,
+     1.6495391697230222,
+     1.6594931224583163,
+     1.6693964560799956,
+     1.6792366839452402,
+     1.6884194236964538,
+     1.6955369830720475,
+     1.7011882472781514,
+     1.7067848184607197,
+     1.7139768257919208,
+     1.7242514996229654,
+     1.7359520745119652,
+     1.7475935603045338,
+     1.7591819109947677,
+     1.7707119446244626,
+     1.7821798495419174,
+     1.7935880322523825,
+     1.8049374755296315,
+     1.816224155255869,
+     1.8274483715935788,
+     1.8386180854204461,
+     1.8497521662807577,
+     1.8608658675967131,
+     1.8719542543001377,
+     1.8830099775670224,
+     1.8940314350508218,
+     1.9050165520840816,
+     1.9159685087814333,
+     1.926897300665122,
+     1.9378082089368898,
+     1.9478660613310543,
+     1.956399278712912,
+     1.964231705032293,
+     1.9720224182297974,
+     1.9797700275016037,
+     1.9874777935451582,
+     1.9951500713242254,
+     2.0027855226583386,
+     2.010384486863701,
+     2.0179515961204135,
+     2.0238287009582296,
+     2.0265200942002486,
+     2.0276887395977807,
+     2.0288290024863946,
+     2.029936088203028,
+     2.0310080307888487,
+     2.0320461276819164,
+     2.033056764822157,
+     2.034043878957769,
+     2.0350043383410044,
+     2.0359350153646947,
+     2.036833605914228,
+     2.0376973388794877,
+     2.0385273842112994,
+     2.039327331686251,
+     2.0401000811496983,
+     2.0408496173421646,
+     2.0415806863805392,
+     2.0422916079842404,
+     2.042975299513777,
+     2.0436287868314342,
+     2.0442536826171804,
+     2.045380104039085,
+     2.04738652001777,
+     2.0497489677599243,
+     2.052096694457899,
+     2.054432280921551,
+     2.056756725245711,
+     2.059068163113708,
+     2.0613618533203177,
+     2.063636786534298,
+     2.065894376078894,
+     2.0681358615773533,
+     2.0703623591508724,
+     2.072574229907699,
+     2.0747680207518524,
+     2.076939821500262,
+     2.079090754651842,
+     2.0812202671759126,
+     2.0833271304822745,
+     2.0854140625037543,
+     2.0874836423330794,
+     2.089537629991477,
+     2.091577245184387,
+     2.093603286997485,
+     2.0956161192215097,
+     2.0976160652659694,
+     2.09960132420068,
+     2.1015678906503146,
+     2.103515036521516,
+     2.1054450041381494,
+     2.107359536673293,
+     2.1092599767462796,
+     2.110619867681445,
+     2.1110642724055153,
+     2.111122365080582,
+     2.111170653053483,
+     2.111206523485461,
+     2.1112260646904732,
+     2.1112285471418817,
+     2.1112158694835217,
+     2.1111891657730864,
+     2.1111490679083658,
+     2.1110961888997966,
+     2.111030801260882,
+     2.11095354854342,
+     2.110868636932314,
+     2.110780375885648,
+     2.1106872125495753,
+     2.11058610721104,
+     2.1104760157911766,
+     2.1103564261275736,
+     2.110227188294014,
+     2.1100886832566803,
+     2.1099411998393784,
+     2.109784563881327,
+     2.109618600862955,
+     2.1094428128447347,
+     2.1092568045209763,
+     2.1090607779064054,
+     2.108855018245268,
+     2.1086397545514726,
+     2.108415158081212,
+     2.1081813588844938,
+     2.107938479529497,
+     2.1076859045268628,
+     2.107423085790775,
+     2.1071506359679395,
+     2.106869308750603,
+     2.1065795091291823,
+     2.106281194727214,
+     2.1059740851695734,
+     2.1056583158617257,
+     2.105334296406732,
+     2.1050023757390597,
+     2.10466285484607,
+     2.1043160007604893,
+     2.1039620527716107,
+     2.103601226812258,
+     2.1032337171714013,
+     2.1028596969935283,
+     2.102479303117204,
+     2.1020926484547635,
+     2.101699746200308,
+     2.101300235857963,
+     2.1008939449593487,
+     2.1004812007720193,
+     2.100062327920849,
+     2.099637588227794,
+     2.0992072191672166,
+     2.0987714304908214,
+     2.0983304296624277,
+     2.097884408631666,
+     2.097433572540369,
+     2.0969781319146277,
+     2.096518298222965,
+     2.0960550022837774,
+     2.095589094858517,
+     2.0951202409625553,
+     2.0946479304372185,
+     2.0941719747444614,
+     2.093692295674782,
+     2.093208889203067,
+     2.092721792085481,
+     2.0922310560432593,
+     2.091736739327361,
+     2.091238908902629,
+     2.0907376380049385,
+     2.0902329954994237,
+     2.089725047816814,
+     2.089213872378835,
+     2.088699561139671,
+     2.0881822194465767,
+     2.087661966049316,
+     2.087138913895978,
+     2.086613152402444,
+     2.086084752877065,
+     2.085553783050693,
+     2.0850203179975635,
+     2.0844844349370693,
+     2.083946208157294,
+     2.083405715193708,
+     2.0828630358639457,
+     2.082318239708174,
+     2.0817713933370476,
+     2.081222569757363,
+     2.080671841483032,
+     2.0801192778180755,
+     2.079564943929908,
+     2.079008895351715,
+     2.0784511916229165,
+     2.0778919073318933,
+     2.0773311162463663,
+     2.076768884862205,
+     2.076205270564436,
+     2.0756403252336764,
+     2.075074105416772,
+     2.074506668685744,
+     2.073938069987064,
+     2.0733683680855566,
+     2.072797626729272,
+     2.0722259112378616,
+     2.071653284250795,
+     2.071079822863354,
+     2.0705055938926846,
+     2.069930633454226,
+     2.069354981013799,
+     2.068778686423967,
+     2.0682018003181977,
+     2.067624367132029,
+     2.067046427044134,
+     2.066468017488209,
+     2.065889173828448,
+     2.0653099330576365,
+     2.0647303385882814,
+     2.0641504328511453,
+     2.063570250682988,
+     2.0629898230653536,
+     2.062409178992959,
+     2.061828347403687,
+     2.061247363599585,
+     2.060666264506613,
+     2.060085080332838,
+     2.0595038369162078,
+     2.0589225575460413,
+     2.0583412690340706,
+     2.0577600023113884,
+     2.057178783597201,
+     2.0565976338966907,
+     2.0560165732898104,
+     2.055435623692517,
+     2.0548548047082855,
+     2.0542741259117294,
+     2.0536935886318224,
+     2.053113171842432,
+     2.0525328506806457,
+     2.051952628698709,
+     2.0513725245956715,
+     2.0507925608079884,
+     2.050212760939301,
+     2.049633148858517,
+     2.0490537483211804,
+     2.048474582790506,
+     2.047895675348,
+     2.047317048649439,
+     2.0467387249055142,
+     2.0461607265515456,
+     2.0455830764631964,
+     2.045005796584747,
+     2.044428906783638,
+     2.0438524259425415,
+     2.043276373103595,
+     2.042700767170816,
+     2.0421256267644465,
+     2.0415509701830445,
+     2.0409768153920966,
+     2.040403180022114,
+     2.0398300813707277,
+     2.0392575364067387,
+     2.0386855617751305,
+     2.038114173802571,
+     2.0375433885031295,
+     2.0369732215839824,
+     2.036403688527195,
+     2.0358348044316386,
+     2.0352665839836153,
+     2.0346990416518342,
+     2.0341321916596846,
+     2.0335660479687956,
+     2.0330006242785466,
+     2.0324359340285403,
+     2.031871990402067,
+     2.031308806329977,
+     2.030746394494719,
+     2.0301847673344104,
+     2.0296239370468196,
+     2.029063915593235,
+     2.0285047144509596,
+     2.0279463436784835,
+     2.0273888130140696,
+     2.026832133855409,
+     2.02627631806801,
+     2.0257213767727467,
+     2.0251673206395293,
+     2.0246141600394996,
+     2.024061905092657,
+     2.0235105656900347,
+     2.0229601515067075,
+     2.022410672010586,
+     2.0218621364689473,
+     2.021314553750512,
+     2.020767931434516,
+     2.020222276378701,
+     2.019677595895103,
+     2.0191338978532407,
+     2.0185911912926513,
+     2.0180494855359297,
+     2.017508789088412,
+     2.0169691099887674,
+     2.016430455986654,
+     2.015892834601347,
+     2.0153562531494895,
+     2.0148207186966225,
+     2.014286237219736,
+     2.013752813662186,
+     2.0132204532113036,
+     2.0126891614759557,
+     2.012158944148606,
+     2.0116298071575094,
+     2.011101757564945,
+     2.0105748027953094,
+     2.0100489494168414,
+     2.0095242035214476,
+     2.0090005709211063,
+     2.008478056624916,
+     2.0079566644114273,
+     2.007436397869053,
+     2.0069172610837995,
+     2.0063992583156667,
+     2.0058823938513393,
+     2.0053666719510925,
+     2.004852097026575,
+     2.004338674521318,
+     2.0038264103364374,
+     2.003315309472304,
+     2.002805375370148,
+     2.0022966105892017,
+     2.0017890180760345,
+     2.0012826010456393,
+     2.0007773627793277,
+     2.0002733065524967,
+     1.999770435603299,
+     1.999268753114648,
+     1.998768262266026,
+     1.9982689663666762,
+     1.9977708685374114,
+     1.9972739715559558,
+     1.9967782781561287,
+     1.9962837910657882,
+     1.9957905129725797,
+     1.9952984465058865,
+     1.994807594223238,
+     1.9943179583873125,
+     1.9938295400885666,
+     1.993342339873992,
+     1.9928563594921962,
+     1.9923716020889153,
+     1.991888070988941,
+     1.991405768921628,
+     1.9909246982809903,
+     1.990444860464907,
+     1.9899662558503721,
+     1.9894888851149812,
+     1.9890127495308672,
+     1.988537850551706,
+     1.9880641898510774,
+     1.9875917695407586,
+     1.9871205915281855,
+     1.986650657401594,
+     1.9861819689256797,
+     1.9857145278804789,
+     1.9852483354897612,
+     1.9847833925470397,
+     1.9843197002357758,
+     1.9838572605590419,
+     1.9833960769776091,
+     1.9829361568476631,
+     1.9824775078518633,
+     1.9820201331086071,
+     1.9815640332650575,
+     1.9811092081547101,
+     1.9806556572095981,
+     1.9802033796221505,
+     1.979752374637366,
+     1.9793026424682714,
+     1.9788541836908777,
+     1.9784069981018706,
+     1.9779610849921432,
+     1.9775164433498733,
+     1.9770730719646417,
+     1.97663096950372,
+     1.976190135330213,
+     1.9757505695891953,
+     1.975312271918626,
+     1.9748752411764083,
+     1.974439475869148,
+     1.9740049743049677,
+     1.9735717352672835,
+     1.973139758188084,
+     1.9727090420815148,
+     1.9722795852096515,
+     1.9718513854709072,
+     1.9714244410610333,
+     1.9709987503912811,
+     1.9705743112965999,
+     1.9701511206272653,
+     1.9697291743329512,
+     1.9693084653022732,
+     1.9688889858203023,
+     1.968470731992542,
+     1.9680537019607178,
+     1.9676378943865787,
+     1.9672233081054522,
+     1.9668099420054546,
+     1.966397794976982,
+     1.9659868658887565,
+     1.965577153575702,
+     1.9651686568329407,
+     1.9647613744129777,
+     1.9643553050247207,
+     1.9639504473336398,
+     1.9635467999624807,
+     1.9631443614922806,
+     1.9627431304635952,
+     1.9623431053777929,
+     1.9619442846983512,
+     1.9615466668521293,
+     1.961150250230593,
+     1.9607550331909884,
+     1.9603610140574763,
+     1.9599681911222044,
+     1.9595765626463453,
+     1.9591861268610644,
+     1.9587968819684298,
+     1.958408826142338,
+     1.9580219575293538,
+     1.9576362742495215,
+     1.9572517743971767,
+     1.9568684560416725,
+     1.9564863172281273,
+     1.9561053559781205,
+     1.9557255702903777,
+     1.9553469581414338,
+     1.9549695174862487,
+     1.9545932462588613,
+     1.9542181423729574,
+     1.9538442037224382,
+     1.9534714281820205,
+     1.9530998136077478,
+     1.9527293578375244,
+     1.9523600586916576,
+     1.9519919139733333,
+     1.9516249214690975,
+     1.9512590789493465,
+     1.9508943841687907,
+     1.9505308348668877,
+     1.950168428768285,
+     1.9498071635832641,
+     1.9494470370081138,
+     1.949088046725552,
+     1.9487301904051701,
+     1.9483734657037641,
+     1.948017870265702,
+     1.9476634017233179,
+     1.9473100576972686,
+     1.946957835796877,
+     1.946606733620469,
+     1.946256748755724,
+     1.9459078787799664,
+     1.9455601212605103,
+     1.9452134737549813,
+     1.9448679338116042,
+     1.9445234989694846,
+     1.9441801667589218,
+     1.9438379347016992,
+     1.943496800311341,
+     1.9431567610934066,
+     1.9428178145457276,
+     1.9424799581586871,
+     1.94214318941548,
+     1.9418075057923778,
+     1.9414729047589336,
+     1.9411393837782538,
+     1.9408069403072123,
+     1.9404755717967022,
+     1.9401452756918158,
+     1.9398160494321317,
+     1.9394878904519202,
+     1.9391607961802848,
+     1.9388347640414423,
+     1.9385097914549212,
+     1.9381858758357018,
+     1.9378630145944933,
+     1.9375412051378862,
+     1.9372204448685266,
+     1.9369007311853397,
+     1.9365820614836755,
+     1.9362644331555063,
+     1.9359478435895991,
+     1.9356322901716885,
+     1.935317770284626,
+     1.9350042813085648,
+     1.9346918206211121,
+     1.9343803855975006,
+     1.9340699736107485,
+     1.9337605820317827,
+     1.9334522082296035,
+     1.933144849571444,
+     1.9328385034229225,
+     1.9325331671481518,
+     1.932228838109902,
+     1.9319255136696991,
+     1.9316231911880424,
+     1.93132186802445,
+     1.9310215415376337,
+     1.930722209085619,
+     1.9304238680258847,
+     1.930126515715448,
+     1.9298301495109846,
+     1.9295347667689824,
+     1.9292403648458627,
+     1.9289469410980622,
+     1.9286544928821745,
+     1.9283630175550242,
+     1.9280725124737887,
+     1.9277829749961335,
+     1.9274944024802585,
+     1.9272067922850569,
+     1.9269201417701887,
+     1.9266344482961797,
+     1.9263497092245183,
+     1.9260659219177776,
+     1.925783083739684,
+     1.9255011920551823,
+     1.92522024423057,
+     1.9249402376335933,
+     1.9246611696334839,
+     1.9243830376010689,
+     1.9241058389088759,
+     1.9238295709311835,
+     1.9235542310441214,
+     1.9232798166257377,
+     1.923006325056114,
+     1.9227337537173748,
+     1.9224620999938113,
+     1.9221913612719477,
+     1.9219215349405987,
+     1.921652618390956,
+     1.921384609016649,
+     1.921117504213836,
+     1.9208513013812507,
+     1.9205859979202515,
+     1.9203215912349232,
+     1.9200580787320995,
+     1.9197954578214576,
+     1.919533725915596,
+     1.9192728804300312,
+     1.919012918783331,
+     1.9187538383971185,
+     1.9184956366961556,
+     1.9182383111083878,
+     1.917981859064995,
+     1.9177262780004503,
+     1.9174715653525707,
+     1.9172177185626007,
+     1.9169647350752295,
+     1.9167126123385987,
+     1.9164613478044508,
+     1.9162109389281254,
+     1.9159613831685685,
+     1.9157126779884432,
+     1.9154648208541367,
+     1.9152178092358336,
+     1.9149716406075188,
+     1.9147263124470355,
+     1.9144818222361717,
+     1.9142381674606268,
+     1.9139953456100989,
+     1.9137533541783334,
+     1.9135121906631267,
+     1.9132718525663677,
+     1.9130323373940903,
+     1.91279364265652,
+     1.9125557658680807,
+     1.9123187045474548,
+     1.9120824562176004,
+     1.9118470184057736,
+     1.9116123886436092,
+     1.9113785644671002,
+     1.9111455434166489,
+     1.9109133230371182,
+     1.910681900877795,
+     1.9104512744925124,
+     1.9102214414396361,
+     1.9099923992820578,
+     1.9097641455872683,
+     1.909536677927349,
+     1.909309993879029,
+     1.9090840910237186,
+     1.908858966947499,
+     1.9086346192411727,
+     1.9084110455002572,
+     1.9081882433250639,
+     1.907966210320645,
+     1.9077449440968697,
+     1.9075244422684714,
+     1.9073047024549599,
+     1.9070857222807815,
+     1.9068674993752484,
+     1.9066500313725452,
+     1.9064333159118299,
+     1.9062173506371722,
+     1.9060021331976107,
+     1.9057876612471902,
+     1.9055739324449392,
+     1.9053609444548854,
+     1.9051486949460927,
+     1.9049371815926897,
+     1.9047264020738595,
+     1.9045163540738597,
+     1.904307035282049,
+     1.904098443392873,
+     1.9038905761059444,
+     1.9036834311259372,
+     1.9034770061627109,
+     1.903271298931321,
+     1.903066307151929,
+     1.9028620285499098,
+     1.9026584608558434,
+     1.9024556018054994,
+     1.9022534491398717,
+     1.9020520006051738,
+     1.901851253952868,
+     1.9016512069396445,
+     1.9014518573274786,
+     1.9012532028835953,
+     1.901055241380461,
+     1.9008579705958975,
+     1.9006613883129395,
+     1.900465492319955,
+     1.9002702804106315,
+     1.900075750383911,
+     1.8998819000441196,
+     1.8996887272009075,
+     1.8994962296691953,
+     1.8993044052692767,
+     1.899113251826803,
+     1.8989227671727495,
+     1.8987329491434477,
+     1.8985437955805997,
+     1.89835530433126,
+     1.8981674732478622,
+     1.8979803001881863,
+     1.897793783015367,
+     1.8976079195979823,
+     1.8974227078099484,
+     1.8972381455305407,
+     1.8970542306444897,
+     1.8968709610418637,
+     1.8966883346181256,
+     1.8965063492741463,
+     1.8963250029161585,
+     1.8961442934558275,
+     1.8959642188102044,
+     1.8957847769017442,
+     1.895605965658279,
+     1.8954277830130413,
+     1.8952502269047058,
+     1.8950732952772935,
+     1.894896986080253,
+     1.8947212972684244,
+     1.8945462268020494,
+     1.8943717726467861,
+     1.894197932773673,
+     1.8940247051591397,
+     1.8938520877850205,
+     1.8936800786385417,
+     1.8935086757123383,
+     1.8933378770044151,
+     1.8931676805182032,
+     1.8929980842624559,
+     1.8928290862513604,
+     1.8926606845044898,
+     1.8924928770467497,
+     1.8923256619084996,
+     1.892159037125434,
+     1.891993000738595,
+     1.8918275507944418,
+     1.8916626853447562,
+     1.8914984024467116,
+     1.8913347001628484,
+     1.8911715765610082,
+     1.8910090297144597,
+     1.8908470577017664,
+     1.8906856586068466,
+     1.8905248305189588,
+     1.8903645715326896,
+     1.890204879747983,
+     1.8900457532700758,
+     1.889887190209529,
+     1.8897291886822263,
+     1.8895717468093602,
+     1.8894148627174554,
+     1.8892585345383082,
+     1.8891027604089972,
+     1.8889475384719099,
+     1.8887928668747274,
+     1.8886387437703984,
+     1.8884851673171161,
+     1.8883321356783818,
+     1.8881796470229213,
+     1.8880276995247638,
+     1.8878762913631395,
+     1.8877254207224923,
+     1.8875750857926015,
+     1.887425284768395,
+     1.8872760158500306,
+     1.8871272772429317,
+     1.8869790671576685,
+     1.8868313838100281,
+     1.8866842254209981,
+     1.8865375902167643,
+     1.8863914764287064,
+     1.8862458822933013,
+     1.8861008060522555,
+     1.8859562459524422,
+     1.8858122002458488,
+     1.885668667189627,
+     1.8855256450460327,
+     1.8853831320824752,
+     1.8852411265714755,
+     1.8850996267906965,
+     1.8849586310228763,
+     1.8848181375558144,
+     1.8846781446824512,
+     1.8845386507007995,
+     1.8843996539139252,
+     1.8842611526299495,
+     1.8841231451620633,
+     1.8839856298285074,
+     1.883848604952556,
+     1.88371206886251,
+     1.8835760198916796,
+     1.8834404563783924,
+     1.8833053766660184,
+     1.8831707791028387,
+     1.8830366620421657,
+     1.8829030238423348,
+     1.8827698628665568,
+     1.882637177483055,
+     1.882504966065019,
+     1.8823732269905291,
+     1.8822419586425998,
+     1.8821111594092068,
+     1.881980827683243,
+     1.8818509618624648,
+     1.8817215603495179,
+     1.8815926215519607,
+     1.8814641438822004,
+     1.8813361257575452,
+     1.8812085656001525,
+     1.8810814618370182,
+     1.8809548128999505,
+     1.8808286172255935,
+     1.8807028732554472,
+     1.8805775794357757,
+     1.8804527342176591,
+     1.880328336056972,
+     1.8802043834143474,
+     1.8800808747552085,
+     1.8799578085497364,
+     1.8798351832728397,
+     1.8797129974041749,
+     1.8795912494281315,
+     1.8794699378338429,
+     1.8793490611151136,
+     1.8792286177704631,
+     1.879108606303105,
+     1.8789890252208887,
+     1.8788698730363977,
+     1.8787511482668373,
+     1.8786328494340543,
+     1.8785149750645787,
+     1.8783975236895147,
+     1.8782804938446025,
+     1.878163884070175,
+     1.8780476929111845,
+     1.877931918917185,
+     1.8778165606422557,
+     1.8777016166450968,
+     1.8775870854889374,
+     1.8774729657415365,
+     1.8773592559752155,
+     1.8772459547668119,
+     1.8771330606976835,
+     1.8770205723536648,
+     1.876908488325101,
+     1.8767968072068237,
+     1.8766855275981258,
+     1.8765746481027905,
+     1.8764641673289932,
+     1.8763540838894035,
+     1.8762443964011153,
+     1.8761351034856024,
+     1.8760262037687994,
+     1.875917695880998,
+     1.8758095784568793,
+     1.8757018501355451,
+     1.875594509560422,
+     1.87548755537929,
+     1.8753809862442727,
+     1.8752748008118687,
+     1.8751689977428676,
+     1.8750635757023446,
+     1.87495853335976,
+     1.874853869388799,
+     1.8747495824674492,
+     1.8746456712779587,
+     1.8745421345068194,
+     1.8744389708448133,
+     1.8743361789869482,
+     1.8742337576324442,
+     1.874131705484747,
+     1.8740300212514946,
+     1.8739287036445231,
+     1.8738277513798827,
+     1.8737271631777745,
+     1.8736269377625596,
+     1.873527073862746,
+     1.8734275702110186,
+     1.8733284255441478,
+     1.8732296386030662,
+     1.873131208132797,
+     1.873033132882443,
+     1.8729354116052443,
+     1.8728380430584735,
+     1.8727410260034667,
+     1.8726443592056403,
+     1.8725480414344406,
+     1.8724520714633819,
+     1.8723564480699775,
+     1.8722611700357508,
+     1.8721662361462328,
+     1.8720716451909407,
+     1.8719773959634047,
+     1.871883487261075,
+     1.8717899178853792,
+     1.8716966866417306,
+     1.8716037923394202,
+     1.8715112337917152,
+     1.8714190098157883,
+     1.8713271192326968,
+     1.8712355608674276,
+     1.871144333548834,
+     1.8710534361096567,
+     1.8709628673864835,
+     1.8708726262197557,
+     1.8707827114537887,
+     1.8706931219367036,
+     1.8706038565204501,
+     1.870514914060763,
+     1.8704262934172384,
+     1.8703379934532358,
+     1.8702500130358357,
+     1.87016235103596,
+     1.8700750063282665,
+     1.869987977791168,
+     1.8699012643068267,
+     1.8698148647611035,
+     1.8697287780435792,
+     1.8696430030475522,
+     1.8695575386700147,
+     1.8694723838116591,
+     1.8693875373768196,
+     1.8693029982735228,
+     1.8692187654134482,
+     1.8691348377118884,
+     1.8690512140877829,
+     1.868967893463708,
+     1.8688848747658797,
+     1.8688021569240876,
+     1.868719738871692,
+     1.8686376195456667,
+     1.868555797886529,
+     1.868474272838369,
+     1.8683930433488267,
+     1.868312108369123,
+     1.8682314668539801,
+     1.8681511177615877,
+     1.8680710600537016,
+     1.867991292695585,
+     1.8679118146559843,
+     1.867832624907094,
+     1.8677537224245808,
+     1.8676751061876284,
+     1.8675967751788054,
+     1.867518728384154,
+     1.8674409647931376,
+     1.8673634833986041,
+     1.8672862831968602,
+     1.8672093631876125,
+     1.8671327223739258,
+     1.867056359762262,
+     1.8669802743624309,
+     1.8669044651876194,
+     1.8668289312543518,
+     1.866753671582479,
+     1.8666786851952184,
+     1.8666039711190996,
+     1.866529528383929,
+     1.8664553560228296,
+     1.8663814530722187,
+     1.8663078185718074,
+     1.866234451564519,
+     1.8661613510965827,
+     1.866088516217507,
+     1.8660159459799723,
+     1.8659436394399156,
+     1.865871595656483,
+     1.8657998136920815,
+     1.8657282926123004,
+     1.8656570314858967,
+     1.8655860293847917,
+     1.8655152853841117,
+     1.865444798562158,
+     1.8653745680003342,
+     1.8653045927832443,
+     1.8652348719986056,
+     1.8651654047372335,
+     1.8650961900930894,
+     1.8650272271632262,
+     1.8649585150478083,
+     1.8648900528500671,
+     1.8648218396762912,
+     1.8647538746358845,
+     1.864686156841282,
+     1.864618685407979,
+     1.8645514594545052,
+     1.864484478102415,
+     1.864417740476274,
+     1.8643512457036735,
+     1.8642849929152223,
+     1.8642189812444965,
+     1.8641532098280142,
+     1.8640876778053568,
+     1.8640223843190327,
+     1.863957328514461,
+     1.863892509540095,
+     1.863827926547244,
+     1.863763578690187,
+     1.8636994651261198,
+     1.8636355850151252,
+     1.8635719375201882,
+     1.8635085218072145,
+     1.86344533704497,
+     1.863382382405088,
+     1.8633196570621071,
+     1.8632571601933816,
+     1.8631948909790872,
+     1.863132848602299,
+     1.8630710322489017,
+     1.8630094411075973,
+     1.8629480743698814,
+     1.8628869312300371,
+     1.8628260108851964,
+     1.8627653125352246,
+     1.862704835382781,
+     1.8626445786333043,
+     1.8625845414949627,
+     1.86252472317868,
+     1.8624651228981624,
+     1.8624057398698184,
+     1.8623465733127424,
+     1.8622876224487572,
+     1.8622288865024628,
+     1.8621703647010892,
+     1.862112056274551,
+     1.862053960455463,
+     1.8619960764790782,
+     1.861938403583384,
+     1.86188094100897,
+     1.8618236879990637,
+     1.861766643799566,
+     1.861709807658977,
+     1.8616531788284194,
+     1.8615967565616423,
+     1.8615405401149971,
+     1.8614845287474198,
+     1.8614287217204355,
+     1.8613731182981685,
+     1.8613177177472615,
+     1.8612625193369574,
+     1.8612075223390527,
+     1.861152726027861,
+     1.8610981296802795,
+     1.8610437325756983,
+     1.8609895339960538,
+     1.8609355332257598,
+     1.8608817295517188,
+     1.8608281222634049,
+     1.8607747106527515,
+     1.8607214940141221,
+     1.8606684716443975,
+     1.8606156428429073,
+     1.8605630069114527,
+     1.8605105631542773,
+     1.8604583108780606,
+     1.8604062493919087,
+     1.860354378007353,
+     1.8603026960383817,
+     1.860251202801296,
+     1.8601998976148297,
+     1.860148779800203,
+     1.8600978486809165,
+     1.8600471035828958,
+     1.859996543834405,
+     1.8599461687660823,
+     1.8598959777109556,
+     1.8598459700043433,
+     1.8597961449838933,
+     1.8597465019896289,
+     1.8596970403638933,
+     1.859647759451337,
+     1.8595986585988877,
+     1.8595497371558025,
+     1.859500994473618,
+     1.8594524299061717,
+     1.8594040428095417,
+     1.8593558325421236,
+     1.8593077984645747,
+     1.8592599399397727,
+     1.8592122563328384,
+     1.8591647470111567,
+     1.8591174113443079,
+     1.8590702487041686,
+     1.859023258464786,
+     1.8589764400023834,
+     1.858929792695438,
+     1.8588833159245983,
+     1.8588370090727242,
+     1.8587908715248154,
+     1.8587449026680989,
+     1.858699101891973,
+     1.8586534685878988,
+     1.8586080021495581,
+     1.8585627019727755,
+     1.858517567455516,
+     1.8584725979978665,
+     1.8584277930020168,
+     1.858383151872299,
+     1.8583386740151728,
+     1.858294358839166,
+     1.858250205754919,
+     1.8582062141751243,
+     1.8581623835145966,
+     1.8581187131902104,
+     1.8580752026209375,
+     1.8580318512277525,
+     1.8579886584337058,
+     1.8579456236638943,
+     1.857902746345461,
+     1.8578600259075801,
+     1.8578174617814291,
+     1.8577750534002537,
+     1.857732800199279,
+     1.8576907016157047,
+     1.8576487570887745,
+     1.8576069660597379,
+     1.8575653279717776,
+     1.8575238422700941,
+     1.8574825084018256,
+     1.857441325816111,
+     1.8574002939640275,
+     1.8573594122985924,
+     1.8573186802748078,
+     1.8572780973495646,
+     1.8572376629817153,
+     1.857197376632052,
+     1.857157237763255,
+     1.857117245839926,
+     1.8570774003285793,
+     1.857037700697623,
+     1.8569981464173642,
+     1.856958736959959,
+     1.8569194717994997,
+     1.8568803504119333,
+     1.856841372275063,
+     1.8568025368685557,
+     1.8567638436739402,
+     1.85672529217458,
+     1.8566868818557163,
+     1.8566486122043784,
+     1.856610482709445,
+     1.856572492861629,
+     1.8565346421534243,
+     1.8564969300791965,
+     1.856459356135078,
+     1.8564219198189909,
+     1.8563846206306327,
+     1.856347458071549,
+     1.8563104316450527,
+     1.8562735408562026,
+     1.8562367852118256,
+     1.8562001642205157,
+     1.8561636773926196,
+     1.8561273242402228,
+     1.8560911042772237,
+     1.8560550170191827,
+     1.8560190619834003,
+     1.855983238688953,
+     1.8559475466565802,
+     1.8559119854087387,
+     1.8558765544696378,
+     1.855841253365138,
+     1.8558060816228374,
+     1.85577103877202,
+     1.8557361243436523,
+     1.8557013378703777,
+     1.8556666788864613,
+     1.8556321469278931,
+     1.8555977415323557,
+     1.855563462239095,
+     1.8555293085890874,
+     1.8554952801249298,
+     1.8554613763908492,
+     1.8554275969327063,
+     1.855393941297976,
+     1.8553604090358067,
+     1.8553269996969066,
+     1.8552937128336437,
+     1.855260547999948,
+     1.855227504751332,
+     1.8551945826449754,
+     1.855161781239582,
+     1.8551291000955004,
+     1.8550965387745941,
+     1.8550640968403367,
+     1.85503177385774,
+     1.854999569393415,
+     1.854967483015527,
+     1.8549355142937176,
+     1.8549036627992541,
+     1.8548719281049615,
+     1.8548403097850996,
+     1.854808807415559,
+     1.854777420573709,
+     1.8547461488384112,
+     1.85471499179008,
+     1.854683949010612,
+     1.8546530200834357,
+     1.854622204593478,
+     1.8545915021271093,
+     1.8545609122722544,
+     1.854530434618284,
+     1.8545000687560214,
+     1.854469814277807,
+     1.854439670777428,
+     1.8544096378501576,
+     1.8543797150926502,
+     1.8543499021030923,
+     1.8543201984810866,
+     1.8542906038276807,
+     1.854261117745373,
+     1.8541436404254983,
+     1.8537204615118796,
+     1.852792383195419,
+     1.8512179290450619,
+     1.8488536818574262,
+     1.8455591637950508,
+     1.8412007982690213,
+     1.835654949456057,
+     1.8288101014734732,
+     1.820568274687437,
+     1.810845791780528,
+     1.799573508363342,
+     1.7866966171680274,
+     1.7721741246911822,
+     1.7559780868907933,
+     1.7380926777080925,
+     1.7185131517285959,
+     1.6972447507711819,
+     1.6743015938884365,
+     1.6497055812838781,
+     1.6234853349993768,
+     1.5956751928261295,
+     1.5663142666335481,
+     1.5354455720642937,
+     1.5031152331764366,
+     1.46937176299655,
+     1.4342654189609574,
+     1.397847630756514,
+     1.3601704970338293,
+     1.3212863467698195,
+     1.2812473606331658,
+     1.2401933469087938,
+     1.198392979389419,
+     1.1560954464512034,
+     1.1134910551454598,
+     1.0707707425880209,
+     1.0281210772095033,
+     0.9857202065360556,
+     0.9437347520406988,
+     0.9023175857784678,
+     0.8616063883667472,
+     0.8217228730123064,
+     0.782772558402837,
+     0.7448449792865808,
+     0.7080142339751884,
+     0.6723397804892542,
+     0.6378674061034552,
+     0.6046303076899413,
+     0.5726502319508919,
+     0.5419386350877249,
+     0.5124978305673707,
+     0.4843221014178769,
+     0.45739875999302354,
+     0.43170914349900236,
+     0.4072295379054257,
+     0.38393202630369716,
+     0.3617852604563796,
+     0.3407551563240774,
+     0.32080551586967626,
+     0.3018985785209724,
+     0.2839955064037353,
+     0.2670568079119764,
+     0.25104270441790744,
+     0.23591344499346462,
+     0.22162957395836028,
+     0.20815215592039105,
+     0.1954429627592309,
+     0.18346462674705233,
+     0.17218076371519572,
+     0.16155606987825694,
+     0.15155639562598366,
+     0.14214879929677554,
+     0.13330158365949737,
+     0.12498431755687807,
+     0.11716784490601727,
+     0.10982428301136064,
+     0.10292701192361164,
+     0.09645065637430655,
+     0.09037106162961739,
+     0.08466526443897149,
+     0.07931146010204314,
+     0.07428896654075672,
+     0.06957818614153938,
+     0.06516056602411834,
+     0.06101855729668622,
+     0.0571355737725577,
+     0.05349595054776141,
+     0.050084902773857826,
+     0.04688848490206599,
+     0.04389355062520766,
+     0.04108771369980728,
+     0.03845930979358151,
+     0.035997359470449686,
+     0.03369153239794199,
+     0.03153211283766254,
+     0.029509966459287287,
+     0.027616508501626332,
+     0.025843673289860057,
+     0.024183885106088883,
+     0.022630030400448725,
+     0.021175431321829995,
+     0.01981382054109124,
+     0.018539317334106305,
+     0.017346404888001182,
+     0.016229908791186267,
+     0.015184976665053793,
+     0.014207058894308216,
+     0.013291890411598997,
+     0.012435473491648502,
+     0.011634061510632468,
+     0.010884143626218512,
+     0.010182430334819605,
+     0.009525839863404292,
+     0.008911485353872841,
+     0.008336662799900942,
+     0.007798839696812549,
+     0.0072956443665618525,
+     0.006824855921686617,
+     0.006384394833114657,
+     0.005972314068399541,
+     0.005588651057707704,
+     0.005240255843715379,
+     0.0048918606297230546,
+     0.004543465415730731,
+     0.004195070201738407,
+     0.0038466749877460824,
+     0.003498279773753759,
+     0.0031498845597614346,
+     0.0028014893457691103,
+     0.002453094131776787,
+     0.0021046989177844616,
+     0.0017563037037921381,
+     0.0014079084897998147,
+     0.0010595132758074895,
+     0.000711118061815166,
+     0.00036272284782284253
+    ]
+   },
+   "flow_data": {
+    "t_s": [
+     0.0,
+     0.500501,
+     1.001001,
+     1.501502,
+     2.002002,
+     2.502503,
+     3.003003,
+     3.503504,
+     4.004004,
+     4.504505,
+     5.005005,
+     5.505506,
+     6.006006,
+     6.506507,
+     7.007007,
+     7.507508,
+     8.008008,
+     8.508509,
+     9.009009,
+     9.50951,
+     10.01001,
+     10.510511,
+     11.011011,
+     11.511512,
+     12.012012,
+     12.512513,
+     13.013013,
+     13.513514,
+     14.014014,
+     14.514515,
+     15.015015,
+     15.515516,
+     16.016016,
+     16.516517,
+     17.017017,
+     17.517518,
+     18.018018,
+     18.518519,
+     19.019019,
+     19.51952,
+     20.02002,
+     20.520521,
+     21.021021,
+     21.521522,
+     22.022022,
+     22.522523,
+     23.023023,
+     23.523524,
+     24.024024,
+     24.524525,
+     25.025025,
+     25.525526,
+     26.026026,
+     26.526527,
+     27.027027,
+     27.527528,
+     28.028028,
+     28.528529,
+     29.029029,
+     29.52953,
+     30.03003,
+     30.530531,
+     31.031031,
+     31.531532,
+     32.032032,
+     32.532533,
+     33.033033,
+     33.533534,
+     34.034034,
+     34.534535,
+     35.035035,
+     35.535536,
+     36.036036,
+     36.536537,
+     37.037037,
+     37.537538,
+     38.038038,
+     38.538539,
+     39.039039,
+     39.53954,
+     40.04004,
+     40.540541,
+     41.041041,
+     41.541542,
+     42.042042,
+     42.542543,
+     43.043043,
+     43.543544,
+     44.044044,
+     44.544545,
+     45.045045,
+     45.545546,
+     46.046046,
+     46.546547,
+     47.047047,
+     47.547548,
+     48.048048,
+     48.548549,
+     49.049049,
+     49.54955,
+     50.05005,
+     50.550551,
+     51.051051,
+     51.551552,
+     52.052052,
+     52.552553,
+     53.053053,
+     53.553554,
+     54.054054,
+     54.554555,
+     55.055055,
+     55.555556,
+     56.056056,
+     56.556557,
+     57.057057,
+     57.557558,
+     58.058058,
+     58.558559,
+     59.059059,
+     59.55956,
+     60.06006,
+     60.560561,
+     61.061061,
+     61.561562,
+     62.062062,
+     62.562563,
+     63.063063,
+     63.563564,
+     64.064064,
+     64.564565,
+     65.065065,
+     65.565566,
+     66.066066,
+     66.566567,
+     67.067067,
+     67.567568,
+     68.068068,
+     68.568569,
+     69.069069,
+     69.56957,
+     70.07007,
+     70.570571,
+     71.071071,
+     71.571572,
+     72.072072,
+     72.572573,
+     73.073073,
+     73.573574,
+     74.074074,
+     74.574575,
+     75.075075,
+     75.575576,
+     76.076076,
+     76.576577,
+     77.077077,
+     77.577578,
+     78.078078,
+     78.578579,
+     79.079079,
+     79.57958,
+     80.08008,
+     80.580581,
+     81.081081,
+     81.581582,
+     82.082082,
+     82.582583,
+     83.083083,
+     83.583584,
+     84.084084,
+     84.584585,
+     85.085085,
+     85.585586,
+     86.086086,
+     86.586587,
+     87.087087,
+     87.587588,
+     88.088088,
+     88.588589,
+     89.089089,
+     89.58959,
+     90.09009,
+     90.590591,
+     91.091091,
+     91.591592,
+     92.092092,
+     92.592593,
+     93.093093,
+     93.593594,
+     94.094094,
+     94.594595,
+     95.095095,
+     95.595596,
+     96.096096,
+     96.596597,
+     97.097097,
+     97.597598,
+     98.098098,
+     98.598599,
+     99.099099,
+     99.5996,
+     100.0
+    ],
+    "q_g_s": [
+     0.001214,
+     0.003237,
+     0.005253,
+     0.007452,
+     -0.001239,
+     -0.003492,
+     -0.000715,
+     0.003121,
+     0.000296,
+     -0.007279,
+     -0.003803,
+     -0.003799,
+     0.002234,
+     0.007548,
+     0.011385,
+     0.017144,
+     0.014711,
+     0.014574,
+     0.013641,
+     0.002537,
+     0.004102,
+     0.007261,
+     0.01515,
+     0.021044,
+     0.031656,
+     0.049346,
+     0.069504,
+     0.079697,
+     0.107075,
+     0.121407,
+     0.138499,
+     0.158709,
+     0.166764,
+     0.195555,
+     0.207115,
+     0.246493,
+     0.265337,
+     0.279775,
+     0.304175,
+     0.314926,
+     0.340908,
+     0.355812,
+     0.37162,
+     0.392346,
+     0.423162,
+     0.437338,
+     0.47614,
+     0.488675,
+     0.520061,
+     0.561956,
+     0.609164,
+     0.647317,
+     0.667304,
+     0.70137,
+     0.749169,
+     0.782654,
+     0.798874,
+     0.828545,
+     0.863958,
+     0.91896,
+     0.944758,
+     0.998427,
+     1.057744,
+     1.094493,
+     1.143676,
+     1.191023,
+     1.240005,
+     1.274713,
+     1.319124,
+     1.35572,
+     1.419495,
+     1.456411,
+     1.491404,
+     1.539894,
+     1.569181,
+     1.607149,
+     1.623687,
+     1.670781,
+     1.712476,
+     1.718233,
+     1.741898,
+     1.750219,
+     1.785843,
+     1.801652,
+     1.816133,
+     1.838245,
+     1.866691,
+     1.894007,
+     1.905943,
+     1.916382,
+     1.94071,
+     1.964377,
+     1.957762,
+     1.973322,
+     1.9734,
+     1.977695,
+     1.968337,
+     1.972492,
+     1.979385,
+     1.970474,
+     1.982852,
+     1.997619,
+     2.009216,
+     2.011734,
+     2.009169,
+     2.009843,
+     1.992909,
+     1.984808,
+     1.981067,
+     1.997121,
+     2.010601,
+     2.005355,
+     2.019789,
+     2.004712,
+     2.005271,
+     1.98354,
+     1.969305,
+     1.971187,
+     1.966758,
+     1.963692,
+     1.953483,
+     1.952187,
+     1.952943,
+     1.95066,
+     1.947575,
+     1.958476,
+     1.951592,
+     1.945696,
+     1.948437,
+     1.939102,
+     1.92491,
+     1.925715,
+     1.933695,
+     1.93572,
+     1.9224,
+     1.933464,
+     1.936138,
+     1.926391,
+     1.923623,
+     1.924205,
+     1.922259,
+     1.921358,
+     1.930301,
+     1.9373,
+     1.926298,
+     1.92781,
+     1.931478,
+     1.923225,
+     1.924349,
+     1.912271,
+     1.912109,
+     1.908718,
+     1.898532,
+     1.899071,
+     1.888003,
+     1.894718,
+     1.882544,
+     1.889998,
+     1.887386,
+     1.890135,
+     1.901179,
+     1.908669,
+     1.899947,
+     1.884497,
+     1.884835,
+     1.877272,
+     1.863105,
+     1.87237,
+     1.871497,
+     1.881537,
+     1.881733,
+     1.881356,
+     1.879264,
+     1.850818,
+     1.864594,
+     1.875606,
+     1.863323,
+     1.860687,
+     1.86832,
+     1.887067,
+     1.871238,
+     1.864727,
+     1.867055,
+     1.871856,
+     1.863788,
+     1.867048,
+     1.8726,
+     1.87762,
+     1.879914,
+     1.877833,
+     1.87044,
+     1.861721,
+     1.863651,
+     1.863766,
+     1.856585,
+     1.857953,
+     1.856236,
+     1.862203,
+     1.848746,
+     1.835287,
+     1.824924
+    ],
+    "sem_g_s": [
+     0.016844,
+     0.013502,
+     0.010768,
+     0.007707,
+     0.005976,
+     0.007569,
+     0.007097,
+     0.00504,
+     0.007321,
+     0.004929,
+     0.003977,
+     0.002009,
+     0.003285,
+     0.005945,
+     0.005372,
+     0.006575,
+     0.007968,
+     0.005746,
+     0.003644,
+     0.005309,
+     0.012168,
+     0.012689,
+     0.013458,
+     0.01811,
+     0.022766,
+     0.029275,
+     0.028004,
+     0.037396,
+     0.04277,
+     0.044843,
+     0.044392,
+     0.050512,
+     0.052425,
+     0.051715,
+     0.05219,
+     0.051667,
+     0.054646,
+     0.053767,
+     0.056621,
+     0.056979,
+     0.06273,
+     0.070737,
+     0.064552,
+     0.067165,
+     0.067898,
+     0.077433,
+     0.079113,
+     0.079073,
+     0.085913,
+     0.102871,
+     0.093451,
+     0.106003,
+     0.105495,
+     0.112972,
+     0.115857,
+     0.107936,
+     0.122294,
+     0.113186,
+     0.130389,
+     0.134966,
+     0.133387,
+     0.140099,
+     0.148099,
+     0.151407,
+     0.155593,
+     0.155228,
+     0.153649,
+     0.159337,
+     0.157518,
+     0.154519,
+     0.143574,
+     0.150107,
+     0.156484,
+     0.1523,
+     0.153182,
+     0.152627,
+     0.158242,
+     0.154336,
+     0.142048,
+     0.138167,
+     0.128201,
+     0.127992,
+     0.121342,
+     0.112156,
+     0.114417,
+     0.110577,
+     0.110639,
+     0.107724,
+     0.100374,
+     0.09817,
+     0.098126,
+     0.100755,
+     0.078441,
+     0.086924,
+     0.086368,
+     0.080557,
+     0.065909,
+     0.069414,
+     0.06742,
+     0.053243,
+     0.047192,
+     0.048167,
+     0.041575,
+     0.035918,
+     0.035612,
+     0.037764,
+     0.039096,
+     0.035458,
+     0.03101,
+     0.032904,
+     0.030442,
+     0.038786,
+     0.034192,
+     0.035078,
+     0.038001,
+     0.038276,
+     0.041024,
+     0.033512,
+     0.037584,
+     0.043164,
+     0.039815,
+     0.036839,
+     0.038189,
+     0.040581,
+     0.042637,
+     0.045284,
+     0.040937,
+     0.04352,
+     0.041387,
+     0.03761,
+     0.036014,
+     0.032695,
+     0.034897,
+     0.036458,
+     0.035372,
+     0.036831,
+     0.047667,
+     0.051764,
+     0.051796,
+     0.046002,
+     0.049204,
+     0.048876,
+     0.041417,
+     0.039392,
+     0.036234,
+     0.041435,
+     0.040481,
+     0.038438,
+     0.034896,
+     0.035399,
+     0.030955,
+     0.031903,
+     0.035863,
+     0.03663,
+     0.044486,
+     0.047155,
+     0.046639,
+     0.047067,
+     0.043909,
+     0.042605,
+     0.039344,
+     0.038822,
+     0.03601,
+     0.035084,
+     0.035845,
+     0.036219,
+     0.039479,
+     0.037945,
+     0.038711,
+     0.037423,
+     0.040144,
+     0.041793,
+     0.041352,
+     0.040422,
+     0.041539,
+     0.041872,
+     0.040665,
+     0.039291,
+     0.041731,
+     0.043829,
+     0.042225,
+     0.041879,
+     0.044095,
+     0.045256,
+     0.04446,
+     0.050519,
+     0.047622,
+     0.047949,
+     0.047874,
+     0.05159,
+     0.047849,
+     0.040727,
+     0.044035,
+     0.044679,
+     0.04133,
+     0.041777,
+     0.041798,
+     0.043981,
+     0.040776,
+     0.039134,
+     0.038851
+    ]
+   },
+   "offset_s": 5.1000000000000005
+  },
+  "v5": {
+   "rows": [
+    {
+     "setting_um": 160,
+     "fines_g": 0,
+     "time_model": 16.252568929751295,
+     "ey_model": 22.084759276235,
+     "time_data": 66.16333333333334,
+     "ey_data": 20.778666666666666,
+     "shots": 3
+    },
+    {
+     "setting_um": 170,
+     "fines_g": 0,
+     "time_model": 15.030495763014617,
+     "ey_model": 21.840609956251505,
+     "time_data": 57.21666666666667,
+     "ey_data": 20.656666666666666,
+     "shots": 3
+    },
+    {
+     "setting_um": 180,
+     "fines_g": 0,
+     "time_model": 14.0258516561104,
+     "ey_model": 21.597330799960506,
+     "time_data": 44.82,
+     "ey_data": 20.892666666666667,
+     "shots": 3
+    },
+    {
+     "setting_um": 190,
+     "fines_g": 0,
+     "time_model": 13.490105579792282,
+     "ey_model": 21.34444784198046,
+     "time_data": 25.255,
+     "ey_data": 19.53725,
+     "shots": 4
+    },
+    {
+     "setting_um": 190,
+     "fines_g": 1,
+     "time_model": 14.77853981106793,
+     "ey_model": 21.471795486668697,
+     "time_data": 37.620000000000005,
+     "ey_data": 20.056,
+     "shots": 4
+    },
+    {
+     "setting_um": 190,
+     "fines_g": 2,
+     "time_model": 16.360706534313145,
+     "ey_model": 21.68918125753003,
+     "time_data": 56.626666666666665,
+     "ey_data": 20.294,
+     "shots": 3
+    },
+    {
+     "setting_um": 190,
+     "fines_g": 4,
+     "time_model": 19.296037629348824,
+     "ey_model": 21.796585041292268,
+     "time_data": 79.51,
+     "ey_data": 21.266,
+     "shots": 1
+    },
+    {
+     "setting_um": 210,
+     "fines_g": 0,
+     "time_model": 11.772332544487458,
+     "ey_model": 20.671177326578682,
+     "time_data": 18.816666666666666,
+     "ey_data": 18.95866666666667,
+     "shots": 3
+    },
+    {
+     "setting_um": 210,
+     "fines_g": 1,
+     "time_model": 12.564804641296304,
+     "ey_model": 20.788252697959607,
+     "time_data": 24.11333333333333,
+     "ey_data": 19.104666666666663,
+     "shots": 3
+    },
+    {
+     "setting_um": 210,
+     "fines_g": 2,
+     "time_model": 13.908885776065524,
+     "ey_model": 21.015972834657468,
+     "time_data": 32.906666666666666,
+     "ey_data": 19.857333333333333,
+     "shots": 3
+    },
+    {
+     "setting_um": 210,
+     "fines_g": 4,
+     "time_model": 16.406466778357597,
+     "ey_model": 21.34692897133647,
+     "time_data": 58.49,
+     "ey_data": 20.645999999999997,
+     "shots": 3
+    },
+    {
+     "setting_um": 250,
+     "fines_g": 0,
+     "time_model": 11.06752886799057,
+     "ey_model": 18.42253798608867,
+     "time_data": 8.945,
+     "ey_data": 16.6695,
+     "shots": 4
+    },
+    {
+     "setting_um": 250,
+     "fines_g": 1,
+     "time_model": 11.149372771784572,
+     "ey_model": 19.130805078494035,
+     "time_data": 12.030000000000001,
+     "ey_data": 17.51,
+     "shots": 3
+    },
+    {
+     "setting_um": 250,
+     "fines_g": 2,
+     "time_model": 11.829272670890205,
+     "ey_model": 19.88124067229146,
+     "time_data": 17.53,
+     "ey_data": 18.965333333333334,
+     "shots": 3
+    },
+    {
+     "setting_um": 250,
+     "fines_g": 4,
+     "time_model": 14.7007861116782,
+     "ey_model": 20.49908220098357,
+     "time_data": 32.056666666666665,
+     "ey_data": 19.663999999999998,
+     "shots": 3
+    }
+   ],
+   "spearman_model": 0.8357142857142855,
+   "spearman_data": 0.9571428571428571,
+   "rms_time": 30.309720075154832,
+   "rms_ey": 1.3150397891844054,
+   "bias_time": -23.96441626227007,
+   "time_ratio": 0.43719545624845585
+  },
+  "tiers": {
+   "tiers": [
+    1,
+    0
+   ],
+   "rows": [
+    {
+     "case": "cameron2020/gs1_1",
+     "time_s": [
+      15.9,
+      15.96094927962273
+     ],
+     "ey_percent": [
+      21.85977619898046,
+      22.362492376105433
+     ]
+    },
+    {
+     "case": "cameron2020/gs1_3",
+     "time_s": [
+      14.639203294176887,
+      14.691272260889022
+     ],
+     "ey_percent": [
+      21.556142468129035,
+      22.030035747152173
+     ]
+    },
+    {
+     "case": "cameron2020/gs1_5",
+     "time_s": [
+      13.476256815226742,
+      13.520025907498685
+     ],
+     "ey_percent": [
+      21.21550313915001,
+      21.64426569948522
+     ]
+    },
+    {
+     "case": "cameron2020/gs1_7",
+     "time_s": [
+      13.0212627749917,
+      13.061551410071585
+     ],
+     "ey_percent": [
+      20.99016726936063,
+      21.384712689010787
+     ]
+    },
+    {
+     "case": "cameron2020/gs1_9",
+     "time_s": [
+      12.582007673212116,
+      12.619748873960997
+     ],
+     "ey_percent": [
+      20.757493791252156,
+      21.108872895658315
+     ]
+    },
+    {
+     "case": "cameron2020/gs2_1",
+     "time_s": [
+      11.803528548106623,
+      11.830982773447728
+     ],
+     "ey_percent": [
+      20.294780975252046,
+      20.295960937695554
+     ]
+    },
+    {
+     "case": "cameron2020/gs2_3",
+     "time_s": [
+      11.139077336970768,
+      11.144393161180009
+     ],
+     "ey_percent": [
+      19.295682000274013,
+      19.204242965076503
+     ]
+    },
+    {
+     "case": "smrke2024/s160_f0",
+     "time_s": [
+      16.252568929751295,
+      16.29913962112092
+     ],
+     "ey_percent": [
+      22.084759276235,
+      22.16530847069851
+     ]
+    },
+    {
+     "case": "smrke2024/s170_f0",
+     "time_s": [
+      15.030495763014617,
+      15.071036283601858
+     ],
+     "ey_percent": [
+      21.840609956251505,
+      21.87070772203982
+     ]
+    },
+    {
+     "case": "smrke2024/s180_f0",
+     "time_s": [
+      14.0258516561104,
+      14.060017154696206
+     ],
+     "ey_percent": [
+      21.597330799960506,
+      21.568962059184845
+     ]
+    },
+    {
+     "case": "smrke2024/s190_f0",
+     "time_s": [
+      13.490105579792282,
+      13.520702857607619
+     ],
+     "ey_percent": [
+      21.34444784198046,
+      21.273557323136718
+     ]
+    },
+    {
+     "case": "smrke2024/s190_f1",
+     "time_s": [
+      14.77853981106793,
+      14.814909279641697
+     ],
+     "ey_percent": [
+      21.471795486668697,
+      21.453476654745476
+     ]
+    },
+    {
+     "case": "smrke2024/s190_f2",
+     "time_s": [
+      16.360706534313145,
+      16.405066348287207
+     ],
+     "ey_percent": [
+      21.68918125753003,
+      21.732248370555087
+     ]
+    },
+    {
+     "case": "smrke2024/s190_f4",
+     "time_s": [
+      19.296037629348824,
+      19.35701507160446
+     ],
+     "ey_percent": [
+      21.796585041292268,
+      21.949546207319827
+     ]
+    },
+    {
+     "case": "smrke2024/s210_f0",
+     "time_s": [
+      11.772332544487458,
+      11.796751161608695
+     ],
+     "ey_percent": [
+      20.671177326578682,
+      20.518218335375916
+     ]
+    },
+    {
+     "case": "smrke2024/s210_f1",
+     "time_s": [
+      12.564804641296304,
+      12.590881660537422
+     ],
+     "ey_percent": [
+      20.788252697959607,
+      20.64730018412834
+     ]
+    },
+    {
+     "case": "smrke2024/s210_f2",
+     "time_s": [
+      13.908885776065524,
+      13.939952870351803
+     ],
+     "ey_percent": [
+      21.015972834657468,
+      20.925540987338362
+     ]
+    },
+    {
+     "case": "smrke2024/s210_f4",
+     "time_s": [
+      16.406466778357597,
+      16.449023651136184
+     ],
+     "ey_percent": [
+      21.34692897133647,
+      21.364926022241626
+     ]
+    },
+    {
+     "case": "smrke2024/s250_f0",
+     "time_s": [
+      11.06752886799057,
+      11.074201663470019
+     ],
+     "ey_percent": [
+      18.42253798608867,
+      18.106647765201174
+     ]
+    },
+    {
+     "case": "smrke2024/s250_f1",
+     "time_s": [
+      11.149372771784572,
+      11.154832287809487
+     ],
+     "ey_percent": [
+      19.130805078494035,
+      18.9111242093519
+     ]
+    },
+    {
+     "case": "smrke2024/s250_f2",
+     "time_s": [
+      11.829272670890205,
+      11.853771472363418
+     ],
+     "ey_percent": [
+      19.88124067229146,
+      19.8098418620971
+     ]
+    },
+    {
+     "case": "smrke2024/s250_f4",
+     "time_s": [
+      14.7007861116782,
+      14.731786040140483
+     ],
+     "ey_percent": [
+      20.49908220098357,
+      20.37684713681077
+     ]
+    },
+    {
+     "case": "waszkiewicz2026/p9",
+     "first_drops_s": [
+      1.7988979965376588,
+      2.389157487088136
+     ],
+     "flow_15s_g_s": [
+      2.0995794465784847,
+      2.097720658011741
+     ],
+     "first_tds_percent": [
+      21.978850873728238,
+      22.839992848861453
+     ]
+    }
+   ],
+   "max_time_rel": 0.0038332880265867786,
+   "max_ey_points": 0.5027161771249737,
+   "rms_time_rel": 0.002538131392850906,
+   "rms_ey_points": 0.2342584768870864
+  },
+  "generic": {
+   "rows": [
+    {
+     "grinder": "mahlkoenig-ek43",
+     "setting": 1.7,
+     "kappa0_m2": 5.003430174217061e-14,
+     "time_s": 11.23170267332119,
+     "ey_percent": 20.847668953511235,
+     "stop": "beverage_mass"
+    },
+    {
+     "grinder": "mahlkoenig-e65s",
+     "setting": 1.7,
+     "kappa0_m2": 5.561142888395845e-14,
+     "time_s": 10.4881947461598,
+     "ey_percent": 20.54570924624027,
+     "stop": "beverage_mass"
+    },
+    {
+     "grinder": "generic-flat-traditional-64",
+     "setting": 190.0,
+     "kappa0_m2": 4.89784509575207e-14,
+     "time_s": 11.3948616697618,
+     "ey_percent": 20.933150450710983,
+     "stop": "beverage_mass"
+    },
+    {
+     "grinder": "generic-conical-50",
+     "setting": 190.0,
+     "kappa0_m2": 3.9588848496946913e-14,
+     "time_s": 13.213293359183949,
+     "ey_percent": 20.52522691183675,
+     "stop": "beverage_mass"
+    },
+    {
+     "grinder": "generic-flat-unimodal-64",
+     "setting": 170.0,
+     "kappa0_m2": 5.4803147904721454e-14,
+     "time_s": 10.630980654683636,
+     "ey_percent": 22.030316507900633,
+     "stop": "beverage_mass"
+    },
+    {
+     "grinder": "bentwood-v63",
+     "setting": 190.0,
+     "kappa0_m2": 4.991396392475206e-14,
+     "time_s": 11.253253301974826,
+     "ey_percent": 20.94700711441328,
+     "stop": "beverage_mass"
+    }
+   ],
+   "within": false
+  },
+  "structural": {
+   "dissolution share \u03b8 = 0.27 (old proportional rule)": {
+    "spec_fields": {
+     "hydraulics.dissolution_porosity_share": 0.27
+    },
+    "v3": {
+     "rows": [
+      {
+       "grind_setting": 1.1,
+       "ey_model": 20.801026617433426,
+       "ey_data": 21.333,
+       "ey_bar": 0.419,
+       "time_model": 17.19977449298073,
+       "time_data": 37.6,
+       "time_bar": 2.9,
+       "stop": "beverage_mass"
+      },
+      {
+       "grind_setting": 1.3,
+       "ey_model": 20.642663516539596,
+       "ey_data": 21.952,
+       "ey_bar": 0.331,
+       "time_model": 15.9586744134174,
+       "time_data": 35.7,
+       "time_bar": 4.73,
+       "stop": "beverage_mass"
+      },
+      {
+       "grind_setting": 1.5,
+       "ey_model": 20.45123034069271,
+       "ey_data": 22.167,
+       "ey_bar": 0.31,
+       "time_model": 14.782332857797613,
+       "time_data": 33.9,
+       "time_bar": 5.49,
+       "stop": "beverage_mass"
+      },
+      {
+       "grind_setting": 1.7,
+       "ey_model": 20.294697963366815,
+       "ey_data": 23.069,
+       "ey_bar": 0.273,
+       "time_model": 14.330702180603726,
+       "time_data": 30.5,
+       "time_bar": 0.71,
+       "stop": "beverage_mass"
+      },
+      {
+       "grind_setting": 1.9,
+       "ey_model": 20.12951424510141,
+       "ey_data": 22.537,
+       "ey_bar": 0.123,
+       "time_model": 13.889904130539513,
+       "time_data": 28.5,
+       "time_bar": 3.17,
+       "stop": "beverage_mass"
+      },
+      {
+       "grind_setting": 2.1,
+       "ey_model": 19.792506404331593,
+       "ey_data": 21.601,
+       "ey_bar": 0.045,
+       "time_model": 13.085237346206084,
+       "time_data": 26.6,
+       "time_bar": 3.46,
+       "stop": "beverage_mass"
+      },
+      {
+       "grind_setting": 2.3,
+       "ey_model": 18.998232901818255,
+       "ey_data": 20.704,
+       "ey_bar": 0.047,
+       "time_model": 12.038100589005863,
+       "time_data": 24.0,
+       "time_bar": 0.22,
+       "stop": "beverage_mass"
+      }
+     ],
+     "rms_ey": 1.8751858254507132,
+     "rms_time": 16.784394427167115,
+     "bias_time": -16.502181998492723,
+     "time_ratio": 0.46962763267679747
+    },
+    "v5": {
+     "rows": [
+      {
+       "setting_um": 160,
+       "fines_g": 0,
+       "time_model": 17.84608059175575,
+       "ey_model": 21.06105434971279,
+       "time_data": 66.16333333333334,
+       "ey_data": 20.778666666666666,
+       "shots": 3
+      },
+      {
+       "setting_um": 170,
+       "fines_g": 0,
+       "time_model": 16.61147265832781,
+       "ey_model": 20.95045163415948,
+       "time_data": 57.21666666666667,
+       "ey_data": 20.656666666666666,
+       "shots": 3
+      },
+      {
+       "setting_um": 180,
+       "fines_g": 0,
+       "time_model": 15.572275889185931,
+       "ey_model": 20.827228405180655,
+       "time_data": 44.82,
+       "ey_data": 20.892666666666667,
+       "shots": 3
+      },
+      {
+       "setting_um": 190,
+       "fines_g": 0,
+       "time_model": 15.035899678279323,
+       "ey_model": 20.651504297238823,
+       "time_data": 25.255,
+       "ey_data": 19.53725,
+       "shots": 4
+      },
+      {
+       "setting_um": 190,
+       "fines_g": 1,
+       "time_model": 16.44200599305914,
+       "ey_model": 20.63831666575342,
+       "time_data": 37.620000000000005,
+       "ey_data": 20.056,
+       "shots": 4
+      },
+      {
+       "setting_um": 190,
+       "fines_g": 2,
+       "time_model": 18.09418800404282,
+       "ey_model": 20.69486707387003,
+       "time_data": 56.626666666666665,
+       "ey_data": 20.294,
+       "shots": 3
+      },
+      {
+       "setting_um": 190,
+       "fines_g": 4,
+       "time_model": 21.12902380332007,
+       "ey_model": 20.574098672826622,
+       "time_data": 79.51,
+       "ey_data": 21.266,
+       "shots": 1
+      },
+      {
+       "setting_um": 210,
+       "fines_g": 0,
+       "time_model": 13.190705412909677,
+       "ey_model": 20.2227260204147,
+       "time_data": 18.816666666666666,
+       "ey_data": 18.95866666666667,
+       "shots": 3
+      },
+      {
+       "setting_um": 210,
+       "fines_g": 1,
+       "time_model": 14.103657008777473,
+       "ey_model": 20.2403333208392,
+       "time_data": 24.11333333333333,
+       "ey_data": 19.104666666666663,
+       "shots": 3
+      },
+      {
+       "setting_um": 210,
+       "fines_g": 2,
+       "time_model": 15.59644006905224,
+       "ey_model": 20.307621069376957,
+       "time_data": 32.906666666666666,
+       "ey_data": 19.857333333333333,
+       "shots": 3
+      },
+      {
+       "setting_um": 210,
+       "fines_g": 4,
+       "time_model": 18.26141924089155,
+       "ey_model": 20.38170011970078,
+       "time_data": 58.49,
+       "ey_data": 20.645999999999997,
+       "shots": 3
+      },
+      {
+       "setting_um": 250,
+       "fines_g": 0,
+       "time_model": 11.408542767393913,
+       "ey_model": 18.12989349450613,
+       "time_data": 8.945,
+       "ey_data": 16.6695,
+       "shots": 4
+      },
+      {
+       "setting_um": 250,
+       "fines_g": 1,
+       "time_model": 12.204837114425985,
+       "ey_model": 18.986272353790117,
+       "time_data": 12.030000000000001,
+       "ey_data": 17.51,
+       "shots": 3
+      },
+      {
+       "setting_um": 250,
+       "fines_g": 2,
+       "time_model": 13.420943861026092,
+       "ey_model": 19.4808901747273,
+       "time_data": 17.53,
+       "ey_data": 18.965333333333334,
+       "shots": 3
+      },
+      {
+       "setting_um": 250,
+       "fines_g": 4,
+       "time_model": 16.643648384222374,
+       "ey_model": 19.760365420574537,
+       "time_data": 32.056666666666665,
+       "ey_data": 19.663999999999998,
+       "shots": 3
+      }
+     ],
+     "spearman_model": 0.6142857142857142,
+     "spearman_data": 0.9571428571428571,
+     "rms_time": 28.977196315416123,
+     "rms_ey": 0.8221039843320818,
+     "bias_time": -22.43592396822199,
+     "time_ratio": 0.48404060653611103
+    },
+    "v4": {
+     "drops_model_s": 3.2325227449660883,
+     "drops_data_s": 12.761996808290156,
+     "rise_model": {
+      "q2": 0.5928776932773031,
+      "q15": 1.8216747149293562,
+      "ratio_15_2": 3.0725978318724083,
+      "t90_s": 11.76747725503384,
+      "q_end": 1.8498792931524048
+     },
+     "rise_data": {
+      "q2": 0.1298584666679228,
+      "q15": 0.7902525695713613,
+      "ratio_15_2": 6.0854913033296025,
+      "t90_s": 25.776542191709844,
+      "q_end": 1.824924
+     },
+     "time_to_mass_model_s": 27.332047314591208,
+     "time_to_mass_data_s": 47.69420628329427,
+     "long_time_model_g_s": 1.8498792931524048,
+     "long_time_data_g_s": 1.824924,
+     "first_tds_percent": 22.940024576706545
+    },
+    "kappa_ref_by_dataset": {
+     "schmieder2023": 3.86938e-14,
+     "waszkiewicz2026": 7.9721e-14
+    },
+    "pooled_kappa_ref_m2": 5.55402e-14,
+    "nuisance": {
+     "calibration.schmieder2023.extractable_fraction": 30.7446,
+     "calibration.schmieder2023.content.caffeine": 1.36255,
+     "calibration.schmieder2023.content.trigonelline": 0.72181,
+     "calibration.schmieder2023.content.cqa5": 0.945125,
+     "calibration.schmieder2023.permeability.gl1_4": 1.53626e-14,
+     "calibration.schmieder2023.permeability.gl1_7": 1.58174e-14,
+     "calibration.schmieder2023.permeability.gl2_0": 2.12711e-14,
+     "calibration.waszkiewicz2026.permeability": 6.99066e-15
+    },
+    "v1_cost": 692.483,
+    "cost": 822.278,
+    "blocks": [
+     "V1",
+     "V2",
+     "V4",
+     "V6"
+    ],
+    "optimizer": {
+     "success": true,
+     "message": "`xtol` termination condition is satisfied.",
+     "evaluations": 21
+    },
+    "pump": {
+     "transition_s": {
+      "1": 2.8,
+      "2": 3.8,
+      "3": 3.4,
+      "4": 2.6,
+      "5": 3.4,
+      "6": 3.3,
+      "7": 3.3,
+      "8": 2.9,
+      "9": 2.8,
+      "10": 2.3,
+      "11": 2.0,
+      "12": 3.8,
+      "13": 3.8,
+      "14": 3.2,
+      "15": 2.9
+     },
+     "pour_s": {
+      "1": 0.0,
+      "2": 0.9,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 1.5,
+      "13": 0.5,
+      "14": 0.0,
+      "15": 0.0
+     },
+     "pour_capped": [
+      2,
+      12,
+      13
+     ]
+    },
+    "pressure_rms": 2.3467
+   }
+  },
+  "theta": 0.0
+ },
+ "held_out_checks": [
+  {
+   "check": "V3 EY peak at grind setting 1.5\u20131.9",
+   "status": "fail",
+   "target": "EY maximum at GS 1.5\u20131.9 (data: 1.7)",
+   "detail": "model EY peaks at GS 1.1 (at the edge of the range: no peak)",
+   "independent": false,
+   "dependence": "model.prep.sigma_fines_sensitivity is a judgement motivated by Cameron 2020's fine-grind behaviour, the V3 phenomenon"
+  },
+  {
+   "check": "V3 peak EY 22\u201324%",
+   "status": "fail",
+   "target": "peak EY within 22\u201324% (data: 23.07%)",
+   "detail": "model peak EY 21.86%",
+   "independent": false,
+   "dependence": "model.prep.sigma_fines_sensitivity is a judgement motivated by Cameron 2020's fine-grind behaviour, the V3 phenomenon"
+  },
+  {
+   "check": "V3 shot time falls as the grind coarsens",
+   "status": "pass",
+   "target": "shot time strictly decreasing from GS 1.1 to 2.3",
+   "detail": "model times 15.9, 14.6, 13.5, 13.0, 12.6, 11.8, 11.1 s"
+  },
+  {
+   "check": "V4 flow rises after the first drops",
+   "status": "fail",
+   "target": "90% of the 100 s flow within \u00d71.5 of the data's time after the first drops, and no overshoot (flow 15 s after the first drops \u2264 flow at 100 s)",
+   "detail": "model: 90% of the 100 s flow 6.7 s after the first drops (data 25.8 s); flow \u00d72.19 from 2 s to 15 s and \u00d71.95 to 100 s (data \u00d76.09, \u00d714.05); overshoot: 2.10 g/s at 15 s against 1.87 g/s at 100 s"
+  },
+  {
+   "check": "V4 first drops after full pressure",
+   "status": "fail",
+   "target": "delay from full pressure to the first drops (0.1 g) within \u00d71.5 of the data's",
+   "detail": "model 1.8 s, data 12.8 s after the pressure reaches its target (both on the data's clock)"
+  },
+  {
+   "check": "V4 first-fraction TDS 25 \u00b1 3%",
+   "status": "fail",
+   "target": "22\u201328% TDS",
+   "detail": "model first 5 s fraction 22.0% TDS (data: 24.4% in the one replicate that collected liquid, 23.5% in the next window)"
+  },
+  {
+   "check": "V4 time to 36 g (9 bar)",
+   "status": "info",
+   "target": "reported: the size of the start-up shortfall in a calibration case",
+   "detail": "model 22.2 s, data 47.7 s after the pressure rise: \u00d70.47, while the long-time flow matches (1.87 against 1.82 g/s)"
+  },
+  {
+   "check": "V5 added fines lengthen shots",
+   "status": "fail",
+   "target": "time rises at every step of 0, 1, 2, 4 g, and by at least 50% of the measured relative increase from 0 to 4 g, at 190, 210 and 250 \u00b5m",
+   "detail": "190 \u00b5m: model 13.5, 14.8, 16.4, 19.3 s (+43% with 4 g; data +215%); 210 \u00b5m: model 11.8, 12.6, 13.9, 16.4 s (+39% with 4 g; data +211%); 250 \u00b5m: model 11.1, 11.1, 11.8, 14.7 s (+33% with 4 g; data +258%)"
+  },
+  {
+   "check": "V5 EY tracks shot time",
+   "status": "pass",
+   "target": "Spearman \u03c1 \u2265 0.8",
+   "detail": "Spearman \u03c1(time, EY) = 0.84 over 15 model conditions (data: 0.96)"
+  },
+  {
+   "check": "V5 10\u201315 s shots reach 17\u201318% EY",
+   "status": "fail",
+   "target": "model EY 17\u201318% at the conditions whose measured shots took 10\u201315 s (data: 17.4\u201317.6% at 12 s); EY levels rest on the bean's 28% extractable solids (input models)",
+   "detail": "conditions measured at 10\u201315 s: 250 \u00b5m + 1 g (measured 12.0 s, 17.51% EY; model 11.1 s, 19.13%); model mean 19.13%"
+  },
+  {
+   "check": "Held-out shot times against the data",
+   "status": "info",
+   "target": "reported, not a test of \u03ba_ref alone: a shortfall shared with the V4 calibration case comes mostly from the start-up transient the model misses (Known biases); \u03ba_ref is not tuned to these times",
+   "detail": "V3 Cameron: model/data \u00d70.43 (mean error -18 s, RMS 18 s); V5 Smrke: model/data \u00d70.44 (mean error -24 s, RMS 30 s); V4 9 bar (a calibration case whose long-time flow matches): time to 36 g \u00d70.47"
+  },
+  {
+   "check": "Tier 0 vs tier 1 on the held-out cases",
+   "status": "info",
+   "target": "reported, no PLAN target (tier 0 is the reduced model)",
+   "detail": "tier 0 vs tier 1 on 22 V3/V5 shots: time within 0.38% (RMS 0.25%), EY within 0.5 points; V4 9 bar: first-fraction TDS 22.8% vs 22%, flow 15 s after the first drops 2.1 vs 2.1 g/s"
+  },
+  {
+   "check": "Generic 18 g \u2192 36 g, 9 bar shots near 30 s",
+   "status": "fail",
+   "target": "25\u201335 s for every preset at its default setting (typical espresso; an app sanity check, not a PLAN target)",
+   "detail": "tier 1: mahlkoenig-ek43 11.2 s, mahlkoenig-e65s 10.5 s, generic-flat-traditional-64 11.4 s, generic-conical-50 13.2 s, generic-flat-unimodal-64 10.6 s, bentwood-v63 11.3 s"
+  }
+ ],
+ "exit_criteria": [
+  {
+   "criterion": "V1 within targets",
+   "status": "fail",
+   "checks": [
+    "V1 \u03bb within \u00b110% (fit)",
+    "V1 cup masses within \u00b110% (fit)",
+    "V1 leave-one-condition-out (\u00b115%)"
+   ],
+   "statuses": [
+    "fail",
+    "fail",
+    "fail"
+   ]
+  },
+  {
+   "criterion": "V3 peak reproduced",
+   "status": "fail",
+   "checks": [
+    "V3 EY peak at grind setting 1.5\u20131.9",
+    "V3 peak EY 22\u201324%"
+   ],
+   "statuses": [
+    "fail",
+    "fail"
+   ]
+  },
+  {
+   "criterion": "V4 flow rise reproduced",
+   "status": "fail",
+   "checks": [
+    "V4 flow rises after the first drops",
+    "V4 first drops after full pressure"
+   ],
+   "statuses": [
+    "fail",
+    "fail"
+   ]
+  },
+  {
+   "criterion": "Verification suite green; tier 1 \u2264 1 s and tier 0 \u2264 10 ms per shot",
+   "status": "not assessed",
+   "checks": [],
+   "statuses": [],
+   "note": "covered by the solver's verification tests and benchmarks, not by this report"
+  }
+ ],
+ "robustness": {
+  "simulations": 117,
+  "failed": 0,
+  "worst": {
+   "mass_balance_error": 3.489011502434557e-14,
+   "max_regime_solves": 9.0,
+   "min_concentration_kg_m3": 0.0,
+   "outflow_integral_error": 0.01479543080496589,
+   "rejected_steps": 0.0,
+   "steps": 12249.0
+  }
+ },
+ "simulations": 117,
+ "data": {
+  "waszkiewicz_tds": [
+   {
+    "time_mid_s": 2.5,
+    "tds_percent": 24.36,
+    "tds_sem_percent": null,
+    "tds_rep1_percent": 24.36,
+    "tds_rep2_percent": null,
+    "tds_rep3_percent": null
+   },
+   {
+    "time_mid_s": 7.5,
+    "tds_percent": 23.48,
+    "tds_sem_percent": 2.5563,
+    "tds_rep1_percent": 28.58,
+    "tds_rep2_percent": 20.62,
+    "tds_rep3_percent": 21.24
+   },
+   {
+    "time_mid_s": 12.5,
+    "tds_percent": 25.1611,
+    "tds_sem_percent": 2.1098,
+    "tds_rep1_percent": 27.68,
+    "tds_rep2_percent": 20.97,
+    "tds_rep3_percent": 26.83333333
+   },
+   {
+    "time_mid_s": 17.5,
+    "tds_percent": 16.7467,
+    "tds_sem_percent": 2.1551,
+    "tds_rep1_percent": 19.28,
+    "tds_rep2_percent": 12.46,
+    "tds_rep3_percent": 18.5
+   },
+   {
+    "time_mid_s": 22.5,
+    "tds_percent": 9.2022,
+    "tds_sem_percent": 1.7149,
+    "tds_rep1_percent": 12.15,
+    "tds_rep2_percent": 6.21,
+    "tds_rep3_percent": 9.246666667
+   },
+   {
+    "time_mid_s": 27.5,
+    "tds_percent": 5.1133,
+    "tds_sem_percent": 1.103,
+    "tds_rep1_percent": 7.26,
+    "tds_rep2_percent": 3.6,
+    "tds_rep3_percent": 4.48
+   },
+   {
+    "time_mid_s": 32.5,
+    "tds_percent": 2.9167,
+    "tds_sem_percent": 0.7879,
+    "tds_rep1_percent": 4.47,
+    "tds_rep2_percent": 1.91,
+    "tds_rep3_percent": 2.37
+   },
+   {
+    "time_mid_s": 37.5,
+    "tds_percent": 1.8056,
+    "tds_sem_percent": 0.5274,
+    "tds_rep1_percent": 2.84,
+    "tds_rep2_percent": 1.11,
+    "tds_rep3_percent": 1.466666667
+   },
+   {
+    "time_mid_s": 42.5,
+    "tds_percent": 1.2267,
+    "tds_sem_percent": 0.383,
+    "tds_rep1_percent": 1.99,
+    "tds_rep2_percent": 0.79,
+    "tds_rep3_percent": 0.9
+   },
+   {
+    "time_mid_s": 47.5,
+    "tds_percent": 0.8156,
+    "tds_sem_percent": 0.2886,
+    "tds_rep1_percent": 1.39,
+    "tds_rep2_percent": 0.48,
+    "tds_rep3_percent": 0.5766666667
+   },
+   {
+    "time_mid_s": 52.5,
+    "tds_percent": 0.5489,
+    "tds_sem_percent": 0.2251,
+    "tds_rep1_percent": 0.99,
+    "tds_rep2_percent": 0.25,
+    "tds_rep3_percent": 0.4066666667
+   },
+   {
+    "time_mid_s": 57.5,
+    "tds_percent": 0.4789,
+    "tds_sem_percent": 0.256,
+    "tds_rep1_percent": 0.99,
+    "tds_rep2_percent": 0.25,
+    "tds_rep3_percent": 0.1966666667
+   }
+  ]
+ },
+ "waszkiewicz_psd": {
+  "x50_um": 60.99136510454616,
+  "x90_um": 144.80296070409705,
+  "last_bin_um": [
+   158.489319,
+   181.970086
+  ],
+  "last_bin_percent": 3.838043,
+  "bins_to_um": 416.869383,
+  "share_below_100um": 0.6359369972812601
+ }
+}

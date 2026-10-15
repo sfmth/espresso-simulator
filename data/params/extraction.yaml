@@ -1,0 +1,891 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  Extraction (module X): dispersion, intraparticle diffusivities, partition, saturation, maximum
+  yield, surface and kernel timescales, and surface-rate constants. Transcribed from research note 01
+  §3, §4.8, §5 and §8.
+
+parameters:
+  # -- Dispersion ----------------------------------------------------------------
+  - id: extraction.dispersion.bodenstein
+    name: Bodenstein number of the bed
+    symbol: Bo
+    description: Ratio vL/D_ax of advection to axial dispersion in the bed, from tracer residence-time distributions.
+    units: "1"
+    prior: {distribution: uniform, min: 7.7, max: 16.8}
+    range: {min: 0}
+    conditions: KCl tracer at 22 °C; espresso beds of three PSDs.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: "01 §4.8"
+    used_by: [X]
+    comment: >-
+      16.8 in the dry initial state, 8.7–10.4 after 30 g and 7.7 after 60 g, so dispersion grows with
+      extraction; mean residence times are ~5× plug flow. This contradicts the negligible-dispersion
+      assumption of Cameron and Grudeva. Tracer data exist only at 22 °C (note 01, open question 7).
+    status: draft
+
+  - id: extraction.dispersion.axial_coefficient
+    name: Axial dispersion coefficient
+    symbol: D_ax
+    description: Axial dispersion coefficient of solutes in the bed liquid.
+    units: "m^2/s"
+    value: 5.0e-6
+    prior: {distribution: uniform, min: 1.0e-6, max: 1.0e-5}
+    range: {min: 0, max: 1.0e-3}
+    relation:
+      derived_from:
+        - extraction.dispersion.bodenstein
+        - bed.height.waszkiewicz_18g5
+        - shot.flow_rate
+        - bed.basket.area_58mm
+        - bed.porosity.intergranular
+      formula: >-
+        D_ax = v L / Bo, with interstitial velocity v = Q/(A ε) of 2–6 mm/s and L ≈ 14 mm; for example
+        3.6 mm/s × 14 mm / 10 ≈ 5×10⁻⁶ m²/s
+    conditions: Hot espresso beds assumed to disperse like the 22 °C tracer experiments.
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: "01 §4.8"
+    used_by: [X]
+    comment: >-
+      Derived in note 01 §4.8 from the measured Bo ≈ 8–17: "about 10⁻⁶–10⁻⁵ m²/s", ≈5×10⁻⁶ at Bo = 10.
+      Over Bo = 7.7–16.8 and v = 2–6 mm/s, vL/Bo spans 1.7×10⁻⁶–1.1×10⁻⁵ m²/s [derived here]. Grudeva's
+      1×10⁻⁸ m²/s (extraction.dispersion.grudeva2026) is a model assumption that the tracer data
+      contradict; molecular diffusion (~10⁻⁹ m²/s) is the physical floor. Grade: weakest input
+      (intergranular porosity, C, which sets v).
+    status: draft
+
+  - id: extraction.dispersion.grudeva2026
+    name: Liquid-phase effective diffusivity (Grudeva 2026)
+    symbol: D_eff
+    description: Effective diffusivity of solutes in the bed liquid assumed in the Grudeva, Moroney & Foster model (their axial dispersion).
+    units: "m^2/s"
+    value: 1.0e-8
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [X]
+    comment: >-
+      Part of the Grudeva literature set (2-class mode). An assumption contradicted by tracer data,
+      which imply 10⁻⁶–10⁻⁵ m²/s (extraction.dispersion.axial_coefficient); use it only to reproduce the
+      paper.
+    status: draft
+
+  # -- Diffusivities -------------------------------------------------------------
+  - id: extraction.diffusivity.caffeine.water_80c
+    name: Caffeine diffusivity in water at 80 °C
+    symbol: D_aq
+    description: Molecular diffusivity of caffeine in water at 80 °C.
+    units: "m^2/s"
+    prior: {distribution: uniform, min: 1.89e-9, max: 2.2e-9}
+    range: {min: 0}
+    conditions: 80 °C
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Jaganyi D., Vanmare J., Clark T. (1999) Kinetic study of mineral ion extraction from Kenyan Arabica coffee. J. Sci. Food Agric. 79:323–326."
+        doi: "10.1002/(SICI)1097-0010(199902)79:2<323::AID-JSFA201>3.0.CO;2-E"
+        locator: "citing Price et al."
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "citing Poling"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    comment: >-
+      2.2×10⁻⁹ (Jaganyi 1999, citing Price et al.), 1.89×10⁻⁹ (Corrochano 2017, citing Poling), ~2×10⁻⁹
+      (Ellero 2019); note 01 §8 rounds the range to 1.9–2.2×10⁻⁹. Secondary citations of handbook-type
+      values, hence grade C.
+      With a hindrance factor HF, D_eff = D_aq/HF (01 §5.4).
+    status: draft
+
+  - id: extraction.diffusivity.caffeine.particle_80c
+    name: Caffeine effective diffusivity in coffee particles at 80 °C
+    symbol: D_eff
+    description: Effective intraparticle diffusivity of caffeine from batch infusion of sieved coffee.
+    units: "m^2/s"
+    value: 1.90e-10
+    prior: {distribution: uniform, min: 1.58e-10, max: 2.05e-10}
+    range: {min: 1.0e-16, max: 1.0e-7}
+    conditions: 80 °C; 1.7–2.0 mm particles (Jaganyi 1999); five medium-roast origins (Jaganyi & Madlala 2000).
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Jaganyi D., Vanmare J., Clark T. (1999) Kinetic study of mineral ion extraction from Kenyan Arabica coffee. J. Sci. Food Agric. 79:323–326."
+        doi: "10.1002/(SICI)1097-0010(199902)79:2<323::AID-JSFA201>3.0.CO;2-E"
+      - citation: "Jaganyi D., Madlala S.P. (2000) Kinetics of coffee infusion: mineral ions and caffeine from several medium-roasted coffees. J. Sci. Food Agric. 80:85–90."
+        doi: "10.1002/(SICI)1097-0010(20000101)80:1<85::AID-JSFA489>3.0.CO;2-#"
+        locator: "values via Corrochano 2017"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    comment: >-
+      Jaganyi 1999: 1.90×10⁻¹⁰ (hindrance factor 12) from k_obs = 2.67×10⁻³ s⁻¹ with k = 12D/r².
+      Jaganyi & Madlala 2000: 1.58–2.05×10⁻¹⁰ (HF 11–14). Spiro & Chong 1997: HF 11.1 at 80 °C and 29.7
+      at 25.5 °C. Note 01 §8 rounds the range to 1.6–2.1×10⁻¹⁰. PLAN §8 lists these as measured
+      transport data; the diffusivity itself comes from a fitted rate constant via k = 12D/r², the
+      same basis as the other particle diffusivities, hence tagged fitted.
+    status: draft
+
+  - id: extraction.hindrance_factor.microstructural
+    name: Microstructural hindrance factor
+    symbol: HF
+    description: >-
+      Ratio of aqueous to effective intraparticle diffusivity estimated from the particle
+      microstructure, HF ≈ τ_p/ε_p, so that D_eff = D_aq/HF.
+    units: "1"
+    prior: {distribution: uniform, min: 7.6, max: 13.6}
+    range: {min: 1}
+    relation:
+      derived_from: [bed.tortuosity.particle, bed.porosity.intraparticle]
+      formula: "HF ≈ τ_p/ε_p, so that D_eff = D_aq/HF"
+    tag: derived
+    evidence_grade: B
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.4"
+    used_by: [X]
+    comment: >-
+      Measured hindrance factors at 80 °C: caffeine 11–14, K⁺ 16, H₂PO₄⁻ 24, Mg²⁺ 29, Mn²⁺ 48 (Jaganyi
+      1999; 01 §5.3). Grade: note 01 §5.3 grades Corrochano's microstructure-based estimates B, which
+      is the note's own grade for this derivation.
+    status: draft
+
+  - id: extraction.diffusivity.potassium.particle_80c
+    name: Potassium effective diffusivity in coffee particles at 80 °C
+    symbol: D_eff
+    description: Effective intraparticle diffusivity of K⁺ from batch infusion.
+    units: "m^2/s"
+    value: 3.15e-10
+    range: {min: 0}
+    conditions: 80 °C, batch infusion of Kenyan Arabica.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Jaganyi D., Vanmare J., Clark T. (1999) Kinetic study of mineral ion extraction from Kenyan Arabica coffee. J. Sci. Food Agric. 79:323–326."
+        doi: "10.1002/(SICI)1097-0010(199902)79:2<323::AID-JSFA201>3.0.CO;2-E"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    comment: >-
+      Hindrance factor 16. From a fitted infusion rate constant via k = 12D/r². Highest particle
+      diffusivity measured; anchors kinetic class K1 (02 §3.2).
+    status: draft
+
+  - id: extraction.diffusivity.magnesium.particle_80c
+    name: Magnesium effective diffusivity in coffee particles at 80 °C
+    symbol: D_eff
+    description: Effective intraparticle diffusivity of Mg²⁺ from batch infusion.
+    units: "m^2/s"
+    value: 7.0e-11
+    range: {min: 0}
+    conditions: 80 °C, batch infusion of Kenyan Arabica.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Jaganyi D., Vanmare J., Clark T. (1999) Kinetic study of mineral ion extraction from Kenyan Arabica coffee. J. Sci. Food Agric. 79:323–326."
+        doi: "10.1002/(SICI)1097-0010(199902)79:2<323::AID-JSFA201>3.0.CO;2-E"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    comment: >-
+      Hindrance factor 29. From a fitted infusion rate constant via k = 12D/r². Mn²⁺ in the same study:
+      4.4×10⁻¹¹ m²/s (HF 48). Rate order K⁺ > caffeine > P > Mg²⁺ > Mn²⁺ (02 §3.1); anchors kinetic class
+      K3.
+    status: draft
+
+  - id: extraction.diffusivity.phosphate.particle_80c
+    name: Phosphate effective diffusivity in coffee particles at 80 °C
+    symbol: D_eff
+    description: Effective intraparticle diffusivity of H₂PO₄⁻ from batch infusion.
+    units: "m^2/s"
+    value: 1.09e-10
+    range: {min: 0}
+    conditions: 80 °C, batch infusion of Kenyan Arabica.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Jaganyi D., Vanmare J., Clark T. (1999) Kinetic study of mineral ion extraction from Kenyan Arabica coffee. J. Sci. Food Agric. 79:323–326."
+        doi: "10.1002/(SICI)1097-0010(199902)79:2<323::AID-JSFA201>3.0.CO;2-E"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    comment: Hindrance factor 24. From a fitted infusion rate constant via k = 12D/r².
+    status: draft
+
+  - id: extraction.diffusivity.lumped.corrochano_80c
+    name: Lumped solubles effective diffusivity at 80 °C
+    symbol: D_eff
+    description: Single effective diffusivity fitted to whole extraction curves of total solubles in a stirred vessel.
+    units: "m^2/s"
+    value: 1.26e-10
+    prior: {distribution: uniform, min: 1.9e-11, max: 1.6e-10}
+    range: {min: 1.0e-16, max: 1.0e-7}
+    conditions: 80 °C, stirred vessel; d43 basis; fine to coarse grinds.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    comment: >-
+      1.9×10⁻¹¹ (fine grind) to 1.6×10⁻¹⁰ on a d43 basis (up to 2.1×10⁻¹⁰ on a coarse-peak basis);
+      1.26×10⁻¹⁰ pooled. Other lumped fits: 0.8–1.1×10⁻¹⁰ (70–85 °C, Voilley & Simatos 1979, via
+      Corrochano; the thesis prints this once as ×10⁻¹¹) and 6.0×10⁻¹³–4.2×10⁻¹² (90 °C, late-time fit,
+      Zanoni 1992, via Corrochano). Four diffusivity classes fit whole curves better (5–8% error) than one
+      coefficient (6–17%), and the apparent value depends on which part of the curve is weighted.
+    status: draft
+
+  - id: extraction.diffusivity.mw_class.low
+    name: Effective diffusivity, low molecular weight (caffeine-like) class, 80 °C
+    symbol: D_eff
+    description: Intraparticle diffusivity of the low-MW class of solubles, estimated from the particle microstructure.
+    units: "m^2/s"
+    prior: {distribution: uniform, min: 1.9e-10, max: 3.7e-10}
+    range: {min: 0}
+    relation:
+      derived_from: [extraction.hindrance_factor.microstructural]
+      formula: "D_eff = D_aq/HF, with D_aq of the class from Stokes–Einstein (Corrochano 2017)"
+    conditions: 80 °C
+    tag: derived
+    evidence_grade: B
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    status: draft
+
+  - id: extraction.diffusivity.mw_class.medium
+    name: Effective diffusivity, medium molecular weight class, 80 °C
+    symbol: D_eff
+    description: Intraparticle diffusivity of the medium-MW class of solubles, estimated from the particle microstructure.
+    units: "m^2/s"
+    prior: {distribution: uniform, min: 5.3e-11, max: 1.06e-10}
+    range: {min: 0}
+    relation:
+      derived_from: [extraction.hindrance_factor.microstructural]
+      formula: "D_eff = D_aq/HF, with D_aq of the class from Stokes–Einstein (Corrochano 2017)"
+    conditions: 80 °C
+    tag: derived
+    evidence_grade: B
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    comment: Note 01 states the range as 5.3–10.6×10⁻¹¹ m²/s.
+    status: draft
+
+  - id: extraction.diffusivity.mw_class.high
+    name: Effective diffusivity, high molecular weight class, 80 °C
+    symbol: D_eff
+    description: Intraparticle diffusivity of the high-MW class of solubles, estimated from the particle microstructure.
+    units: "m^2/s"
+    prior: {distribution: uniform, min: 1.8e-11, max: 3.7e-11}
+    range: {min: 0}
+    relation:
+      derived_from: [extraction.hindrance_factor.microstructural]
+      formula: "D_eff = D_aq/HF, with D_aq of the class from Stokes–Einstein (Corrochano 2017)"
+    conditions: 80 °C
+    tag: derived
+    evidence_grade: B
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    status: draft
+
+  - id: extraction.diffusivity.mw_class.very_high
+    name: Effective diffusivity, very high molecular weight class, 80 °C
+    symbol: D_eff
+    description: Intraparticle diffusivity of the very-high-MW class (reported as 22–24 kDa), estimated from the particle microstructure.
+    units: "m^2/s"
+    prior: {distribution: uniform, min: 0.6e-12, max: 1.6e-12}
+    range: {min: 0}
+    relation:
+      derived_from: [extraction.hindrance_factor.microstructural]
+      formula: "D_eff = D_aq/HF, with D_aq of the class from Stokes–Einstein (Corrochano 2017)"
+    conditions: 80 °C
+    tag: derived
+    evidence_grade: B
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.3"
+    used_by: [X]
+    comment: >-
+      The fraction was sized by DLS (bulk D 7.7–8.5×10⁻¹² m²/s); a diffusivity this low implies a
+      hydrodynamic radius of order 100 nm, i.e. aggregates rather than 22–24 kDa molecules [derived,
+      01 §5.4].
+    status: draft
+
+  - id: extraction.diffusivity.fitted.cameron2020
+    name: Espresso-model diffusivity fitted by Cameron et al. 2020
+    symbol: D_s
+    description: Intragranular diffusivity fitted with a homogenized multiscale model to café espresso data.
+    units: "m^2/s"
+    value: 6.25e-10
+    range: {min: 0}
+    conditions: EK43 grind series, 6 bar, 92 °C, 20 g in / 40 g out.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+    research_note_ref: "01 §3.4"
+    used_by: [X]
+    comment: >-
+      Espresso-model fits (6×10⁻¹⁰ to 10⁻⁹) sit above immersion-measured intraparticle values
+      (10⁻¹¹–10⁻¹⁰); they probably absorb surface washout and heterogeneity, so they are not physical
+      diffusivities (01 §5.3). Use with the matching closure (2-class literature mode).
+    status: draft
+
+  - id: extraction.diffusivity.fitted.grudeva2026
+    name: Espresso-model diffusivity of Grudeva et al. 2026
+    symbol: D_s
+    description: Intragranular diffusivity (D_sf = D_sb) in the parameter table of the Grudeva, Moroney & Foster model.
+    units: "m^2/s"
+    value: 1.0e-9
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [X]
+    comment: >-
+      Part of the Grudeva literature set. Note 01 §5.3 lists it among model-fitted espresso values, but
+      the paper validated only against its own numerics (time-resolved data are promised), so it is
+      tagged estimated like the other Grudeva parameters; same caveat as the Cameron fit.
+    status: draft
+
+  - id: extraction.diffusivity.temperature_coefficient
+    name: Temperature coefficient of diffusivity
+    description: Fractional change of intraparticle diffusivity per kelvin near brew temperature (Stokes–Einstein, D ∝ T/μ).
+    units: "%/K"
+    value: 1.5
+    range: {min: 0}
+    relation:
+      derived_from: [hydraulics.viscosity.water_80c, hydraulics.viscosity.water_95c]
+      formula: >-
+        D ∝ T/μ (Stokes–Einstein): (368.15/353.15) × (0.354/0.298) = 1.24 from 80 to 95 °C, about 1.5%
+        per kelvin
+    conditions: 80–96 °C
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "CRC Handbook of Chemistry and Physics: standard values for the viscosity of water, as quoted in research note 01 §4.10."
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "Table 5.6"
+    research_note_ref: "01 §5.4"
+    used_by: [X]
+    comment: >-
+      "About 1.5% per °C is an adequate default" over 80–96 °C (note 01). Stokes–Einstein factors: 1.24
+      from 80 to 95 °C [derived]. Measured lumped ratios differ: ×1.3 for 80 vs 50 °C (×1.7 predicted)
+      and ×9.3 for 80 vs 20 °C (×3.5 predicted) (Corrochano Table 5.6). Caffeine's infusion rate
+      constant rises 8× from 25.8 to 84.1 °C (≈32 kJ/mol [derived], Spiro & Selwood 1984; 02 Table 2).
+    status: draft
+
+  # -- Partition, saturation, initial content, maximum yield -------------------
+  - id: extraction.partition.lumped_50c
+    name: Partition coefficient of lumped solubles at 50 °C
+    symbol: K
+    description: >-
+      Equilibrium ratio K = C_b/C_s of the solute concentration in the bulk liquid to the solute per unit
+      volume of the swollen particles (pore solution and matrix-bound solute together), for lumped
+      solubles. Not the ratio to the particles' pore-liquid concentration, which is C_s/ε_p if all the
+      solute is in solution.
+    units: "1"
+    value: 0.57
+    range: {min: 0.01, max: 5}
+    conditions: 50 °C; swelling factor assumed 1.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "§3.3.13, Eq. 3.15–3.17 (pp. 82–83); Table 4.10 (p. 154)"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: >-
+      Same series gives 0.42 at 20 °C and 0.61 at 80 °C. Definition and range as for
+      extraction.partition.lumped_80c.
+    status: draft
+
+  - id: extraction.partition.lumped_80c
+    name: Partition coefficient of lumped solubles at 80 °C
+    symbol: K
+    description: >-
+      Equilibrium ratio K = C_b/C_s of the solute concentration in the bulk liquid to the solute per unit
+      volume of the swollen particles (pore solution and matrix-bound solute together), for lumped
+      solubles. Not the ratio to the particles' pore-liquid concentration, which is C_s/ε_p if all the
+      solute is in solution.
+    units: "1"
+    value: 0.61
+    range: {min: 0.01, max: 5}
+    conditions: 80 °C; swelling factor assumed 1.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "§3.3.13, Eq. 3.15–3.17 (pp. 82–83); Table 4.10 (p. 154)"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: >-
+      The highest measured temperature, closest to brewing. Definition (Eq. 3.15): K = (C_b/C_s)_eq, with
+      C_s the concentration "inside the solid", which "encompasses" solute in the pore solution and solute
+      still attached to the matrix. K comes from the equilibrium mass balance y₀m = C_b V_b + C_s V_s
+      (Eq. 3.16), with V_s the particles' volume after extraction, m·S/ρ_particle (Eq. 3.17, swelling
+      factor S = 1), so C_s is solute per particle envelope volume. A model whose kernel concentration u is
+      per pore-liquid volume (intraparticle porosity ε_p) needs u_surface = c/(K·ε_p) at equilibrium, i.e. a
+      pore-basis coefficient K·ε_p (0.34 with ε_p = 0.55), if no solute stays bound to the matrix. PLAN
+      §7.3 X uses K ≈ 0.42–0.61. A different immersion "equilibrium constant" (E = K·E_max) of
+      0.717 ± 0.007, insensitive to 80–99 °C, was reported by Liang 2021. Range: at most 5, eight times
+      the highest lumped value and five times caffeine's ≈1, the largest reported for a coffee solute;
+      much larger K would make the kernel's equilibrium loading exceed what its pores can hold (the shot
+      solver rejects K ≥ 8.4 at the defaults).
+    status: draft
+
+  - id: extraction.partition.caffeine
+    name: Partition coefficient of caffeine
+    symbol: K
+    description: >-
+      Equilibrium ratio K = C_b/C_s of the solute concentration in the bulk liquid to the solute per unit
+      volume of the swollen particles (pore solution and matrix-bound solute together), for caffeine. Not
+      the ratio to the particles' pore-liquid concentration, which is C_s/ε_p if all the solute is in
+      solution.
+    units: "1"
+    value: 1
+    range: {min: 0.01, max: 5}
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "citing Spiro"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: >-
+      "About 1" (Spiro, via Corrochano 2017; "circa 1.0 at 85 °C", Spiro and Selwood 1984, thesis p. 154).
+      Corrochano's definition follows Spiro's derivation (§3.3.13), so the basis is the same as for
+      extraction.partition.lumped_80c: solute per particle volume, not per pore liquid. Range as for
+      extraction.partition.lumped_80c (at most 5).
+    status: draft
+
+  - id: extraction.saturation.lumped
+    name: Saturation concentration of lumped solubles
+    symbol: c_sat
+    description: Ceiling on the liquid concentration of dissolved solids near the surface pool, as used by saturating flux closures.
+    units: "kg/m^3"
+    prior: {distribution: uniform, min: 210, max: 350}
+    range: {min: 50, max: 1000}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+        locator: "value as tabulated by Lee 2023"
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: >-
+      212.4 kg/m³ (Cameron's model, via Lee 2023; Cameron's SI not read); 224 kg/m³ (Grudeva's model);
+      fitted c₀ = 0.23–0.31 g/g (Schmieder). Prior: from 210 (just below the model values) to 350 kg/m³,
+      the highest Schmieder c₀ (0.31 g/g ≈ 347 kg/m³): a surface-pool ceiling above every fitted outlet
+      intercept would let the first fractions exceed anything measured. Waszkiewicz's first drops (about
+      25% TDS ≈ 275 kg/m³, tanh amplitude 25.6 ± 1.3%) once set the upper bound at 280; they are held-out
+      validation data (V4 first-fraction TDS) and are no longer used. Note 01 grades the row A/B; the
+      weaker grade is recorded. Grudeva reports
+      recipe-independent first-drip concentrations (unpublished experiments). In mass fraction the cap
+      is ≈0.19–0.26 g/g, while Schmieder's fitted c₀ for TDS (0.23–0.31 g/g, 0.248 at the centre point)
+      is ≈250–347 kg/m³ (≈268–278 at the centre point) [derived with the 1.08–1.12 g/mL extract density
+      of 01 §4.10]: above the cap at its upper end. c₀ is the fitted intercept of an exponential decay
+      in outlet concentration, not a pore concentration, so it can exceed c_sat; M1 calibration must
+      treat the two consistently (fit c_sat against outlet data, not against c₀).
+    status: draft
+
+  - id: extraction.saturation.cameron2020
+    name: Saturation concentration in the Cameron et al. 2020 parameter set
+    symbol: c_sat
+    description: Saturation concentration of lumped solubles used by the Cameron homogenized model.
+    units: "kg/m^3"
+    value: 212.4
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+        locator: "Supplementary Information, as tabulated by Lee 2023"
+      - citation: "Lee W.T., Smith A., Arshad A. (2023) Uneven extraction in coffee brewing. Phys. Fluids 35:054110."
+        doi: "10.1063/5.0138998"
+    research_note_ref: "01 §3.4"
+    used_by: [X]
+    comment: >-
+      Part of the Cameron literature set (2-class mode) with D_s = 6.25×10⁻¹⁰ m²/s, k = 6×10⁻⁷ m⁷ kg⁻² s⁻¹
+      and f_s = 0.8272. Taken from Lee 2023's tabulation; Cameron's SI was not read, so how the value was
+      obtained is unknown.
+    status: draft
+
+  - id: extraction.saturation.grudeva2026
+    name: Saturation concentration in the Grudeva et al. 2026 parameter set
+    symbol: c_sat
+    description: Saturation concentration of lumped solubles in the saturating surface flux of the Grudeva, Moroney & Foster model.
+    units: "kg/m^3"
+    value: 224
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [X]
+    comment: Part of the Grudeva literature set (2-class mode). Model parameter; the paper validated only against its own numerics.
+    status: draft
+
+  - id: extraction.saturation.vaca_guerra2024.tds
+    name: Fitted saturation of total dissolved solids (Vaca Guerra 2024)
+    description: Species "saturation" concentration fitted with a Moroney-type model with measured dispersion.
+    units: "kg/m^3"
+    value: 513
+    range: {min: 0}
+    conditions: Bezzera machine, 15–18 g, 2.5–4 mL/s, three PSDs.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: Bounded below by the pore concentration, so not a solubility (note 01).
+    status: draft
+
+  - id: extraction.saturation.vaca_guerra2024.caffeine
+    name: Fitted saturation of caffeine (Vaca Guerra 2024)
+    description: Species "saturation" concentration fitted with a Moroney-type model with measured dispersion.
+    units: "kg/m^3"
+    value: 54.5
+    range: {min: 0}
+    conditions: Bezzera machine, 15–18 g, 2.5–4 mL/s, three PSDs.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    status: draft
+
+  - id: extraction.saturation.vaca_guerra2024.trigonelline
+    name: Fitted saturation of trigonelline (Vaca Guerra 2024)
+    description: Species "saturation" concentration fitted with a Moroney-type model with measured dispersion.
+    units: "kg/m^3"
+    value: 74.9
+    range: {min: 0}
+    conditions: Bezzera machine, 15–18 g, 2.5–4 mL/s, three PSDs.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    status: draft
+
+  - id: extraction.saturation.vaca_guerra2024.5cqa
+    name: Fitted saturation of 5-CQA (Vaca Guerra 2024)
+    description: Species "saturation" concentration of 5-caffeoylquinic acid fitted with a Moroney-type model with measured dispersion.
+    units: "kg/m^3"
+    value: 65.9
+    range: {min: 0}
+    conditions: Bezzera machine, 15–18 g, 2.5–4 mL/s, three PSDs.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    status: draft
+
+  - id: extraction.soluble_volume_fraction.moroney2019
+    name: Soluble volume fraction of grains (Moroney 2019)
+    symbol: φ_s
+    description: Volume fraction of the grains occupied by soluble material in the Moroney 2019 parameter set.
+    units: "1"
+    prior: {distribution: uniform, min: 0.122, max: 0.143}
+    range: {min: 0, max: 1}
+    conditions: Drip-filter coffee bed model at 90 °C; 0.143 (fine grind) and 0.122 (coarse grind).
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Moroney K.M., O'Connell K., Meikle-Janney P., O'Brien S.B.G., Walker G.M., Lee W.T. (2019) Analysing extraction uniformity from porous coffee beds. PLoS ONE 14:e0219906."
+        doi: "10.1371/journal.pone.0219906"
+    research_note_ref: "01 §3.3"
+    used_by: [X]
+    comment: Model parameter of the PLoS ONE 2019 set (true density 1400 kg/m³, intragranular porosity 0.56).
+    status: draft
+
+  - id: extraction.initial_concentration.pore_moroney2019
+    name: Initial soluble concentration in grain pores (Moroney 2019)
+    symbol: c_s0
+    description: Initial concentration of solubles per intragranular pore volume in the Moroney 2019 parameter set.
+    units: "kg/m^3"
+    prior: {distribution: uniform, min: 305, max: 358.6}
+    range: {min: 0}
+    relation:
+      derived_from: [extraction.soluble_volume_fraction.moroney2019]
+      formula: >-
+        c_s0 = φ_s ρ_s / ε_p with Moroney's ρ_s = 1400 kg/m³ and ε_p = 0.56: 0.122 × 1400/0.56 = 305.0
+        (coarse) and 0.143 × 1400/0.56 = 357.5 (fine; 358.6 is printed, so φ_s is rounded)
+    conditions: Drip-filter coffee bed model at 90 °C; 358.6 (fine grind) and 305 (coarse grind).
+    tag: derived
+    evidence_grade: B
+    sources:
+      - citation: "Moroney K.M., O'Connell K., Meikle-Janney P., O'Brien S.B.G., Walker G.M., Lee W.T. (2019) Analysing extraction uniformity from porous coffee beds. PLoS ONE 14:e0219906."
+        doi: "10.1371/journal.pone.0219906"
+    research_note_ref: "01 §3.3"
+    used_by: [X]
+    comment: >-
+      Definitions differ between models: per pore volume here, per grain volume in Grudeva (310 kg/m³),
+      TDS in pores 513 kg/m³ in Vaca Guerra 2024 (01 §8). Moroney's ρ_s and ε_p lie inside the
+      registry priors bed.density.skeletal and bed.porosity.intraparticle.
+    status: draft
+
+  - id: extraction.initial_concentration.grain_grudeva2026
+    name: Initial soluble concentration per grain volume (Grudeva 2026)
+    symbol: c_init
+    description: Initial concentration of solubles per grain volume in the Grudeva, Moroney & Foster parameter table.
+    units: "kg/m^3"
+    value: 310
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [X]
+    comment: Model parameter; the TDS concentration in pores fitted by Vaca Guerra 2024 is 513 kg/m³ (definitions differ, 01 §8).
+    status: draft
+
+  - id: extraction.max_yield
+    name: Maximum extractable yield
+    symbol: EY_max
+    description: Largest fraction of the dry dose that can be extracted.
+    units: "%"
+    prior: {distribution: uniform, min: 22, max: 34}
+    range: {min: 1, max: 60}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+      - citation: "Moroney K.M. et al. (2016) Coffee extraction kinetics in a well mixed system. J. Math. Ind. 7:3."
+        doi: "10.1186/s13362-016-0024-6"
+      - citation: "Lee W.T., Smith A., Arshad A. (2023) Uneven extraction in coffee brewing. Phys. Fluids 35:054110."
+        doi: "10.1063/5.0138998"
+      - citation: "Smith A., Lee W.T. (2021) Brewing optimal coffee. Eur. J. Phys. 42:025805."
+        doi: "10.1088/1361-6404/abc97d"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: >-
+      Note 01 §8 and PLAN §7.3 X give 28–34%, bounds that come from fits (Moroney 32% fine and 28% coarse;
+      Lee 2023 33.8%); Liang 2021 assumed 30% and Smith & Lee 2021 report 30.3%. Corrochano's
+      equilibrium values span lower: 30% (A), 28% (B) and 22% for the coarse grind H. The prior is widened
+      to 22% to cover them. Note 01 grades the row A/B; the weaker grade is recorded.
+    status: draft
+
+  # -- Surface pool ------------------------------------------------------------------
+  - id: extraction.surface_pool_fraction.vaca_guerra2024
+    name: Surface-available fraction of solubles (Vaca Guerra 2024)
+    description: Share of the extractable TDS and caffeine assumed to sit in broken surface cells, available for fast washout.
+    units: "%"
+    value: 29
+    range: {min: 0, max: 100}
+    conditions: Finest of the three PSDs in Vaca Guerra 2024.
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: "01 §5.2"
+    used_by: [X]
+    comment: An assumption of the model, not a measurement. Fines are almost all broken cells and empty within seconds (01 §5.2).
+    status: draft
+
+  - id: extraction.surface_pool_fraction.geometric
+    name: Broken-cell share of boulder volume (geometric estimate)
+    description: Volume share of a boulder occupied by its broken surface shell, estimated from cell size and particle size.
+    units: "%"
+    prior: {distribution: uniform, min: 14, max: 49}
+    range: {min: 0, max: 100}
+    relation:
+      formula: >-
+        1 − (1 − 2t/d)³ for a broken shell t = ½–1 cell thick (cells ≈ 30 µm) on boulders of diameter d:
+        27–49% at d = 300 µm, 14–27% at d = 600 µm
+    conditions: Boulders of 300–600 µm diameter; cell pockets of about 30 µm.
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "cell size, citing Schenker 2000"
+    research_note_ref: "01 §5.2"
+    used_by: [X]
+    comment: >-
+      Geometric estimate made in note 01 §5.2; the shell thickness of ½–1 cell is a judgement. Cell
+      pockets are 25–40 µm (Schenker 2000, via Corrochano) or 30–60 µm (Mo 2023) (01 §5.1). Fitted
+      Moroney timescales (t_s ≈ 1–19 s, t_d ≈ 42–270 s) support a surface pool plus kernel.
+    status: draft
+
+  # -- Surface and kernel timescales; surface-rate constants -------------------
+  - id: extraction.timescale.surface.fine
+    name: Surface dissolution timescale, fine grind
+    symbol: t_s
+    description: Timescale of dissolution from broken surface cells, fitted in a well-mixed system.
+    units: s
+    value: 1.18
+    range: {min: 0}
+    conditions: Well-mixed system, 90 °C, fine grind.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Moroney K.M. et al. (2016) Coffee extraction kinetics in a well mixed system. J. Math. Ind. 7:3."
+        doi: "10.1186/s13362-016-0024-6"
+    research_note_ref: "01 §3.3"
+    used_by: [X]
+    comment: Extractable mass 32% for this grind. The fast/slow split supports a two-pool (bi-exponential) surrogate.
+    status: draft
+
+  - id: extraction.timescale.surface.coarse
+    name: Surface dissolution timescale, coarse grind
+    symbol: t_s
+    description: Timescale of dissolution from broken surface cells, fitted in a well-mixed system.
+    units: s
+    value: 19.4
+    range: {min: 0}
+    conditions: Well-mixed system, 90 °C, coarse grind.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Moroney K.M. et al. (2016) Coffee extraction kinetics in a well mixed system. J. Math. Ind. 7:3."
+        doi: "10.1186/s13362-016-0024-6"
+    research_note_ref: "01 §3.3"
+    used_by: [X]
+    comment: Extractable mass 28% for this grind.
+    status: draft
+
+  - id: extraction.timescale.kernel.fine
+    name: Kernel diffusion timescale, fine grind
+    symbol: t_d
+    description: Timescale of diffusion out of intact-cell kernels, fitted in a well-mixed system.
+    units: s
+    value: 42.2
+    range: {min: 0}
+    conditions: Well-mixed system, 90 °C, fine grind.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Moroney K.M. et al. (2016) Coffee extraction kinetics in a well mixed system. J. Math. Ind. 7:3."
+        doi: "10.1186/s13362-016-0024-6"
+    research_note_ref: "01 §3.3"
+    used_by: [X]
+    status: draft
+
+  - id: extraction.timescale.kernel.coarse
+    name: Kernel diffusion timescale, coarse grind
+    symbol: t_d
+    description: Timescale of diffusion out of intact-cell kernels, fitted in a well-mixed system.
+    units: s
+    value: 270
+    range: {min: 0}
+    conditions: Well-mixed system, 90 °C, coarse grind.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Moroney K.M. et al. (2016) Coffee extraction kinetics in a well mixed system. J. Math. Ind. 7:3."
+        doi: "10.1186/s13362-016-0024-6"
+    research_note_ref: "01 §3.3"
+    used_by: [X]
+    status: draft
+
+  - id: extraction.surface_rate.grudeva2026
+    name: Surface mass-transfer coefficient (Grudeva 2026)
+    symbol: k
+    description: Rate coefficient of the saturating surface flux G = k (min(c_s, c_sat) − c).
+    units: "m/s"
+    value: 1.0e-3
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [X]
+    comment: >-
+      Model parameter. With it the surface dissolution timescale (kb/ε)⁻¹ is ~0.002–0.02 s, very stiff
+      [derived, 01 §2].
+    status: draft
+
+  - id: extraction.surface_rate.moroney2019
+    name: Lumped solid–liquid mass-transfer coefficient (Moroney 2019)
+    symbol: h_sl
+    description: Lumped exchange coefficients fitted to drip-column outlet concentrations.
+    units: "m/s"
+    prior: {distribution: uniform, min: 1.66e-4, max: 1.43e-3}
+    range: {min: 0}
+    conditions: Drip-filter column (60 g, 59 mm, 250 mL/min, 90 °C), fine and coarse grinds.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Moroney K.M., O'Connell K., Meikle-Janney P., O'Brien S.B.G., Walker G.M., Lee W.T. (2019) Analysing extraction uniformity from porous coffee beds. PLoS ONE 14:e0219906."
+        doi: "10.1371/journal.pone.0219906"
+    research_note_ref: "01 §3.3"
+    used_by: [X]
+    comment: >-
+      5.1×10⁻⁴ and 1.43×10⁻³ m/s (fine grind, small and large grains); 1.66×10⁻⁴ and 2.90×10⁻⁴ m/s
+      (coarse). Too large for physical film coefficients: treat as fitted constants. Note 01 §8 rounds
+      the range to 1.7×10⁻⁴–1.4×10⁻³.
+    status: draft
+
+  - id: extraction.surface_rate.cameron2020
+    name: Nonlinear surface rate constant (Cameron 2020)
+    symbol: k_C
+    description: Rate constant of the Cameron surface flux G = k c_s (c_s − c)(c_sat − c).
+    units: "m^7*kg^-2*s^-1"
+    value: 6.0e-7
+    range: {min: 0}
+    conditions: EK43 grind series, 6 bar, 92 °C, 20 g in / 40 g out.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+    research_note_ref: "01 §3.4"
+    used_by: [X]
+    comment: Fitted together with D_s = 6.25×10⁻¹⁰ m²/s; the flux vanishes at saturation, at equilibrium and when the grain is depleted (01 §3.2).
+    status: draft

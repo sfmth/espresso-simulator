@@ -1,0 +1,100 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for fractions.csv. The data come from the CC BY 4.0 supplement of the article cited
+# below (see `licence`); this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: schmieder2023-fractions
+title: >-
+  Concentrations of trigonelline, caffeine, 5-CQA and TDS in the analysed fractions of every
+  espresso shot of a 15-run flow-rate, grind and temperature design (Schmieder et al. 2023, Table S1)
+citation: >-
+  Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of
+  flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12(15):2871.
+  Supplementary Table S1 (TableS1_ExperimentRawData.xlsx).
+doi: "10.3390/foods12152871"
+url: "https://www.mdpi.com/2304-8158/12/15/2871"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-14"
+research_note_ref: ["01 §9", "02 §3.1"]
+
+obtained: >-
+  Converted by script (python/puckworks_tools/sources/schmieder2023.py) from the workbook
+  TableS1_ExperimentRawData.xlsx (sha256
+  669de01944a5a79e007461acc81013e1fa6f64f7b140488583624731917a130c) of the supplementary archive
+  foods-12-02871-s001.zip, obtained through the Europe PMC supplementary-files service for
+  PMC10418593 on 2026-10-14. The stored cell values are copied without rounding; nothing was
+  digitised. Experiment and replicate numbers, which the workbook gives only on the first row of each
+  block, are repeated on every row.
+
+uncertainty: >-
+  Transcription: none (values copied by script). Statistical: each row is a single measurement of one
+  fraction of one shot; the article gives no per-fraction measurement error. Replicate scatter can be
+  computed from the rows (3 shots per experiment, 6 at the centre point, experiment 7). HPLC
+  concentrations (trigonelline, caffeine, 5-CQA) were measured on samples diluted 1:50 (fractions 1–2),
+  1:20 (3, 5) or 1:5 (7, 10); TDS by refractometry calibrated against dried mass (DIN 10775).
+
+columns:
+  - name: experiment
+    type: integer
+    description: Experiment number of the design, 1–15 (see schmieder2023-design for the conditions; 7 is the centre point).
+  - name: replicate
+    type: integer
+    description: Replicate shot of the experiment, 1–3 (1–6 for experiment 7).
+  - name: fraction
+    type: integer
+    description: Fraction number, 1–10 in order of collection; only fractions 1, 2, 3, 5, 7 and 10 were analysed.
+  - name: fraction_mass_g
+    type: number
+    units: g
+    required: false
+    description: Mass of this fraction. Missing in the source for experiment 10, replicate 1, fraction 2.
+  - name: cumulative_mass_g
+    type: number
+    units: g
+    required: false
+    description: >-
+      Accumulated beverage mass at the middle of this fraction, m∑n = 0.5·m_n + Σ_{k<n} m_k (the
+      article's Eq. 1), including the masses of the unanalysed fractions. Missing where the fraction
+      mass is missing.
+  - name: trigonelline_mg_g
+    type: number
+    units: mg/g
+    required: false
+    description: Trigonelline concentration in the fraction. Missing for 2 fractions in the source.
+  - name: caffeine_mg_g
+    type: number
+    units: mg/g
+    required: false
+    description: Caffeine concentration in the fraction.
+  - name: cqa5_mg_g
+    type: number
+    units: mg/g
+    required: false
+    description: 5-caffeoylquinic acid (5-CQA) concentration in the fraction.
+  - name: tds_g_g
+    type: number
+    units: g/g
+    description: Total dissolved solids of the fraction, as a mass fraction.
+
+files:
+  - path: fractions.csv
+    format: csv
+    description: 288 rows, 6 analysed fractions × 48 shots.
+
+notes: >-
+  Conditions (from the article; see schmieder2023-design): Decent DE1 Pro with an IMS Cl 200 IM
+  shower screen and an IMS BT702Th26.5M precision basket; 20 ± 0.01 g of washed Colombian Arabica
+  (Colombia Suprema Huila, roasted 180→212 °C in about 10 min, rested two weeks), ground on a
+  Mahlkönig E65S at grinding level 1.4, 1.7 or 2.0, distributed with a Grande TRE tool and tamped at
+  25 kg; Acqua Panna water. Flow control: preinfusion at 7 mL/s until the basket was full and the
+  pressure exceeded 2.5 bar, then the set flow (1, 2 or 3 mL/s) at the set temperature (80, 89 or
+  98 °C). A time-controlled sampling wheel collected ten fractions of about 6 g (average total
+  58.1 g, SD 4.1); fraction 1 varies most because the wheel was started on the first drop.
+  Missing values in the source (kept empty): experiment 2 replicate 3 fraction 2 and experiment 5
+  replicate 3 fraction 2 lack the three HPLC species; experiment 10 replicate 1 fraction 2 lacks its
+  fraction and accumulated mass. The authors fitted c(m∑) = c0·exp(−m∑/λ) to these data (Table A1 of
+  the article: schmieder2023-kinetics) and integrated it to cup masses (their Eq. 3; Table S3:
+  schmieder2023-replicates). Licence: the supplementary archive is distributed with the CC BY 4.0
+  article (Europe PMC lists PMC10418593, with its supplementary files, as open access under CC BY); no
+  separate licence is stated for the supplement. Attribution: cite the article above when
+  redistributing.

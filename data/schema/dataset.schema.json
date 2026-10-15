@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:puckworks:schema:dataset:1",
+  "title": "Puckworks dataset sidecar",
+  "description": "Metadata sidecar (dataset.yaml) for one dataset folder in data/datasets/. Licensing rules: docs/PLAN.md §11 and data/datasets/README.md. Checked by `puckworks-tools validate-registry`, which also checks the data files against `columns`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "title",
+    "citation",
+    "licence",
+    "redistribution",
+    "obtained",
+    "uncertainty",
+    "columns",
+    "files"
+  ],
+  "anyOf": [
+    { "required": ["doi"] },
+    { "required": ["url"] }
+  ],
+  "properties": {
+    "schema": {
+      "const": "puckworks.dataset/1"
+    },
+    "id": {
+      "description": "Equals the folder name: <first author><year>-<slug>, lower case, e.g. schmieder2023-centre-point.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5
+    },
+    "citation": {
+      "description": "Full citation of the source the data come from.",
+      "type": "string",
+      "minLength": 10
+    },
+    "doi": {
+      "description": "Bare DOI of the source, e.g. 10.3390/foods12152871.",
+      "type": "string",
+      "minLength": 1
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^https?://\\S+$"
+    },
+    "licence": {
+      "description": "SPDX licence identifier of the data (e.g. CC-BY-4.0, CC0-1.0), or facts-cited when only facts (numbers) are taken, with citation, from a source without an open licence.",
+      "type": "string",
+      "pattern": "^(facts-cited|[A-Za-z0-9][A-Za-z0-9.+-]*)$"
+    },
+    "redistribution": {
+      "description": "allowed: the files may be bundled with the app; cite-only: only cited facts are bundled; forbidden: nothing from the source is bundled (e.g. non-commercial licences).",
+      "enum": ["allowed", "cite-only", "forbidden"]
+    },
+    "retrieved": {
+      "description": "Date the source was accessed, YYYY-MM-DD.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "research_note_ref": {
+      "description": "Research-note section(s) that discuss the dataset, as in parameter records.",
+      "oneOf": [
+        { "type": "string", "minLength": 4 },
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 4 }
+        }
+      ]
+    },
+    "obtained": {
+      "description": "How the data were obtained: copied from tables, digitised from figures (tool, resolution), or received from the authors.",
+      "type": "string",
+      "minLength": 20
+    },
+    "uncertainty": {
+      "description": "Transcription or digitisation uncertainty, and the statistical uncertainty reported by the source.",
+      "type": "string",
+      "minLength": 10
+    },
+    "columns": {
+      "description": "Columns of every CSV file listed in `files`, in order.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/column" }
+    },
+    "files": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/file" }
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "column": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "type": {
+          "enum": ["string", "number", "integer"]
+        },
+        "units": {
+          "description": "Unit string from data/schema/units.yaml.",
+          "type": "string",
+          "minLength": 1
+        },
+        "units_column": {
+          "description": "Name of a string column that gives this column's units row by row.",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 3
+        },
+        "required": {
+          "description": "Whether every row must have a value (default true).",
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["type"], "properties": { "type": { "const": "number" } } },
+          "then": {
+            "oneOf": [
+              { "required": ["units"] },
+              { "required": ["units_column"] }
+            ]
+          }
+        },
+        {
+          "if": { "required": ["type"], "properties": { "type": { "const": "string" } } },
+          "then": { "not": { "anyOf": [{ "required": ["units"] }, { "required": ["units_column"] }] } }
+        }
+      ]
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "format", "description"],
+      "properties": {
+        "path": {
+          "description": "Path relative to the dataset folder.",
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9_./-]+$"
+        },
+        "format": {
+          "enum": ["csv"]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,430 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  Roasted-bean composition priors (bean model B; extraction X; cup C; taste T) for the four species
+  tracked in M1 (caffeine, trigonelline, 5-CQA, an acids class) and the major classes, for Arabica and
+  Robusta at medium roast. Contents are g per 100 g dry matter (% db) unless stated. Transcribed from
+  research note 02 §0 and §1.1 (Table 1). Farah 2012 reports g/100 g without stating the basis;
+  roasted coffee holds 0–5% water, so the difference from % db is at most 5% (02 §1.1, note iv).
+
+parameters:
+  # -- Four tracked species -------------------------------------------------------
+  - id: bean.composition.arabica.caffeine
+    name: Caffeine content, Arabica
+    description: Caffeine content of roasted Arabica beans.
+    units: "%"
+    prior: {distribution: uniform, min: 1.1, max: 1.3}
+    range: {min: 0, max: 20}
+    conditions: Medium roast, % db; caffeine is stable during roasting.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: Compilation (C); ranges partly reflect analytical method. Espresso transfers ≈60–66% of the caffeine [derived from Gloess 2013, 02 Table 2].
+    status: draft
+
+  - id: bean.composition.robusta.caffeine
+    name: Caffeine content, Robusta
+    description: Caffeine content of roasted Robusta (Coffea canephora) beans.
+    units: "%"
+    prior: {distribution: uniform, min: 1.63, max: 3.57}
+    range: {min: 0, max: 20}
+    conditions: Medium roast, % db.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+      - citation: "Viencz T. et al. (2023) J. Food Compos. Anal. 117:105140 (67 Coffea canephora lots)."
+        doi: "10.1016/j.jfca.2023.105140"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: >-
+      Typical 2.4–2.5% (Farah 2012); the prior covers the lot-to-lot spread of 1.63–3.57% across 67
+      Amazonian canephoras at Agtron 55–65 (Viencz 2023, A). Grade: the weaker source (compilation, C).
+    status: draft
+
+  - id: bean.composition.arabica.trigonelline
+    name: Trigonelline content, Arabica
+    description: Trigonelline content of roasted Arabica beans.
+    units: "%"
+    prior: {distribution: uniform, min: 0.2, max: 1.2}
+    range: {min: 0, max: 100}
+    conditions: "% db; falls from 1.2 to 0.2 as the roast darkens."
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: >-
+      Degraded during roasting to nicotinic acid (4–6% of the initial trigonelline; Lang 2008),
+      N-methylpyridinium (up to 0.25% in dark roasts) and pyridines (02 §4.3).
+    status: draft
+
+  - id: bean.composition.robusta.trigonelline
+    name: Trigonelline content, Robusta
+    description: Trigonelline content of roasted Robusta (Coffea canephora) beans.
+    units: "%"
+    prior: {distribution: uniform, min: 0.3, max: 1.15}
+    range: {min: 0, max: 100}
+    conditions: "% db; falls from 0.7 to 0.3 as the roast darkens."
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+      - citation: "Viencz T. et al. (2023) J. Food Compos. Anal. 117:105140 (67 Coffea canephora lots)."
+        doi: "10.1016/j.jfca.2023.105140"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: >-
+      Falls from 0.7 to 0.3% as the roast darkens (Farah 2012); 0.60–1.15% across 67 canephoras at Agtron
+      55–65 (Viencz 2023). The prior covers both. Grade: the weaker source (compilation, C).
+    status: draft
+
+  - id: bean.composition.arabica.5cqa
+    name: 5-CQA content, Arabica
+    description: 5-Caffeoylquinic acid content of roasted coffee (mean of 12 commercial roasts, Arabica column of note 02 Table 1).
+    units: "%"
+    value: 1.14
+    range: {min: 0, max: 20}
+    conditions: "% db; mean of 12 commercial roasts."
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schrader K. et al. (1996) J. Sci. Food Agric. 71:392–398."
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: >-
+      Abstract read in note 02. The same study gives 3-CQA 0.50 and 4-CQA 0.62% db; roasting isomerises
+      away from 5-CQA. Do not use the abstract's 3-CQL 21 g/kg and 4-CQL 10 g/kg, probably a
+      typographical error [unverified] (02 §1.1, note iii).
+    status: draft
+
+  - id: bean.composition.arabica.aliphatic_acids
+    name: Aliphatic acids content, Arabica
+    description: Total aliphatic (organic) acids in roasted Arabica beans; part of the M1 acids class.
+    units: "%"
+    value: 1.6
+    range: {min: 0, max: 20}
+    conditions: Medium roast, % db (green 1.1).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: Formic, acetic, glycolic and lactic acids form early in the roast; citric and malic acids fall.
+    status: draft
+
+  - id: bean.composition.robusta.aliphatic_acids
+    name: Aliphatic acids content, Robusta
+    description: Total aliphatic (organic) acids in roasted Robusta beans; part of the M1 acids class.
+    units: "%"
+    value: 1.6
+    range: {min: 0, max: 20}
+    conditions: Medium roast, % db (green 1.2).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: Roasted Robusta has 2–5× more total organic acids, mainly formic and acetic (Yeager 2023), which this compilation value does not show.
+    status: draft
+
+  - id: bean.composition.arabica.quinic_acid
+    name: Quinic acid content, Arabica
+    description: Quinic acid content of roasted Arabica beans; part of the M1 acids class.
+    units: "%"
+    value: 0.8
+    range: {min: 0, max: 20}
+    conditions: Medium roast, % db (green 0.4).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: Increases with roasting and on hot holding (Rune 2023).
+    status: draft
+
+  - id: bean.composition.robusta.quinic_acid
+    name: Quinic acid content, Robusta
+    description: Quinic acid content of roasted Robusta beans; part of the M1 acids class.
+    units: "%"
+    value: 1.0
+    range: {min: 0, max: 20}
+    conditions: Medium roast, % db (green 0.4).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    status: draft
+
+  # -- Major classes ----------------------------------------------------------------
+  - id: bean.composition.arabica.cga_total
+    name: Total chlorogenic acids, Arabica
+    description: Total chlorogenic acids (CGA) in roasted Arabica beans.
+    units: "%"
+    prior: {distribution: uniform, min: 1.9, max: 2.5}
+    range: {min: 0, max: 100}
+    conditions: Medium roast, % db (green 4.1–7.9).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: >-
+      Lost by first-order Arrhenius kinetics during roasting (Perrone 2010): about −50% at 230 °C/12 min.
+      Reported green Arabica CGA varies by source (3.4–4.8%, 4.1–7.9%, 6.7–9.2%; 02 §1.1, note ii).
+    status: draft
+
+  - id: bean.composition.robusta.cga_total
+    name: Total chlorogenic acids, Robusta
+    description: Total chlorogenic acids (CGA) in roasted Robusta beans.
+    units: "%"
+    prior: {distribution: uniform, min: 3.3, max: 3.8}
+    range: {min: 0, max: 100}
+    conditions: Medium roast, % db (green 6.1–11.3).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    status: draft
+
+  - id: bean.composition.arabica.polysaccharides
+    name: Polysaccharides, Arabica
+    description: Polysaccharides (arabinogalactan, galactomannan, cellulose) in roasted Arabica beans.
+    units: "%"
+    prior: {distribution: uniform, min: 31, max: 38}
+    range: {min: 0, max: 100}
+    conditions: Medium roast, % db; only the soluble fraction extracts.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: >-
+      31–33% (Farah 2012); 38% in the Illy & Viani table (secondary). The prior covers both. Roasting
+      degrades 12–24% of polysaccharides at light roast and 35–40% at dark (Poisson 2017).
+    status: draft
+
+  - id: bean.composition.robusta.polysaccharides
+    name: Polysaccharides, Robusta
+    description: Polysaccharides (arabinogalactan, galactomannan, cellulose) in roasted Robusta beans.
+    units: "%"
+    value: 37
+    prior: {distribution: uniform, min: 37, max: 42}
+    range: {min: 0, max: 100}
+    conditions: Medium roast, % db; only the soluble fraction extracts.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: 37% (Farah 2012); 42% in the Illy & Viani table (secondary). The prior covers both.
+    status: draft
+
+  - id: bean.composition.arabica.melanoidins
+    name: Melanoidins, Arabica
+    description: Melanoidins (brown Maillard polymers, ~1.5 to >60 kDa) in roasted Arabica beans.
+    units: "%"
+    value: 25
+    prior: {distribution: uniform, min: 7.7, max: 25}
+    range: {min: 0, max: 100}
+    relation:
+      formula: "100% minus the sum of the other measured classes (by difference, Farah 2012)"
+    conditions: Medium roast, % db.
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: >-
+      "≈25 (25.4 'condensation products' by difference)": a value by difference absorbs the errors of every
+      other class. The prior is the literature range 7.7–25% (02 Table 1). The soluble part is up to 25% of
+      brew dry matter (Borrelli 2002).
+    status: draft
+
+  - id: bean.composition.robusta.melanoidins
+    name: Melanoidins, Robusta
+    description: Melanoidins (brown Maillard polymers, ~1.5 to >60 kDa) in roasted Robusta beans.
+    units: "%"
+    value: 25
+    prior: {distribution: uniform, min: 7.7, max: 25}
+    range: {min: 0, max: 100}
+    relation:
+      formula: "100% minus the sum of the other measured classes (by difference, Farah 2012)"
+    conditions: Medium roast, % db.
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+      - citation: "Viencz T. et al. (2023) J. Food Compos. Anal. 117:105140 (67 Coffea canephora lots)."
+        doi: "10.1016/j.jfca.2023.105140"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: >-
+      "≈25 (25.9)" by difference in the compilation; 10–17.9% measured across 67 canephoras (Viencz 2023).
+      The prior is the literature range 7.7–25% (02 Table 1), which covers both.
+    status: draft
+
+  - id: bean.composition.arabica.lipids
+    name: Lipids, Arabica
+    description: Lipids (triglycerides and unsaponifiables) in roasted Arabica beans; they reach the cup as an emulsion.
+    units: "%"
+    value: 17
+    range: {min: 0, max: 100}
+    conditions: Medium roast, % db.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: Kinetic class K5 (particulate/emulsion); about 0.5% of dose mass reaches the cup, ≈3% of the bean lipid [derived, 02 Table 2].
+    status: draft
+
+  - id: bean.composition.robusta.lipids
+    name: Lipids, Robusta
+    description: Lipids (triglycerides and unsaponifiables) in roasted Robusta beans; they reach the cup as an emulsion.
+    units: "%"
+    value: 11
+    range: {min: 0, max: 100}
+    conditions: Medium roast, % db.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    status: draft
+
+  - id: bean.composition.arabica.minerals
+    name: Minerals (ash), Arabica
+    description: Mineral (ash) content of roasted Arabica beans; potassium salts are soluble.
+    units: "%"
+    value: 4.5
+    range: {min: 0, max: 100}
+    conditions: Medium roast, % db; conserved during roasting.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    status: draft
+
+  - id: bean.composition.robusta.minerals
+    name: Minerals (ash), Robusta
+    description: Mineral (ash) content of roasted Robusta beans; potassium salts are soluble.
+    units: "%"
+    value: 4.7
+    range: {min: 0, max: 100}
+    conditions: Medium roast, % db; conserved during roasting.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    status: draft
+
+  - id: bean.composition.arabica.sucrose
+    name: Sucrose, Arabica
+    description: Sucrose content of roasted Arabica beans; degraded early in the roast.
+    units: "%"
+    prior: {distribution: uniform, min: 0, max: 4.2}
+    range: {min: 0, max: 100}
+    conditions: "% db; from 4.2% to trace depending on roast degree (green 6–9%)."
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: '"4.2 → trace"; trace is taken as 0 for the prior. 0.0% in the Illy & Viani table (02 §4.3).'
+    status: draft
+
+  - id: bean.composition.robusta.sucrose
+    name: Sucrose, Robusta
+    description: Sucrose content of roasted Robusta beans; degraded early in the roast.
+    units: "%"
+    prior: {distribution: uniform, min: 0, max: 1.6}
+    range: {min: 0, max: 100}
+    conditions: "% db; from 1.6% to trace depending on roast degree (green 0.9–4 or 3–7%)."
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B, X, C, T]
+    comment: '"1.6 → trace"; trace is taken as 0 for the prior.'
+    status: draft
+
+  - id: bean.moisture.roasted
+    name: Moisture content of roasted beans
+    description: Water content of roasted coffee beans (as-is basis).
+    units: "%"
+    prior: {distribution: uniform, min: 0, max: 5}
+    range: {min: 0, max: 100}
+    conditions: Arabica and Robusta after roasting (green 8–12%).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Poisson L., Blank I., Dunkel A., Hofmann T. (2017) The chemistry of roasting—decoding flavor formation. In Folmer B. (ed.) The Craft and Science of Coffee, Academic Press, 273–309."
+        doi: "10.1016/B978-0-12-803520-7.00012-8"
+    research_note_ref: "02 §4.3"
+    used_by: [B, G]
+    comment: Whole-bean moisture below 2% causes strong tribocharging and clumping in grinding (Méndez Harper 2024; 03 §2.1).
+    status: draft

@@ -1,0 +1,1586 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Model parameters of the M1 input models (crates/puckmodel; docs/model/input-models.md) that the
+# research registry does not provide: closure coefficients, conventions, defaults for gear that is
+# described only partly, and a few values derived from other records.
+#
+# Honesty rules for this file:
+#   - a judgement is tagged `estimated` with grade D, a deliberately wide prior and a comment saying
+#     what evidence bounds it, even when that evidence is itself graded higher;
+#   - a value computed from other records is tagged `derived` and names them in `relation`;
+#   - no research note covers pump curves, post-stop drip or group thermal masses; those records point
+#     at the note section their values must be consistent with, and say so in the comment.
+# Calibration (PLAN §7.3 K; data/calibration/current.yaml) is expected to replace most of them.
+schema: puckworks.parameters/1
+description: >-
+  M1 input-model parameters (grinder model G, bean model B, bed builder P, machine model M, and the
+  closures they hand to hydraulics H and extraction X) that the research registry lacks. Mostly
+  estimates with wide priors; see docs/model/input-models.md.
+
+parameters:
+  # -- Grinder -> PSD (module G) -------------------------------------------------------
+  - id: model.psd.fines_log_width
+    name: Log-width of the fines mode
+    symbol: σ_f
+    description: Standard deviation of ln(diameter) of the fines component of the three-component log-normal PSD mixture.
+    units: "1"
+    value: 0.6
+    prior: {distribution: uniform, min: 0.4, max: 0.8}
+    range: {min: 0.2, max: 1.2}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: ["03 §1.1", "03 Implications A"]
+    used_by: [G]
+    comment: >-
+      Chosen so that the fines component (mode 40 µm, psd.fines_mode) spans about 12–130 µm at ±2σ and
+      puts about 94% of its volume below 100 µm, matching a 40–50 µm volume peak with a trough near
+      100 µm (03 §1.1). No published fit of the mixture width was accessible (Gagné 2023 shows the
+      trends only as figures, 03 §1.5).
+    status: draft
+
+  - id: model.psd.boulder_log_width
+    name: Log-width of the boulder tail
+    symbol: σ_b
+    description: Standard deviation of ln(diameter) of the boulder-tail component of the three-component log-normal PSD mixture.
+    units: "1"
+    value: 0.35
+    prior: {distribution: uniform, min: 0.2, max: 0.5}
+    range: {min: 0.1, max: 0.8}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+    research_note_ref: "03 Implications A"
+    used_by: [G]
+    licence_note: "Coffee ad Astra is copyrighted: numbers cited, no scraping (PLAN §11)."
+    comment: >-
+      Note 03 suggests deriving w_b and σ_b from Gagné's right-half-width "uniformity" or Kaffeemacher's
+      60% peak width; neither is available as numbers, so this is a judgement.
+    status: draft
+
+  - id: model.psd.coarse_log_width
+    name: Log-width of the coarse mode
+    symbol: σ_c
+    description: >-
+      Standard deviation of ln(diameter) of the coarse component of the PSD mixture, for a grinder whose
+      family or preset does not set one (families always do; this id lets an override or a calibration
+      replace them).
+    units: "1"
+    value: 0.35
+    prior: {distribution: uniform, min: 0.25, max: 0.5}
+    range: {min: 0.1, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "03 Implications A"
+    used_by: [G]
+    licence_note: "Coffee ad Astra is copyrighted: numbers cited, no scraping (PLAN §11)."
+    comment: >-
+      The flat-traditional family's value; flat-unimodal uses 0.30 and conical 0.40
+      (data/presets/grinders/families.yaml). Gagné's mixture widths are shown only as figures (03 §1.5).
+    status: draft
+
+  - id: model.psd.boulder_weight
+    name: Volume share of the boulder tail
+    symbol: w_b
+    description: >-
+      Volume share of the boulder-tail component of the PSD mixture, for a grinder whose family or preset
+      does not set one (families always do; this id lets an override or a calibration replace them).
+    units: "1"
+    value: 0.05
+    prior: {distribution: uniform, min: 0.02, max: 0.1}
+    range: {min: 0, max: 0.3}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "03 Implications A"
+    used_by: [G]
+    licence_note: "Coffee ad Astra is copyrighted: numbers cited, no scraping (PLAN §11)."
+    comment: >-
+      The flat-traditional family's value; flat-unimodal uses 0.03 and conical 0.08. Conicals are on
+      average less uniform (more boulders), with large overlap between models (03 §2.1).
+    status: draft
+
+  - id: model.psd.fines_weight_slope
+    name: Slope of the fines weight in the coarse mode
+    symbol: γ
+    description: >-
+      Slope of the grinder model's fines relation, logit w_f = logit w_340 − γ ln(μ_c/μ_340): how fast
+      the volume weight w_f of the fines component grows as the coarse mode μ_c shrinks. The relation
+      is anchored where the grinder's median is 340 µm and its volume share below 100 µm is u_G.
+    units: "1"
+    value: 2.0
+    prior: {distribution: uniform, min: 1.5, max: 2.5}
+    range: {min: 0.5, max: 5}
+    relation:
+      formula: >-
+        Each measured (X50, Q100) pair was converted to the mixture's (μ_c, w_f) with this file's fines
+        and boulder components (μ_f 40 µm, σ_f 0.6, σ_c 0.35, w_b 0.05), and logit w_f was regressed on
+        ln μ_c for each grinder: Corrochano 2017 disc grinder ΨA–ΨE (dry laser diffraction, X50 61–383
+        µm) 2.06 with rms 0.006 in logit, and its roller grinder ΨF–ΨH (X50 602–1297 µm) 2.35; Smrke
+        2024 Bentwood V63 (Camsizer, X50 232–352 µm) 2.01 with rms 0.013; Cameron 2020 EK43 (laser
+        diffraction, X50 205–360 µm) 1.59 with rms 0.02. With γ = 2 and one u_G per grinder the model
+        reproduces Q100 within 0.4 points for Corrochano ΨA–ΨE (u_G 19.9%), Smrke (15.7%) and
+        Waszkiewicz 2026's F64 EVO grind (X50 61–64 µm, 18.4%), and within 1.1 points for Cameron
+        (16.1%).
+    tag: fitted
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "Table 4.1 (dry laser diffraction); data/datasets/corrochano2017-psd"
+      - citation: "Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics. Sci. Rep. 14:5612."
+        doi: "10.1038/s41598-024-55831-x"
+        locator: "Fig. 2; data/datasets/smrke2024-psd"
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+        locator: "Fig. 2B; data/datasets/cameron2020-psd"
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+        locator: "Fig. 2 (Zenodo 10.5281/zenodo.18046315); data/datasets/waszkiewicz2026-psd; check only"
+    research_note_ref: ["03 §1.2", "03 §2.2"]
+    used_by: [G]
+    comment: >-
+      Replaces v1's linear relation Q100 = u_G − β (X50 − 340 µm) (psd.fines_slope), which was measured
+      for X50 ≈ 190–383 µm only and needed clamps at 4% and 40%, so it could not represent espresso-fine
+      grinds (X50 ≈ 60 µm with 65% below 100 µm). Basis: dry laser diffraction and dynamic image
+      analysis (Camsizer x_area), which agree at the level of X50 and Q100 for these grinders; wet laser
+      diffraction (Schmieder 2023, Corrochano's wet table) adds a 1–10 µm debris population and is not
+      used. Shot, flow and permeability data were not used. A fit by the project, hence grade C.
+    status: draft
+
+  - id: model.psd.roast_coefficient
+    name: Relative change of grind size per unit roast level
+    symbol: a_r
+    description: >-
+      Relative decrease of the volume median X50 per unit of roast level (0 = very light, 1 = very
+      dark), relative to a medium roast (roast level 0.5), at a fixed burr gap:
+      f_roast = 1 − a_r (roast_level − 0.5).
+    units: "1"
+    value: 0.15
+    prior: {distribution: uniform, min: 0.05, max: 0.35}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Méndez Harper J. et al. (2024; online 2023) Moisture-controlled triboelectrification during coffee grinding. Matter 7:1–18."
+        doi: "10.1016/j.matt.2023.11.005"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: ["03 §2.1", "03 §2.2"]
+    used_by: [G, B]
+    licence_note: "Méndez Harper 2024 raw data (Figshare) are CC BY 4.0: attribution required."
+    comment: >-
+      On an EK43 the darkest roast had a ≈100 µm finer mean than the lightest at the same setting
+      (settings 1–6), and light at 2.0 matched dark at 2.3 (psd.grinder.ek43.dark_roast_mean_reduction;
+      03 §2.2). With the estimated EK43 dial mapping of the mahlkoenig-ek43 preset (70 µm of gap per
+      unit) and light/dark taken as roast levels 0.25/0.85, the setting match implies a_r ≈ 0.14. The
+      roast levels of that series and the EK43 mapping are assumptions, hence grade D. The
+      medium-roast reference is a convention: the grinders' source coffees are medium or unstated.
+    status: draft
+
+  - id: model.psd.cold_size_reduction
+    name: Grind-size reduction of frozen beans
+    symbol: a_T
+    description: >-
+      Relative decrease of the volume median X50 for beans ground at −19 °C or colder versus 20 °C, at a
+      fixed burr gap; linear in temperature between −19 and 20 °C and zero above 20 °C:
+      f_T = 1 − a_T clamp((20 − T)/39, 0, 1).
+    units: "1"
+    value: 0.10
+    prior: {distribution: uniform, min: 0, max: 0.31}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Uman E., Colonna-Dashwood M., Colonna-Dashwood L., Perger M., Klatt C., Leighton S., Miller B., Butler K.T., Melot B.C., Speirs R.W., Hendon C.H. (2016) The effect of bean origin and temperature on grinding roasted coffee. Sci. Rep. 6:24483."
+        doi: "10.1038/srep24483"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "03 §2.1"
+    used_by: [G]
+    comment: >-
+      Uman 2016 (A): the number mode fell by 31% from 20 °C to −196 °C and the PSD narrowed, mostly
+      between 20 and −19 °C. The effect on the volume median is not reported; 10% at −19 °C is a
+      judgement, and the narrowing is not modelled. Warm beans (above 20 °C) get no correction because
+      no PSD data exist (03 §2.1).
+    status: draft
+
+  # -- Bed and hydraulics (modules P, H) -------------------------------------------------
+  - id: model.hydraulics.reference_sauter_diameter
+    name: Sauter diameter at which the reference permeability is defined
+    symbol: D32_ref
+    description: >-
+      Sauter diameter of the size classes at which the bare base permeability
+      hydraulics.permeability.reference is defined; the input models scale κ₀ to a recipe's classes by
+      relative Kozeny–Carman, κ₀ = κ_ref (D32/D32_ref)² KC(ε)/KC(ε_ref).
+    units: um
+    value: 165
+    range: {min: 20, max: 2000}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: a convention of the permeability scaling."
+    research_note_ref: ["01 §4.2", "01 §4.3"]
+    used_by: [P, H]
+    comment: >-
+      A convention, not a measurement: in κ₀ = κ_ref (D32/D32_ref)² …, D32_ref and κ_ref are not
+      separately identifiable, so calibration fits κ_ref at this fixed D32_ref. 165 µm is kept from v1 so
+      that calibrations stay comparable; a typical espresso grind of the model has D32 ≈ 100 µm. In-shot
+      permeability is calibrated, never predicted from the PSD; Kozeny–Carman gives only relative changes
+      (01 §4.3, Implications 2). v1 anchored κ₀ on the apparent in-shot permeability
+      (hydraulics.permeability.in_shot, q μ L/ΔP at 9 bar), which already includes compaction and
+      swelling that the solver applies again; the bare reference replaces it.
+    status: draft
+  - id: model.hydraulics.swelling_pore_closure
+    name: Share of particle swelling that closes intergranular pores
+    symbol: f_sw
+    description: >-
+      Fraction of the particle volume growth on wetting that fills intergranular pore space; the rest
+      fills the particle's own pores or lifts the bed. Maps the registry's diameter swelling to the
+      permeability factor of the swelling relaxation through Kozeny–Carman.
+    units: "1"
+    value: 0.1
+    prior: {distribution: uniform, min: 0, max: 0.3}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Hargarten V.B., Kuhn M., Briesen H. (2020) Swelling properties of roasted coffee particles. J. Sci. Food Agric. 100:3960–3970."
+        doi: "10.1002/jsfa.10440"
+    research_note_ref: "01 §4.6"
+    used_by: [H]
+    comment: >-
+      Note 01 recommends treating swelling as a calibration parameter acting mainly on intergranular
+      porosity; its magnitude is disputed (0–15% in diameter). With ε = 0.17, S = 7.5% and f_sw = 0.1 the
+      swelling amplitude is 0.347. Swelling under confinement is unmeasured (01 Open questions 5).
+    status: draft
+
+  - id: model.hydraulics.gas_amplitude_max
+    name: Largest CO₂ permeability penalty
+    symbol: A_gas,max
+    description: Upper limit of the amplitude of the gas permeability factor 1 − A e^(−t/τ) for very gassy coffee.
+    units: "1"
+    value: 0.5
+    prior: {distribution: uniform, min: 0.1, max: 0.8}
+    range: {min: 0, max: 0.95}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "Table 6.2"
+    research_note_ref: "01 §4.9"
+    used_by: [H, B]
+    comment: >-
+      No direct measurement of the hydraulic effect of CO₂ in espresso exists (01 §4.9). On paper the
+      gas could occupy 0.5–3× the pore volume (hydraulics.gas.potential_volume_ratio), but under pressure
+      it partly dissolves. The mapping A = A_max c/(c + c_half) is a documented estimate.
+    status: draft
+
+  - id: model.hydraulics.gas_half_content
+    name: CO₂ content giving half the largest gas penalty
+    symbol: c_half
+    description: CO₂ held by the ground coffee in the puck (mg per g of coffee) at which the gas amplitude reaches half its maximum.
+    units: "mg/g"
+    value: 8.25
+    prior: {distribution: uniform, min: 4.5, max: 12}
+    range: {min: 0.01, max: 100}
+    relation:
+      derived_from: [bean.co2.ground_residual]
+      formula: "c_half = the central measured CO₂ of freshly ground coffee (bean.co2.ground_residual, 4.5–12 mg/g): half the largest penalty for fresh grounds"
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "01 §4.9"
+    used_by: [H, B]
+    comment: >-
+      The puck CO₂ is on the scale of the measured residual of freshly ground coffee (4.5–12 mg/g;
+      note 02 gives 1–2% of fresh bean weight entrapped): medium roast ≈ 7 mg/g fresh, ≈ 2.9 mg/g after
+      ten days. Setting c_half at fresh-ground levels gives fresh coffee about half the largest penalty
+      and week-old coffee a clear but smaller one. Tying the scale to the residual is a judgement.
+    status: draft
+  - id: model.hydraulics.gas_relaxation_time
+    name: Time constant of the CO₂ permeability penalty
+    symbol: τ_gas
+    description: Time constant of the decaying gas permeability factor 1 − A e^(−t/τ) after wetting.
+    units: s
+    value: 5
+    prior: {distribution: uniform, min: 2, max: 15}
+    range: {min: 0.1, max: 600}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "01 §4.11"
+    used_by: [H]
+    comment: >-
+      CO₂ and air displacement raise flow over "early seconds, larger for fresh coffee" (01 §4.11,
+      inferred from Corrochano 2017). No timescale has been measured.
+    status: draft
+
+  - id: model.hydraulics.fines_layer_amplitude
+    name: Amplitude of the outlet fines resistance
+    symbol: A_fines
+    description: Amplitude of the growing outlet resistance from fines migration, relative to the initial bed resistance.
+    units: "1"
+    value: 0
+    prior: {distribution: uniform, min: 0, max: 1}
+    range: {min: 0, max: 10}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Ellero M., Navarini L. (2019) Mesoscopic modelling and simulation of espresso coffee extraction. J. Food Eng. 263:181–194."
+        doi: "10.1016/j.jfoodeng.2019.05.038"
+    research_note_ref: "01 §4.7"
+    used_by: [H]
+    comment: >-
+      Switched off (0) until calibrated: fines migration is inferred from flow, not observed in situ
+      (03 Open questions 7). In a simulation a fines solid fraction of 0.006 cut permeability by nearly
+      an order of magnitude (Ellero & Navarini 2019), so the plausible range is wide.
+    status: draft
+
+  - id: model.hydraulics.fines_layer_time
+    name: Time constant of the outlet fines resistance
+    symbol: τ_fines
+    description: Time constant of the growth of the outlet fines resistance A R_bed(0)(1 − e^(−t/τ)).
+    units: s
+    value: 10
+    prior: {distribution: uniform, min: 3, max: 30}
+    range: {min: 0.1, max: 600}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: ["01 §4.7", "01 §4.11"]
+    used_by: [H]
+    comment: Fines migration to the outlet acts over "seconds to tens of seconds" (01 §4.11).
+    status: draft
+
+  - id: model.hydraulics.viscosity_ln_a1
+    name: Linear coefficient of the coffee-extract viscosity fit
+    symbol: a1
+    description: Coefficient a1 in ln(μ/μ_water) = a1 w + a2 w² for coffee solutions of solute mass fraction w, at 4 °C.
+    units: "1"
+    value: 3.75
+    range: {min: 0, max: 10}
+    relation:
+      formula: >-
+        Solved exactly through Moreno's 20% and 35% w/w points at 4 °C: ln(5.84/1.567) = 0.2 a1 + 0.04 a2
+        and ln(32.9/1.567) = 0.35 a1 + 0.1225 a2, with water at 1.567 mPa s (CRC), giving a1 = 3.75,
+        a2 = 14.1
+    conditions: Coffee solutions of 5–35% w/w at 4 °C.
+    tag: derived
+    evidence_grade: A
+    sources:
+      - citation: "Moreno F.L. et al. (2015) Rheological behaviour, freezing curve, and density of coffee solutions near freezing. Int. J. Food Prop. 18:426–438."
+        doi: "10.1080/10942912.2013.833221"
+      - citation: "CRC Handbook of Chemistry and Physics: standard values for the viscosity of water, as quoted in research note 01 §4.10."
+    research_note_ref: "01 §4.10"
+    used_by: [H]
+    comment: >-
+      Reproduces the 5% point to −1.6% in relative viscosity; at 50% w/w (outside the espresso range) it
+      reads 18% low. The fit describes low-temperature data only; the transfer to brew temperature is
+      the separate, much less certain exponent model.hydraulics.viscosity_temperature_exponent.
+    status: draft
+
+  - id: model.hydraulics.viscosity_ln_a2
+    name: Quadratic coefficient of the coffee-extract viscosity fit
+    symbol: a2
+    description: Coefficient a2 in ln(μ/μ_water) = a1 w + a2 w² for coffee solutions of solute mass fraction w, at 4 °C.
+    units: "1"
+    value: 14.1
+    range: {min: 0, max: 40}
+    relation:
+      formula: "Solved with model.hydraulics.viscosity_ln_a1 through Moreno's 20% and 35% w/w points at 4 °C"
+    conditions: Coffee solutions of 5–35% w/w at 4 °C.
+    tag: derived
+    evidence_grade: A
+    sources:
+      - citation: "Moreno F.L. et al. (2015) Rheological behaviour, freezing curve, and density of coffee solutions near freezing. Int. J. Food Prop. 18:426–438."
+        doi: "10.1080/10942912.2013.833221"
+    research_note_ref: "01 §4.10"
+    used_by: [H]
+    comment: See model.hydraulics.viscosity_ln_a1.
+    status: draft
+
+  - id: model.hydraulics.viscosity_temperature_exponent
+    name: Temperature exponent of the relative extract viscosity
+    symbol: γ
+    description: >-
+      Exponent γ ≤ 1 that shrinks the low-temperature relative viscosity at brew temperature:
+      μ/μ_water(T) = exp(a1 w + a2 w²)^γ.
+    units: "1"
+    value: 0.45
+    prior: {distribution: uniform, min: 0.22, max: 0.60}
+    range: {min: 0, max: 1}
+    relation:
+      derived_from:
+        - hydraulics.viscosity.extract_relative
+        - model.hydraulics.viscosity_ln_a1
+        - model.hydraulics.viscosity_ln_a2
+      formula: >-
+        γ = ln(R)/(a1·0.25 + a2·0.25²) so that 25% w/w extract has relative viscosity R at brew
+        temperature: R = 2.25 (central of 1.5–3) gives γ = 0.811/1.82 = 0.45; R = 1.5 and 3 bound the
+        prior at 0.22 and 0.60
+    tag: derived
+    evidence_grade: B
+    sources:
+      - citation: "Moreno F.L. et al. (2015) Rheological behaviour, freezing curve, and density of coffee solutions near freezing. Int. J. Food Prop. 18:426–438."
+        doi: "10.1080/10942912.2013.833221"
+    research_note_ref: ["01 §4.10", "01 §4.11"]
+    used_by: [H]
+    comment: >-
+      Relative viscosity at 90 °C and 5–25% TDS is a data gap (01 §4.10): the 1.5–3× it inherits is an
+      inference "[magnitude unverified at 90 °C]". Extrapolating Moreno's Arrhenius energies from 4 °C
+      gives unphysical values below 1 at low concentration, so this exponent replaces that route.
+    status: draft
+
+  - id: model.hydraulics.wetting_uptake
+    name: Mobile share of the particles' pore liquid
+    description: >-
+      Share u_w of the particles' pore liquid that the wetting front supplies and that exchanges freely
+      with the intergranular liquid (shot-model.md §5.1). It mostly sets the water the front consumes,
+      hence the wetting time; the pools and kernels keep the rest, 1 − u_w, of the pore liquid.
+    units: "1"
+    value: 0.5
+    prior: {distribution: uniform, min: 0.2, max: 0.9}
+    range: {min: 0, max: 0.9}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+    research_note_ref: ["01 §3.5", "01 §4.8"]
+    used_by: [H]
+    comment: >-
+      Grudeva's wetting front fills the intergranular liquid plus the boulders' pores (uptake ≈ 1);
+      moisture uptake into particles is slow (D ≈ 2–3×10⁻¹¹ m²/s, Mateus 2007, 01 §4.6). The wetting
+      time (5–10 s, hydraulics.wetting.time) is the calibration target. The solver caps u_w at 0.9 so
+      the pools keep a pore volume; EY is insensitive to it (21.8–22.1% over 0–0.9, shot-model.md §5.1).
+    status: draft
+
+  # -- Extraction (module X) ------------------------------------------------------------
+  - id: model.extraction.broken_shell_thickness
+    name: Thickness of the broken-cell shell
+    symbol: ℓ_cell
+    description: >-
+      Thickness of the shell of broken cells on every particle, which holds the fast surface pool;
+      particles thinner than twice this are all surface.
+    units: um
+    value: 25
+    prior: {distribution: uniform, min: 12.5, max: 40}
+    range: {min: 1, max: 500}
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "cell size, citing Schenker 2000"
+      - citation: "Schenker S., Handschin S., Frey B., Perren R., Escher F. (2000) Pore structure of coffee beans affected by roasting conditions. J. Food Sci. 65:452–457."
+        doi: "10.1111/j.1365-2621.2000.tb16026.x"
+    research_note_ref: ["01 §5.1", "01 §5.2"]
+    used_by: [X]
+    comment: >-
+      Boulders carry a broken shell about ½–1 cell thick, with cell pockets of 25–40 µm (Schenker 2000,
+      via Corrochano) or 30–60 µm (Mo 2023) (01 §5.1–5.2). 25 µm gives a 35% surface pool for a 300 µm
+      particle, inside the geometric 14–49% (extraction.surface_pool_fraction.geometric) and near the
+      29% Vaca Guerra assumed.
+    status: draft
+
+  - id: model.extraction.solute_apparent_density
+    name: Apparent density of the dissolved solids
+    symbol: 1/v̄
+    description: >-
+      Inverse of the apparent specific volume v̄ of the dissolved coffee solids: a liquid holding c kg/m³
+      of solids has density ρ_w(1 − c/ρ_app) + c. Converts the outflow volume to beverage mass and the
+      concentration to TDS (w/w).
+    units: "kg/m^3"
+    value: 1570
+    prior: {distribution: uniform, min: 1300, max: 2000}
+    range: {min: 800, max: 2500}
+    relation:
+      derived_from: [hydraulics.extract_density.low_temperature]
+      formula: >-
+        25% w/w extract ≈ 275 kg/m³ at a density of 1.10 g/mL (01 §4.10): v̄ = (ρ_w + c − ρ)/(ρ_w c) =
+        (1000 + 275 − 1100)/(1000 × 275) = 6.36×10⁻⁴ m³/kg, so ρ_app = 1/v̄ ≈ 1570 kg/m³
+    tag: derived
+    evidence_grade: A
+    sources:
+      - citation: "Moreno F.L. et al. (2015) Rheological behaviour, freezing curve, and density of coffee solutions near freezing. Int. J. Food Prop. 18:426–438."
+        doi: "10.1080/10942912.2013.833221"
+    research_note_ref: "01 §4.10"
+    used_by: [X, C]
+    comment: >-
+      The solver's spec field is the specific volume (solubles.solute_specific_volume_m3_kg = 1/ρ_app;
+      its default 6.4×10⁻⁴ m³/kg is the same estimate). Stored as a density because the unit vocabulary has
+      no m³/kg. The density data are for 0–25 °C; thermal expansion at brew temperature is not included.
+    status: draft
+
+  - id: model.species.caffeine.surface_fraction_scale
+    name: Surface-pool scale of caffeine
+    description: Multiplier on the geometric surface-pool fraction for caffeine (1 = same as the lumped solubles).
+    units: "1"
+    value: 1
+    prior: {distribution: uniform, min: 0.5, max: 1.5}
+    range: {min: 0, max: 5}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+    research_note_ref: ["02 §3.2", "01 §5.6"]
+    used_by: [X]
+    comment: >-
+      Caffeine is kinetic class K2 (λ/dose 1.15, slower than the lumped TDS at 0.87). Calibration
+      target: the Schmieder λ values (kinetics.schmieder2023.lambda.*). 1 until calibrated.
+    status: draft
+
+  - id: model.species.trigonelline.diffusivity_80c
+    name: Intraparticle diffusivity of trigonelline at 80 °C
+    symbol: D_eff
+    description: Effective intraparticle diffusivity of trigonelline, by assignment to the low-molecular-weight class.
+    units: "m^2/s"
+    value: 2.8e-10
+    prior: {distribution: uniform, min: 1.9e-10, max: 3.7e-10}
+    range: {min: 1.0e-14, max: 1.0e-8}
+    conditions: 80 °C (the temperature of the class estimate).
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: ["01 §5.3", "02 §3.2"]
+    used_by: [X]
+    comment: >-
+      No measured diffusivity exists for trigonelline. It is small (137 g/mol) and the fastest of the
+      four measured espresso species (K1, λ/dose 0.80), so it takes the low-MW class
+      (extraction.diffusivity.mw_class.low, 1.9–3.7×10⁻¹⁰ m²/s at 80 °C), central value.
+    status: draft
+
+  - id: model.species.trigonelline.partition
+    name: Partition coefficient of trigonelline
+    symbol: K
+    description: >-
+      Equilibrium ratio K = C_b/C_s of the concentration in the bulk liquid to the solute per unit
+      volume of the swollen particles (pore solution and matrix-bound solute together; Corrochano's
+      basis, as extraction.partition.*), for trigonelline. Not the ratio to the pore-liquid concentration,
+      which is C_s/ε_p if all the solute is in solution.
+    units: "1"
+    value: 0.61
+    prior: {distribution: uniform, min: 0.42, max: 1.0}
+    range: {min: 0.01, max: 100}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: >-
+      No species value: the lumped value at 80 °C (extraction.partition.lumped_80c) is used. The prior
+      runs from the lumped value at 20 °C (0.42) to caffeine's ≈1.
+    status: draft
+
+  - id: model.species.trigonelline.surface_fraction_scale
+    name: Surface-pool scale of trigonelline
+    description: Multiplier on the geometric surface-pool fraction for trigonelline (1 = same as the lumped solubles).
+    units: "1"
+    value: 1
+    prior: {distribution: uniform, min: 0.5, max: 2.0}
+    range: {min: 0, max: 5}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: ["02 §3.2", "01 §5.6"]
+    used_by: [X]
+    comment: >-
+      Kinetic class K1 ("fast washout pool ... fit the pool fraction", 02 §3.2); λ/dose 0.80. Calibration
+      target: kinetics.schmieder2023.lambda.trigonelline. 1 until calibrated.
+    status: draft
+
+  - id: model.species.cqa5.diffusivity_80c
+    name: Intraparticle diffusivity of 5-CQA at 80 °C
+    symbol: D_eff
+    description: Effective intraparticle diffusivity of 5-caffeoylquinic acid, scaled from caffeine by molar mass.
+    units: "m^2/s"
+    value: 1.55e-10
+    prior: {distribution: uniform, min: 5.3e-11, max: 2.05e-10}
+    range: {min: 1.0e-14, max: 1.0e-8}
+    relation:
+      derived_from: [extraction.diffusivity.caffeine.particle_80c]
+      formula: "D(5-CQA) = D(caffeine)·(194.2/354.3)^(1/3) = 1.9×10⁻¹⁰ × 0.818 (Stokes–Einstein with r_h ∝ M^(1/3))"
+    conditions: 80 °C.
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Jaganyi D., Vanmare J., Clark T. (1999) Kinetic study of mineral ion extraction from Kenyan Arabica coffee. J. Sci. Food Agric. 79:323–326."
+        doi: "10.1002/(SICI)1097-0010(199902)79:2<323::AID-JSFA201>3.0.CO;2-E"
+    research_note_ref: ["01 §5.4", "02 §3.2"]
+    used_by: [X]
+    comment: >-
+      An analogy (tag estimated): equal hindrance assumed. The prior spans the medium-MW class lower
+      bound to caffeine's upper value. 5-CQA sits between trigonelline and caffeine in espresso
+      (λ/dose 1.04).
+    status: draft
+
+  - id: model.species.cqa5.partition
+    name: Partition coefficient of 5-CQA
+    symbol: K
+    description: >-
+      Equilibrium ratio K = C_b/C_s of the concentration in the bulk liquid to the solute per unit
+      volume of the swollen particles (pore solution and matrix-bound solute together; Corrochano's
+      basis, as extraction.partition.*), for 5-caffeoylquinic acid. Not the ratio to the pore-liquid concentration,
+      which is C_s/ε_p if all the solute is in solution.
+    units: "1"
+    value: 0.61
+    prior: {distribution: uniform, min: 0.42, max: 1.0}
+    range: {min: 0.01, max: 100}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: No species value; the lumped value at 80 °C is used (see model.species.trigonelline.partition).
+    status: draft
+
+  - id: model.species.cqa5.surface_fraction_scale
+    name: Surface-pool scale of 5-CQA
+    description: Multiplier on the geometric surface-pool fraction for 5-CQA (1 = same as the lumped solubles).
+    units: "1"
+    value: 1
+    prior: {distribution: uniform, min: 0.5, max: 1.5}
+    range: {min: 0, max: 5}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: ["02 §3.2", "01 §5.6"]
+    used_by: [X]
+    comment: "Kinetic class K1–K2, λ/dose 1.04. Calibration target: kinetics.schmieder2023.lambda.5cqa. 1 until calibrated."
+    status: draft
+
+  - id: model.species.acids.diffusivity_80c
+    name: Intraparticle diffusivity of the organic-acids class at 80 °C
+    symbol: D_eff
+    description: Effective intraparticle diffusivity of the lumped organic acids, by assignment to the low-molecular-weight class.
+    units: "m^2/s"
+    value: 2.8e-10
+    prior: {distribution: uniform, min: 1.09e-10, max: 3.7e-10}
+    range: {min: 1.0e-14, max: 1.0e-8}
+    conditions: 80 °C.
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: ["01 §5.3", "02 §3.2"]
+    used_by: [X]
+    comment: >-
+      The aliphatic and quinic acids are small (46–192 g/mol) and class K1, so the low-MW class central
+      value is used. The prior reaches down to phosphate's measured 1.09×10⁻¹⁰ m²/s (an inorganic acid,
+      not in this class).
+    status: draft
+
+  - id: model.species.acids.partition
+    name: Partition coefficient of the organic-acids class
+    symbol: K
+    description: >-
+      Equilibrium ratio K = C_b/C_s of the concentration in the bulk liquid to the solute per unit
+      volume of the swollen particles (pore solution and matrix-bound solute together; Corrochano's
+      basis, as extraction.partition.*), for the lumped organic acids. Not the ratio to the pore-liquid concentration,
+      which is C_s/ε_p if all the solute is in solution.
+    units: "1"
+    value: 0.61
+    prior: {distribution: uniform, min: 0.42, max: 1.0}
+    range: {min: 0.01, max: 100}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §5.5"
+    used_by: [X]
+    comment: No species value; the lumped value at 80 °C is used (see model.species.trigonelline.partition).
+    status: draft
+
+  - id: model.species.acids.surface_fraction_scale
+    name: Surface-pool scale of the organic-acids class
+    description: Multiplier on the geometric surface-pool fraction for the lumped organic acids (1 = same as the lumped solubles).
+    units: "1"
+    value: 1
+    prior: {distribution: uniform, min: 0.5, max: 2.0}
+    range: {min: 0, max: 5}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "02 §3.2"
+    used_by: [X]
+    comment: Class K1 (very fast). No espresso rate data exist for individual acids (02 Open questions 5). 1 until calibrated.
+    status: draft
+
+  # -- Bean model (module B) ------------------------------------------------------------
+  - id: model.bean.intraparticle_porosity_medium
+    name: Intraparticle porosity of a medium roast
+    symbol: ε_p
+    description: Intraparticle porosity of espresso grounds of a medium roast (roast level 0.5), the reference of the bean model.
+    units: "1"
+    value: 0.55
+    prior: {distribution: uniform, min: 0.47, max: 0.65}
+    range: {min: 0.3, max: 0.7}
+    relation:
+      derived_from: [bed.density.bulk, bed.porosity.intergranular, bed.density.skeletal]
+      formula: >-
+        ε_p = 1 − ρ_bed/((1 − ε) ρ_s) = 1 − 500/(0.83 × 1352) = 0.554, so that the registry's typical
+        intergranular porosity (0.17) and skeletal density (central 1352 kg/m³) reproduce the measured
+        bulk density of a 58 mm puck (≈500 kg/m³)
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §4.4"
+    used_by: [B, P]
+    comment: >-
+      Consistent with the espresso-grind measurements 0.50–0.57 (Hg + He, Corrochano) and 0.56 (Moroney
+      2019). The registry's generic prior (bed.porosity.intraparticle, 0.35–0.65) also covers boulder
+      values; overriding that id replaces the bean model's value. Grade: weakest input (C).
+    status: draft
+
+  - id: model.bean.intraparticle_porosity_roast_slope
+    name: Change of intraparticle porosity per unit roast level
+    description: Increase of intraparticle porosity per unit of roast level (0 = very light, 1 = very dark) around the medium-roast value.
+    units: "1"
+    value: 0.1
+    prior: {distribution: uniform, min: 0, max: 0.2}
+    range: {min: -0.5, max: 0.5}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Schenker S., Handschin S., Frey B., Perren R., Escher F. (2000) Pore structure of coffee beans affected by roasting conditions. J. Food Sci. 65:452–457."
+        doi: "10.1111/j.1365-2621.2000.tb16026.x"
+    research_note_ref: "02 §4.3"
+    used_by: [B]
+    comment: >-
+      Roasting expands the bean (up to +80% volume) and lowers its density from 1.3 to 0.7 g/cm³, with
+      porosity ≈0.5 for dark roasts (02 §4.3). No grind-level porosity series against roast degree was
+      found; the slope (light 0.50, dark 0.60) is a judgement.
+    status: draft
+
+  - id: model.bean.extractable_roast_slope
+    name: Change of maximum extraction yield per unit roast level
+    description: Increase of the maximum extractable yield, in percentage points of the dry dose, per unit of roast level, around a medium roast.
+    units: "%"
+    value: 2
+    prior: {distribution: uniform, min: 0, max: 4}
+    range: {min: -10, max: 10}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Poisson L., Blank I., Dunkel A., Hofmann T. (2017) The chemistry of roasting—decoding flavor formation. In Folmer B. (ed.) The Craft and Science of Coffee, Academic Press, 273–309."
+        doi: "10.1016/B978-0-12-803520-7.00012-8"
+    research_note_ref: "02 §4.3"
+    used_by: [B, X]
+    comment: >-
+      No measurement of maximum yield against roast degree was found. Darker roasts degrade more
+      polysaccharide (12–24% light, 35–40% dark), whose solubility rises, and form more melanoidins
+      (02 §4.3); +2 points from very light to very dark is a judgement.
+    status: draft
+
+  - id: model.bean.extractable_robusta_increase
+    name: Higher maximum extraction yield of Robusta
+    description: Increase of the maximum extractable yield, in percentage points of the dry dose, for pure Robusta relative to pure Arabica.
+    units: "%"
+    value: 2
+    prior: {distribution: uniform, min: 0, max: 4}
+    range: {min: -10, max: 10}
+    relation:
+      derived_from:
+        - extraction.max_yield
+        - bean.composition.arabica.lipids
+        - bean.composition.robusta.lipids
+      formula: >-
+        EY_max × ((100 − 11)/(100 − 17) − 1) = 28 × 0.072 = 2.0 points, scaling the extractable yield with
+        the non-lipid matrix (lipids reach the cup only as an emulsion)
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+    research_note_ref: ["02 §1.1", "02 §4.1"]
+    used_by: [B, X]
+    comment: >-
+      Robusta has less lipid (11 vs 17% db) and more polysaccharide (37 vs 31–33%) than Arabica. The
+      scaling to maximum yield is an assumption, hence estimated and grade D although its inputs are C.
+    status: draft
+
+  - id: model.bean.trigonelline.arabica_light
+    name: Trigonelline of a very light Arabica roast
+    description: Trigonelline content of roasted Arabica at the light end of the roast range (roast level 0).
+    units: "%"
+    value: 1.2
+    range: {min: 0, max: 100}
+    conditions: "% db; light end of the 1.2 → 0.2% roast series."
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B]
+    comment: >-
+      End point of the registry range bean.composition.arabica.trigonelline. Tagged estimated: the
+      compilation's light and dark values are mapped to roast levels 0 and 1, an assumption, and the bean
+      model interpolates linearly between them.
+    status: draft
+
+  - id: model.bean.trigonelline.arabica_dark
+    name: Trigonelline of a very dark Arabica roast
+    description: Trigonelline content of roasted Arabica at the dark end of the roast range (roast level 1).
+    units: "%"
+    value: 0.2
+    range: {min: 0, max: 100}
+    conditions: "% db; dark end of the 1.2 → 0.2% roast series."
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B]
+    comment: See model.bean.trigonelline.arabica_light.
+    status: draft
+
+  - id: model.bean.trigonelline.robusta_light
+    name: Trigonelline of a very light Robusta roast
+    description: Trigonelline content of roasted Robusta at the light end of the roast range (roast level 0).
+    units: "%"
+    value: 0.7
+    range: {min: 0, max: 100}
+    conditions: "% db; light end of the 0.7 → 0.3% roast series."
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B]
+    comment: >-
+      The registry prior bean.composition.robusta.trigonelline (0.3–1.15%) also covers lot-to-lot spread
+      (0.60–1.15% across 67 canephoras, Viencz 2023); these end points are Farah's roast series.
+    status: draft
+
+  - id: model.bean.trigonelline.robusta_dark
+    name: Trigonelline of a very dark Robusta roast
+    description: Trigonelline content of roasted Robusta at the dark end of the roast range (roast level 1).
+    units: "%"
+    value: 0.3
+    range: {min: 0, max: 100}
+    conditions: "% db; dark end of the 0.7 → 0.3% roast series."
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+        locator: "composition table (as compiled in note 02 Table 1)"
+    research_note_ref: "02 §1.1"
+    used_by: [B]
+    comment: See model.bean.trigonelline.robusta_light.
+    status: draft
+
+  - id: model.bean.cqa5_roast_change
+    name: Relative change of 5-CQA from a medium roast to the ends of the roast range
+    description: >-
+      Fractional change of the 5-CQA content between a medium roast and the light or dark end of the
+      roast range: 5-CQA(r) = 5-CQA(medium) × (1 + c (1 − 2r)).
+    units: "1"
+    value: 0.6
+    prior: {distribution: uniform, min: 0.3, max: 0.8}
+    range: {min: 0, max: 0.95}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Perrone D., Donangelo R., Donangelo C.M., Farah A. (2010) Modeling weight loss and chlorogenic acids content in coffee during roasting. J. Agric. Food Chem. 58:12238–12243."
+        doi: "10.1021/jf102110u"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: ["02 §1.1", "02 §4.3"]
+    used_by: [B]
+    comment: >-
+      Chlorogenic acids are lost by first-order Arrhenius kinetics during roasting: about −50% at
+      230 °C/12 min and trace at 250 °C/21 min (02 §1.1, §4.3). With c = 0.6, very light holds 1.8%,
+      medium 1.14% (bean.composition.arabica.5cqa) and very dark 0.46%; the linear shape is a judgement.
+    status: draft
+
+  - id: model.bean.cqa5_robusta_ratio
+    name: 5-CQA of Robusta relative to Arabica
+    description: Ratio of the 5-CQA content of roasted Robusta to that of roasted Arabica at the same roast.
+    units: "1"
+    value: 1.61
+    range: {min: 0.2, max: 5}
+    relation:
+      derived_from: [bean.composition.robusta.cga_total, bean.composition.arabica.cga_total]
+      formula: "Ratio of the central total-CGA contents: 3.55/2.2 = 1.61 (medium roast)"
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
+        doi: "10.1002/9781119949893.ch2"
+    research_note_ref: ["02 §1.1", "02 §4.1"]
+    used_by: [B]
+    comment: >-
+      No Robusta 5-CQA value is in the registry; assuming the same isomer split as Arabica makes this an
+      estimate. Green Robusta has about 1.5× the CGA of green Arabica (02 §4.1).
+    status: draft
+
+  - id: model.bean.co2_grinding_loss
+    name: CO₂ lost between grinding and brewing
+    description: >-
+      Share of the CO₂ held by the whole beans that leaves the grounds between grinding and the start of
+      the shot; relates the whole-bean CO₂ reported to the user to the puck CO₂.
+    units: "%"
+    value: 50
+    prior: {distribution: uniform, min: 25, max: 75}
+    range: {min: 0, max: 95}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "02 §4.4"
+    used_by: [B]
+    comment: >-
+      Grinding fresh coffee releases "up to 75%" of the gas within 90 s, and some CO₂ stays sorbed until
+      wetting (02 §4.4). The puck CO₂ is anchored to the measured residual of freshly ground coffee
+      (bean.co2.ground_residual), so this share only converts it to the whole-bean value
+      (derived.bean.co2_beans_mg_g = puck/(1 − loss)): fresh medium beans then hold ≈ 14 mg/g, inside the
+      1–2% by weight of note 02.
+    status: draft
+  - id: model.bean.roast_index.colorette_light
+    name: Colorette reading of roast level 0
+    description: Colorette (Pt) roast colour taken to correspond to roast level 0 (very light) of the internal roast index.
+    units: "1"
+    value: 160
+    prior: {distribution: uniform, min: 140, max: 180}
+    range: {min: 100, max: 250}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B]
+    comment: >-
+      PLAN §7.3 B keeps each source's colour scale and maps it to one internal index with stated
+      uncertainty. The index is linear in Colorette Pt: roast level = (160 − Pt)/(160 − 60), so the
+      Smrke roasts (131, 101 and 78 Pt) sit at 0.29, 0.59 and 0.82. No validated conversion between
+      roast colour scales was found (02 Conventions).
+    status: draft
+
+  - id: model.bean.roast_index.colorette_dark
+    name: Colorette reading of roast level 1
+    description: Colorette (Pt) roast colour taken to correspond to roast level 1 (very dark) of the internal roast index.
+    units: "1"
+    value: 60
+    prior: {distribution: uniform, min: 40, max: 75}
+    range: {min: 10, max: 99}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "02 §4.3"
+    used_by: [B]
+    comment: See model.bean.roast_index.colorette_light.
+    status: draft
+
+  # -- Puck preparation and basket (module P) --------------------------------------------
+  - id: model.prep.sigma_ln_permeability.none
+    name: Permeability spread without distribution
+    symbol: σ_lnκ
+    description: Standard deviation of ln(permeability multiplier) across columns when the grounds are not distributed before tamping.
+    units: "1"
+    value: 0.5
+    prior: {distribution: uniform, min: 0.2, max: 0.8}
+    range: {min: 0, max: 2}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Lee W.T., Smith A., Arshad A. (2023) Uneven extraction in coffee brewing. Phys. Fluids 35:054110."
+        doi: "10.1063/5.0138998"
+    research_note_ref: ["03 Implications B", "01 §6"]
+    used_by: [P]
+    comment: >-
+      No controlled study quantifies distribution or WDT (03 §4, grade D). Anchor: Lee 2023's two-path
+      porosity offset δ = 0.035 around ε = 0.173 is a ±0.7 spread in ln κ through Kozeny–Carman
+      [derived here], fitted to café shots with unknown preparation. Calibration target: shot-to-shot EY
+      variance at fine settings (03 Implications B).
+    status: draft
+
+  - id: model.prep.sigma_ln_permeability.tap
+    name: Permeability spread with tapping only
+    symbol: σ_lnκ
+    description: Standard deviation of ln(permeability multiplier) across columns when the grounds are settled by tapping only.
+    units: "1"
+    value: 0.35
+    prior: {distribution: uniform, min: 0.15, max: 0.6}
+    range: {min: 0, max: 2}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "03 Implications B"
+    used_by: [P]
+    comment: See model.prep.sigma_ln_permeability.none.
+    status: draft
+
+  - id: model.prep.sigma_ln_permeability.wdt
+    name: Permeability spread with needle distribution (WDT)
+    symbol: σ_lnκ
+    description: Standard deviation of ln(permeability multiplier) across columns after needle distribution (WDT).
+    units: "1"
+    value: 0.2
+    prior: {distribution: uniform, min: 0.05, max: 0.4}
+    range: {min: 0, max: 2}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Ribes S. (2020) Radial uniformity of espresso extractions (paper below puck; tamper base). Decent public Basecamp."
+        url: "https://public.3.basecamp.com/p/9vnWSmKqDokidAMuEcUvKYf8"
+    research_note_ref: ["03 §4", "03 Implications B"]
+    used_by: [P]
+    comment: >-
+      WDT is standard in modern protocols (Ribes, Waszkiewicz) but "no controlled, quantified study of
+      WDT effect size" exists (03 §4). See model.prep.sigma_ln_permeability.none.
+    status: draft
+
+  - id: model.prep.sigma_fines_sensitivity
+    name: Sensitivity of the permeability spread to fines
+    description: >-
+      Relative increase of the permeability spread per unit increase of the fines volume fraction above
+      0.2: σ = σ_dist (1 + k (Q100 − 0.2)), floored at half of σ_dist.
+    units: "1"
+    value: 2
+    prior: {distribution: uniform, min: 0, max: 4}
+    range: {min: 0, max: 10}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+    research_note_ref: "03 Implications B"
+    used_by: [P]
+    comment: >-
+      Channeling amplitude "rises with fines fraction and clumping" and shot-to-shot EY variance rises
+      below EK43 GS ≈ 1.7 (03 Implications B; Cameron 2020). The size of the effect is a judgement.
+    status: draft
+
+  - id: model.prep.edge_multiplier.base
+    name: Edge permeability multiplier without paper or screen
+    description: Permeability multiplier of the outer annulus for a precision basket with no bottom paper and no puck screen.
+    units: "1"
+    value: 0.35
+    prior: {distribution: uniform, min: 0.2, max: 0.6}
+    range: {min: 0.01, max: 1}
+    relation:
+      derived_from: [bed.heterogeneity.edge_centre_ey_ratio.stock]
+      formula: >-
+        With an exponential extraction curve EY = 30%·(1 − e^(−V/λ)) fitted to the centre (25% at 1:2.5),
+        an edge EY of 13% needs about a third of the centre's flow per gram: 0.79/2.5 = 0.32
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2020) Radial uniformity of espresso extractions (paper below puck; tamper base). Decent public Basecamp."
+        url: "https://public.3.basecamp.com/p/9vnWSmKqDokidAMuEcUvKYf8"
+    research_note_ref: ["03 Implications B", "01 §6"]
+    used_by: [P]
+    comment: >-
+      Community coring, one operator (D): centre 25%, edge 13% EY without a bottom paper (VST 15 g basket,
+      EK43). The conversion from an EY ratio to a permeability ratio assumes a simple extraction curve,
+      so this is an estimate to be calibrated against the edge/centre EY ratios themselves.
+    status: draft
+
+  - id: model.prep.edge_multiplier.paper
+    name: Edge permeability multiplier with a bottom paper
+    description: Permeability multiplier of the outer annulus with a paper filter under the puck.
+    units: "1"
+    value: 0.75
+    prior: {distribution: uniform, min: 0.6, max: 0.95}
+    range: {min: 0.01, max: 1}
+    relation:
+      derived_from: [bed.heterogeneity.edge_centre_ey_ratio.paper_or_screen]
+      formula: "Same extraction curve as model.prep.edge_multiplier.base: edge EY 22% vs centre 25% needs 1.84/2.5 = 0.74"
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2020) Radial uniformity of espresso extractions (paper below puck; tamper base). Decent public Basecamp."
+        url: "https://public.3.basecamp.com/p/9vnWSmKqDokidAMuEcUvKYf8"
+    research_note_ref: ["03 §4", "03 Implications B"]
+    used_by: [P]
+    comment: With a V60 paper underneath, EY was 22–25% across the radius (one operator, D).
+    status: draft
+
+  - id: model.prep.edge_multiplier.screen
+    name: Edge permeability multiplier with a puck screen
+    description: Permeability multiplier of the outer annulus with a contact (puck) screen on top of the bed.
+    units: "1"
+    value: 0.7
+    prior: {distribution: uniform, min: 0.5, max: 0.95}
+    range: {min: 0.01, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2021) Effects of a puck screen on extraction. decentespresso.com."
+        url: "https://www.decentespresso.com/docs/effects_of_a_puck_screen_on_extraction"
+      - citation: "Gagné J. (2025) The Physics of Espresso. Scott Rao Coffee Books, ISBN 9798350747737."
+        url: "https://decentespresso.com/img/f/gagne_espresso_shower_screens.pdf"
+    research_note_ref: ["03 §4", "03 Implications B"]
+    used_by: [P]
+    comment: >-
+      Traditional VST and Pullman baskets: edge EY 16–17% → 22–23% with a screen; modern baskets gained
+      only +0.4 EY points (Hedrick 2023 via Gagné). The effect is basket-dependent; this value describes
+      the traditional baskets.
+    status: draft
+
+  - id: model.bed.edge_area_fraction
+    name: Share of the bed in the outer annulus
+    description: Share of the bed cross-section assigned to the outer (edge) annulus of the column model.
+    units: "1"
+    value: 0.25
+    prior: {distribution: uniform, min: 0.2, max: 0.3}
+    range: {min: 0.01, max: 0.9}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2020) Radial uniformity of espresso extractions (paper below puck; tamper base). Decent public Basecamp."
+        url: "https://public.3.basecamp.com/p/9vnWSmKqDokidAMuEcUvKYf8"
+    research_note_ref: "03 Implications B"
+    used_by: [P]
+    comment: '"Three annuli (centre / middle / edge, edge ≈ 25–30% of dose)" (03 Implications B); Ribes cored the outer quarter.'
+    status: draft
+
+  - id: model.basket.edge_reference_ratio
+    name: Perforated-to-bed radius ratio of the reference basket
+    description: >-
+      Ratio of the perforated radius to the bed's volume-equivalent radius √(V_bed/(πL)) for which the
+      edge multipliers apply unchanged.
+    units: "1"
+    value: 0.87
+    prior: {distribution: uniform, min: 0.75, max: 0.95}
+    range: {min: 0.1, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "03 §4"
+    used_by: [P]
+    comment: >-
+      The ratio of the 58 mm precision 18 g preset at 18 g (25 mm perforated radius, 28.8 mm bed
+      radius). Ribes' edge data come from a precision basket. Basket dimensions are not published in the
+      notes, so this is an estimate.
+    status: draft
+  - id: model.basket.edge_ratio_exponent
+    name: Exponent of the basket geometry on the edge multiplier
+    description: >-
+      Exponent n in the geometric edge factor ((r_perforated/r_bed)/ratio_ref)^n, where r_bed is the
+      bed's volume-equivalent radius: holes that stop short of the wall, or a bed that widens above a
+      narrow floor (a tapered basket), lower the edge permeability multiplier.
+    units: "1"
+    value: 2
+    prior: {distribution: uniform, min: 1, max: 3}
+    range: {min: 0, max: 10}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2020) Radial uniformity of espresso extractions (paper below puck; tamper base). Decent public Basecamp."
+        url: "https://public.3.basecamp.com/p/9vnWSmKqDokidAMuEcUvKYf8"
+    research_note_ref: "03 §4"
+    used_by: [P]
+    comment: >-
+      An untested mechanism (grade D): the outer annulus must funnel inward to reach the perforated field.
+      n = 2 makes the factor proportional to the perforated share of the bed's cross-section. Ribes linked
+      a Reneka basket with a 33% smaller perforated area (40 vs 49 mm) to a ≈3-point EY loss, as a
+      hypothesis (03 §4).
+    status: draft
+  - id: model.basket.open_area_fraction
+    name: Open (hole) fraction of a basket's perforated area
+    description: Hole area divided by the perforated area of a typical espresso basket, used when a basket does not state it.
+    units: "1"
+    value: 0.03
+    prior: {distribution: uniform, min: 0.01, max: 0.06}
+    range: {min: 0.0001, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "03 §4"
+    used_by: [P]
+    comment: >-
+      Order-of-magnitude estimate: several hundred holes of ≈0.3 mm over a ≈50 mm field. At shot flows
+      the holes add a negligible pressure drop; basket hole patterns matter through the edge multiplier.
+    status: draft
+
+  - id: model.basket.pressurised_discharge_coefficient
+    name: Discharge coefficient of a pressurised-basket orifice
+    symbol: C_d
+    description: Discharge coefficient of the single outlet orifice of a pressurised (dual-wall) basket, in ΔP = ρQ²/(2 C_d² A_o²).
+    units: "1"
+    value: 0.7
+    prior: {distribution: uniform, min: 0.6, max: 0.8}
+    range: {min: 0.1, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "03 §4"
+    used_by: [P, H]
+    comment: >-
+      No research note covers pressurised baskets. Small sharp-edged orifices typically have C_d ≈ 0.6–0.8;
+      the orifice diameter dominates the uncertainty.
+    status: draft
+
+  - id: model.prep.prewet_max
+    name: Largest pre-wetting non-uniformity
+    description: Pre-wetting non-uniformity (0–1) approached for a very large headspace without a puck screen and with a slow fill.
+    units: "1"
+    value: 0.5
+    prior: {distribution: uniform, min: 0.2, max: 1.0}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Gagné J. (2025) The Physics of Espresso. Scott Rao Coffee Books, ISBN 9798350747737."
+        url: "https://decentespresso.com/img/f/gagne_espresso_shower_screens.pdf"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: ["03 Implications B", "01 §4.8"]
+    used_by: [P]
+    comment: >-
+      Bound its effect by the ≈ +3.4-point EY gain from less headspace (Buckman 2023 via Gagné, D)
+      (03 Implications B). The solver decides how the non-uniformity acts.
+    status: draft
+
+  - id: model.prep.prewet_half_headspace
+    name: Headspace volume giving half the largest pre-wetting non-uniformity
+    description: Headspace volume (above the bed, including the group) at which the pre-wetting non-uniformity reaches half its maximum.
+    units: mL
+    value: 20
+    prior: {distribution: uniform, min: 5, max: 60}
+    range: {min: 0.1, max: 500}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: ["03 §4", "01 §4.8"]
+    used_by: [P]
+    comment: Uneven pre-wetting while the headspace fills is the proposed mechanism of the headspace effect (03 §4).
+    status: draft
+
+  - id: model.prep.prewet_screen_reduction
+    name: Reduction of pre-wetting non-uniformity by a puck screen
+    description: Fraction by which a puck screen reduces the pre-wetting non-uniformity, by redistributing the inlet water.
+    units: "1"
+    value: 0.5
+    prior: {distribution: uniform, min: 0.2, max: 0.8}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2021) Effects of a puck screen on extraction. decentespresso.com."
+        url: "https://www.decentespresso.com/docs/effects_of_a_puck_screen_on_extraction"
+    research_note_ref: ["03 §4", "03 Implications B"]
+    used_by: [P]
+    comment: A puck screen "redistributes inlet flow, with a basket-dependent effect" (03 Implications B).
+    status: draft
+
+  - id: model.prep.prewet_jet_flow
+    name: Fill flow above which shower jets wet the puck evenly
+    description: Headspace fill flow above which the shower-screen jets merge into an even sheet; slower fills keep the full pre-wetting non-uniformity.
+    units: "mL/s"
+    value: 5
+    prior: {distribution: uniform, min: 3, max: 8}
+    range: {min: 0.1, max: 50}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Gagné J. (2025) The Physics of Espresso. Scott Rao Coffee Books, ISBN 9798350747737."
+        url: "https://decentespresso.com/img/f/gagne_espresso_shower_screens.pdf"
+    research_note_ref: "01 §4.8"
+    used_by: [P]
+    comment: >-
+      "Uneven prewetting from shower-screen jets coalescing (below about 5 mL s⁻¹ fill rate) pre-forms
+      preferential paths" (01 §4.8, C/D). The factor is min(1, max(0.5, Q_jet/Q_fill)).
+    status: draft
+
+  # -- Machine (module M) ----------------------------------------------------------------
+  - id: model.machine.ideal_max_flow
+    name: Flow limit of a profiling pump
+    description: Largest flow an ideal (profiling) pump delivers when a machine or program does not state it.
+    units: "mL/s"
+    value: 8
+    prior: {distribution: uniform, min: 4, max: 12}
+    range: {min: 0.1, max: 30}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2020) The impact of the preinfusion flow rate on espresso extraction. decentespresso.com."
+        url: "https://decentespresso.com/docs/the_impact_of_the_preinfusion_flow_rate_on_espresso_extraction"
+    research_note_ref: "03 §4"
+    used_by: [M]
+    comment: >-
+      No research note covers pump specifications. A DE1 delivered pre-infusion flows of 2.4–8.0 mL/s in
+      Ribes' experiments (03 §4).
+    status: draft
+
+  - id: model.machine.ideal_max_pressure
+    name: Pressure limit of a profiling pump
+    description: Highest pressure an ideal (profiling) pump delivers when a machine or program does not state it.
+    units: bar
+    value: 12
+    prior: {distribution: uniform, min: 9, max: 15}
+    range: {min: 0.1, max: 30}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+    research_note_ref: "01 §8"
+    used_by: [M]
+    comment: No research note covers pump specifications; 1–12 bar was studied by Waszkiewicz 2026 (01 §8).
+    status: draft
+
+  - id: model.machine.vibratory_free_flow
+    name: Free flow of a vibratory pump
+    description: Flow of a vibratory pump against zero back-pressure, Q_free in Q = Q_free (1 − P/P_stall), when a machine does not state it.
+    units: "mL/s"
+    value: 9
+    prior: {distribution: uniform, min: 6, max: 12}
+    range: {min: 0.1, max: 30}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: typical vibratory pump, to be calibrated."
+    research_note_ref: "01 §8"
+    used_by: [M]
+    comment: >-
+      No research note covers pump curves. Typical 48–52 W vibratory pumps deliver roughly 8–10 mL/s at
+      zero pressure and about 4 mL/s at 9 bar (a judgement from manufacturer-style curves, not a sourced
+      measurement). The linear curve is an approximation.
+    status: draft
+
+  - id: model.machine.vibratory_stall_pressure
+    name: Stall pressure of a vibratory pump
+    description: Back-pressure at which a vibratory pump's flow falls to zero, P_stall in Q = Q_free (1 − P/P_stall), when a machine does not state it.
+    units: bar
+    value: 16
+    prior: {distribution: uniform, min: 12, max: 20}
+    range: {min: 1, max: 30}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: typical vibratory pump, to be calibrated."
+    research_note_ref: "01 §8"
+    used_by: [M]
+    comment: >-
+      No research note covers pump curves. Vibratory pumps are sold as "15 bar" or "20 bar" pumps; the
+      rating is the zero-flow pressure at best. A shot gauge reading is the calibration target.
+    status: draft
+
+  - id: model.machine.ramp_time
+    name: Default pressure or flow ramp
+    description: Duration of the linear ramp from the previous target when a program phase does not state one.
+    units: s
+    value: 2
+    prior: {distribution: uniform, min: 0, max: 6}
+    range: {min: 0, max: 60}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "01 §4.8"
+    used_by: [M]
+    comment: No research note covers pump ramps; pre-infusion and wetting take 5–10 s overall (01 §4.8).
+    status: draft
+
+  - id: model.machine.group_headspace
+    name: Group headspace above the basket rim
+    description: Water volume between the basket rim and the shower screen that must fill before pressure builds, for a machine that does not state it.
+    units: mL
+    value: 5
+    prior: {distribution: uniform, min: 1, max: 15}
+    range: {min: 0, max: 200}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: ["01 §4.8", "03 §4"]
+    used_by: [M, P]
+    comment: >-
+      Machine-specific and unpublished in the notes. The basket volume above the bed is added separately
+      (solver); this is only the gap above the rim.
+    status: draft
+
+  - id: model.machine.drip_time_constant
+    name: Post-stop drip time constant
+    description: >-
+      Time constant with which the water left above the puck drains into the cup after the pump stops,
+      when a machine does not state it (the solver drains only the headspace water; a machine with a
+      three-way valve, vent_headspace, has no drip).
+    units: s
+    value: 1.5
+    prior: {distribution: uniform, min: 0.5, max: 5}
+    range: {min: 0, max: 60}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "01 §8"
+    used_by: [M]
+    comment: >-
+      No research note covers the post-stop drip. Machines with a three-way valve vent the group and do
+      not drip (vent_headspace); machines without one drain the headspace water through the puck.
+      Calibrate against the scale reading after the stop. The range ends at the solver's 60 s bound.
+    status: draft
+
+  - id: model.stop.default_ratio
+    name: Default brew ratio
+    description: Beverage mass per dry dose used as the stop rule when a recipe gives neither a beverage mass nor a time.
+    units: "1"
+    value: 2
+    prior: {distribution: uniform, min: 1, max: 3}
+    range: {min: 0.5, max: 10}
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+    research_note_ref: "01 §8"
+    used_by: [M]
+    comment: Beverage mass 20–60 g with brew ratios 1:1–1:3 (01 §8); 1:2 is the modern standard (02 §6.6).
+    status: draft
+
+  # -- Thermal (lumped node; module H) ---------------------------------------------------
+  - id: model.thermal.hardware_water_equivalent
+    name: Water-equivalent mass of basket and portafilter
+    description: >-
+      Heat capacity of the basket and the part of the portafilter that exchanges heat during a shot,
+      expressed as the mass of water with the same heat capacity (multiply by 4.186 J/(g K)).
+    units: g
+    value: 30
+    prior: {distribution: uniform, min: 10, max: 80}
+    range: {min: 1, max: 1000}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "01 §7"
+    used_by: [M, H]
+    comment: >-
+      Note 01 §7 recommends one lumped node for basket and portafilter with a calibrated exchange; no
+      thermal masses are published there. 30 g of water ≈ 125 J/K, e.g. a 35 g steel basket plus part of
+      a brass portafilter. (Stored as a water mass because the unit vocabulary has no J/K.)
+    status: draft
+
+  - id: model.thermal.coffee_heat_capacity_ratio
+    name: Specific heat of coffee relative to water
+    description: Specific heat capacity of the dry grounds divided by that of water.
+    units: "1"
+    value: 0.35
+    prior: {distribution: uniform, min: 0.24, max: 0.45}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "01 §7"
+    used_by: [B, H]
+    comment: >-
+      Green-bean estimates of ~1.0–1.9 kJ/(kg K) appear in secondary sources [unverified]; no roasted,
+      ground value was verified (01 §7). 0.35 ≈ 1.47 kJ/(kg K).
+    status: draft
+
+  - id: model.thermal.loss_time_constant
+    name: Cooling time constant of basket and portafilter
+    description: >-
+      Time constant with which the lumped basket-and-portafilter node would cool to the room if no water
+      flowed; the heat-loss coefficient is the node's heat capacity divided by this time.
+    units: s
+    value: 300
+    prior: {distribution: uniform, min: 100, max: 900}
+    range: {min: 10, max: 100000}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "01 §7"
+    used_by: [M, H]
+    comment: >-
+      No measurement in the notes. Stored as a time constant because the unit vocabulary has no W/K.
+      During a 30 s shot the loss is small either way.
+    status: draft
+
+  - id: model.thermal.hardware_temperature
+    name: Basket and portafilter temperature at the start of a shot
+    description: Temperature of a preheated basket and portafilter when the shot starts, for a machine that does not state it.
+    units: degC
+    value: 85
+    prior: {distribution: uniform, min: 60, max: 95}
+    range: {min: 0, max: 100}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption, to be calibrated."
+    research_note_ref: "01 §7"
+    used_by: [M, H]
+    comment: >-
+      Assumes the portafilter was kept in the group. "The group, portafilter and basket thermal masses,
+      and the room-temperature grounds, cool the first few grams of water" (01 §7). The initial bed
+      temperature is the heat-capacity-weighted mean of this and the bean temperature.
+    status: draft
+
+  - id: model.thermal.room_temperature
+    name: Room temperature
+    description: Room temperature, used as the solver's ambient temperature and as the temperature of the beans when a recipe does not give one.
+    units: degC
+    value: 20
+    prior: {distribution: uniform, min: 15, max: 28}
+    range: {min: 0, max: 50}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: model assumption."
+    research_note_ref: ["01 §7", "03 §2.1"]
+    used_by: [B, G, H]
+    comment: Uman 2016's room-temperature reference was 20 °C (03 §2.1).
+    status: draft

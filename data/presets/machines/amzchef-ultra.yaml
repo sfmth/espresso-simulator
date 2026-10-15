@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# The project owner's machine (PLAN D10). Listing specifications (58 mm portafilter, nominal "20 bar"
+# pump, pressure gauge, PID from 88 to 96 °C) are UNVERIFIED (PLAN §15). Its pump curve and whether
+# it has an over-pressure valve are UNKNOWN: the values below are estimates for a cheap vibratory
+# pump, to be calibrated against the machine's own gauge.
+schema: puckworks.preset-file/1
+kind: machine
+description: The owner's AMZCHEF Ultra espresso machine (UNVERIFIED listing specifications).
+presets:
+  - id: amzchef-ultra
+    name: AMZCHEF Ultra
+    description: >-
+      Home espresso machine with a 58 mm portafilter, a vibratory pump sold as "20 bar", a pressure
+      gauge and a PID set from 88 to 96 °C. Pump curve and over-pressure valve are unknown.
+    flags: [owner-gear, unverified, estimated]
+    notes:
+      - "UNVERIFIED: 58 mm portafilter, \"20 bar\" pump, pressure gauge and PID range 88–96 °C come from retail listings only (PLAN §15)."
+      - "UNKNOWN pump curve and over-pressure valve: estimated as 8 mL/s free flow and 17 bar stall, with no OPV. If the gauge never rises above a fixed value during a choked shot, that value is the OPV: set machine.pump.opv_bar."
+      - "The gauge of such machines may read pump pressure rather than pressure at the puck."
+      - "UNVERIFIED: no three-way valve assumed (many budget vibratory machines lack one), so the water above the puck drips into the cup after the stop. If the machine hisses into the drip tray at the stop and leaves a dry puck, it has one: set machine.vent_headspace to true."
+      - "Basket type unconfirmed (plain or pressurised, PLAN §15 open question 2): the default is the 58 mm stock double; choose 58-pressurised-double if yours is dual-wall."
+    sources:
+      - citation: "Retail and aggregator listings for the AMZCHEF Ultra espresso machine (accessed 2026-10-13; no manufacturer page confirmed them)."
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: pump curve estimated, to be calibrated."
+    evidence_grade: D
+    tag: estimated
+    pump: {type: vibratory, free_flow_ml_s: 8, stall_pressure_bar: 17, opv_bar: null}
+    vent_headspace: false
+    program:
+      - {control: pump}
+    temperature_c: 93
+    temperature_range_c: [88, 96]
+    basket_diameter_mm: 58
+    default_basket: 58-stock-double

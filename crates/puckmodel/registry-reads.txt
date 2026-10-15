@@ -1,0 +1,125 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Every parameter-registry id the input models (crates/puckmodel) read, one per line.
+#
+# - The builder checks each lookup against this list (debug builds), and a test checks that
+#   the list is exact: every id here is read by some recipe, and nothing else is read.
+# - `python -m puckworks_tools.export` refuses a data/calibration/current.yaml that calibrates
+#   an id not listed here (the value would be silently ignored), and checks that every id
+#   listed exists in the registry.
+# - Recipe overrides of other ids are accepted but get a "no effect" note.
+#
+# Grinder → PSD (models/grinder.rs)
+psd.x50_gap_ratio
+psd.fines_mode
+psd.boulder_mode_ratio
+model.psd.fines_log_width
+model.psd.boulder_log_width
+model.psd.coarse_log_width
+model.psd.boulder_weight
+model.psd.roast_coefficient
+model.psd.cold_size_reduction
+model.psd.fines_weight_slope
+# Bean (models/bean.rs)
+bean.composition.arabica.caffeine
+bean.composition.robusta.caffeine
+bean.composition.arabica.5cqa
+bean.composition.arabica.aliphatic_acids
+bean.composition.robusta.aliphatic_acids
+bean.composition.arabica.quinic_acid
+bean.composition.robusta.quinic_acid
+bean.co2.total.light
+bean.co2.total.medium
+bean.co2.total.dark
+bean.co2.weibull_scale.light
+bean.co2.weibull_scale.medium
+bean.co2.weibull_scale.dark
+bean.co2.weibull_shape.light
+bean.co2.weibull_shape.dark
+bean.co2.ground_residual
+bed.density.skeletal
+bed.porosity.intraparticle
+extraction.max_yield
+extraction.diffusivity.caffeine.particle_80c
+extraction.partition.caffeine
+model.bean.trigonelline.arabica_light
+model.bean.trigonelline.arabica_dark
+model.bean.trigonelline.robusta_light
+model.bean.trigonelline.robusta_dark
+model.bean.cqa5_roast_change
+model.bean.cqa5_robusta_ratio
+model.bean.extractable_roast_slope
+model.bean.extractable_robusta_increase
+model.bean.intraparticle_porosity_medium
+model.bean.intraparticle_porosity_roast_slope
+model.bean.roast_index.colorette_light
+model.bean.roast_index.colorette_dark
+model.bean.co2_grinding_loss
+model.hydraulics.gas_amplitude_max
+model.hydraulics.gas_half_content
+model.hydraulics.gas_relaxation_time
+model.species.caffeine.surface_fraction_scale
+model.species.trigonelline.diffusivity_80c
+model.species.trigonelline.partition
+model.species.trigonelline.surface_fraction_scale
+model.species.cqa5.diffusivity_80c
+model.species.cqa5.partition
+model.species.cqa5.surface_fraction_scale
+model.species.acids.diffusivity_80c
+model.species.acids.partition
+model.species.acids.surface_fraction_scale
+# Basket and puck preparation (models/basket.rs, models/prep.rs)
+model.basket.open_area_fraction
+model.basket.pressurised_discharge_coefficient
+model.basket.edge_reference_ratio
+model.basket.edge_ratio_exponent
+model.bed.edge_area_fraction
+model.prep.sigma_ln_permeability.none
+model.prep.sigma_ln_permeability.tap
+model.prep.sigma_ln_permeability.wdt
+model.prep.sigma_fines_sensitivity
+model.prep.edge_multiplier.base
+model.prep.edge_multiplier.paper
+model.prep.edge_multiplier.screen
+model.prep.prewet_max
+model.prep.prewet_half_headspace
+model.prep.prewet_screen_reduction
+model.prep.prewet_jet_flow
+# Machine, thermal node and stop rule (models/machine.rs)
+shot.temperature
+model.machine.ideal_max_flow
+model.machine.ideal_max_pressure
+model.machine.vibratory_free_flow
+model.machine.vibratory_stall_pressure
+model.machine.ramp_time
+model.machine.group_headspace
+model.machine.drip_time_constant
+model.thermal.hardware_temperature
+model.thermal.hardware_water_equivalent
+model.thermal.coffee_heat_capacity_ratio
+model.thermal.loss_time_constant
+model.thermal.room_temperature
+model.stop.default_ratio
+# Bed, hydraulics and extraction (builder.rs)
+bed.porosity.intergranular
+hydraulics.permeability.reference
+hydraulics.kozeny_carman.density_exponent
+hydraulics.poroelastic.critical_pressure
+hydraulics.swelling.diameter_increase
+hydraulics.swelling.relaxation_time
+model.hydraulics.reference_sauter_diameter
+model.hydraulics.swelling_pore_closure
+model.hydraulics.fines_layer_amplitude
+model.hydraulics.fines_layer_time
+model.hydraulics.viscosity_ln_a1
+model.hydraulics.viscosity_ln_a2
+model.hydraulics.viscosity_temperature_exponent
+model.hydraulics.wetting_uptake
+hydraulics.dissolution_porosity_share
+extraction.dispersion.axial_coefficient
+extraction.saturation.lumped
+extraction.partition.lumped_80c
+extraction.diffusivity.lumped.corrochano_80c
+extraction.surface_rate.grudeva2026
+model.extraction.broken_shell_thickness
+model.extraction.solute_apparent_density

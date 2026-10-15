@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "puckworks-tools"
+version = "0.2.0"
+description = "Offline tools for Puckworks: parameter registry, datasets, fixtures, verification, calibration and validation reports"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "GPL-2.0-or-later"
+authors = [{ name = "Puckworks contributors" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+# The puckcore extension (crates/puckcore-py) is needed by `fixtures`, `shot-fixtures`,
+# `verify`, `calibrate`, `validate` and `check-versions` but is not on PyPI, so it is
+# installed separately:
+#   pip install ./crates/puckcore-py
+dependencies = [
+    "jsonschema>=4.18",
+    "numpy>=1.24",
+    "pyyaml>=6.0",
+    "scipy>=1.10",
+    "tomli>=1.1; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+# figures of the validation report (`validate` writes the report without them if missing)
+report = ["matplotlib>=3.7"]
+# the dataset importers that digitise raster figures (python/puckworks_tools/sources/raster.py)
+sources = ["pillow>=9.0"]
+
+[project.scripts]
+puckworks-tools = "puckworks_tools.cli:main"
+
+[tool.setuptools]
+packages = ["puckworks_tools", "puckworks_tools.cases", "puckworks_tools.sources"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Rust CI: formatting, lints, tests, the WebAssembly build and the dependency
+# licence policy (deny.toml, ADR 0007). Every job uses the toolchain pinned in
+# rust-toolchain.toml, and every cargo command that resolves dependencies runs
+# with --locked, so CI uses exactly the committed Cargo.lock.
+name: Rust
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # With no argument, rustup installs what rust-toolchain.toml pins
+      # (channel, components, targets).
+      - name: Install the pinned toolchain
+        run: rustup toolchain install
+      - run: cargo fmt --all --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # puckcore-py is a workspace member, and the PyO3 build script needs a
+      # Python interpreter.
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Install the pinned toolchain
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install the pinned toolchain
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      # Default members only: the core and its WebAssembly bindings (the Python
+      # extension is built and tested with maturin). Also compiles the examples.
+      - run: cargo test --locked
+
+  wasm:
+    name: WebAssembly build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install the pinned toolchain
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --locked -p puckcore-wasm --target wasm32-unknown-unknown --release
+
+  licenses:
+    name: Dependency licences
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install the pinned toolchain
+        run: rustup toolchain install
+      # Pinned to the version deny.toml was written for.
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny@0.20.2
+      - run: cargo deny --locked check licenses

@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Generic burr families: the PSD-model parameters that differ between families. Anyone can describe
+# a grinder as a family plus a burr gap (recipe: grinder.family + grinder.gap_um). Everything not
+# listed here comes from the registry (psd.fines_mode, psd.x50_gap_ratio, psd.boulder_mode_ratio,
+# model.psd.*, including the fines-relation slope model.psd.fines_weight_slope).
+#
+# Evidence: Gagné 2023 compared about 300 PSDs from 24 grinders (one unit each, alignment unknown;
+# grade D). Conicals were on average less unimodal (more fines at a given median) and less uniform
+# (more boulders) than flat burrs, with large overlap. The numbers below are judgements anchored on
+# measured grinders, with u_G fitted under the fines relation of docs/model/input-models.md §2.3:
+# Bentwood V63 15.7% (Camsizer; Smrke 2024), Mahlkönig EK43 16.1% (laser diffraction; Cameron 2020),
+# Fiorenzato F64 EVO 18.4% (laser diffraction, one setting; Waszkiewicz 2026) and Corrochano's disc
+# grinder 19.9% (dry laser diffraction; Corrochano 2017).
+schema: puckworks.preset-file/1
+kind: grinder_family
+description: Generic burr families for grinders described from scratch.
+presets:
+  - id: flat-unimodal
+    name: Flat burrs, unimodal (low-fines) geometry
+    description: >-
+      Flat burrs designed for a narrow, low-fines distribution (e.g. "unimodal", "high uniformity" or
+      "ultra low fines" burr sets). Fewer fines at a given median; such grinders need a finer median to
+      reach the same shot time.
+    flags: [generic, estimated]
+    notes:
+      - "Family values are judgements from Gagné 2023's qualitative comparison of 24 grinders (grade D); calibrate with your own shots."
+      - "Unimodal burrs are dialled in by the amount of fines more than by the median (03 §2.1): expect a much finer setting than with traditional burrs."
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+      - citation: "Gagné J. (2021) A comparison between standard and low-fines espresso shots. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2021/05/10/a-comparison-between-standard-and-low-fines-espresso-shots/"
+    evidence_grade: D
+    tag: estimated
+    registry_refs: [model.psd.fines_weight_slope, psd.x50_gap_ratio, psd.fines_mode, psd.boulder_mode_ratio]
+    burr: flat
+    psd:
+      fines_at_340_pct: 11
+      coarse_log_width: 0.30
+      boulder_weight: 0.03
+
+  - id: flat-traditional
+    name: Flat burrs, traditional geometry
+    description: Conventional flat espresso burrs (most commercial and prosumer flat grinders).
+    flags: [generic, estimated]
+    notes:
+      - "Family values are judgements anchored on the Bentwood V63 (Smrke 2024), the EK43 (Cameron 2020) and a disc grinder (Corrochano 2017); calibrate with your own shots."
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+      - citation: "Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics. Sci. Rep. 14:5612."
+        doi: "10.1038/s41598-024-55831-x"
+        locator: "Fig. 2 (digitized in note 03)"
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    evidence_grade: D
+    tag: estimated
+    registry_refs: [model.psd.fines_weight_slope, psd.x50_gap_ratio, psd.fines_mode, psd.boulder_mode_ratio]
+    burr: flat
+    psd:
+      fines_at_340_pct: 16
+      coarse_log_width: 0.35
+      boulder_weight: 0.05
+
+  - id: conical
+    name: Conical burrs
+    description: Conical burr sets (most hand grinders and many home electric grinders).
+    flags: [generic, estimated]
+    notes:
+      - "Conicals are on average less unimodal and less uniform than flat burrs, with large overlap between models (Gagné 2023, grade D). Family values are judgements; calibrate with your own shots."
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+    evidence_grade: D
+    tag: estimated
+    registry_refs: [model.psd.fines_weight_slope, psd.x50_gap_ratio, psd.fines_mode, psd.boulder_mode_ratio]
+    burr: conical
+    psd:
+      fines_at_340_pct: 20
+      coarse_log_width: 0.40
+      boulder_weight: 0.08

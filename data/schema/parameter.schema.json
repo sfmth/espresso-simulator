@@ -1,0 +1,283 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:puckworks:schema:parameter:1",
+  "title": "Puckworks parameter record",
+  "description": "One record of the Puckworks parameter registry (docs/PLAN.md §7.3, module R). Records live in data/params/*.yaml, in a top-level `parameters` list next to `schema: puckworks.parameters/1`. Cross-field rules (unit vocabulary, value and prior inside the range, DOI syntax, research-note references) are checked by `puckworks-tools validate-registry`. Conventions are documented in python/README.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "description",
+    "units",
+    "range",
+    "tag",
+    "evidence_grade",
+    "sources",
+    "research_note_ref",
+    "used_by",
+    "status"
+  ],
+  "anyOf": [
+    { "required": ["value"] },
+    { "required": ["prior"] }
+  ],
+  "allOf": [
+    {
+      "if": { "required": ["tag"], "properties": { "tag": { "const": "derived" } } },
+      "then": { "required": ["relation"] }
+    }
+  ],
+  "properties": {
+    "id": {
+      "description": "Unique dotted identifier, lower case: segments of letters, digits and underscores, e.g. hydraulics.permeability.in_shot. Ids form a tree: no id may be a prefix (at a dot) of another.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9][a-z0-9_]*)+$",
+      "maxLength": 120
+    },
+    "name": {
+      "description": "Short human-readable name.",
+      "type": "string",
+      "minLength": 3
+    },
+    "symbol": {
+      "description": "Symbol used in the research notes or model specs, e.g. κ_eff.",
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "description": "What the parameter is, in one or two sentences.",
+      "type": "string",
+      "minLength": 10
+    },
+    "units": {
+      "description": "A unit string defined in data/schema/units.yaml; \"1\" for dimensionless.",
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "description": "Point value as stated by the source (typical, central or best estimate). Omit when the source gives only a range.",
+      "type": "number"
+    },
+    "prior": {
+      "$ref": "#/$defs/prior"
+    },
+    "range": {
+      "$ref": "#/$defs/range"
+    },
+    "relation": {
+      "$ref": "#/$defs/relation"
+    },
+    "conditions": {
+      "description": "Conditions under which the value holds (temperature, method, equipment, grind).",
+      "type": "string",
+      "minLength": 1
+    },
+    "tag": {
+      "description": "measured: measured directly in the cited source; derived: calculated from measured or tabulated inputs without fitting (by the source or in a research note); estimated: judgement, extrapolation, analogy or class assignment; fitted: obtained by fitting a model to data.",
+      "enum": ["measured", "derived", "estimated", "fitted"]
+    },
+    "evidence_grade": {
+      "description": "Evidence key of the research notes: A peer-reviewed primary measurement; B peer-reviewed model, fit or indirect inference; C thesis, book or review; D community or grey literature.",
+      "enum": ["A", "B", "C", "D"]
+    },
+    "sources": {
+      "description": "Primary source first.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/source" }
+    },
+    "research_note_ref": {
+      "description": "Section of a research note in docs/research, as \"NN §X.Y\", \"NN Implications\", \"NN Implications A\" or \"NN Open questions\" (NN = note number), or a list of such references.",
+      "oneOf": [
+        { "$ref": "#/$defs/note_ref" },
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/note_ref" }
+        }
+      ]
+    },
+    "used_by": {
+      "description": "Modules of docs/PLAN.md §7.3 that read the parameter.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["B", "G", "P", "M", "W", "H", "X", "C", "T"] }
+    },
+    "licence_note": {
+      "description": "Licence or terms that apply to reusing the value (docs/PLAN.md §11).",
+      "type": "string",
+      "minLength": 1
+    },
+    "comment": {
+      "description": "Caveats, other reported values, and markers such as [unverified] or [derived] copied from the research notes.",
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "description": "draft until the maintainer has reviewed the record.",
+      "enum": ["draft", "accepted"]
+    }
+  },
+  "$defs": {
+    "relation": {
+      "description": "How the parameter follows from, or is linked to, other parameters: `formula` states the relation (with the numbers a note used, if any); `derived_from` lists the registry ids it can be computed from. Required when tag is derived; every id must exist in the registry.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formula"],
+      "properties": {
+        "derived_from": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9][a-z0-9_]*)+$"
+          }
+        },
+        "formula": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    },
+    "range": {
+      "description": "Admissible bounds (inclusive): physical limits such as 0–1 for a fraction or ≥ 0 for a positive quantity, or the scope the plan supports (docs/PLAN.md §4, e.g. doses of 7–25 g). Leave a side out when it is unbounded. Priors and values must lie inside.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["citation"],
+      "properties": {
+        "citation": {
+          "description": "Authors (year) title. Journal volume:pages.",
+          "type": "string",
+          "minLength": 10
+        },
+        "doi": {
+          "description": "Bare DOI, e.g. 10.3390/foods12152871 (no 'doi:' or URL prefix).",
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://\\S+$"
+        },
+        "locator": {
+          "description": "Where in the source: table, figure, section or equation.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "note_ref": {
+      "type": "string",
+      "minLength": 4
+    },
+    "prior": {
+      "description": "Prior distribution. A stated range a–b becomes uniform(a, b), or lognormal with lower = a, upper = b, coverage = 0.95 when a > 0 and b/a > 10; 'x ± s' becomes normal(x, s); a range with a typical value becomes triangular. A prior should include every value the record cites unless the comment says why not. A parameter that must be fitted per grinder or setup, with evidence from only one or two, gets a lognormal whose 95% interval extends the evidence by a factor √2 on each side (a stated judgement).",
+      "type": "object",
+      "required": ["distribution"],
+      "properties": {
+        "distribution": { "enum": ["fixed", "uniform", "normal", "lognormal", "triangular"] }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["distribution"], "properties": { "distribution": { "const": "fixed" } } },
+          "then": { "$ref": "#/$defs/prior_fixed" }
+        },
+        {
+          "if": { "required": ["distribution"], "properties": { "distribution": { "const": "uniform" } } },
+          "then": { "$ref": "#/$defs/prior_uniform" }
+        },
+        {
+          "if": { "required": ["distribution"], "properties": { "distribution": { "const": "normal" } } },
+          "then": { "$ref": "#/$defs/prior_normal" }
+        },
+        {
+          "if": { "required": ["distribution"], "properties": { "distribution": { "const": "lognormal" } } },
+          "then": { "$ref": "#/$defs/prior_lognormal" }
+        },
+        {
+          "if": { "required": ["distribution"], "properties": { "distribution": { "const": "triangular" } } },
+          "then": { "$ref": "#/$defs/prior_triangular" }
+        }
+      ]
+    },
+    "prior_fixed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["distribution", "value"],
+      "properties": {
+        "distribution": { "const": "fixed" },
+        "value": { "type": "number" }
+      }
+    },
+    "prior_uniform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["distribution", "min", "max"],
+      "properties": {
+        "distribution": { "const": "uniform" },
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    },
+    "prior_normal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["distribution", "mean", "sd"],
+      "properties": {
+        "distribution": { "const": "normal" },
+        "mean": { "type": "number" },
+        "sd": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "prior_lognormal": {
+      "description": "Either median and geometric standard deviation, or a central interval [lower, upper] holding `coverage` of the probability.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["distribution", "median", "gsd"],
+          "properties": {
+            "distribution": { "const": "lognormal" },
+            "median": { "type": "number", "exclusiveMinimum": 0 },
+            "gsd": { "type": "number", "exclusiveMinimum": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["distribution", "lower", "upper", "coverage"],
+          "properties": {
+            "distribution": { "const": "lognormal" },
+            "lower": { "type": "number", "exclusiveMinimum": 0 },
+            "upper": { "type": "number", "exclusiveMinimum": 0 },
+            "coverage": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 }
+          }
+        }
+      ]
+    },
+    "prior_triangular": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["distribution", "min", "mode", "max"],
+      "properties": {
+        "distribution": { "const": "triangular" },
+        "min": { "type": "number" },
+        "mode": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    }
+  }
+}
