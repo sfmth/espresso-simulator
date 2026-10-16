@@ -51,9 +51,62 @@ def test_coverage(document):
 
 def test_no_wall_clock_fields_and_size(document):
     text = shotfixtures.dumps(document)
-    assert len(text.encode()) < 2_000_000
+    assert len(text.encode()) < 3_000_000
     for word in ("elapsed", "runtime", "wall_clock", "timestamp", "duration_ms"):
         assert word not in text
+
+
+def test_hydraulic_inventory_and_compliance_coverage(document):
+    """Golden parity must exercise storage release, recharge and a final-stop vent."""
+    enabled = []
+    disabled = []
+    for case in document["cases"]:
+        compliance = case["spec"]["machine"]["hydraulic_compliance_m3_pa"]
+        result = case["result"]
+        series = result["series"]
+        count = len(series["t_s"])
+        fields = ("storage_volume_m3", "cumulative_inlet_volume_m3", "cumulative_outlet_volume_m3",
+                  "cumulative_vented_volume_m3", "retained_volume_m3")
+        assert all(len(series[field]) == count for field in fields)
+        for i in range(count):
+            assert series["storage_volume_m3"][i] == compliance * series["pressure_pa"][i]
+            inlet = series["cumulative_inlet_volume_m3"][i]
+            accounted = (series["cumulative_outlet_volume_m3"][i]
+                         + series["cumulative_vented_volume_m3"][i] + series["retained_volume_m3"][i])
+            assert abs(inlet - accounted) < 3e-11 * max(inlet, 1e-9), case["name"]
+        assert result["diagnostics"]["hydraulic_volume_balance_error"] < 3e-11
+        (enabled if compliance > 0 else disabled).append(case)
+
+    assert len(disabled) == 5
+    assert len(enabled) == 2
+    assert {case["spec"]["machine"]["stop"]["vent_headspace"] for case in enabled} == {False, True}
+    for case in enabled:
+        series = case["result"]["series"]
+
+        def at(time):
+            return next(i for i, t in enumerate(series["t_s"]) if abs(t - time) < 1e-8)
+
+        start, end, resumed, stop = (at(t) for t in (30.0, 38.0, 42.0, 50.0))
+        assert series["wetted_fraction"][start] == 1
+        assert series["cumulative_inlet_volume_m3"][end] == series["cumulative_inlet_volume_m3"][start]
+        released = series["cumulative_outlet_volume_m3"][end] - series["cumulative_outlet_volume_m3"][start]
+        depleted = series["storage_volume_m3"][start] - series["storage_volume_m3"][end]
+        assert released > 1e-7
+        assert abs(released - depleted) < 2e-17
+        assert series["flow_in_m3_s"][at(34.0)] == 0
+        assert series["pressure_pa"][end] < series["pressure_pa"][start]
+        assert series["storage_volume_m3"][resumed] > series["storage_volume_m3"][end]
+        assert series["cumulative_inlet_volume_m3"][-1] == series["cumulative_inlet_volume_m3"][stop]
+        if case["spec"]["machine"]["stop"]["vent_headspace"]:
+            assert series["t_s"][-1] == 50.0
+            assert series["storage_volume_m3"][-1] == 0
+            assert series["cumulative_vented_volume_m3"][-1] > 0
+            assert case["result"]["summary"]["drip_mass_kg"] == 0
+        else:
+            tail = series["cumulative_outlet_volume_m3"][-1] - series["cumulative_outlet_volume_m3"][stop]
+            assert 0 < tail <= series["storage_volume_m3"][stop]
+            assert series["cumulative_vented_volume_m3"][-1] == 0
+            assert case["result"]["summary"]["drip_mass_kg"] > 0
 
 
 def test_floats_round_trip_exactly(document):

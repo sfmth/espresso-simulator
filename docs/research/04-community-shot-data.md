@@ -71,3 +71,20 @@ The author provides public downloads, but no explicit raw-data reuse licence was
 4. **Freeze evaluation groups before fitting.** Group by experiment/session and, where possible, contributor, machine and bean batch. Deduplicate exports and mirrors across services. Samples from one trace stay together. Sources already examined during model selection are exploratory evidence, not a pristine final holdout.
 
 An admitted source needs a metadata sidecar under the [dataset rules](../../data/datasets/README.md#adding-a-dataset), including source revision/checksum, channel definitions and units, clock origin, stop/drainage convention, missingness, uncertainty and reuse basis. The 0.4.0 tooling automates source qualification and conditional comparisons; it supplies no new fitted parameter values or validation claims.
+
+## Implications
+
+The 0.5.0 investigation adds an optional upstream pressure-volume state, V = C P, to test
+whether charged water can sustain flow during a bloom pause. The registry's
+`model.machine.hydraulic_compliance` is a grade-D modeling assumption, disabled by default.
+Its 0–10 mL/bar bounds limit implementation inputs; they are not an empirical population range.
+The community probes use the fixed 0/0.5/2 mL/bar grid for both grinder groups, with no fitted
+value or probability distribution. The [decision record](../decisions/0011-upstream-pressure-storage.md)
+defines the approximation and the [comparison report](../validation/community-shot-comparison.md)
+reports its effects.
+
+Pressure decline, inlet delivery, outlet volume and retained water must be considered together.
+A cup-mass increase during low commanded flow can motivate storage investigation, but it cannot
+identify gas volume, machine compliance or delayed particle-water exchange. These logs have
+firmware-estimated inlet flow and unmeasured PSD and headspace, so agreement in one observable
+does not establish a calibrated physical mechanism.

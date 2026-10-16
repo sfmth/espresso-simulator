@@ -122,6 +122,52 @@ impl Supply {
             }
         }
     }
+
+    /// Instantaneous delivery into a compliant inlet. A pressure cap closes
+    /// the inlet above the cap, and throttles it to bed demand plus the
+    /// storage flow C·dP_cap/dt at the cap. It is not a vent: lowering a
+    /// command cannot remove stored water or demand negative pump delivery.
+    pub fn regulated_flow(&self, p: f64, bed_flow: f64, storage_flow_at_cap: f64) -> f64 {
+        if self.pressure_cap <= 0.0 || p > self.pressure_cap {
+            0.0
+        } else if p == self.pressure_cap {
+            fmin(self.at(p), (bed_flow + storage_flow_at_cap).max(0.0))
+        } else {
+            self.at(p)
+        }
+    }
+}
+
+/// Backward-Euler balance of a charged upstream compliance, with a frozen
+/// end-step bed curve: C(P₁ − P₀)/Δt + Q_bed(P₁) = Q_pump.
+/// Returns end pressure and mean delivered pump flow. Pressure caps throttle
+/// the incoming pump; stored pressure above a lowered cap drains without
+/// reverse flow. The monotone scalar solve is stable even for very small C.
+pub(crate) fn compliant_step(
+    bed: &BedCurve,
+    supply: &Supply,
+    compliance: f64,
+    p0: f64,
+    dt: f64,
+) -> (f64, f64) {
+    let balance = |p: f64| compliance * (p - p0) / dt + bed.flow(p);
+    let cap = supply.pressure_cap;
+    if cap <= 0.0 || supply.at(0.0) <= 0.0 {
+        return (solve_increasing(balance, 0.0, p0), 0.0);
+    }
+    // Enough charged water remains to keep the pressure above the cap for
+    // the whole implicit step. The pump check valve stays closed.
+    let at_cap = balance(cap);
+    if p0 > cap && at_cap < 0.0 {
+        return (solve_increasing(balance, cap, p0), 0.0);
+    }
+    if at_cap <= supply.at(cap) {
+        // A fractional delivery holds the cap, including a step that reaches
+        // it from either side. at_cap is nonnegative after the branch above.
+        return (cap, at_cap.max(0.0));
+    }
+    let p = solve_increasing(|p| balance(p) - supply.at(p), 0.0, cap);
+    (p, supply.at(p))
 }
 
 /// The operating point (P_in, Q) of the bed under a supply.
@@ -294,5 +340,133 @@ mod tests {
             ..s
         };
         assert_eq!(operating_point(&b, &s), (0.0, 0.0));
+    }
+
+    #[test]
+    fn compliant_charge_and_discharge_converge_to_the_independent_rc_solution() {
+        let resistance = 3e11;
+        let compliance = 1e-11;
+        let b = bed(&[resistance], &[true], 0.0, None);
+        let flow = 2e-6;
+        let on = Supply {
+            flow_cap: flow,
+            pump: None,
+            pressure_cap: 1.2e6,
+        };
+        let off = Supply {
+            flow_cap: 0.0,
+            ..on
+        };
+        let duration = 6.0;
+        let tau: f64 = resistance * compliance;
+        let charge_exact = resistance * flow * (1.0 - (-duration / tau).exp());
+        let mut previous_error = f64::INFINITY;
+        for dt in [0.2, 0.1, 0.05, 0.025] {
+            let mut pressure = 0.0;
+            let (mut delivered, mut released) = (0.0, 0.0);
+            for _ in 0..(duration / dt).round() as usize {
+                let (p, q) = compliant_step(&b, &on, compliance, pressure, dt);
+                delivered += dt * q;
+                released += dt * b.flow(p);
+                pressure = p;
+            }
+            let error = (pressure - charge_exact).abs();
+            assert!(error < previous_error * 0.55);
+            previous_error = error;
+            assert!((delivered - released - compliance * pressure).abs() < 2e-19);
+            let charged = pressure;
+            for _ in 0..(duration / dt).round() as usize {
+                let (p, q) = compliant_step(&b, &off, compliance, pressure, dt);
+                assert_eq!(q, 0.0);
+                assert!(p >= 0.0 && p < pressure);
+                released += dt * b.flow(p);
+                pressure = p;
+            }
+            let discharge_exact = charged * (-duration / tau).exp();
+            assert!((pressure / discharge_exact - 1.0).abs() < dt / tau * 1.05);
+            assert!((delivered - released - compliance * pressure).abs() < 3e-19);
+        }
+        assert!(previous_error / charge_exact < 0.002);
+    }
+
+    #[test]
+    fn compliance_respects_caps_without_venting_and_handles_a_pump_curve() {
+        let b = bed(&[3e11], &[true], 0.0, None);
+        let compliance = 1e-11;
+        let cap = Supply {
+            flow_cap: 6e-6,
+            pump: None,
+            pressure_cap: 2e5,
+        };
+        let (p, q) = compliant_step(&b, &cap, compliance, 0.0, 1.0);
+        assert_eq!(p, cap.pressure_cap);
+        assert!(q > 0.0 && q < cap.flow_cap);
+        assert!((q - b.flow(p) - compliance * p).abs() < 1e-20);
+        let low = Supply {
+            pressure_cap: 1e5,
+            ..cap
+        };
+        let (p, q) = compliant_step(&b, &low, compliance, p, 0.05);
+        assert!(p > low.pressure_cap);
+        assert_eq!(q, 0.0);
+        assert_eq!(low.regulated_flow(p, b.flow(p), 0.0), 0.0);
+
+        let pump = Supply {
+            flow_cap: 6e-6,
+            pump: Some((6e-6, 1.5e6)),
+            pressure_cap: 1.5e6,
+        };
+        let conductance = 1.0 / 3e11 + 6e-6 / 1.5e6;
+        let dt = 0.025;
+        let mut p = 0.0;
+        for _ in 0..400 {
+            let (next, q) = compliant_step(&b, &pump, compliance, p, dt);
+            assert!(q >= 0.0 && q <= pump.at(next));
+            p = next;
+        }
+        let exact = 6e-6 / conductance * (1.0 - (-10.0 * conductance / compliance).exp());
+        assert!((p / exact - 1.0).abs() < 0.001);
+        assert_eq!(
+            compliant_step(
+                &b,
+                &Supply {
+                    flow_cap: 0.0,
+                    ..cap
+                },
+                compliance,
+                0.0,
+                1.0
+            ),
+            (0.0, 0.0)
+        );
+    }
+
+    #[test]
+    fn vanishing_compliance_reaches_the_algebraic_operating_point_without_stiffness() {
+        let b = bed(&[2e11, 4e11], &[false, true], 1e17, Some(1.2e6));
+        for s in [
+            Supply {
+                flow_cap: 1e-6,
+                pump: None,
+                pressure_cap: 9e5,
+            },
+            Supply {
+                flow_cap: 8e-6,
+                pump: Some((8e-6, 1.5e6)),
+                pressure_cap: 9e5,
+            },
+            Supply {
+                flow_cap: 8e-6,
+                pump: None,
+                pressure_cap: 1e5,
+            },
+        ] {
+            let (algebraic_p, algebraic_q) = operating_point(&b, &s);
+            for p0 in [0.0, 9e5] {
+                let (p, q) = compliant_step(&b, &s, 1e-24, p0, 0.05);
+                assert!((p / algebraic_p - 1.0).abs() < 1e-10);
+                assert!((q / algebraic_q - 1.0).abs() < 1e-10);
+            }
+        }
     }
 }

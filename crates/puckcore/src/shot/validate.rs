@@ -50,7 +50,8 @@ const MAX_SNAPSHOTS: usize = 1000;
 const MAX_STATE: f64 = 1e7;
 /// Bound on the snapshot data: snapshots × columns × cells.
 const MAX_SNAPSHOT_CELLS: f64 = 1e6;
-/// Bound on the series data: output points × (10 + species).
+/// Bound on the series data: output points × (15 + species), including
+/// the five carrier-volume inventory channels even at zero compliance.
 const MAX_SERIES_VALUES: f64 = 1e7;
 /// Bound on the total work, steps × model values: about 30 s natively at the
 /// measured 1.5–6 ns per value and step (shot-model.md §2.1).
@@ -482,6 +483,12 @@ fn thermal(t: &ThermalSpec) -> Check {
 }
 
 fn machine(m: &MachineSpec) -> Check {
+    closed(
+        "machine.hydraulic_compliance_m3_pa",
+        m.hydraulic_compliance_m3_pa,
+        0.0,
+        1e-10,
+    )?;
     if m.phases.is_empty() || m.phases.len() > MAX_PHASES {
         return Err(err(
             "machine.phases",
@@ -606,7 +613,7 @@ fn numerics(spec: &ShotSpec, warnings: &mut Vec<String>) -> Check {
         ));
     }
     let n_species = spec.solubles.species.len() as f64;
-    if points * (10.0 + n_species) > MAX_SERIES_VALUES {
+    if points * (15.0 + n_species) > MAX_SERIES_VALUES {
         return Err(err(
             "numerics.output_interval_s",
             "too small: the output series would hold more than 1e7 values",

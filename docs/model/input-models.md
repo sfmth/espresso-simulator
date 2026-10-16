@@ -390,10 +390,18 @@ The pump comes from the recipe, then the preset; without either an ideal pump fo
 All by the precedence of §1:
 - Brew temperature `shot.temperature`: recipe `machine.temperature_c` (20–100 °C) > override > calibration > preset > registry (92 °C, B). A temperature outside the preset's `temperature_range_c` gets a note.
 - Group headspace above the basket rim `model.machine.group_headspace`: recipe `headspace_ml` (0–200 mL) > override > calibration > preset > registry 5 mL (D).
-- Post-stop drip τ `model.machine.drip_time_constant`: override > calibration > preset > registry 1.5 s (D; at most the solver's 60 s). The solver drains only the water left above the puck.
+- Post-stop drip τ `model.machine.drip_time_constant`: override > calibration > preset > registry 1.5 s (D; at most the solver's 60 s). With default zero compliance, the solver drains only water left above the puck; the optional storage behavior is described below.
 - Three-way valve `machine.stop.vent_headspace`: recipe `machine.vent_headspace` > preset `vent_headspace` > false. With it the group is vented at the stop and nothing drips into the cup. Presets: `e61-rotary` true (E61 groups have a three-way solenoid); `amzchef-ultra` false (UNVERIFIED: many budget vibratory machines lack one); `vibratory-pump` and `spring-lever` false (levers have none). Presets that do not say, and machines from scratch, get false with a note.
 - Basket and portafilter temperature at the start `model.thermal.hardware_temperature`: override > calibration > preset > registry 85 °C (D).
 - A preset's `default_basket` is used when the recipe has no basket (note); a basket whose rim differs from the preset's `basket_diameter_mm` by more than 2 mm gets a note.
+
+The optional `model.machine.hydraulic_compliance` registry override (mL/bar, default 0)
+maps to `machine.hydraulic_compliance_m3_pa` with provenance. Nonzero values enable the
+experimental pressure-volume balance and produce an explanatory build note. They are
+not inferred from the machine preset. With compliance enabled, only charged storage
+feeds post-stop flow; `drip_tau_s` sets an 8τ observation window, and unpressurised
+headspace remains retained. A vent dumps both stores. [ADR 0011](../decisions/0011-upstream-pressure-storage.md)
+defines the assumptions; the registry's 0–10 mL/bar bound is not an empirical prior.
 
 ### 8.4 Thermal node
 

@@ -220,6 +220,25 @@ describe('WASM shot API in Node', () => {
     expect(JSON.parse(core.simulateShot(JSON.stringify(run.build.spec)))).toEqual(run.result);
   });
 
+  it('defaults omitted compliance to zero and converts the opt-in registry override to SI', () => {
+    const built = JSON.parse(core.buildShotSpec(JSON.stringify(BASE))) as BuiltSpec;
+    expect(built.spec.machine.hydraulic_compliance_m3_pa).toBe(0);
+    const legacy = structuredClone(built.spec);
+    delete legacy.machine.hydraulic_compliance_m3_pa;
+    expect(JSON.parse(core.simulateShot(JSON.stringify(legacy)))).toEqual(
+      JSON.parse(core.simulateShot(JSON.stringify(built.spec))),
+    );
+    const enabled = JSON.parse(
+      core.buildShotSpec(
+        JSON.stringify({ ...BASE, overrides: { 'model.machine.hydraulic_compliance': 0.75 } }),
+      ),
+    ) as BuiltSpec;
+    expect(enabled.spec.machine.hydraulic_compliance_m3_pa).toBe(0.75 / 1e11);
+    expect(enabled.derived.provenance['machine.hydraulic_compliance_m3_pa']).toBe(
+      'override:model.machine.hydraulic_compliance',
+    );
+  });
+
   it.each([
     ['an unknown field', { ...BASE, colour: 'red' }, /unknown field `colour`/],
     ['a dose that does not fit', { ...BASE, prep: { dose_g: 59 } }, /^prep\.dose_g: 59 g makes a/],

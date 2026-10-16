@@ -16,7 +16,8 @@ Format::
 Python's shortest round-trip representation, so parsing gives back exactly the doubles the core
 produced; the file holds no wall-clock times. The cases cover tiers 0 and 1, a vibratory pump, a
 pressurised basket, flow-controlled programs, a custom tapered basket, a measured PSD, and
-both a noninteger pore-air permeability exponent and a disabled pore-air closure.
+both a noninteger pore-air permeability exponent and a disabled pore-air closure. Opt-in upstream
+pressure-storage cases cover a pump pause, a resume, and either a stored-water tail or a stop vent.
 
 ``--check`` regenerates the document from ``CASES`` and compares it with the committed file: names,
 recipes, keys and strings exactly; numbers in ``spec`` and ``result`` to ``--tolerance`` (absolute;
@@ -49,8 +50,27 @@ def _recipe(**fields: Any) -> dict[str, Any]:
     return recipe
 
 
-#: The fixture's recipes. Short shots (a 35–40 s time limit next to the beverage target) keep the file
-#: small, under about 2 MB: each case stores every 0.1 s output point and 12 spatial snapshots.
+def _compliance_recipe(*, vent: bool) -> dict[str, Any]:
+    """A structural pause/resume exercise, not a fit to a measured machine or shot."""
+    return _recipe(
+        bean={"preset": "medium-washed-arabica"},
+        grinder={"preset": "generic-flat-traditional-64", "setting": 190.0},
+        basket={"preset": "58-precision-18g"}, prep={"dose_g": 18.0},
+        machine={"profile": [{"control": "flow", "target": 3.0, "limit": 9.0,
+                              "ramp_s": 0.0, "until_time_s": 30.0},
+                             {"control": "flow", "target": 0.0, "limit": 9.0,
+                              "ramp_s": 0.0, "until_time_s": 8.0},
+                             {"control": "flow", "target": 3.0, "limit": 9.0,
+                              "ramp_s": 0.0}],
+                 "vent_headspace": vent},
+        stop={"time_s": 50.0}, numerics={"tier": 0},
+        overrides={"model.machine.hydraulic_compliance": 1.0,
+                   "model.machine.drip_time_constant": 1.0},
+    )
+
+
+#: The fixture's recipes. Short shots (35–50 s) keep the file under 3 MB: each case stores every
+#: 0.1 s output point, including the hydraulic inventories, and 12 spatial snapshots.
 CASES: tuple[tuple[str, dict[str, Any]], ...] = (
     (
         "presets_flat_9bar_tier1",
@@ -91,6 +111,8 @@ CASES: tuple[tuple[str, dict[str, Any]], ...] = (
                 stop={"beverage_g": 30.0, "time_s": 40.0}, numerics={"tier": 0},
                 overrides={"model.hydraulics.pore_air_amplitude": 0}),
     ),
+    ("compliance_pause_resume_tail_tier0", _compliance_recipe(vent=False)),
+    ("compliance_pause_resume_vent_tier0", _compliance_recipe(vent=True)),
 )
 
 

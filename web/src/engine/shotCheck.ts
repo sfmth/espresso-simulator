@@ -8,6 +8,8 @@
  * fields). Returns the problems found; an empty list means the shape is right.
  */
 
+import { HYDRAULIC_VOLUME_FIELDS } from './shotTypes';
+
 type Json = Record<string, unknown>;
 
 function isRecord(value: unknown): value is Json {
@@ -86,6 +88,9 @@ export function checkShotResult(result: unknown): string[] {
     ]) {
       numbers(`series.${key}`, series[key], n);
     }
+    for (const key of ['wetted_fraction', ...HYDRAULIC_VOLUME_FIELDS]) {
+      if (series[key] !== undefined) numbers(`series.${key}`, series[key], n);
+    }
     if (!Array.isArray(series.species_cup_kg)) fail('series.species_cup_kg', 'must be an array');
     else {
       series.species_cup_kg.forEach((s: unknown, i) => {
@@ -161,6 +166,9 @@ export function checkShotResult(result: unknown): string[] {
     finite('diagnostics.mass_balance_error', d.mass_balance_error);
     if (d.outflow_integral_error !== undefined) {
       finite('diagnostics.outflow_integral_error', d.outflow_integral_error);
+    }
+    if (d.hydraulic_volume_balance_error !== undefined) {
+      finite('diagnostics.hydraulic_volume_balance_error', d.hydraulic_volume_balance_error);
     }
     finite('diagnostics.steps', d.steps);
     if (!Array.isArray(d.warnings) || d.warnings.some((w) => typeof w !== 'string')) {

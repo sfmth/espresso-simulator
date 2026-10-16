@@ -535,7 +535,7 @@
       }
     },
     "MachineSpec": {
-      "description": "Machine program, pump and stop rule (PLAN §7.3, module M). The headspace fills first (at zero pressure); then pressure and flow follow from the program, the pump and the bed.",
+      "description": "Machine program, pump and stop rule (PLAN §7.3, module M). The headspace fills first (at zero pressure); then pressure and flow follow from the program, the pump, the bed and optional charged upstream compliance.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -553,6 +553,13 @@
         },
         "stop": {
           "$ref": "#/$defs/StopRule"
+        },
+        "hydraulic_compliance_m3_pa": {
+          "description": "Optional upstream hydraulic compliance, m³/Pa (0 = legacy algebraic hydraulics). Stores pump-supplied carrier volume C·P and obeys C dP/dt = Q_pump − Q_bed after the sequential headspace fill. Pressure caps throttle delivery without venting or reverse flow; retained pressure can exceed a newly lowered command while draining. This experimental lumped closure does not model gas or gravity.",
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 1e-10
         }
       }
     },
@@ -744,7 +751,7 @@
       ]
     },
     "StopRule": {
-      "description": "When the shot ends. The first condition met stops the pump; the extract then drips for a while (drip_tau_s): the inlet pressure decays as P_stop·e^(−t/τ) and the simulation runs 8τ more, or until the water left in the headspace has drained into the puck. Without a condition the shot runs to numerics.max_duration_s.",
+      "description": "When the shot ends. The first condition met stops the pump; without compliance, inlet pressure decays as P_stop·e^(−t/τ) for up to 8τ more or until the retained headspace drains into the puck. With nonzero machine.hydraulic_compliance_m3_pa, pressure instead follows the storage balance while only charged storage supplies the bed; unpressurised headspace stays retained. Without a condition the shot runs to numerics.max_duration_s.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -767,13 +774,13 @@
           "maximum": 10
         },
         "drip_tau_s": {
-          "description": "Time constant of the post-stop drip, s (0 = none, at most 60).",
+          "description": "Time constant of the legacy post-stop drip, s (0 = none, at most 60). With nonzero compliance, 8τ is only the tail observation horizon: pressure follows the compliance/bed balance, and only charged storage drains. Unpressurised headspace water remains retained.",
           "type": "number",
           "minimum": 0,
           "maximum": 60
         },
         "vent_headspace": {
-          "description": "The machine vents the headspace at the stop (a three-way solenoid valve): its water leaves through the valve, none reaches the puck, and there is no drip. Default false.",
+          "description": "The machine vents the headspace and any charged compliance at the stop (a three-way solenoid valve): their water leaves through the valve, none reaches the puck, and there is no drip. Default false.",
           "type": "boolean"
         }
       }

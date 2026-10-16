@@ -641,6 +641,58 @@ fn unit_conversions_keep_short_decimals() {
 
 // -- Pump precedence and the three-way valve ------------------------------------------------
 
+#[test]
+fn hydraulic_compliance_is_opt_in_with_si_conversion_and_provenance() {
+    let recipe = with(generic_recipe(), "numerics.tier", json!(0));
+    let baseline = build_ok(&recipe);
+    assert_eq!(
+        num(&baseline, "spec.machine.hydraulic_compliance_m3_pa"),
+        0.0
+    );
+    assert_eq!(
+        baseline["derived"]["provenance"]["machine.hydraulic_compliance_m3_pa"],
+        "registry:model.machine.hydraulic_compliance"
+    );
+    assert!(!notes(&baseline).contains("experimental upstream hydraulic compliance"));
+
+    let disabled = with(
+        recipe.clone(),
+        "overrides",
+        json!({"model.machine.hydraulic_compliance": 0.0}),
+    );
+    assert_eq!(build_ok(&disabled)["spec"], baseline["spec"]);
+    assert_eq!(simulate(&disabled)["result"], simulate(&recipe)["result"]);
+
+    for value in [0.25, 1.0, 10.0] {
+        let built = build_ok(&with(
+            recipe.clone(),
+            "overrides",
+            json!({"model.machine.hydraulic_compliance": value}),
+        ));
+        assert_eq!(
+            num(&built, "spec.machine.hydraulic_compliance_m3_pa"),
+            value / 1e11
+        );
+        assert_eq!(
+            built["derived"]["provenance"]["machine.hydraulic_compliance_m3_pa"],
+            "override:model.machine.hydraulic_compliance"
+        );
+        assert!(notes(&built).contains("uncalibrated modeling assumption (grade D)"));
+    }
+    for value in [-0.1, 10.01] {
+        let error = build_err(&with(
+            recipe.clone(),
+            "overrides",
+            json!({"model.machine.hydraulic_compliance": value}),
+        ));
+        assert!(
+            error.contains("model.machine.hydraulic_compliance"),
+            "{error}"
+        );
+        assert!(error.contains("outside its range"), "{error}");
+    }
+}
+
 fn amzchef(machine: Value) -> Value {
     with(owner_recipe(), "machine", machine)
 }

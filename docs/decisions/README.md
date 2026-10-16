@@ -14,6 +14,7 @@ Implementation decisions for Puckworks, one short file per decision. Product dec
 | [0008](0008-model-crate-and-json-boundary.md) | The `puckmodel` crate and the JSON boundary | Accepted |
 | [0009](0009-shot-solver-numerics.md) | Shot solver numerics and the bare base permeability | Accepted |
 | [0010](0010-startup-water-and-pore-air.md) | Startup water inventory and an effective pore-air closure | Accepted |
+| [0011](0011-upstream-pressure-storage.md) | Optional upstream pressure storage | Accepted, experimental |
 
 ## Format
 

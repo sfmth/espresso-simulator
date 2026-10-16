@@ -94,6 +94,7 @@ model.machine.vibratory_stall_pressure
 model.machine.ramp_time
 model.machine.group_headspace
 model.machine.drip_time_constant
+model.machine.hydraulic_compliance
 model.thermal.hardware_temperature
 model.thermal.hardware_water_equivalent
 model.thermal.coffee_heat_capacity_ratio

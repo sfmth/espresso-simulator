@@ -1452,12 +1452,35 @@ parameters:
       (solver); this is only the gap above the rim.
     status: draft
 
+  - id: model.machine.hydraulic_compliance
+    name: Experimental upstream hydraulic compliance
+    description: >-
+      Constant slope C of the pressure-volume law V = C P, storing pump-supplied water
+      upstream of the bed after headspace filling. Zero preserves algebraic hydraulics.
+    units: "mL/bar"
+    value: 0
+    range: {min: 0, max: 10}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks (2026), docs/decisions/0011-upstream-pressure-storage.md: optional constant-compliance modeling assumption, not a measured machine property."
+    research_note_ref: "04 Implications"
+    used_by: [M, H]
+    comment: >-
+      Disabled by default; no empirical prior is assigned. The 0–10 mL/bar range is an
+      implementation bound, not a measured population range. Community probes use fixed
+      0/0.5/2 mL/bar hypotheses without choosing a best fit. Constant compliance does not
+      identify gas compression, machine elasticity, puck deformation or particle-water exchange.
+      The raw spec uses m^3/Pa: multiply the registry value by 1e-11.
+    status: draft
+
   - id: model.machine.drip_time_constant
     name: Post-stop drip time constant
     description: >-
       Time constant with which the water left above the puck drains into the cup after the pump stops,
-      when a machine does not state it (the solver drains only the headspace water; a machine with a
-      three-way valve, vent_headspace, has no drip).
+      when a machine does not state it (the default solver drains only headspace water).
+      With optional hydraulic compliance, eight times this value sets the observation window;
+      pressure follows the stored-water balance instead. A venting machine has no drip.
     units: s
     value: 1.5
     prior: {distribution: uniform, min: 0.5, max: 5}
@@ -1470,7 +1493,8 @@ parameters:
     used_by: [M]
     comment: >-
       No research note covers the post-stop drip. Machines with a three-way valve vent the group and do
-      not drip (vent_headspace); machines without one drain the headspace water through the puck.
+      not drip (vent_headspace). Without compliance the headspace drains through the puck;
+      with compliance only charged storage drains and unpressurised headspace stays retained.
       Calibrate against the scale reading after the stop. The range ends at the solver's 60 s bound.
     status: draft
 

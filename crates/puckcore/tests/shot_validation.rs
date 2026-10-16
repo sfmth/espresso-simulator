@@ -4,6 +4,18 @@
 
 use puckcore::shot::*;
 
+#[test]
+fn output_memory_limit_counts_carrier_volume_channels() {
+    let mut spec = ShotSpec::default();
+    spec.numerics.max_duration_s = 1.0;
+    spec.machine.stop.drip_tau_s = 0.0;
+    spec.numerics.output_interval_s = 2e-6;
+    assert!(validate_shot_spec(&spec).is_ok());
+    spec.numerics.output_interval_s = 1e-6;
+    let error = validate_shot_spec(&spec).unwrap_err().to_string();
+    assert!(error.contains("output series would hold more than 1e7 values"));
+}
+
 fn field_of(spec: &ShotSpec) -> Option<String> {
     match simulate_shot(spec) {
         Err(ShotError::InvalidSpec { field, .. }) => Some(field),
