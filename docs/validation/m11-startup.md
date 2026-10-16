@@ -5,6 +5,11 @@ M1.1 improves startup timing, but **does not resolve the scientific validation f
 extraction fit regresses after recalibration. This is an experimental model increment; M2 remains
 deferred while the startup and extraction coupling needs further work.
 
+The results below describe the original [0.3.0 evaluation](baseline-v0.3.0/README.md). Version 0.4.0
+adds [community comparison tooling](community-shot-comparison.md) without changing the physics or fit.
+Its rerun reproduces the same predictions; cached leave-one-condition-out refits remain labelled with
+their original build identity.
+
 ## What changed
 
 The front now fills the accessible intraparticle pore-water inventory, and the same water enters

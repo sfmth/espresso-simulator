@@ -15,6 +15,11 @@ lists discovered archives, measurement limitations and admission status separate
 already accepted below. Public visibility, a file format, and a project's code licence are not by
 themselves evidence that a collection contains usable, licensed experimental measurements.
 
+The [community comparison command](../../python/README.md#reproduce-the-community-comparison) reads
+local original files and writes detailed exploratory results under `.local/` (ignored by Git).
+Its [aggregate report](../../docs/validation/community-shot-comparison.md) does not add those raw logs
+to the accepted inventory or change the fitting/held-out split below.
+
 | Folder | Content | Licence | Role |
 |---|---|---|---|
 | [`schmieder2023-centre-point/`](schmieder2023-centre-point/) | λ and c₀ of trigonelline, caffeine, 5-CQA and TDS at the centre point of the Schmieder 2023 design, the λ and c₀ extremes across the design, and cup masses at 20/40/60 g | CC BY 4.0 | registry (kinetics) |

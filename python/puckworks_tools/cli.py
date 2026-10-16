@@ -9,6 +9,7 @@ Subcommands:
 - ``verify``: write the kernel verification report to docs/validation/;
 - ``calibrate``: fit the M1 calibration (data/calibration/<label>.yaml and current.yaml);
 - ``validate``: write the M1 validation report to docs/validation/;
+- ``community``: compare locally downloaded community shots with fixed model scenarios;
 - ``export [--check]``: presets and registry for the model crate (puckworks_tools.export);
 - ``check-versions [--release]``: the same version everywhere.
 
@@ -96,6 +97,25 @@ def _cmd_validate(args: argparse.Namespace, paths: RepoPaths) -> int:
         return validate.run(args, paths)
     except CalibrationError as exc:
         print(f"validate: {exc}", file=sys.stderr)
+        return 2
+
+
+def _cmd_community(args: argparse.Namespace, paths: RepoPaths) -> int:
+    from .community import run_comparison, write_report
+    from .sources.gagne2021 import ensure_local_output, load_experiment, write_bundle
+
+    try:
+        output = ensure_local_output(args.output_dir or paths.root / ".local/community/gagne2021")
+        bundle = load_experiment(args.archive, args.log)
+        report = run_comparison(bundle, paths, tier=args.tier)
+        normalized = write_bundle(bundle, output)
+        written = write_report(report, output)
+        for target in [*normalized, *written.values()]:
+            print(f"community: wrote {paths.relative(target)}")
+        print("community: exploratory comparisons only; no parameters fitted or validation gates changed")
+        return 0
+    except (OSError, ValueError) as exc:
+        print(f"community: {exc}", file=sys.stderr)
         return 2
 
 
@@ -212,6 +232,17 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("validate", parents=[common], help="write the M1 validation report (docs/validation)")
     _validate.add_arguments(p)
     p.set_defaults(handler=_cmd_validate)
+
+    p = sub.add_parser(
+        "community", parents=[common],
+        help="compare local Gagné DE1 logs with fixed model scenarios (no fitting or downloads)",
+    )
+    p.add_argument("--archive", type=Path, required=True, help="original shotfiles_Mar2_2021.zip")
+    p.add_argument("--log", type=Path, required=True, help="original measurement-log CSV export")
+    p.add_argument("--output-dir", type=Path,
+                   help="local output directory, outside git or ignored (default: .local/community/gagne2021)")
+    p.add_argument("--tier", type=int, choices=(0, 1), default=1, help="solver tier (default: 1)")
+    p.set_defaults(handler=_cmd_community)
 
     sub.add_parser(
         "export",

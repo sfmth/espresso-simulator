@@ -4,7 +4,7 @@
 Offline Python tools for Puckworks. They check the parameter registry and the datasets, write the
 golden fixtures shared with the web tests, produce the kernel verification report, calibrate the M1
 model against the literature datasets and write the M1 validation report, export presets and registry
-for the model crate, and check that versions agree across the repository. Version 0.3.0,
+for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.4.0,
 GPL-2.0-or-later.
 
 ## Install
@@ -38,10 +38,35 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 | `puckworks-tools verify` | Writes `docs/validation/m0-kernel-verification.md` and `.json`. `--quick` runs small series (smoke test); `--output-dir` writes elsewhere |
 | `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out), `--prune` (fix weakly identified shared parameters and refit), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`. Refuses to write `data/calibration` while the solver is a placeholder |
 | `puckworks-tools validate` | Writes the M1 validation report `docs/validation/m1-validation.md` (figures in `docs/validation/m1/`, numbers in `.json`): calibration fit quality and the held-out checks of PLAN §10. `--quick` (tier 0), `--jobs N`, `--calibration FILE`, `--output-dir`, `--from-json FILE` (re-render without simulating). `python/scripts/m1-pipeline.sh [JOBS]` runs the whole M1 pipeline (rebuild, calibrate, export, rebuild, validate, shot fixture, checks) |
+| `puckworks-tools community --archive ZIP --log CSV` | Imports the pinned original Gagné experiment and runs exploratory model comparisons with fixed assumptions. No download, fitting or admission to the calibration inventory. `--tier 0` is a coarse smoke run; the default is tier 1. Detailed output goes to `.local/community/gagne2021`; `--output-dir` must be outside a Git worktree or ignored |
 | `puckworks-tools export [--check]` | Forwards to `puckworks_tools.export.main` (workstream D): writes, or checks, `crates/puckmodel/generated/presets.json` and `registry.json` from `data/presets`, `data/params` and `data/calibration/current.yaml`. Run it after any change to those |
 | `puckworks-tools check-versions` | Checks that `Cargo.toml` (`[workspace.package]`), `web/package.json` (if present), `python/pyproject.toml` and `puckcore.__version__` agree. `--release` also requires a `## [<version>]` heading in `CHANGELOG.md` |
 
 `python -m puckworks_tools …` works too.
+
+## Reproduce the community comparison
+
+Obtain the author's [original shot ZIP](https://www.dropbox.com/s/l0v4a5d3h98kasn/shotfiles_Mar2_2021.zip?raw=1)
+and [measurement-log CSV export](https://docs.google.com/spreadsheets/d/1r33CI6lczJhuYcNjy8z3jABagZoxO8Z0kkd6h5Ppos0/export?format=csv),
+identified by hashes in the [source audit](../docs/research/04-community-shot-data.md). Store them outside
+tracked data, for example under `.local/sources/`, then run:
+
+```sh
+.venv/bin/puckworks-tools community \
+  --archive .local/sources/shotfiles_Mar2_2021.zip \
+  --log .local/sources/gagne2021-log.csv
+```
+
+The command reads local files only. Source checksums must match the inspected downloads; a changed
+spreadsheet needs a new provenance review, not silent reuse of the old experiment identity. The parser
+does not execute Tcl or export account/device fields. It preserves measurement noise, separates
+observed and target channels, and reports an unreached mass threshold as missing.
+
+The [comparison report](../docs/validation/community-shot-comparison.md) records the assumptions and
+observations used. Pressure-driven comparisons condition on the measured pressure and therefore cannot
+validate pressure prediction. Missing particle-size and machine inputs prevent matched calibration;
+these runs are exploratory and do not replace the existing held-out tests. Raw sources and detailed
+reports remain local; only the cited aggregate report is committed.
 
 ## Tests
 
@@ -81,6 +106,7 @@ python/
 │   ├── cases/         case builders: each validation dataset as ShotSpecs, and its observables
 │   ├── calibrate.py   M1 calibration harness (scipy least squares)
 │   ├── validate.py    M1 validation report
+│   ├── community.py   exploratory comparisons with locally supplied community logs
 │   ├── sources/       importers that regenerate dataset CSVs from the original downloads
 │   ├── export.py      presets and registry JSON for the model crate (workstream D)
 │   ├── versions.py    version consistency

@@ -10,6 +10,7 @@
 - ``cases``: case builders, the validation datasets' conditions as shot specs;
 - ``calibrate``: the M1 calibration harness;
 - ``validate``: the M1 validation report;
+- ``community``: exploratory comparisons against locally supplied community shot logs;
 - ``sources``: importers that regenerate dataset CSV files from the original downloads;
 - ``export``: presets and registry JSON for the model crate (workstream D);
 - ``versions``: the version-consistency check.

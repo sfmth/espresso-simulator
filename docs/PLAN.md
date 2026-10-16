@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.3.0 · Last updated 2026-10-15 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup implementation added. Scientific validation exit criteria remain open (see §12 and §15).*
+*Version 0.4.0 · Last updated 2026-10-16 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup implementation and community comparisons added. Scientific validation exit criteria remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -626,6 +626,8 @@ Size L. **Status: delivered in 0.2.0 (2026-10-15); its validation exit criteria 
 ### M1.1: Startup physics
 Size M. **Selected by the owner on 2026-10-15, before M2; implementation in 0.3.0.**
 - **Data direction:** use online research and community measurements (D15), with the [source audit](research/04-community-shot-data.md) as the intake record. The owner's equipment is not required for calibration. Candidate discovery does not change the existing training/held-out split or make a source calibration-ready.
+- **Community comparison tooling (0.4.0):** the [online-shot investigation](validation/community-shot-comparison.md) uses original DE1 logs and their matching measurement sheet for reproducible exploratory comparisons. It distinguishes measured, estimated and target channels, and exact pump-off from the recorded bloom-flow floor. Fixed scenarios expose missing mechanisms and input uncertainty without fitting community observations or changing the existing scientific gates.
+- **Next physics investigation:** pressure relaxation and drainage of retained water during bloom. Across the 11 logged shots, the fixed flow-command scenario delivers 1.45–1.51 g during the selected bloom plateau, against 3.02–5.85 g measured. Exact zero-command probes produce effectively no drainage. These conditional results expose a missing storage/drainage response; uncertain inlet flow and puck properties prevent assigning the discrepancy to one physical mechanism or fitting its coefficients yet.
 - **Outcome:** startup improves, but the scientific gates remain open. V4 first drops move from 1.8 to 6.8 s (12.8 s measured), and the flow rise from 6.7 to 12.1 s (25.5 s measured). V1 extraction rates within ±10% regress from 57/60 to 48/60. Generic 18 → 36 g pump-stop times remain short at 15.6–17.0 s. The [M1.1 investigation](validation/m11-startup.md) documents the remaining failures and ablations; M2 stays deferred.
 - Count accessible particle pore water in the infiltration budget and continuum holdup, with particle extraction states represented as effective soluble loading. This is an explicit single-liquid approximation.
 - Add a local pore-air mobility relaxation, separate from roast-dependent CO₂. Its amplitude, power and moisture-diffusion mapping remain grade-D estimates, fixed before held-out evaluation.
@@ -747,6 +749,7 @@ These are optional experiments for the future local personalization feature (V9/
 **Still open**
 1. **Voluntary contributions:** may people contribute their exported data to the project through GitHub (CC0), outside the site? The site itself never collects anything (D9).
 2. **M1.1 research gaps:**
+   - pressure/storage and drainage during bloom, motivated by the [community comparisons](validation/community-shot-comparison.md); examine this response before tuning startup coefficients against these logs;
    - quantitative startup accuracy: M1.1 adds water capacity, an estimated pore-air mobility closure and conservative filling; separate immobile-water uptake, gas pressure and simultaneous headspace/puck filling remain unresolved;
    - permeability against particle size: the calibration datasets give different reference permeabilities (current spread in the validation report), and both the D32² scaling and the PSD measurement basis are untested;
    - the slow flow rise seen in measured shots;

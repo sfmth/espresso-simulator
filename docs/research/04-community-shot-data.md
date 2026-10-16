@@ -1,7 +1,9 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # 04 — Online community shot data
 
-*Source audit, 2026-10-15. This records discovery and source qualification, not a new calibration result.*
+*Source audit, 2026-10-15; reproducible tooling added 2026-10-16. This records discovery and source qualification, not a new calibration result.*
+
+The [community comparison report](../validation/community-shot-comparison.md) now follows this audit with executed, fixed-scenario simulations. Reproduce it with the [offline command](../../python/README.md#reproduce-the-community-comparison); the source files remain local and no community parameters are fitted.
 
 The owner has directed core calibration to use online measurements, including hobbyist experiments and community archives. Academic publication is not required, and the owner's equipment is not a calibration prerequisite ([D15](../PLAN.md#2-locked-decisions-2026-10-13)). Measurement quality determines what a source can support.
 
@@ -68,4 +70,4 @@ The author provides public downloads, but no explicit raw-data reuse licence was
 3. **Admit observations by intended role.** Startup timing needs a documented clock and independently measured cup mass, plus recipe/machine inputs. Extraction needs measured TDS and its protocol. Parser fixtures can test formats without becoming physics evidence. Missing metadata stays missing; nuisance assumptions must be stated and their uncertainty propagated.
 4. **Freeze evaluation groups before fitting.** Group by experiment/session and, where possible, contributor, machine and bean batch. Deduplicate exports and mirrors across services. Samples from one trace stay together. Sources already examined during model selection are exploratory evidence, not a pristine final holdout.
 
-An admitted source needs a metadata sidecar under the [dataset rules](../../data/datasets/README.md#adding-a-dataset), including source revision/checksum, channel definitions and units, clock origin, stop/drainage convention, missingness, uncertainty and reuse basis. No new numerical parameter values, calibration claims or solver release result from this source audit.
+An admitted source needs a metadata sidecar under the [dataset rules](../../data/datasets/README.md#adding-a-dataset), including source revision/checksum, channel definitions and units, clock origin, stop/drainage convention, missingness, uncertainty and reuse basis. The 0.4.0 tooling automates source qualification and conditional comparisons; it supplies no new fitted parameter values or validation claims.

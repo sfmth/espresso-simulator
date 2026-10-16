@@ -50,6 +50,7 @@ Shell sessions that haven't run the `export` line need `$HOME/.cargo/bin` on `PA
 | Regenerate the kernel verification report | `.venv/bin/puckworks-tools verify` |
 | Check that all versions agree | `.venv/bin/puckworks-tools check-versions` |
 | Run the Python tests | `.venv/bin/pytest python/tests` |
+| Compare the original community shots locally | `.venv/bin/puckworks-tools community --archive /path/to/shotfiles_Mar2_2021.zip --log /path/to/measurement-log.csv` ([source downloads and assumptions](python/README.md#reproduce-the-community-comparison)) |
 | Start the web dev server | `cd web && npm run dev` |
 | Run the web checks | `cd web && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build && npm run licenses` |
 | Run the browser end-to-end test (uses the installed Google Chrome) | `cd web && npm run e2e` |
