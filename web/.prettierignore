@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+dist/
+coverage/
+test-results/
+playwright-report/
+node_modules/
+src/engine/pkg/
+package-lock.json

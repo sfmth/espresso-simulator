@@ -1,0 +1,390 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  Bed geometry, densities, porosity, tortuosity and heterogeneity (bed builder P; hydraulics H).
+  Transcribed from research note 01 §3.4–§3.6, §4.2, §4.4, §5.1, §6 and §8, and note 03 §1.1 and
+  Implications B. Bulk density, skeletal density and the two porosities are linked (see
+  bed.porosity.total): sample at most three of them and derive the rest.
+
+parameters:
+  # -- Geometry ---------------------------------------------------------------------
+  - id: bed.basket.area_58mm
+    name: Bed cross-section, 58 mm basket
+    symbol: A
+    description: Cross-sectional area of the coffee bed in a basket of 58 mm inner diameter.
+    units: "m^2"
+    value: 2.64e-3
+    range: {min: 0}
+    relation:
+      formula: "A = π d²/4 with d = 58 mm, = 2.64×10⁻³ m²"
+    conditions: 58 mm IMS precision basket, as used by Waszkiewicz 2026.
+    tag: derived
+    evidence_grade: A
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+    research_note_ref: "01 §8"
+    used_by: [P, H]
+    comment: Geometric area quoted in note 01 (Conventions and §8) and note 03 §4.
+    status: draft
+
+  - id: bed.height.waszkiewicz_18g5
+    name: Puck height, 18.5 g in a 58 mm basket
+    symbol: L
+    description: Height of a dry, tamped bed of 18.5 g in a 58 mm basket.
+    units: mm
+    value: 14
+    range: {min: 0}
+    conditions: 18.5 g dose, 58 mm IMS basket, 20 kg tamp, WDT (Waszkiewicz 2026).
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+    research_note_ref: "01 §8"
+    used_by: [P, H]
+    status: draft
+
+  - id: bed.height.grudeva2026
+    name: Bed height in the Grudeva et al. 2026 parameter set
+    symbol: L
+    description: Bed height listed in the parameter table of the Grudeva, Moroney & Foster model.
+    units: mm
+    value: 8.4
+    range: {min: 0}
+    tag: measured
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: ["01 §3.5", "01 §4.4"]
+    used_by: [P, H]
+    comment: >-
+      Part of the Grudeva literature set (2-class mode). Listed as measured, but the dose and basket are
+      not given: in a 58 mm basket with a 20 g dose it would imply ~900 kg/m³, about twice measured bulk
+      densities [derived, 01 §4.4]. Check bed height before reusing this geometry.
+    status: draft
+
+  # -- Densities and porosity ----------------------------------------------------------
+  - id: bed.density.skeletal
+    name: Skeletal (solid) density of coffee particles
+    symbol: ρ_s
+    description: Density of the solid coffee matrix, excluding intraparticle pores.
+    units: "kg/m^3"
+    prior: {distribution: uniform, min: 1304, max: 1400}
+    range: {min: 1000, max: 1600}
+    conditions: He pycnometry on fine grinds (1337–1348 kg/m³); model inputs (1400 and 1304 kg/m³).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+      - citation: "Moroney K.M., O'Connell K., Meikle-Janney P., O'Brien S.B.G., Walker G.M., Lee W.T. (2019) Analysing extraction uniformity from porous coffee beds. PLoS ONE 14:e0219906."
+        doi: "10.1371/journal.pone.0219906"
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: ["01 §4.4", "03 §1.1"]
+    used_by: [B, P, H]
+    licence_note: "Corrochano 2017 thesis: open access, copyright retained; values used with citation, thesis not redistributed (PLAN §11)."
+    comment: >-
+      1337–1348 kg/m³ by He pycnometry and 1400 kg/m³ in Moroney 2019 (note 01 grades the row A / B);
+      1304 kg/m³ "solid matrix density" in note 03 §1.1, whose row cites Corrochano (C) and Vaca Guerra
+      2024 (A). Grade: the weakest of these (C). PLAN §7.3 B uses ~1300–1400 kg/m³.
+    status: draft
+
+  - id: bed.density.bulk
+    name: Puck bulk density
+    symbol: ρ_bed
+    description: Dry mass of coffee per bed volume after tamping.
+    units: "kg/m^3"
+    value: 500
+    prior: {distribution: uniform, min: 360, max: 500}
+    range: {min: 0}
+    relation:
+      derived_from: [bed.basket.area_58mm, bed.height.waszkiewicz_18g5]
+      formula: "ρ_bed = M/(A L) = 18.5 g / (2.64×10⁻³ m² × 14 mm) ≈ 500 kg/m³"
+    conditions: >-
+      Permeameter beds 360–480 kg/m³ (Corrochano); 18.5 g in a 58 mm basket filled to 14 mm gives
+      ≈500 kg/m³ (Waszkiewicz).
+    tag: derived
+    evidence_grade: A
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+      - citation: "Corrochano B.R., Melrose J.R., Bentley A.C., Fryer P.J., Bakalis S. (2015) A new methodology to estimate the steady-state permeability of roast and ground coffee in packed beds. J. Food Eng. 150:106–116."
+        doi: "10.1016/j.jfoodeng.2014.11.006"
+    research_note_ref: "01 §4.4"
+    used_by: [P, H]
+    comment: >-
+      The value ≈500 kg/m³ is derived in note 01 (row graded "A / derived"); 360–480 kg/m³ is the
+      permeameter range (A). PLAN §7.3 P uses ~360–500 kg/m³. In the model, bulk density follows from
+      dose, basket and bed height.
+    status: draft
+
+  - id: bed.porosity.total
+    name: Total porosity of the puck
+    symbol: ε_total
+    description: Intergranular plus intraparticle pore volume per bed volume.
+    units: "1"
+    prior: {distribution: uniform, min: 0.63, max: 0.64}
+    range: {min: 0.01, max: 0.95}
+    relation:
+      derived_from: [bed.density.bulk, bed.density.skeletal]
+      formula: "ε_total = 1 − ρ_bed/ρ_s, which must also equal ε + (1 − ε)·ε_p"
+    conditions: Reference value at ρ_bed ≈ 500 kg/m³ with ρ_s = 1337–1400 kg/m³ (note 01's inputs).
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §4.4"
+    used_by: [P, H, X]
+    comment: >-
+      Compute it from ρ_bed and ρ_s; do not sample it. 0.63–0.64 holds only at 500 kg/m³: over the full
+      priors, 1 − ρ_bed/ρ_s spans 0.62–0.74 (ρ_bed 360–500, ρ_s 1304–1400) and ε + (1 − ε)ε_p spans
+      0.42–0.75 (ε 0.10–0.29, ε_p 0.35–0.65) [both derived here]. Because the four quantities are linked,
+      sample at most three of them and derive the fourth (bed.porosity.intergranular gives the inverse
+      relation). Note 01 calls the total well constrained, unlike its split. Grade: weakest input
+      (skeletal density, C).
+    status: draft
+
+  - id: bed.porosity.intergranular
+    name: Intergranular (bed) porosity
+    symbol: ε
+    description: Pore volume between particles per bed volume.
+    units: "1"
+    value: 0.17
+    prior: {distribution: triangular, min: 0.10, mode: 0.17, max: 0.29}
+    range: {min: 0.05, max: 0.45}
+    relation:
+      derived_from: [bed.porosity.total, bed.porosity.intraparticle]
+      formula: "ε = (ε_total − ε_p)/(1 − ε_p)"
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §4.4"
+    used_by: [P, H, X]
+    comment: >-
+      Note 01 §8: 0.10–0.29, 0.17 common. 0.17 is Cameron's (1 − f_s with f_s = 0.8272 from Moroney's
+      thesis, bed.solid_fraction.cameron2020); 0.10–0.20 Grudeva; 0.21–0.26 dry initial state (Vaca Guerra
+      2024); 0.10–0.29 at 480 kg/m³ for an assumed ε_p of 0.60–0.50 (Corrochano 2017). The split from
+      intraparticle porosity is poorly constrained and is a calibration target (PLAN §7.3 P); derive it
+      from the total and ε_p (relation) rather than sampling all three. No grade in the note; thesis (C)
+      is the weakest source.
+    status: draft
+
+  - id: bed.porosity.intraparticle
+    name: Intraparticle porosity
+    symbol: ε_p
+    description: Pore volume inside particles per particle volume.
+    units: "1"
+    prior: {distribution: uniform, min: 0.35, max: 0.65}
+    range: {min: 0.25, max: 0.7}
+    conditions: Hg porosimetry and He pycnometry.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+      - citation: "Moroney K.M., O'Connell K., Meikle-Janney P., O'Brien S.B.G., Walker G.M., Lee W.T. (2019) Analysing extraction uniformity from porous coffee beds. PLoS ONE 14:e0219906."
+        doi: "10.1371/journal.pone.0219906"
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+      - citation: "Schenker S., Handschin S., Frey B., Perren R., Escher F. (2000) Pore structure of coffee beans affected by roasting conditions. J. Food Sci. 65:452–457."
+        doi: "10.1111/j.1365-2621.2000.tb16026.x"
+        locator: "via Grudeva 2026"
+    research_note_ref: "01 §4.4"
+    used_by: [B, P, X]
+    comment: >-
+      0.50–0.65 overall and 0.50–0.57 for espresso grinds (Hg + He, Corrochano); 0.56 (Moroney 2019);
+      0.47 (Hg, Vaca Guerra 2024); 0.35–0.55 for boulders (Schenker 2000, via Grudeva, whose model treats
+      boulders as porous). Note 01 §8 summarises 0.47–0.65; the prior also covers Schenker's values. The
+      note grades the row A.
+    status: draft
+
+  - id: bed.solid_fraction.cameron2020
+    name: Volume fraction of grounds in the bed (Cameron 2020)
+    symbol: f_s
+    description: Volume fraction of the bed occupied by coffee grounds, as used by Cameron et al. 2020.
+    units: "1"
+    value: 0.8272
+    range: {min: 0, max: 1}
+    relation:
+      formula: "ε = 1 − f_s = 0.1728, Cameron's bed porosity of about 0.17 (bed.porosity.intergranular)"
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+        locator: "from Moroney's thesis"
+    research_note_ref: "01 §3.4"
+    used_by: [P, H, X]
+    comment: >-
+      Part of the Cameron literature set (2-class mode). Model input taken from Moroney's thesis, hence
+      grade C. Cameron derives the bed height from f_s and a grounds density in its unread SI; if that
+      density is close to the solid density, the computed height is about half the real puck height
+      (01 §4.4).
+    status: draft
+
+  - id: bed.fines_volume_fraction.grudeva2026
+    name: Bed volume fraction of fines (Grudeva 2026)
+    symbol: φ_f
+    description: Volume fraction of the bed occupied by fines in the Grudeva, Moroney & Foster model.
+    units: "1"
+    prior: {distribution: uniform, min: 0.10, max: 0.25}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [P, X]
+    comment: >-
+      Part of the Grudeva literature set. A bed volume fraction, not the PSD fines share (psd.fines_fraction.*).
+    status: draft
+
+  - id: bed.liquid_volume_fraction.grudeva2026
+    name: Bed volume fraction of liquid (Grudeva 2026)
+    symbol: φ_l
+    description: Volume fraction of the bed occupied by intergranular liquid in the Grudeva, Moroney & Foster model.
+    units: "1"
+    prior: {distribution: uniform, min: 0.1, max: 0.2}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [P, H, X]
+    comment: >-
+      Part of the Grudeva literature set; corresponds to the intergranular porosity ε. The wetting front
+      fills φ_T = φ_l + φ_b φ_lb with boulder porosity φ_lb = 0.35–0.55 (01 §3.5).
+    status: draft
+
+  # -- Tortuosity --------------------------------------------------------------------
+  - id: bed.tortuosity.bed
+    name: Bed tortuosity
+    symbol: τ
+    description: Tortuosity of the intergranular pore space of the bed.
+    units: "1"
+    value: 1.80
+    prior: {distribution: uniform, min: 1.56, max: 1.91}
+    range: {min: 1}
+    relation:
+      formula: "τ = ε^(−n): τ = 1.80 at ε = 0.17 gives n ≈ 0.33; Corrochano's best Kozeny–Carman fit used n = 0.5 (01 §4.2)"
+    conditions: μCT-reconstructed sub-volumes of capsule powders with SPH flow simulation; τ = 1.80 at ε = 0.17.
+    tag: measured
+    evidence_grade: B
+    sources:
+      - citation: "Mo C., Johnston R., Navarini L., Suggi Liverani F., Ellero M. (2023) Exploring the link between coffee matrix microstructure and flow properties using combined X-ray microtomography and smoothed particle hydrodynamics simulations. Sci. Rep. 13:16374."
+        doi: "10.1038/s41598-023-42380-y"
+    research_note_ref: ["01 §4.2", "01 §8"]
+    used_by: [H]
+    comment: Note 01 grades Mo 2023's μCT + SPH results B (§4.3). The porosity threshold was set to 0.17 by assumption.
+    status: draft
+
+  - id: bed.tortuosity.particle
+    name: Particle (intragranular) tortuosity
+    symbol: τ_p
+    description: Tortuosity of the pore network inside coffee particles.
+    units: "1"
+    prior: {distribution: uniform, min: 3, max: 7}
+    range: {min: 1}
+    conditions: Hg porosimetry.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: ["01 §5.1", "01 §8"]
+    used_by: [X]
+    comment: Enters the hindrance factor HF ≈ τ_p/ε_p (extraction.hindrance_factor.microstructural). No grade in the note; thesis (C).
+    status: draft
+
+  # -- Heterogeneity -------------------------------------------------------------------
+  - id: bed.heterogeneity.two_path_delta_lee2023
+    name: Porosity offset of the two-pathway model (Lee 2023)
+    symbol: δ
+    description: >-
+      Half-difference of the initial porosities of two parallel pathways, ε₁,₂ = ε₀ ± δ, fitted to
+      Cameron's EY-versus-grind data.
+    units: "1"
+    value: 0.035
+    range: {min: 0, max: 1}
+    conditions: Lee 2023 two-pathway model with ε₀ = 0.173, c_sat = 212.4 kg/m³, EY_max = 33.8%.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Lee W.T., Smith A., Arshad A. (2023) Uneven extraction in coffee brewing. Phys. Fluids 35:054110."
+        doi: "10.1063/5.0138998"
+    research_note_ref: "01 §3.6"
+    used_by: [P, H, X]
+    comment: >-
+      Fitted together with λ/D = 1.25×10⁵ s/m; the fit needed a doubled, "unphysical" ρ_c (798 instead of
+      399 kg/m³). The extraction–permeability instability exists at all grind sizes and reproduces the
+      EY peak (01 §3.6).
+    status: draft
+
+  - id: bed.heterogeneity.edge_centre_ey_ratio.stock
+    name: Edge-to-centre extraction ratio, stock screen and basket
+    description: Extraction yield of the puck edge divided by that of its centre, from cored pucks, with a stock shower screen and basket.
+    units: "1"
+    prior: {distribution: uniform, min: 0.52, max: 0.68}
+    range: {min: 0}
+    relation:
+      formula: "EY_edge/EY_centre from radially cored pucks, e.g. 13%/25% = 0.52 without a bottom paper (Ribes 2020; 01 §6)"
+    conditions: Decent DE1, VST 15 g basket, EK43; single operator.
+    tag: derived
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2020) Radial uniformity of espresso extractions (paper below puck; tamper base). Decent public Basecamp."
+        url: "https://public.3.basecamp.com/p/9vnWSmKqDokidAMuEcUvKYf8"
+      - citation: "Ribes S. (2021) Effects of a puck screen on extraction. decentespresso.com."
+        url: "https://www.decentespresso.com/docs/effects_of_a_puck_screen_on_extraction"
+    research_note_ref: ["03 Implications B", "01 §6"]
+    used_by: [P]
+    comment: >-
+      Derived in note 03 from community coring data: centre 25%, middle 23%, edge 13% (mean 21%); edge
+      16–17% without a puck screen (Ribes 2021). Classical wall channeling would over-extract edges; the
+      under-extraction is attributed (untested) to flow focusing by the basket and hole pattern (01 §6).
+      Calibration target for the edge annulus.
+    status: draft
+
+  - id: bed.heterogeneity.edge_centre_ey_ratio.paper_or_screen
+    name: Edge-to-centre extraction ratio, with bottom paper or contact screen
+    description: Extraction yield of the puck edge divided by that of its centre, from cored pucks, with a paper filter below the puck or a contact (puck) screen.
+    units: "1"
+    prior: {distribution: uniform, min: 0.85, max: 0.92}
+    range: {min: 0}
+    relation:
+      formula: "EY_edge/EY_centre from radially cored pucks, e.g. 22%/25% = 0.88 with a bottom paper (Ribes 2020; 01 §6)"
+    conditions: Decent DE1, VST and Pullman baskets; single operator.
+    tag: derived
+    evidence_grade: D
+    sources:
+      - citation: "Ribes S. (2020) Radial uniformity of espresso extractions (paper below puck; tamper base). Decent public Basecamp."
+        url: "https://public.3.basecamp.com/p/9vnWSmKqDokidAMuEcUvKYf8"
+      - citation: "Ribes S. (2021) Effects of a puck screen on extraction. decentespresso.com."
+        url: "https://www.decentespresso.com/docs/effects_of_a_puck_screen_on_extraction"
+    research_note_ref: ["03 Implications B", "01 §6"]
+    used_by: [P]
+    comment: >-
+      Derived in note 03: with a bottom paper 25/24/22% across the radius (mean 24%); with a puck screen
+      the edge rose from 16–17% to 22–23% (Ribes 2021). Modern baskets gained only +0.4 EY points from a
+      screen (Hedrick 2023 via Gagné; 03 §4), so the effect is basket-dependent.
+    status: draft

@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+[package]
+name = "puckcore-py"
+description = "Python bindings for the Puckworks numerical core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lib]
+# The Python module is called `puckcore` (set in src/lib.rs and pyproject.toml);
+# the Rust library name differs so it doesn't clash with the core crate.
+name = "puckcore_py"
+crate-type = ["cdylib"]
+
+[dependencies]
+puckcore.workspace = true
+puckmodel.workspace = true
+pyo3.workspace = true
+
+[features]
+# Enabled by maturin (pyproject.toml) when building the extension module.
+extension-module = ["pyo3/extension-module"]

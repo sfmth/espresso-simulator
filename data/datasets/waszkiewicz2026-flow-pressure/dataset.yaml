@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for longtime.csv. The data come from the authors' CC BY 4.0 Zenodo archive (see
+# `licence`); this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: waszkiewicz2026-flow-pressure
+title: >-
+  Long-time (100 s) espresso flow rate versus basket pressure at 11 pressures, the basis of the
+  poroelastic saturation law Q/Q_c = 1 − (1 − P/P_c)⁴ (Waszkiewicz et al. 2026, Fig. 6)
+citation: >-
+  Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M.
+  (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113.
+  Data: Zenodo, v1.0.1, doi:10.5281/zenodo.18046315.
+doi: "10.5281/zenodo.18046315"
+url: "https://github.com/RadostW/espresso"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-14"
+research_note_ref: ["01 §3.7", "01 §9"]
+
+obtained: >-
+  Converted by script (python/puckworks_tools/sources/waszkiewicz2026.py): the last point (t = 100 s)
+  of each pressure group of formatted_measurements/time_dependent.csv in the Zenodo archive
+  (sha256 40e76f43e1584912b55afcc4f15c28b797bf3ac6c3c380765b408cddd33d9fe9), exactly the points the
+  authors' fit_model_static_flow_rate.py fits. Refitting their equation to these rows reproduces their
+  fit_parameters/static_model_calibration.csv (P_c = 12.39 ± 2.98 bar, Q_c = 1.897 ± 0.147 g/s).
+
+uncertainty: >-
+  Transcription: none. Statistical: standard errors of the mean across the runs of each group, as
+  computed by the authors; the flow is the Savitzky–Golay-smoothed derivative of the cup mass (window
+  ≈3 s). The article describes the long-time flow as "the average value from the last 10 s of each
+  run"; the published code uses the value at 100 s of the averaged, smoothed series, which is what is
+  stored here. Basket pressure carries the uncertainty of the group pressure-drop calibration (fit of a
+  quadratic in Q to four calibration series; residual scatter about 0.1–0.2 bar in the article's Fig. 3).
+
+columns:
+  - name: pressure_group_bar
+    type: number
+    units: bar
+    description: Pressure group (median pump pressure rounded to 0.5 bar by the authors).
+  - name: n_runs
+    type: integer
+    description: Number of runs averaged.
+  - name: time_s
+    type: number
+    units: s
+    description: Time of the value (end of the 100 s analysis window).
+  - name: pump_pressure_bar
+    type: number
+    units: bar
+    description: Mean pump-outlet pressure at that time.
+  - name: basket_pressure_bar
+    type: number
+    units: bar
+    description: Mean basket pressure (pump pressure minus the group's pressure drop).
+  - name: basket_pressure_sem_bar
+    type: number
+    units: bar
+    description: Standard error of the mean basket pressure.
+  - name: flow_g_s
+    type: number
+    units: g/s
+    description: Mean long-time mass flow rate.
+  - name: flow_sem_g_s
+    type: number
+    units: g/s
+    description: Standard error of the mean flow rate.
+
+files:
+  - path: longtime.csv
+    format: csv
+    description: 11 rows, one per pressure group.
+
+notes: >-
+  The authors' fit Q = Q_c·P̂(4 − 6P̂ + 4P̂² − P̂³), P̂ = P/P_c, the Φ → 0 limit of their poroelastic
+  model (article Eq. 16), gives Q_c = 1.90 ± 0.15 g/s and P_c = 12 ± 3 bar (registry
+  hydraulics.poroelastic.critical_flow and .critical_pressure). The fitted P_c sits on the lower bound
+  of the authors' fit (P_c ≥ the largest measured pressure, 12.39 bar), so its standard error is only
+  indicative. The measured flow peaks near 4.5 bar (2.06 g/s) and falls to 1.59 g/s at 12.4 bar, a
+  decline the saturating law cannot follow. Conditions as in waszkiewicz2026-flow-transient.
+  Attribution: cite the article and the Zenodo record.

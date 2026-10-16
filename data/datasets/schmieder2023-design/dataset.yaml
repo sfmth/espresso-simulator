@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for design.csv. The data come from the CC BY 4.0 article cited below (see `licence`);
+# this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: schmieder2023-design
+title: >-
+  Set and measured conditions of the 15 experiments of the Schmieder et al. (2023) espresso design:
+  flow rate, grinding level, temperature and pressure (Tables 1 and 2)
+citation: >-
+  Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of
+  flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12(15):2871.
+  Tables 1 and 2.
+doi: "10.3390/foods12152871"
+url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10418593/"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-14"
+research_note_ref: ["01 §9", "02 §3.1"]
+
+obtained: >-
+  Parsed by script (python/puckworks_tools/sources/schmieder2023.py) from the HTML tables of the
+  article page on PMC (PMC10418593, saved 2026-10-14, sha256
+  d110be83bc74c4699d05dbedafbe9898e946967b77df44355edf627cc6052c30): Table 1 (design: set flow,
+  grinding level, temperature, replicates) and the condition columns of Table 2 (measured flow,
+  temperature and pressure with their relative standard deviations). Values as printed.
+
+uncertainty: >-
+  Transcription: none (parsed by script; spot-checked against the PDF). Statistical: the RSD columns
+  are the relative standard deviations across replicates printed in Table 2 (3 shots, 6 at the centre
+  point). Measured values are rounded in print to 0.1 mL/s, 0.1 °C and 0.1 bar.
+
+columns:
+  - name: experiment
+    type: integer
+    description: Experiment number, 1–15.
+  - name: design_point
+    type: string
+    description: "Place in the face-centred central composite design: axis, centre or corner."
+  - name: replicates
+    type: integer
+    description: Number of replicate shots.
+  - name: flow_set_ml_s
+    type: number
+    units: mL/s
+    description: Set flow rate of the extraction phase (flow control on the DE1).
+  - name: grind_level
+    type: number
+    units: "1"
+    description: Mahlkönig E65S grinding level.
+  - name: temp_set_c
+    type: number
+    units: degC
+    description: Set water temperature (preinfusion and extraction).
+  - name: flow_measured_ml_s
+    type: number
+    units: mL/s
+    description: Mean measured flow rate (from the scale).
+  - name: flow_rsd_percent
+    type: number
+    units: "%"
+    description: Relative standard deviation of the measured flow across replicates.
+  - name: temp_measured_c
+    type: number
+    units: degC
+    description: Mean brew temperature measured by the DE1 above the puck.
+  - name: temp_rsd_percent
+    type: number
+    units: "%"
+    description: Relative standard deviation of the measured temperature.
+  - name: pressure_bar
+    type: number
+    units: bar
+    description: >-
+      Mean over replicates of each shot's maximum brew pressure, measured by the DE1 between boiler
+      and portafilter (see notes).
+  - name: pressure_rsd_percent
+    type: number
+    units: "%"
+    description: Relative standard deviation of the pressure across replicates.
+
+files:
+  - path: design.csv
+    format: csv
+    description: 15 rows, one per experiment.
+
+notes: >-
+  Machine program (article §2.5): flow control on a Decent DE1 Pro; preinfusion at 7 mL/s and the set
+  temperature until the basket was full and the pressure exceeded 2.5 bar, then the set flow until the
+  sampling wheel had collected ten fractions (average 58.1 g). Measured flows averaged 0.96 (SD 0.1),
+  1.9 (SD 0.0) and 2.8 (SD 0.1) mL/s for set flows of 1, 2 and 3 mL/s; temperatures 79.1, 88.2 and
+  96.5 °C (SD 0.5) for 80, 89 and 98 °C. Dose 20 g; IMS BT702Th26.5M basket; E65S grinding levels with
+  wet-measured De Brouckere diameters D[4,3] of 273, 277 and 295 µm and Sauter diameters of 28.3,
+  26.9 and 29.2 µm (GL 1.4, 1.7, 2.0; registry psd.grinder.e65s.*). The pressure column equals the mean
+  of the per-shot maxima in Table S3 (schmieder2023-replicates), checked by script, so it is a peak
+  pressure; the article's discussion quotes 3.8, 7.4 and 9.3 bar for GL 2.0, 1.7 and 1.4, which are
+  not per-experiment values. Attribution: cite the article above when redistributing (CC BY 4.0).

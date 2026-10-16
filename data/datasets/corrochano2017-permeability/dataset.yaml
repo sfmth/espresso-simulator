@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for permeability.csv. The numbers are facts cited from a copyrighted thesis (see
+# `licence`); this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: corrochano2017-permeability
+title: >-
+  Steady-state permeability of extracted coffee beds for four espresso grinds at three initial bed
+  densities, 80 °C (Roman Corrochano 2017, Table 6.1)
+citation: >-
+  Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis,
+  University of Birmingham. Table 6.1 and Section 6.2. See also Corrochano B.R., Melrose J.R.,
+  Bentley A.C., Fryer P.J., Bakalis S. (2015) J. Food Eng. 150:106–116.
+url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+doi: "10.1016/j.jfoodeng.2014.11.006"
+licence: facts-cited
+redistribution: cite-only
+retrieved: "2026-10-14"
+research_note_ref: ["01 §4.3", "01 §4.5", "01 §9"]
+
+obtained: >-
+  Transcribed by hand from Table 6.1 of the thesis PDF (etheses.bham.ac.uk eprint 7176,
+  Roman-Corrochano17EngD.pdf, sha256 f131d9893e2ac78ce0664d5528beac4be51a02cf1ae684e41920fbc6cadc8818),
+  checked against the PDF text layer. Doses from §6.2.2 (7.2, 8.0 and 9.5 g in the 20 cm³ cell).
+
+uncertainty: >-
+  Transcription: none expected. Statistical: `permeability_pm_m2` is the ± printed in Table 6.1, the
+  spread of three independent beds (the thesis does not say whether it is an SD); `tukey_group` gives
+  the Tukey test groups (α = 0.05): values sharing a letter do not differ significantly. Each
+  permeability is the Darcy slope of the last 30 s of 60 s flow runs (R² > 0.97) at 0.5–4.5 bar,
+  computed with the consolidated (steady-state) bed length.
+
+columns:
+  - name: grind
+    type: string
+    description: Grind ΨB–ΨE (disc grinder, Blend 1); PSD parameters in corrochano2017-psd.
+  - name: bed_density_kg_m3
+    type: number
+    units: kg/m^3
+    description: Initial (dry, packed) bulk density of the bed.
+  - name: dose_g
+    type: number
+    units: g
+    description: Dry coffee packed into the 20 cm³ cell.
+  - name: permeability_m2
+    type: number
+    units: m^2
+    description: Steady-state permeability of the extracted, consolidated bed from Darcy's law.
+  - name: permeability_pm_m2
+    type: number
+    units: m^2
+    description: The ± printed with the permeability (three independent beds).
+  - name: tukey_group
+    type: string
+    description: Tukey significance letters as printed.
+
+files:
+  - path: permeability.csv
+    format: csv
+    description: 12 rows, 4 grinds × 3 densities.
+
+notes: >-
+  Rig (§6.2): beds hydrated and extracted for 10 min at 80 °C in a brewing chamber of diameter:length
+  2:1 (cross-section 1.1×10⁻³ m², volume 20 cm³), until the extract was almost colourless, so the
+  values describe extracted beds. Beds consolidated under flow by 0% (ΨE at 480 kg/m³) to 31% (ΨB at
+  360 kg/m³), mostly within the first 20–30 s. The permeabilities, 2.6×10⁻¹⁴ to 4.4×10⁻¹³ m², are 10–100
+  times the in-shot espresso values (research note 01 §4.3), so Puckworks uses them only for relative
+  closures: the change of permeability with bed density and grind (validation V6). A ~30% density
+  increase cuts κ 3–4 times; ΨE at 400 kg/m³ exceeds its 360 kg/m³ value. Facts only: the thesis is
+  copyright of its author (no redistribution); cite it.

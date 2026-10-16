@@ -1,0 +1,129 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for replicates.csv. The data come from the CC BY 4.0 supplement of the article cited
+# below (see `licence`); this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: schmieder2023-replicates
+title: >-
+  Measured flow, temperature and maximum pressure, and component masses in the cup at 20, 40 and
+  60 g, for each shot of the Schmieder et al. (2023) design (Table S3)
+citation: >-
+  Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of
+  flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12(15):2871.
+  Supplementary Table S3 (TableS3_ComponentMassInCup_SingleExperiments.xlsx).
+doi: "10.3390/foods12152871"
+url: "https://www.mdpi.com/2304-8158/12/15/2871"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-14"
+research_note_ref: ["01 §9", "02 §3.1"]
+
+obtained: >-
+  Converted by script (python/puckworks_tools/sources/schmieder2023.py) from the workbook
+  TableS3_ComponentMassInCup_SingleExperiments.xlsx (sha256
+  10034d2ec01adbd56fccf83301b37607cbdb394f33f54513952f6639f6d8ca0d) of the supplementary archive
+  foods-12-02871-s001.zip (Europe PMC supplementary files of PMC10418593, retrieved 2026-10-14):
+  the 48 shot rows of sheet "Mass in cup_Single Runs", stored values without rounding. The cup
+  concentrations in the same sheet (masses divided by 20, 40 or 60 g) and the summary rows are not
+  copied.
+
+uncertainty: >-
+  Transcription: none (copied by script). The cup masses are not measured directly: the authors
+  computed them per shot as the first fraction's mass times its concentration plus the integral of
+  the fitted exponential c0·exp(−m/λ) up to 20, 40 or 60 g (the article's Eq. 3), so they inherit the
+  fit's error (Table S2 of the supplement gives each shot's fit with standard errors; mean
+  replicate RSD about 2%). Flow is from the scale's time-stamped masses; temperature and pressure are
+  the DE1's own readings (temperature just above the puck; pressure between boiler and portafilter).
+
+columns:
+  - name: experiment
+    type: integer
+    description: Experiment number of the design (schmieder2023-design).
+  - name: replicate
+    type: integer
+    description: Replicate shot, 1–3 (1–6 for experiment 7).
+  - name: flow_set_ml_s
+    type: number
+    units: mL/s
+    description: Set flow rate of the extraction phase.
+  - name: flow_measured_ml_s
+    type: number
+    units: mL/s
+    description: Flow rate from the scale's time-stamped beverage masses ("Scale flow").
+  - name: grind_level
+    type: number
+    units: "1"
+    description: Mahlkönig E65S grinding level (dial setting).
+  - name: temp_set_c
+    type: number
+    units: degC
+    description: Set water temperature.
+  - name: temp_measured_c
+    type: number
+    units: degC
+    description: Brew temperature measured by the DE1 just above the puck ("Decent Temp").
+  - name: pressure_max_bar
+    type: number
+    units: bar
+    description: Highest brew pressure of the shot, measured by the DE1 between boiler and portafilter.
+  - name: trigonelline_mg_20g
+    type: number
+    units: mg
+    description: Trigonelline mass in a 20 g cup (brew ratio 1:1).
+  - name: trigonelline_mg_40g
+    type: number
+    units: mg
+    description: Trigonelline mass in a 40 g cup (1:2).
+  - name: trigonelline_mg_60g
+    type: number
+    units: mg
+    description: Trigonelline mass in a 60 g cup (1:3).
+  - name: caffeine_mg_20g
+    type: number
+    units: mg
+    description: Caffeine mass in a 20 g cup.
+  - name: caffeine_mg_40g
+    type: number
+    units: mg
+    description: Caffeine mass in a 40 g cup.
+  - name: caffeine_mg_60g
+    type: number
+    units: mg
+    description: Caffeine mass in a 60 g cup.
+  - name: cqa5_mg_20g
+    type: number
+    units: mg
+    description: 5-CQA mass in a 20 g cup.
+  - name: cqa5_mg_40g
+    type: number
+    units: mg
+    description: 5-CQA mass in a 40 g cup.
+  - name: cqa5_mg_60g
+    type: number
+    units: mg
+    description: 5-CQA mass in a 60 g cup.
+  - name: tds_g_20g
+    type: number
+    units: g
+    description: Dissolved solids in a 20 g cup.
+  - name: tds_g_40g
+    type: number
+    units: g
+    description: Dissolved solids in a 40 g cup.
+  - name: tds_g_60g
+    type: number
+    units: g
+    description: Dissolved solids in a 60 g cup.
+
+files:
+  - path: replicates.csv
+    format: csv
+    description: 48 rows, one per shot.
+
+notes: >-
+  Cross-checks (by script): the per-experiment means of flow_measured_ml_s, temp_measured_c and
+  pressure_max_bar reproduce the measured flow, temperature and pressure columns of the article's
+  Table 2 (schmieder2023-design) to the printed precision. Table 2's "Pressure" is therefore the mean
+  of the per-shot maximum pressures, not a mean brew pressure. The source spells 5-CQA "5-CAQ" in this
+  sheet. Licence: the supplementary archive is distributed with the CC BY 4.0 article (Europe PMC
+  lists PMC10418593, with its supplementary files, as open access under CC BY); no separate licence
+  is stated for the supplement. Attribution: cite the article above when redistributing.

@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for ey_grind.csv. The numbers are facts read from a copyrighted article and its
+# supplement (see `licence`); this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: cameron2020-ey-grind
+title: >-
+  Extraction yield and shot time versus Mahlkönig EK43 grind setting at 6 bar, 20 g in, 40 g out
+  (Cameron et al. 2020, Fig. 4 and Table S3)
+citation: >-
+  Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T.,
+  Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling
+  and experiment. Matter 2:631–648. Figure 4; Supplemental Information Table S3. Accepted manuscript:
+  OSTI 1973594.
+doi: "10.1016/j.matt.2019.12.019"
+url: "https://www.osti.gov/biblio/1973594"
+licence: facts-cited
+redistribution: cite-only
+retrieved: "2026-10-14"
+research_note_ref: ["01 §9", "01 §6", "01 §3.4"]
+
+obtained: >-
+  shot_time_s: transcribed from Table S3 of the Supplemental Information (mmc1.pdf, sha256
+  37530ec8c450c6fe5b231a7d4e3b65347555454b366ed4730ec106a4fb56775f), where the authors tabulate the
+  shot times of Fig. 4A. All other columns: read from the vector graphics of Fig. 4 in the accepted
+  manuscript (OSTI 1973594 PDF, sha256 0fa006c50429cab73e8d53840d39d9a058718129cca62d31d9305c29d6b22673)
+  by script (python/puckworks_tools/sources/cameron2020.py): the PDF is decompressed with qpdf, the
+  page's path operators are interpreted, and the centres of the 14 circular markers and the ends of
+  their error-bar strokes are converted with the axis ticks, which are themselves vector strokes
+  (straight-line fits through 7 x ticks, and 5 and 4 y ticks including the frame bottom).
+
+uncertainty: >-
+  Reading: the axis fits have residuals below 1e-4 of a unit, but the figure itself was assembled by
+  hand: the plotted shot-time markers sit up to 0.21 s from the values the authors tabulate (Table S3
+  vs shot_time_figure_s), the markers and error bars are offset by up to 0.4 pt, and the right-axis
+  ticks of panel B are 2.4 pt (0.048 EY points) off the left-axis ticks. Take ±0.2 s for figure times
+  and ±0.05 EY points for EY and the bars. Statistical: each point is a mean of 5 shots ("subsequent
+  data were collected in pentaplicate"); the caption does not say what the error bars are (research
+  note 01 §9 reads them as SD). Shots outside 40 ± 1 g were discarded; EY used each shot's exact
+  beverage mass; TDS by refractometry.
+
+columns:
+  - name: grind_setting
+    type: number
+    units: "1"
+    description: EK43 grind setting (dial value; coarser with larger numbers).
+  - name: shot_time_s
+    type: number
+    units: s
+    description: Mean shot time to 40 g, as tabulated in Table S3.
+  - name: shot_time_figure_s
+    type: number
+    units: s
+    description: Mean shot time read from the marker centre in Fig. 4A (cross-check of Table S3).
+  - name: shot_time_bar_s
+    type: number
+    units: s
+    description: Half-length of the Fig. 4A error bar (read from the vector stroke, also where the marker hides it).
+  - name: ey_percent
+    type: number
+    units: "%"
+    description: Mean extraction yield read from the marker centre in Fig. 4B.
+  - name: ey_bar_percent
+    type: number
+    units: "%"
+    description: Half-length of the Fig. 4B error bar.
+
+files:
+  - path: ey_grind.csv
+    format: csv
+    description: 7 grind settings, 1.1 to 2.3.
+
+notes: >-
+  Conditions (Experimental Procedures and Fig. 4): San Remo Opera (pressure profiling), 6 bar water
+  pressure (9 bar choked at fine settings, Fig. S2), 92 °C, 20.0 ± 0.5 g in a "twenty gram ridge-less"
+  basket, 40.0 ± 0.5 g out, Puqpress tamp at 98 N, EK43 with coffee burrs, espresso-profile specialty
+  coffee (Supreme Roasters). The model in the article uses R0 = 29.2 mm, a solid volume fraction of
+  0.8272 and a bed depth of 18.7 mm for 20 g (Table S4), and a "pump overpressure" of 5 bar (Table S1).
+  EY peaks at GS 1.7 (23.07%) and falls on both sides; shot time falls monotonically with coarser
+  settings. Cross-check: Lee, Smith & Arshad (2023, Phys. Fluids 35:054110; arXiv:2206.12373, CC BY 4.0)
+  digitised the same figure in their ancillary file parameter_fitting.m as EY = 21.3, 22.4, 22.5, 23.0,
+  22.5, 21.5, 20.6% with the Table S3 times; their values at GS 1.3 and 1.5 are 0.45 and 0.33 points
+  above the marker centres read here, the others within 0.15. Used for validation check V3 (held out).
+  Facts only: no figure, table layout or text is reproduced; cite the article.

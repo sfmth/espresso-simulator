@@ -1,0 +1,92 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Python CI: builds the puckcore extension (maturin, through pip), installs
+# puckworks-tools, then validates the parameter registry and datasets, checks
+# that the model crate's generated presets/registry JSON is current, checks
+# versions and both golden fixtures (sphere kernel, shot API), and runs
+# pytest. Rust comes from rust-toolchain.toml. The checks after the installs
+# all run, even when an earlier check fails, so one run reports every problem.
+# matplotlib is not installed: the tests run the validation report without
+# figures.
+name: Python
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  tools:
+    name: Tools (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            python/pyproject.toml
+            crates/puckcore-py/pyproject.toml
+
+      # With no argument, rustup installs what rust-toolchain.toml pins
+      # (channel, components, targets).
+      - name: Install the pinned Rust toolchain
+        run: rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: python-${{ matrix.python-version }}
+
+      - name: Build and install the puckcore extension
+        id: core
+        run: python -m pip install ./crates/puckcore-py
+
+      - name: Install puckworks-tools
+        id: tools
+        run: python -m pip install -e "./python[dev]"
+
+      - name: Validate the parameter registry and datasets
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: puckworks-tools validate-registry
+
+      # crates/puckmodel/generated/*.json must match data/params, data/presets and
+      # data/calibration/current.yaml (regenerate with `puckworks-tools export`).
+      - name: Check the model crate's generated presets and registry
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: puckworks-tools export --check
+
+      # Needs a "## [<version>]" heading in CHANGELOG.md for the current version.
+      - name: Check versions (release)
+        if: ${{ !cancelled() && steps.core.outcome == 'success' && steps.tools.outcome == 'success' }}
+        run: puckworks-tools check-versions --release
+
+      - name: Check the golden fixture against the native build
+        if: ${{ !cancelled() && steps.core.outcome == 'success' && steps.tools.outcome == 'success' }}
+        run: puckworks-tools fixtures --check
+
+      - name: Check the golden shot fixture against the native build
+        if: ${{ !cancelled() && steps.core.outcome == 'success' && steps.tools.outcome == 'success' }}
+        run: puckworks-tools shot-fixtures --check
+
+      - name: Check the committed validation report against its JSON and the calibration
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: puckworks-tools validate --check
+
+      - name: Run the tests
+        if: ${{ !cancelled() && steps.core.outcome == 'success' && steps.tools.outcome == 'success' }}
+        run: python -m pytest python/tests

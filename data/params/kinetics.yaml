@@ -1,0 +1,198 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  Espresso extraction kinetics of the four measured species (Schmieder et al. 2023): outlet
+  concentration c(m) = c₀ exp(−m/λ) against cumulative beverage mass m, at the centre point of their
+  design, with priors spanning all 15 design conditions. Transcribed from research note 02 §3.1
+  (Table 5) and 01 §5.5; full-precision values with standard errors are in
+  data/datasets/schmieder2023-centre-point.
+
+parameters:
+  - id: kinetics.schmieder2023.lambda.trigonelline
+    name: Characteristic beverage mass of trigonelline
+    symbol: λ
+    description: Beverage mass over which the outlet concentration of trigonelline falls by a factor e.
+    units: g
+    value: 16.1
+    prior: {distribution: uniform, min: 13.1, max: 16.6}
+    range: {min: 0}
+    conditions: >-
+      Decent DE1 Pro, flow control, 20 g dose, Mahlkönig E65S. Value: design centre point (2 mL/s,
+      GL 1.7, 89 °C). Prior: all 15 conditions (1–3 mL/s, GL 1.4–2.0, 80–98 °C).
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Table A1 (Exp. 7 is the centre point)"
+    research_note_ref: "02 §3.1"
+    used_by: [X, C]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: >-
+      λ/dose = 0.80, kinetic class K1 (02 §3.2). Faster flow lowers c₀ and raises λ. Table A1 prints
+      16.08737 g at the centre point; note 02 rounds to 16.1.
+    status: draft
+
+  - id: kinetics.schmieder2023.lambda.caffeine
+    name: Characteristic beverage mass of caffeine
+    symbol: λ
+    description: Beverage mass over which the outlet concentration of caffeine falls by a factor e.
+    units: g
+    value: 23.1
+    prior: {distribution: uniform, min: 18.9, max: 24.1}
+    range: {min: 0}
+    conditions: >-
+      Decent DE1 Pro, flow control, 20 g dose, Mahlkönig E65S. Value: design centre point (2 mL/s,
+      GL 1.7, 89 °C). Prior: all 15 conditions (1–3 mL/s, GL 1.4–2.0, 80–98 °C).
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Table A1 (Exp. 7 is the centre point)"
+    research_note_ref: "02 §3.1"
+    used_by: [X, C]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: >-
+      λ/dose = 1.15, kinetic class K2 (02 §3.2); the slowest of the four, consistent with the polarity
+      ordering. Table A1 prints 23.09434 g.
+    status: draft
+
+  - id: kinetics.schmieder2023.lambda.5cqa
+    name: Characteristic beverage mass of 5-CQA
+    symbol: λ
+    description: Beverage mass over which the outlet concentration of 5-caffeoylquinic acid falls by a factor e.
+    units: g
+    value: 20.8
+    prior: {distribution: uniform, min: 17.3, max: 21.6}
+    range: {min: 0}
+    conditions: >-
+      Decent DE1 Pro, flow control, 20 g dose, Mahlkönig E65S. Value: design centre point (2 mL/s,
+      GL 1.7, 89 °C). Prior: all 15 conditions (1–3 mL/s, GL 1.4–2.0, 80–98 °C).
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Table A1 (Exp. 7 is the centre point)"
+    research_note_ref: "02 §3.1"
+    used_by: [X, C]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: λ/dose = 1.04, kinetic class K1–K2 (02 §3.2). Table A1 prints 20.77137 g.
+    status: draft
+
+  - id: kinetics.schmieder2023.lambda.tds
+    name: Characteristic beverage mass of total dissolved solids
+    symbol: λ
+    description: Beverage mass over which the outlet TDS falls by a factor e.
+    units: g
+    value: 17.5
+    prior: {distribution: uniform, min: 13.2, max: 18.4}
+    range: {min: 0}
+    conditions: >-
+      Decent DE1 Pro, flow control, 20 g dose, Mahlkönig E65S. Value: design centre point (2 mL/s,
+      GL 1.7, 89 °C). Prior: all 15 conditions (1–3 mL/s, GL 1.4–2.0, 80–98 °C).
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Table A1 (Exp. 7 is the centre point)"
+    research_note_ref: "02 §3.1"
+    used_by: [X, C]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: >-
+      λ/dose = 0.87 (02 §3.2). Note 01 §8 summarises λ as TDS 13–18 g and caffeine 19–24 g. Table A1
+      prints 17.47261 g.
+    status: draft
+
+  - id: kinetics.schmieder2023.c0.trigonelline
+    name: Initial outlet concentration of trigonelline
+    symbol: c₀
+    description: Extrapolated outlet concentration of trigonelline at zero beverage mass, per gram of beverage.
+    units: "mg/g"
+    value: 6.70
+    range: {min: 0}
+    conditions: Design centre point (2 mL/s, GL 1.7, 89 °C), 20 g dose.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Table A1 (Exp. 7)"
+    research_note_ref: "02 §3.1"
+    used_by: [X, C]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: Table A1 prints 6.69949 mg/g.
+    status: draft
+
+  - id: kinetics.schmieder2023.c0.caffeine
+    name: Initial outlet concentration of caffeine
+    symbol: c₀
+    description: Extrapolated outlet concentration of caffeine at zero beverage mass, per gram of beverage.
+    units: "mg/g"
+    value: 9.71
+    range: {min: 0}
+    conditions: Design centre point (2 mL/s, GL 1.7, 89 °C), 20 g dose.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Table A1 (Exp. 7)"
+    research_note_ref: "02 §3.1"
+    used_by: [X, C]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: Table A1 prints 9.70981 mg/g.
+    status: draft
+
+  - id: kinetics.schmieder2023.c0.5cqa
+    name: Initial outlet concentration of 5-CQA
+    symbol: c₀
+    description: Extrapolated outlet concentration of 5-caffeoylquinic acid at zero beverage mass, per gram of beverage.
+    units: "mg/g"
+    value: 6.79
+    range: {min: 0}
+    conditions: Design centre point (2 mL/s, GL 1.7, 89 °C), 20 g dose.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Table A1 (Exp. 7)"
+    research_note_ref: "02 §3.1"
+    used_by: [X, C]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: Table A1 prints 6.79246 mg/g.
+    status: draft
+
+  - id: kinetics.schmieder2023.c0.tds
+    name: Initial outlet TDS
+    symbol: c₀
+    description: Extrapolated outlet mass fraction of dissolved solids at zero beverage mass.
+    units: "g/g"
+    value: 0.248
+    prior: {distribution: uniform, min: 0.23, max: 0.31}
+    range: {min: 0, max: 1}
+    conditions: >-
+      Value: design centre point (2 mL/s, GL 1.7, 89 °C), 20 g dose. Prior: all 15 design conditions
+      (01 §5.5).
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Table A1"
+    research_note_ref: ["02 §3.1", "01 §5.5"]
+    used_by: [X, C]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: >-
+      Table A1 prints 0.24827 g/g at the centre point. In kg/m³ (extract density 1.08–1.12 g/mL, 01 §4.10)
+      the centre point is ≈268–278 and the prior ≈250–347 kg/m³ [derived], so its upper end exceeds the
+      lumped saturation cap of 210–280 kg/m³ (extraction.saturation.lumped). That is not a contradiction:
+      c₀ is the fitted intercept at zero beverage mass of an exponential decay in outlet concentration,
+      not a pore concentration, and the first drops may deviate from the exponential (the authors add the
+      first fraction separately). M1 calibration must treat c₀ and c_sat consistently, fitting c_sat to
+      outlet concentrations rather than equating it with c₀. Compare the first-drop TDS of about 25% in
+      Waszkiewicz 2026 (01 §5.5).
+    status: draft

@@ -1,0 +1,107 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Unit vocabulary for the parameter registry (data/params) and the dataset
+# sidecars (data/datasets). Every unit string used there must be a key of
+# `units` below.
+#
+# Each unit lists its SI dimension exponents over `base_dimensions` and its SI
+# scale factor: value_in_SI = scale * value + offset (offset is non-zero only
+# for degC).
+#
+# The `atoms` and `prefixes` sections let puckworks-tools re-derive each unit's
+# dimensions and scale from its spelling, so a mistake in this file is caught
+# by `puckworks-tools validate-registry`.
+#
+# Spelling rules (ASCII only):
+#   - products use "*", e.g. "mPa*s";
+#   - at most one "/", which divides everything after it, e.g. "kg/m^3";
+#   - exponents use "^" and may be negative, e.g. "m^7*kg^-2*s^-1";
+#   - "u" is the micro prefix ("um" = micrometre);
+#   - "1" is dimensionless; "%" is percent (or percentage points);
+#   - degC is an affine unit and cannot be combined with other units.
+#
+# YAML note: write floats with a decimal point and a signed exponent
+# (1.0e-3, 1.0e+5); the loader also accepts YAML 1.2 forms such as 1e-3.
+
+schema: puckworks.units/1
+
+base_dimensions: [m, kg, s, K, mol]
+
+prefixes:
+  k: 1.0e+3
+  m: 1.0e-3
+  u: 1.0e-6
+  n: 1.0e-9
+
+atoms:
+  "1":  {dims: {}, scale: 1.0}
+  "%":  {dims: {}, scale: 1.0e-2}
+  m:    {dims: {m: 1}, scale: 1.0, prefixable: true}
+  g:    {dims: {kg: 1}, scale: 1.0e-3, prefixable: true}
+  s:    {dims: {s: 1}, scale: 1.0, prefixable: true}
+  min:  {dims: {s: 1}, scale: 60.0}
+  h:    {dims: {s: 1}, scale: 3600.0}
+  d:    {dims: {s: 1}, scale: 86400.0}
+  K:    {dims: {K: 1}, scale: 1.0}
+  degC: {dims: {K: 1}, scale: 1.0, offset: 273.15}
+  mol:  {dims: {mol: 1}, scale: 1.0, prefixable: true}
+  L:    {dims: {m: 3}, scale: 1.0e-3, prefixable: true}
+  Pa:   {dims: {kg: 1, m: -1, s: -2}, scale: 1.0, prefixable: true}
+  bar:  {dims: {kg: 1, m: -1, s: -2}, scale: 1.0e+5}
+  J:    {dims: {kg: 1, m: 2, s: -2}, scale: 1.0, prefixable: true}
+
+units:
+  # Dimensionless
+  "1":     {dims: {}, scale: 1.0, description: "dimensionless"}
+  "%":     {dims: {}, scale: 1.0e-2, description: "percent, or percentage points"}
+  "g/g":   {dims: {}, scale: 1.0, description: "mass fraction, gram per gram"}
+  "mg/g":  {dims: {}, scale: 1.0e-3, description: "milligram per gram"}
+
+  # Length, area, volume
+  "m":     {dims: {m: 1}, scale: 1.0, description: "metre"}
+  "mm":    {dims: {m: 1}, scale: 1.0e-3, description: "millimetre"}
+  "um":    {dims: {m: 1}, scale: 1.0e-6, description: "micrometre"}
+  "m^2":   {dims: {m: 2}, scale: 1.0, description: "square metre (area, permeability)"}
+  "mL":    {dims: {m: 3}, scale: 1.0e-6, description: "millilitre"}
+
+  # Mass
+  "kg":    {dims: {kg: 1}, scale: 1.0, description: "kilogram"}
+  "g":     {dims: {kg: 1}, scale: 1.0e-3, description: "gram"}
+  "mg":    {dims: {kg: 1}, scale: 1.0e-6, description: "milligram"}
+
+  # Time
+  "s":     {dims: {s: 1}, scale: 1.0, description: "second"}
+  "min":   {dims: {s: 1}, scale: 60.0, description: "minute"}
+  "h":     {dims: {s: 1}, scale: 3600.0, description: "hour"}
+  "s^-1":  {dims: {s: -1}, scale: 1.0, description: "per second (rate constant)"}
+
+  # Temperature
+  "K":     {dims: {K: 1}, scale: 1.0, description: "kelvin"}
+  "degC":  {dims: {K: 1}, scale: 1.0, offset: 273.15, description: "degree Celsius"}
+
+  # Pressure
+  "Pa":    {dims: {kg: 1, m: -1, s: -2}, scale: 1.0, description: "pascal"}
+  "bar":   {dims: {kg: 1, m: -1, s: -2}, scale: 1.0e+5, description: "bar"}
+
+  # Flow
+  "mL/s":  {dims: {m: 3, s: -1}, scale: 1.0e-6, description: "millilitre per second"}
+  "g/s":   {dims: {kg: 1, s: -1}, scale: 1.0e-3, description: "gram per second"}
+
+  # Density and mass concentration
+  "kg/m^3": {dims: {kg: 1, m: -3}, scale: 1.0, description: "kilogram per cubic metre"}
+
+  # Transport
+  "m^2/s":  {dims: {m: 2, s: -1}, scale: 1.0, description: "diffusivity, dispersion coefficient"}
+  "m/s":    {dims: {m: 1, s: -1}, scale: 1.0, description: "velocity, mass-transfer coefficient"}
+  "m^7*kg^-2*s^-1": {dims: {m: 7, kg: -2, s: -1}, scale: 1.0, description: "rate constant of the Cameron (2020) surface flux"}
+
+  # Viscosity
+  "Pa*s":   {dims: {kg: 1, m: -1, s: -1}, scale: 1.0, description: "pascal second"}
+  "mPa*s":  {dims: {kg: 1, m: -1, s: -1}, scale: 1.0e-3, description: "millipascal second"}
+
+  # Energy per amount
+  "kJ/mol": {dims: {kg: 1, m: 2, s: -2, mol: -1}, scale: 1.0e+3, description: "kilojoule per mole"}
+
+  # Coefficients and slopes
+  "%/K":    {dims: {K: -1}, scale: 1.0e-2, description: "percent per kelvin (temperature coefficient)"}
+  "%/um":   {dims: {m: -1}, scale: 1.0e+4, description: "percentage points per micrometre"}

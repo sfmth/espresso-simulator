@@ -1,0 +1,489 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  Hydraulics (module H): permeability, poroelastic saturation, consolidation, swelling, wetting,
+  viscosity and gas. Transcribed from research note 01 §3–§4 and §8.
+
+parameters:
+  - id: hydraulics.permeability.in_shot
+    name: In-shot effective permeability
+    symbol: κ_eff
+    description: >-
+      Apparent, all-in permeability of the bed during espresso shots, κ = QμL/(AΔP) back-calculated at
+      shot pressure from measured flow, pressure and bed height with water viscosity. It includes the
+      compaction, swelling, gas, dissolution and viscosity effects that the shot solver applies on top of
+      its bare κ₀, so it is a validation target and a prior for effective permeability, not κ₀ (ADR 0009);
+      the solver's bare base permeability is hydraulics.permeability.reference.
+    units: "m^2"
+    prior: {distribution: uniform, min: 1.8e-15, max: 1.5e-14}
+    range: {min: 0}
+    relation:
+      formula: >-
+        κ = Q μ L/(A ΔP) for each published shot, from its flow Q, pressure ΔP and bed height L, with
+        water viscosity μ ≈ 0.31 mPa s
+    conditions: Espresso shots at 3.6–9 bar in 58 mm baskets.
+    tag: derived
+    evidence_grade: A
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+    research_note_ref: "01 §4.3"
+    used_by: [H]
+    comment: >-
+      Derived in note 01: Waszkiewicz 1.8–3.5×10⁻¹⁵ (9 bar, 1.0–1.9 g/s, L = 14 mm, μ = 0.31 mPa s);
+      Cameron 2.2–3.7×10⁻¹⁵ (6 bar, 40 g in ~30 s, L assumed 8.4–14 mm); Schmieder 6.8×10⁻¹⁵ (GL 1.4,
+      8.0 bar) and 1.5×10⁻¹⁴ (GL 2.0, 3.6 bar), pressure measured upstream of the portafilter. This is
+      2–200× below permeameter values and ~10–1000× below dry-PSD Kozeny–Carman, so the solver's base
+      permeability is calibrated, never predicted from the PSD (PLAN §6 #2). It is calibrated within the
+      model as the bare hydraulics.permeability.reference (ADR 0009), which lies above these apparent
+      values: dividing by the poroelastic factor alone (0.33 at 9 bar with P_c = 12 bar) triples them.
+      Note 01 summarises the range as (2–15)×10⁻¹⁵; the prior starts at 1.8×10⁻¹⁵ to include
+      Waszkiewicz's lowest value.
+    status: draft
+
+  - id: hydraulics.permeability.reference
+    name: Bare base permeability at the reference Sauter diameter
+    symbol: κ_ref
+    description: >-
+      The shot solver's bare base permeability κ₀ (docs/model/shot-model.md §4.2) for a bed whose Sauter
+      diameter equals model.hydraulics.reference_sauter_diameter, before the solver's compaction
+      (poroelastic), swelling, gas, dissolution and viscosity factors. The input models scale it to a
+      recipe's PSD and porosity by relative Kozeny–Carman, κ₀ = κ_ref·(D32/D32_ref)²·KC(ε)/KC(ε_ref).
+    units: "m^2"
+    value: 2.4e-14
+    prior: {distribution: lognormal, lower: 5.0e-15, upper: 2.0e-13, coverage: 0.95}
+    range: {min: 1.0e-16, max: 1.0e-11}
+    relation:
+      derived_from:
+        - hydraulics.permeability.in_shot
+        - model.hydraulics.reference_sauter_diameter
+        - hydraulics.poroelastic.critical_pressure
+        - shot.time.observed
+      formula: >-
+        Pre-calibration value: κ_ref such that generic 18 g → 36 g recipes at a flat 9 bar (six grinder
+        presets at their default settings, 58 mm 18 g precision basket, medium washed Arabica) reach 36 g
+        in 30 s at tier 1: geometric mean 2.41×10⁻¹⁴ m², spread ×1.14 (2.09–3.02×10⁻¹⁴). The calibration
+        (data/calibration/current.yaml) replaces it with the pooled per-dataset bare κ₀ of V1 and V4,
+        each divided by the builder's scaling for that case's own built Sauter diameter.
+    conditions: >-
+      Wetted bed at the reference Sauter diameter (165 µm by default) and the registry's intergranular
+      porosity; hot water; no compaction, swelling, gas or dissolution.
+    tag: fitted
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks M1 calibration (2026), data/calibration/current.yaml and docs/validation/calibration.md: pooled nuisance permeabilities of Schmieder 2023 and Waszkiewicz 2026, inverted through the input models' Sauter-diameter scaling."
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+        locator: "Fig. 6; grind chosen for 37 g in 32 s at 9 bar"
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Tables 2 and S3 (pressures)"
+    research_note_ref: ["01 §4.3", "01 §3.7"]
+    used_by: [H, P]
+    comment: >-
+      Replaces hydraulics.permeability.in_shot as the input models' base permeability: the in-shot values
+      (1.8×10⁻¹⁵–1.5×10⁻¹⁴ m²) were back-calculated as κ = QμL/(AΔP) with water viscosity and no compaction,
+      so they already contain the effects the solver multiplies κ₀ by (the poroelastic factor alone is
+      0.33 at 9 bar), and counted them twice. The pre-calibration value equals the in-shot central value
+      divided by that factor (8.4×10⁻¹⁵/0.332 = 2.5×10⁻¹⁴ m²) within 4%. The prior spans the effective
+      in-shot range at its low end and, at its high end, the bare κ₀ implied by beds whose PSD was
+      measured with many fines (a small laser-diffraction D32 inflates the D32² scaling). Grade D: an
+      in-house fit with a convention-dependent PSD scaling, not a reviewed value. The historical M1
+      calibration (data/calibration/v1.yaml) pooled 1.24×10⁻¹³ m² from Schmieder 2023
+      (7.2×10⁻¹⁴, scaled through the E65S preset) and Waszkiewicz 2026 (2.1×10⁻¹³, scaled through its
+      measured PSD, whose coarse tail ends at 182 µm); the two differed ×3.0. Held-out Cameron and Smrke
+      shots then ran at 0.43–0.44 of their measured times, and the V4 9-bar case at 0.47.
+      The app embeds data/calibration/current.yaml. M1.1 refits the original calibration blocks after
+      adding startup water capacity and pore-air mobility; see docs/validation/m1-validation.md for
+      current values and the preserved baseline-v0.2.0 report for the historical comparison.
+      Total shot times combine startup and permeability effects and do not isolate κ_ref.
+    status: draft
+
+  - id: hydraulics.permeability.permeameter
+    name: Steady-state permeameter permeability
+    symbol: κ
+    description: Permeability of fully extracted coffee beds measured in a steady-state permeameter.
+    units: "m^2"
+    prior: {distribution: lognormal, lower: 2.6e-14, upper: 4.4e-13, coverage: 0.95}
+    range: {min: 0}
+    conditions: >-
+      Fully extracted beds after 600 s of flow; 0.5–4.5 bar; bed density 360–480 kg/m³; four
+      espresso-range grinds.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Corrochano B.R., Melrose J.R., Bentley A.C., Fryer P.J., Bakalis S. (2015) A new methodology to estimate the steady-state permeability of roast and ground coffee in packed beds. J. Food Eng. 150:106–116."
+        doi: "10.1016/j.jfoodeng.2014.11.006"
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "Table 6.1"
+    research_note_ref: "01 §4.3"
+    used_by: [H]
+    comment: >-
+      A ~30% density increase cut κ 3–4×. Use only for relative closures (Kozeny–Carman-type changes
+      with density, PSD and dissolution; PLAN §10 V6), not for the in-shot value.
+    status: draft
+
+  - id: hydraulics.poroelastic.critical_pressure
+    name: Poroelastic critical pressure
+    symbol: P_c
+    description: >-
+      Pressure scale of the poroelastic flow saturation Q/Q_c = 1 − (1 − P/P_c)⁴ for P ≤ P_c, fitted
+      to long-time flow versus pressure.
+    units: bar
+    value: 12
+    prior: {distribution: normal, mean: 12, sd: 3}
+    range: {min: 0.5, max: 100}
+    conditions: 18.5 g, 58 mm basket, light/medium-light roast, 60 shots at 11 pressures (1–12 bar).
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+        locator: "eq. 16"
+    research_note_ref: "01 §3.7"
+    used_by: [H]
+    comment: >-
+      Reported as 12 ± 3 bar; ± read here as one standard deviation (the note does not say). A fitted
+      single-coffee value (note 01, open question 6). Flow is Darcy-like below ~5 bar and saturates above.
+    status: draft
+
+  - id: hydraulics.poroelastic.critical_flow
+    name: Poroelastic saturated flow
+    symbol: Q_c
+    description: Long-time flow reached at P = P_c in Q/Q_c = 1 − (1 − P/P_c)⁴.
+    units: "g/s"
+    value: 1.90
+    prior: {distribution: normal, mean: 1.90, sd: 0.15}
+    range: {min: 0}
+    conditions: 18.5 g, 58 mm basket, light/medium-light roast.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+        locator: "eq. 16"
+    research_note_ref: "01 §3.7"
+    used_by: [H]
+    comment: Reported as 1.90 ± 0.15 g/s; ± read here as one standard deviation (the note does not say).
+    status: draft
+
+  - id: hydraulics.consolidation.max_strain
+    name: Bed consolidation under flow
+    description: Shortening of the wet bed under flow, as a percentage of its initial height.
+    units: "%"
+    prior: {distribution: uniform, min: 0, max: 31}
+    range: {min: 0, max: 100}
+    conditions: Wet beds at 80 °C, diameter:length 2:1; finer and looser beds consolidated more.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §4.5"
+    used_by: [H]
+    comment: >-
+      Graded "C, measured" in note 01 §2. Average flow rose from 3 to 5 bar and fell at 7 bar, which
+      Corrochano attributes to consolidation.
+    status: draft
+
+  - id: hydraulics.consolidation.time
+    name: Consolidation timescale
+    description: Time over which most of the bed consolidation under flow happens.
+    units: s
+    prior: {distribution: uniform, min: 20, max: 30}
+    range: {min: 0}
+    conditions: Wet beds at 80 °C ("mostly within the first 20–30 s").
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §4.5"
+    used_by: [H]
+    status: draft
+
+  - id: hydraulics.swelling.diameter_increase
+    name: Particle swelling on wetting
+    symbol: S
+    description: Increase in particle diameter after wetting; acts mainly on intergranular porosity.
+    units: "%"
+    prior: {distribution: uniform, min: 0, max: 15}
+    range: {min: 0, max: 50}
+    tag: estimated
+    evidence_grade: A
+    sources:
+      - citation: "Hargarten V.B., Kuhn M., Briesen H. (2020) Swelling properties of roasted coffee particles. J. Sci. Food Agric. 100:3960–3970."
+        doi: "10.1002/jsfa.10440"
+      - citation: "Maille M.J., Sala K., Scott D.M., Zukswert H. (2021) Critical examination of particle swelling during wetting of ground coffee. J. Food Eng. 295:110420."
+        doi: "10.1016/j.jfoodeng.2020.110420"
+    research_note_ref: "01 §4.6"
+    used_by: [H]
+    comment: >-
+      Note 01's recommended range for disputed data, to be calibrated (magnitude disputed, PLAN §7.3 H).
+      Reported: ~15% in diameter, independent of size and roast (Hargarten 2020); no significant swelling
+      over 0.5–5 min (Maille 2021); d43 unchanged or +4% (Corrochano 2017); +20–23% in volume (Mateus
+      2007); +17% in diameter (Spiro 1989, via Corrochano), which lies outside the recommended range. The
+      two A-grade sources that bracket the range, Hargarten and Maille, were read as abstracts only.
+    status: draft
+
+  - id: hydraulics.swelling.relaxation_time
+    name: Swelling relaxation time
+    description: Time constant of an exponential relaxation model for particle swelling after wetting.
+    units: s
+    prior: {distribution: uniform, min: 19, max: 33}
+    range: {min: 0, max: 600}
+    relation:
+      formula: >-
+        τ = −30 s / ln(1 − f) for a fraction f = 0.6–0.8 of the swelling reached within 30 s
+        (exponential relaxation assumed): 18.6–32.7 s
+    tag: derived
+    evidence_grade: A
+    sources:
+      - citation: "Hargarten V.B., Kuhn M., Briesen H. (2020) Swelling properties of roasted coffee particles. J. Sci. Food Agric. 100:3960–3970."
+        doi: "10.1002/jsfa.10440"
+    research_note_ref: "01 §4.6"
+    used_by: [H]
+    comment: >-
+      Derived here from Hargarten 2020 (abstract read): 60–80% of the swelling within 30 s, complete
+      within 4 min. Note 01 §4.6 recommended 10–30 s, but τ = 10 s would give 95% of the swelling by
+      30 s, which contradicts the cited 60–80%.
+    status: draft
+
+  - id: hydraulics.wetting.time
+    name: Wetting time
+    symbol: t_w
+    description: Time from the start of infiltration until the wetting front reaches the outlet (first drops).
+    units: s
+    prior: {distribution: uniform, min: 5, max: 10}
+    range: {min: 0}
+    tag: measured
+    evidence_grade: B
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+    research_note_ref: "01 §4.8"
+    used_by: [H, X]
+    comment: >-
+      Up to a third of the shot (note 01 §2, which grades Waszkiewicz A and Grudeva B; the weaker is
+      recorded). Grudeva's model uses t_w = 5 s. A significant share of extraction happens during
+      infiltration (Grudeva).
+    status: draft
+
+  - id: hydraulics.viscosity.water_80c
+    name: Water viscosity at 80 °C
+    symbol: μ_w
+    description: Dynamic viscosity of pure water at 80 °C.
+    units: "mPa*s"
+    value: 0.354
+    range: {min: 0}
+    conditions: 80 °C
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "CRC Handbook of Chemistry and Physics: standard values for the viscosity of water, as quoted in research note 01 §4.10."
+    research_note_ref: "01 §4.10"
+    used_by: [H, X]
+    comment: Standard reference data (a handbook, hence grade C). Near 90 °C viscosity changes by about −1.1% per °C [derived, 01 §4.10].
+    status: draft
+
+  - id: hydraulics.viscosity.water_90c
+    name: Water viscosity at 90 °C
+    symbol: μ_w
+    description: Dynamic viscosity of pure water at 90 °C.
+    units: "mPa*s"
+    value: 0.315
+    range: {min: 0}
+    conditions: 90 °C
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "CRC Handbook of Chemistry and Physics: standard values for the viscosity of water, as quoted in research note 01 §4.10."
+    research_note_ref: "01 §4.10"
+    used_by: [H, X]
+    comment: Standard reference data (a handbook, hence grade C). Over 90–96 °C viscosity changes by about 5% (Waszkiewicz).
+    status: draft
+
+  - id: hydraulics.viscosity.water_95c
+    name: Water viscosity at 95 °C
+    symbol: μ_w
+    description: Dynamic viscosity of pure water at 95 °C.
+    units: "mPa*s"
+    value: 0.298
+    range: {min: 0}
+    conditions: 95 °C
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "CRC Handbook of Chemistry and Physics: standard values for the viscosity of water, as quoted in research note 01 §4.10."
+    research_note_ref: "01 §4.10"
+    used_by: [H, X]
+    comment: Standard reference data (a handbook, hence grade C).
+    status: draft
+
+  - id: hydraulics.viscosity.extract_relative
+    name: Relative viscosity of early-shot pore liquid
+    description: >-
+      Viscosity of the pore liquid at early-shot concentrations (~25% TDS) relative to water at brew
+      temperature; it falls towards 1 as the concentration drops below 2% TDS.
+    units: "1"
+    prior: {distribution: uniform, min: 1.5, max: 3}
+    range: {min: 1}
+    conditions: Brew temperature (~90 °C); 25% to below 2% TDS.
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Moreno F.L. et al. (2015) Rheological behaviour, freezing curve, and density of coffee solutions near freezing. Int. J. Food Prop. 18:426–438."
+        doi: "10.1080/10942912.2013.833221"
+    research_note_ref: "01 §4.11"
+    used_by: [H]
+    comment: >-
+      "Plausibly 1.5–3× locally [magnitude unverified at 90 °C]" (note 01 §4.11), inferred from Moreno
+      2015 data at 4 °C: 1.99, 5.84, 32.9 and 426 mPa s at 5, 20, 35 and 50% w/w, with Arrhenius
+      activation energies 22.0, 25.9, 34.1 and 51.3 kJ/mol, so relative viscosity shrinks as temperature
+      rises (hydraulics.viscosity.extract_activation_energy). Relative viscosity at 90 °C and 5–25% TDS
+      is a data gap (01 §4.10). Graded B as an indirect inference, not as the 4 °C measurements.
+    status: draft
+
+  - id: hydraulics.viscosity.extract_activation_energy
+    name: Activation energy of coffee-extract viscosity
+    symbol: E_a
+    description: Arrhenius activation energy of the viscosity of coffee solutions, μ ∝ exp(E_a/RT).
+    units: "kJ/mol"
+    prior: {distribution: uniform, min: 22.0, max: 51.3}
+    range: {min: 0}
+    conditions: >-
+      Coffee solutions of 5–50% w/w near freezing (low temperature only); rises with concentration:
+      22.0, 25.9, 34.1 and 51.3 kJ/mol at 5, 20, 35 and 50% w/w.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Moreno F.L. et al. (2015) Rheological behaviour, freezing curve, and density of coffee solutions near freezing. Int. J. Food Prop. 18:426–438."
+        doi: "10.1080/10942912.2013.833221"
+    research_note_ref: "01 §4.10"
+    used_by: [H]
+    comment: >-
+      Measured near freezing (viscosities quoted at 4 °C); extrapolating to brew temperature is
+      unverified, and the high-temperature sources (Sobolík 2002, Telis-Romero 2001) were not read.
+      For espresso concentrations (≤ 25% TDS) the relevant values are 22.0–25.9 kJ/mol.
+    status: draft
+
+  - id: hydraulics.extract_density.low_temperature
+    name: Density of coffee extract (low temperature)
+    symbol: ρ_ext
+    description: Density of coffee solutions between 10 and 50% w/w; used to convert TDS (% w/w) to kg/m³.
+    units: "kg/m^3"
+    prior: {distribution: uniform, min: 1036, max: 1277}
+    range: {min: 0}
+    conditions: 10–50% w/w at 0–25 °C only; density rises with concentration.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Moreno F.L. et al. (2015) Rheological behaviour, freezing curve, and density of coffee solutions near freezing. Int. J. Food Prop. 18:426–438."
+        doi: "10.1080/10942912.2013.833221"
+    research_note_ref: "01 §4.10"
+    used_by: [H, X, C]
+    comment: >-
+      Low-temperature data only: Moreno's mixing rule is not valid at brew temperature (01 §4.10). Note 01
+      converts 25% TDS ≈ 270–280 kg/m³ with a density of 1.08–1.12 g/mL [derived]. The range spans
+      concentrations, so pick the density for the concentration at hand rather than sampling it freely.
+    status: draft
+
+  - id: hydraulics.gas.potential_volume_ratio
+    name: Potential CO₂ gas volume relative to pore volume
+    description: >-
+      Volume the coffee's CO₂ would occupy if all of it were released as gas in the bed, divided by the
+      bed pore volume. Scales the gas penalty on permeability.
+    units: "1"
+    prior: {distribution: uniform, min: 0.5, max: 3}
+    range: {min: 0}
+    relation:
+      derived_from: [bean.co2.ground_residual]
+      formula: "V_gas / V_pore with V_gas = m_CO₂ R T/(M_CO₂ p) at p = 5.4 atm and T = 80 °C (Corrochano Table 6.2)"
+    conditions: 4.5–12 mg/g CO₂ released as gas at 5.4 atm and 80 °C; 7.2–9.5 g laboratory beds.
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "Table 6.2"
+    research_note_ref: "01 §4.9"
+    used_by: [H]
+    comment: >-
+      For 18 g at 10 atm and 90 °C it would be about 15 mL against about 7 mL of intergranular pore
+      space [derived, 01 §4.9]. Under pressure CO₂ partly dissolves and may supersaturate. No direct
+      measurement of its hydraulic effect in espresso was found.
+    status: draft
+
+  - id: hydraulics.kozeny_carman.density_exponent
+    name: Exponent of the relative Kozeny–Carman closure for bed density
+    symbol: α
+    description: >-
+      Exponent α of the relative permeability closure κ/κ_ref = [KC(ε)/KC(ε_ref)]^α, KC(ε) = ε³/(1 − ε)²,
+      used when the intergranular porosity of a bed differs from the porosity its base permeability
+      refers to (e.g. beds packed to different densities). α = 1 is plain relative Kozeny–Carman.
+    units: "1"
+    value: 1
+    prior: {distribution: uniform, min: 0, max: 3}
+    range: {min: 0, max: 3}
+    conditions: >-
+      Extracted, consolidated beds of four espresso grinds packed to 360–480 kg/m³, 80 °C, 0.5–4.5 bar
+      (Corrochano permeameter); calibrated in M1 validation step V6.
+    tag: fitted
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+        locator: "Table 6.1"
+    research_note_ref: ["01 §4.2", "01 §4.3"]
+    used_by: [H, P]
+    comment: >-
+      M1 calibration target (data/calibration; docs/validation/case-builders.md, V6). The value 1 is the
+      uncalibrated starting point. With the measured initial densities, plain relative Kozeny–Carman
+      predicts a far stronger density effect than measured (κ(480)/κ(360) ≈ 0.05 against 0.26–0.35),
+      partly because loose beds consolidate more under flow (0–31%), so a calibrated α below 1 is
+      expected. The input models apply it in the base permeability, κ₀ = κ_ref·(D32/D32_ref)²·
+      [KC(ε)/KC(ε_ref)]^α, so the M1 calibration (V6) sets the app's closure; bounded to 0–3 like the
+      input models.
+    status: draft
+
+  - id: hydraulics.dissolution_porosity_share
+    name: Share of the dissolved solid volume that becomes intergranular porosity
+    symbol: θ
+    description: >-
+      Share θ of the solid volume a particle loses to dissolution that becomes intergranular pore space
+      (raising the bed porosity ε, its holdup and its Kozeny–Carman permeability); the rest becomes
+      intraparticle pore space inside an envelope that keeps its size. The shot solver applies
+      ε = ε₀ + θ·max(EY_loc, 0)·(1 − ε₀) (docs/model/shot-model.md §5.5).
+    units: "1"
+    value: 0
+    prior: {distribution: triangular, min: 0, mode: 0, max: 1}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Puckworks shot model (2026), docs/model/shot-model.md §5.5 (porosity growth with dissolution) and ADR 0009 (docs/decisions/0009-shot-solver-numerics.md): mechanistic default."
+      - citation: "Lee W.T., Smith A., Arshad A. (2023) Uneven extraction in coffee brewing. Phys. Fluids 35:054110."
+        doi: "10.1063/5.0138998"
+        locator: "shrinking-particle closure EY = (ε − ε₀)/(1 − ε₀), i.e. θ = 1"
+    research_note_ref: "01 §4.11"
+    used_by: [H]
+    comment: >-
+      Mechanism: the solubles leave from inside cells whose insoluble walls, about 70% of the dry mass
+      (100% minus extraction.max_yield, 22–34%), hold the particle envelope, so dissolution raises the
+      intraparticle porosity rather than ε, consistent with the solver treating solubles as pore solute.
+      Hence the default 0 and a prior that falls off towards the upper bound, θ = 1, Lee 2023's
+      shrinking-particle model (note 01 §4.11: permeability ×4 at EY 10% and ×12 at 20%). Not tuned to any
+      flow data. It replaces the solver's earlier proportional rule (θ = ε₀/(ε₀ + (1 − ε₀)ε_p) ≈ 0.27),
+      which had no mechanism and drove most of the modelled early flow rise. It is not calibrated: the M1
+      calibration set does not identify it (V1 refitted at θ = 0 and at the proportional rule reaches the
+      same cost, its contents and grinding-level permeabilities absorbing the difference;
+      docs/validation/calibration.md), and the V4 transient that it shapes is held out. The calibration
+      reports the θ = 0.27 case as a sensitivity of this structural assumption.
+    status: draft

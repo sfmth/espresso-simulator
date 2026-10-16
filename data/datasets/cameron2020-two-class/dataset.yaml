@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for two_class.csv. The numbers are facts from a copyrighted supplement (see `licence`);
+# this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: cameron2020-two-class
+title: >-
+  Two-class (fines and boulders) bed description used by Cameron et al. (2020) at EK43 grind settings
+  1.0, 1.5, 2.0 and 2.5 (Supplemental Table S2)
+citation: >-
+  Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T.,
+  Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling
+  and experiment. Matter 2:631–648. Supplemental Information, Table S2.
+doi: "10.1016/j.matt.2019.12.019"
+url: "https://ars.els-cdn.com/content/image/1-s2.0-S2590238519304102-mmc1.pdf"
+licence: facts-cited
+redistribution: cite-only
+retrieved: "2026-10-14"
+research_note_ref: ["01 §3.4", "03 §2.2"]
+
+obtained: >-
+  Transcribed by hand from Table S2 of the Supplemental Information (mmc1.pdf, sha256
+  37530ec8c450c6fe5b231a7d4e3b65347555454b366ed4730ec106a4fb56775f) into the importer
+  (python/puckworks_tools/sources/cameron2020.py, TWO_CLASS_TABLE_S2), and checked against the PDF
+  text layer. The fines radius is the table caption's fixed value.
+
+uncertainty: >-
+  Transcription: none expected (values as printed, checked twice). The table is a model input derived
+  by the authors from the Fig. 2 distributions with a 100 µm fines/boulder cut, not a measurement; it
+  has internal inconsistencies (see notes).
+
+columns:
+  - name: grind_setting
+    type: number
+    units: "1"
+    description: EK43 grind setting.
+  - name: fines_volume_fraction
+    type: number
+    units: "1"
+    description: Volume fraction of the bed occupied by fines (φs1, particles below 100 µm).
+  - name: boulder_volume_fraction
+    type: number
+    units: "1"
+    description: Volume fraction of the bed occupied by boulders (φs2); φs1 + φs2 = 0.8272, the solid fraction.
+  - name: fines_radius_um
+    type: number
+    units: um
+    description: Fines radius a1, fixed at 12 µm by the table caption.
+  - name: boulder_size_um
+    type: number
+    units: um
+    description: >-
+      Boulder size a2 as printed. Labelled a radius in the table, but it equals the modal diameter of
+      the Fig. 2B curve (cameron2020-psd), so it is probably a diameter.
+
+files:
+  - path: two_class.csv
+    format: csv
+    description: 4 grind settings.
+
+notes: >-
+  The table also lists BET surface areas per bed volume, bet1 = 10.187, 8.099, 7.239, 4.703 ×10³ m⁻¹
+  and bet2 = 7.211, 6.197, 6.325, 5.472 ×10³ m⁻¹ (not stored: the unit vocabulary has no m⁻¹). The
+  supplement defines φs,i = bet,i·a_i/3; with the printed values this holds for the boulders
+  (a2 = 3φs2/bet2 reproduces the printed a2) but gives a1 ≈ 49.7 µm, not 12 µm, for the fines. The
+  authors interpolated intermediate grind settings linearly. Fines share of the solids:
+  φs1/(φs1 + φs2) = 0.204, 0.162, 0.145, 0.094, about 0.6–0.75 of the share below 100 µm read from
+  Fig. 2B. Facts only; cite the article.

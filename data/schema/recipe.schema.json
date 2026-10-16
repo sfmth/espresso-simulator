@@ -1,0 +1,647 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:puckworks:schema:recipe:1",
+  "title": "Puckworks recipe",
+  "description": "A shot as a person describes it (puckworks.recipe/1), in practical units (g, mm, µm, bar, mL/s, °C). The Rust types in crates/puckmodel/src/recipe.rs are the source of truth (docs/model/m1-contract.md); this schema mirrors them and the plausibility bounds the builder enforces (crates/puckmodel/src/bounds.rs); tests keep the fields and the bounds in step. Every object rejects unknown fields. Optional fields may be omitted or null. Each gear block names a preset or describes the gear from scratch; explicit fields override the preset. What every field does is documented in docs/model/input-models.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "bean",
+    "grinder",
+    "basket",
+    "prep",
+    "machine",
+    "stop"
+  ],
+  "properties": {
+    "schema": {
+      "const": "puckworks.recipe/1"
+    },
+    "bean": {
+      "$ref": "#/$defs/bean"
+    },
+    "grinder": {
+      "$ref": "#/$defs/grinder"
+    },
+    "basket": {
+      "$ref": "#/$defs/basket"
+    },
+    "prep": {
+      "$ref": "#/$defs/prep"
+    },
+    "machine": {
+      "$ref": "#/$defs/machine"
+    },
+    "stop": {
+      "$ref": "#/$defs/stop"
+    },
+    "numerics": {
+      "$ref": "#/$defs/numerics"
+    },
+    "overrides": {
+      "description": "Parameter-registry id → value in the registry's units (data/params). Applied last: the value replaces the parameter wherever the input models use it. Unknown ids and values outside the record's range are errors.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9][a-z0-9_]*)+$"
+      },
+      "additionalProperties": {
+        "type": "number"
+      }
+    }
+  },
+  "$defs": {
+    "preset_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "bean": {
+      "description": "The coffee. Omitted fields come from the preset, or from the default bean (medium-washed-arabica).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preset": {
+          "$ref": "#/$defs/preset_id"
+        },
+        "arabica_fraction": {
+          "description": "Arabica share of the blend (the rest is Robusta).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "roast_level": {
+          "description": "0 = very light … 1 = very dark.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "days_off_roast": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 3650
+        },
+        "process": {
+          "description": "Recorded; no effect in bean model v1.",
+          "enum": [
+            "washed",
+            "natural",
+            "honey",
+            "anaerobic",
+            null
+          ]
+        },
+        "bean_temp_c": {
+          "description": "Bean temperature when ground, °C (room temperature if omitted).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": -200,
+          "maximum": 60
+        }
+      }
+    },
+    "grinder": {
+      "description": "A preset plus a dial setting; a family plus gap_um (or setting with gap_at_ref_um and gap_per_unit_um); or a measured psd, which overrides everything else.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preset": {
+          "$ref": "#/$defs/preset_id"
+        },
+        "setting": {
+          "description": "Dial setting in the preset's own scale.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "family": {
+          "description": "Burr family: flat-unimodal, flat-traditional or conical.",
+          "$ref": "#/$defs/preset_id"
+        },
+        "gap_um": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Burr gap, µm.",
+          "exclusiveMinimum": 0,
+          "maximum": 3000
+        },
+        "psd": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/psd"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "burr_diameter_mm": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Recorded; no systematic effect.",
+          "minimum": 10,
+          "maximum": 300
+        },
+        "rpm": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Recorded; no systematic effect.",
+          "exclusiveMinimum": 0,
+          "maximum": 5000
+        },
+        "gap_at_ref_um": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Dial calibration: gap at the preset's reference setting (with a family: at setting 0), µm.",
+          "minimum": 0,
+          "maximum": 3000
+        },
+        "gap_per_unit_um": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Dial calibration: gap change per unit of setting, µm.",
+          "exclusiveMinimum": 0,
+          "maximum": 1000
+        },
+        "x50_gap_ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "κ_G: volume median X50 / burr gap.",
+          "minimum": 0.3,
+          "maximum": 5
+        },
+        "fines_at_340_pct": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "u_G: volume % below 100 µm at X50 = 340 µm; it anchors the fines relation.",
+          "minimum": 1,
+          "maximum": 40
+        },
+        "coarse_log_width": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "σ_c: standard deviation of ln d of the coarse mode.",
+          "minimum": 0.1,
+          "maximum": 1
+        },
+        "boulder_weight": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "w_b: volume share of the boulder tail.",
+          "minimum": 0,
+          "maximum": 0.3
+        }
+      }
+    },
+    "psd": {
+      "description": "A measured, volume-weighted particle-size distribution (fractions per bin, not cumulative; at least two bins with volume). Bins are contiguous in ln(diameter); up to numerics.size_classes bins are used as given, longer ones are rebinned.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "diameter_um",
+        "volume_fraction"
+      ],
+      "properties": {
+        "diameter_um": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2000,
+          "items": {
+            "type": "number",
+            "minimum": 0.2,
+            "maximum": 5000
+          }
+        },
+        "volume_fraction": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2000,
+          "items": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "method": {
+          "enum": [
+            "dry_laser",
+            "wet_laser",
+            "image",
+            "sieve",
+            "other",
+            null
+          ]
+        }
+      }
+    },
+    "basket": {
+      "description": "A preset or a custom basket (the custom basket wins). Without either, the machine preset's default basket is used.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preset": {
+          "$ref": "#/$defs/preset_id"
+        },
+        "custom": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/basket_custom"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "basket_custom": {
+      "description": "Any axisymmetric basket: straight, tapered or stepped walls, plain holes or a pressurised (dual-wall) orifice.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_mm",
+        "perforated_diameter_mm"
+      ],
+      "properties": {
+        "profile_mm": {
+          "description": "Inner wall profile as [height above the floor, inner diameter], mm; heights start at 0 and strictly increase (give a vertical step a small height increment, e.g. 0.1 mm).",
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "number",
+                "minimum": 20,
+                "maximum": 120
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "perforated_diameter_mm": {
+          "description": "Diameter of the perforated field, mm (at most the floor diameter).",
+          "type": "number",
+          "minimum": 5,
+          "maximum": 120
+        },
+        "open_area_fraction": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.001,
+          "maximum": 1
+        },
+        "pressurised_orifice_mm": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Outlet orifice of a pressurised basket, mm; omit for plain holes.",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "discharge_coefficient": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.1,
+          "maximum": 1
+        }
+      }
+    },
+    "prep": {
+      "description": "Puck preparation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dose_g"
+      ],
+      "properties": {
+        "dose_g": {
+          "description": "Dry dose, g.",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "distribution": {
+          "enum": [
+            "none",
+            "tap",
+            "wdt",
+            null
+          ]
+        },
+        "tamp_kgf": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Recorded: no effect above ~10 kgf; flagged below ~5 kgf.",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "puck_screen": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "paper_bottom": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "paper_top": {
+          "description": "Recorded; no measurable effect.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "machine": {
+      "description": "A preset, optionally with its own temperature, program, pump or headspace; or a program (and pump) from scratch.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preset": {
+          "$ref": "#/$defs/preset_id"
+        },
+        "temperature_c": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 20,
+          "maximum": 100
+        },
+        "profile": {
+          "description": "Pressure/flow program; replaces the preset's program.",
+          "oneOf": [
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/phase"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pump": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/pump"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "headspace_ml": {
+          "description": "Water volume between the basket rim and the shower screen, mL.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 200
+        },
+        "vent_headspace": {
+          "description": "True if a three-way valve vents the group at the stop, so no headspace water drips into the cup (replaces the preset's value; default false).",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "phase": {
+      "description": "One program phase. Only the last phase may run without an exit condition; it runs until the stop rule.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "control"
+      ],
+      "properties": {
+        "control": {
+          "description": "pressure (target bar), flow (target mL/s) or pump (full power on the pump curve).",
+          "enum": [
+            "pressure",
+            "flow",
+            "pump"
+          ]
+        },
+        "target": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Bar under pressure control, mL/s under flow control.",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "ramp_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 600
+        },
+        "limit": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Flow cap (mL/s) under pressure control, or pressure cap (bar) under flow control.",
+          "exclusiveMinimum": 0,
+          "maximum": 30
+        },
+        "until_time_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 600
+        },
+        "until_beverage_g": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 500
+        },
+        "until_pressure_bar": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 30
+        }
+      }
+    },
+    "pump": {
+      "description": "Ideal (follows the program within limits) or vibratory (Q = Q_free (1 − P/P_stall), optional over-pressure valve). Omitted values come from the registry (model.machine.*).",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "ideal"
+            },
+            "max_flow_ml_s": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "exclusiveMinimum": 0,
+              "maximum": 30
+            },
+            "max_pressure_bar": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "exclusiveMinimum": 0,
+              "maximum": 30
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "vibratory"
+            },
+            "free_flow_ml_s": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "exclusiveMinimum": 0,
+              "maximum": 30
+            },
+            "stall_pressure_bar": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "exclusiveMinimum": 0,
+              "maximum": 30
+            },
+            "opv_bar": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "exclusiveMinimum": 0,
+              "maximum": 30
+            }
+          }
+        }
+      ]
+    },
+    "stop": {
+      "description": "When to stop (the first condition met). Without either, the shot stops at the default brew ratio (model.stop.default_ratio) times the dose.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "beverage_g": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 500
+        },
+        "time_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 600
+        }
+      }
+    },
+    "numerics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tier": {
+          "description": "0 = preview, 1 = standard (default).",
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "size_classes": {
+          "description": "Number of particle size classes (default 30).",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 2,
+          "maximum": 60
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# The project owner's grinder (PLAN D10). Every specification below comes from retail and aggregator
+# listings that no manufacturer page confirmed (PLAN §15), so the setting → gap mapping is a wide
+# prior to be calibrated from logged shots (PLAN §7.3 K: gap offset g0 and scale), not a measurement.
+schema: puckworks.preset-file/1
+kind: grinder
+description: The owner's AMZCHEF single-dose grinder (UNVERIFIED listing specifications).
+presets:
+  - id: amzchef-single-dose
+    name: AMZCHEF single-dose grinder
+    description: >-
+      Single-dose electric grinder, listed with 40 mm conical burrs, stepless adjustment with about 75
+      marked settings, roughly 450 rpm and under 0.2 g retention. All listing specifications are
+      UNVERIFIED; the dial mapping is a guess to be calibrated.
+    flags: [owner-gear, unverified, estimated]
+    notes:
+      - "UNVERIFIED: 40 mm conical burrs, about 75 marked settings (stepless) and ~450 rpm come from retail listings only (PLAN §15)."
+      - "Estimated dial mapping, a wide prior: gap = 50 µm + 15 µm per marked setting (plausible ranges 0–150 µm and 8–25 µm per setting). Log a few shots (dose, yield, time, gauge pressure) to calibrate it, or set grinder.gap_at_ref_um and grinder.gap_per_unit_um."
+      - "Lower settings are assumed finer, with espresso around settings 5–15. The default (10, X50 ≈ 280 µm) is placed where published espresso grinds lie by particle size (X50 ≈ 200–360 µm by dry laser diffraction or image analysis: Smrke 2024, Cameron 2020, Corrochano 2017), not from shot times; settings 0–3 give Turkish-like grinds (X50 ≈ 70–110 µm)."
+    sources:
+      - citation: "Retail and aggregator listings for the AMZCHEF single-dose coffee grinder (accessed 2026-10-13; no manufacturer page confirmed them)."
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: dial mapping estimated, to be calibrated."
+    evidence_grade: D
+    tag: estimated
+    family: conical
+    burr_diameter_mm: 40
+    rpm: 450
+    dial:
+      label: "marked setting (stepless)"
+      min: 0
+      max: 75
+      default: 10
+      ref: 0
+      gap_at_ref_um: 50
+      gap_per_unit_um: 15

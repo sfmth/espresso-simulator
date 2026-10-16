@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:puckworks:schema:preset:1",
+  "title": "Puckworks preset file",
+  "description": "One file of ready-made gear descriptions in data/presets/**/*.yaml (docs/model/input-models.md). A file holds presets of one kind. `python -m puckworks_tools.export` validates every file against this schema, checks cross-references (grinder families, default baskets, registry ids), and writes crates/puckmodel/generated/presets.json (a puckworks.presets/1 document whose lists hold the same preset objects, defined under $defs). Field names and units follow the recipe (data/schema/recipe.schema.json): practical units, diameters rather than radii.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "kind", "presets"],
+  "properties": {
+    "schema": { "const": "puckworks.preset-file/1" },
+    "kind": { "enum": ["grinder_family", "grinder", "basket", "machine", "bean"] },
+    "description": { "type": "string", "minLength": 1 },
+    "presets": { "type": "array", "minItems": 1 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "grinder_family" } } },
+      "then": { "properties": { "presets": { "items": { "$ref": "#/$defs/grinder_family" } } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "grinder" } } },
+      "then": { "properties": { "presets": { "items": { "$ref": "#/$defs/grinder" } } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "basket" } } },
+      "then": { "properties": { "presets": { "items": { "$ref": "#/$defs/basket" } } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "machine" } } },
+      "then": { "properties": { "presets": { "items": { "$ref": "#/$defs/machine" } } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "bean" } } },
+      "then": { "properties": { "presets": { "items": { "$ref": "#/$defs/bean" } } } }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "description": "Preset id: lower case letters and digits in hyphen-separated words. Name presets by geometry or function, not by brand, except for named grinders and the owner's gear.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "registry_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9][a-z0-9_]*)+$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["citation"],
+      "properties": {
+        "citation": { "type": "string", "minLength": 10 },
+        "doi": { "type": "string", "pattern": "^10\\.[0-9]{4,9}(\\.[0-9]+)*/\\S+$" },
+        "url": { "type": "string", "pattern": "^https?://\\S+$" },
+        "locator": { "type": "string", "minLength": 1 }
+      }
+    },
+    "common": {
+      "description": "Fields every preset has. Flags: estimated = values are estimates (e.g. dimensions not measured); unverified = specifications from retail listings that no manufacturer source confirmed; disputed = sources conflict; owner-gear = the project owner's equipment (PLAN D10); generic = a family or typical device rather than a product.",
+      "type": "object",
+      "required": ["id", "name", "description", "flags", "notes", "sources", "evidence_grade", "tag"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 3 },
+        "description": { "type": "string", "minLength": 10 },
+        "flags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["estimated", "unverified", "disputed", "owner-gear", "generic"] }
+        },
+        "notes": {
+          "description": "Notes for the user, copied into derived.notes when the preset is used.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 10 }
+        },
+        "sources": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/source" } },
+        "evidence_grade": {
+          "description": "Weakest grade among the preset's numbers (research-note evidence key; manufacturer and retail specifications are D).",
+          "enum": ["A", "B", "C", "D"]
+        },
+        "tag": { "enum": ["measured", "derived", "estimated", "fitted"] },
+        "registry_refs": {
+          "description": "Registry records that describe this preset's data (for the UI's 'why this number?').",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/registry_id" }
+        }
+      }
+    },
+    "psd_parameters": {
+      "description": "Parameters of the three-component log-normal PSD model (grinder model G). Omitted values come from the grinder's family, then from the registry.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x50_gap_ratio": { "description": "κ_G: volume median X50 / burr gap.", "type": "number", "exclusiveMinimum": 0 },
+        "fines_at_340_pct": { "description": "u_G: volume % below 100 µm when X50 = 340 µm (unimodality offset); it anchors the fines relation.", "type": "number", "minimum": 1, "maximum": 40 },
+        "coarse_log_width": { "description": "σ_c: standard deviation of ln d of the coarse mode.", "type": "number", "minimum": 0.1, "maximum": 1 },
+        "boulder_weight": { "description": "w_b: volume share of the boulder tail.", "type": "number", "minimum": 0, "maximum": 0.3 },
+        "fines_mode_um": { "description": "μ_f: fines mode, µm.", "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "grinder_family": {
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "unevaluatedProperties": false,
+      "required": ["burr", "psd"],
+      "properties": {
+        "burr": { "enum": ["flat", "conical"] },
+        "psd": {
+          "allOf": [{ "$ref": "#/$defs/psd_parameters" }],
+          "required": ["fines_at_340_pct", "coarse_log_width", "boulder_weight"]
+        }
+      }
+    },
+    "dial": {
+      "description": "Setting → burr gap: gap = gap_at_ref_um + gap_per_unit_um × (setting − ref).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "min", "max", "default", "ref", "gap_at_ref_um", "gap_per_unit_um"],
+      "properties": {
+        "label": { "description": "What one unit of the setting is, for the UI.", "type": "string", "minLength": 2 },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "default": { "type": "number" },
+        "ref": { "type": "number" },
+        "gap_at_ref_um": { "type": "number", "minimum": 0 },
+        "gap_per_unit_um": { "type": "number", "exclusiveMinimum": 0 },
+        "anchored": {
+          "description": "Settings at which the grinder's PSD was measured; outside them the builder notes the extrapolation.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max"],
+          "properties": { "min": { "type": "number" }, "max": { "type": "number" } }
+        }
+      }
+    },
+    "grinder": {
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "unevaluatedProperties": false,
+      "required": ["family", "burr_diameter_mm", "dial"],
+      "properties": {
+        "family": { "$ref": "#/$defs/id" },
+        "burr_diameter_mm": { "type": "number", "exclusiveMinimum": 0 },
+        "rpm": { "type": "number", "exclusiveMinimum": 0 },
+        "dial": { "$ref": "#/$defs/dial" },
+        "psd": { "$ref": "#/$defs/psd_parameters" }
+      }
+    },
+    "basket": {
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "unevaluatedProperties": false,
+      "required": ["nominal_dose_g", "dose_range_g", "profile_mm", "perforated_diameter_mm"],
+      "properties": {
+        "nominal_dose_g": { "type": "number", "exclusiveMinimum": 0 },
+        "dose_range_g": {
+          "type": "array",
+          "prefixItems": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "number", "exclusiveMinimum": 0 }],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "profile_mm": {
+          "description": "Inner wall profile as [height above the floor, inner diameter], mm; heights from 0, strictly increasing.",
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "array",
+            "prefixItems": [{ "type": "number", "minimum": 0 }, { "type": "number", "exclusiveMinimum": 0 }],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "perforated_diameter_mm": { "type": "number", "exclusiveMinimum": 0 },
+        "open_area_fraction": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "pressurised_orifice_mm": { "type": "number", "exclusiveMinimum": 0 },
+        "discharge_coefficient": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+      }
+    },
+    "pump": {
+      "description": "Pump: ideal (follows the program within limits) or vibratory (Q = Q_free (1 − P/P_stall), optional over-pressure valve). Same shape as the recipe's machine.pump.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "ideal" },
+            "max_flow_ml_s": { "type": "number", "exclusiveMinimum": 0 },
+            "max_pressure_bar": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "vibratory" },
+            "free_flow_ml_s": { "type": "number", "exclusiveMinimum": 0 },
+            "stall_pressure_bar": { "type": "number", "exclusiveMinimum": 0 },
+            "opv_bar": { "type": ["number", "null"], "exclusiveMinimum": 0 }
+          }
+        }
+      ]
+    },
+    "phase": {
+      "description": "One program phase, as in the recipe's machine.profile.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["control"],
+      "properties": {
+        "control": { "enum": ["pressure", "flow", "pump"] },
+        "target": { "type": "number", "minimum": 0 },
+        "ramp_s": { "type": "number", "minimum": 0 },
+        "limit": { "type": "number", "exclusiveMinimum": 0 },
+        "until_time_s": { "type": "number", "exclusiveMinimum": 0 },
+        "until_beverage_g": { "type": "number", "exclusiveMinimum": 0 },
+        "until_pressure_bar": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "machine": {
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "unevaluatedProperties": false,
+      "required": ["program", "temperature_c"],
+      "properties": {
+        "pump": { "$ref": "#/$defs/pump" },
+        "program": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/phase" } },
+        "temperature_c": { "type": "number", "minimum": 50, "maximum": 100 },
+        "temperature_range_c": {
+          "type": "array",
+          "prefixItems": [{ "type": "number" }, { "type": "number" }],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "group_headspace_ml": { "type": "number", "minimum": 0 },
+        "drip_tau_s": { "type": "number", "minimum": 0, "maximum": 60 },
+        "vent_headspace": { "description": "True if a three-way valve vents the group at the stop (no drip into the cup).", "type": "boolean" },
+        "preheat_temp_c": { "type": "number", "minimum": 0, "maximum": 100 },
+        "basket_diameter_mm": { "type": "number", "exclusiveMinimum": 0 },
+        "default_basket": { "$ref": "#/$defs/id" }
+      }
+    },
+    "bean": {
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "unevaluatedProperties": false,
+      "required": ["arabica_fraction", "roast_level", "days_off_roast"],
+      "properties": {
+        "arabica_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+        "roast_level": { "type": "number", "minimum": 0, "maximum": 1 },
+        "days_off_roast": { "type": "number", "minimum": 0 },
+        "process": { "enum": ["washed", "natural", "honey", "anaerobic", null] },
+        "default": {
+          "description": "The bean the builder assumes for fields a recipe leaves out (at most one).",
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

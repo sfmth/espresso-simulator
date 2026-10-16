@@ -1,0 +1,228 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  Typical espresso shot ranges (machine M; bed builder P; cup C): dose, beverage mass, pressure,
+  temperature, time, flow, strength and extraction yield. Used for defaults, slider bounds and sanity
+  checks, not as physics parameters. Transcribed from research note 01 §2, §5.5, §7 and §8.
+
+parameters:
+  - id: shot.dose.single
+    name: Dose, single basket
+    description: Dry coffee dose of a single espresso.
+    units: g
+    prior: {distribution: uniform, min: 7, max: 9}
+    range: {min: 7, max: 25}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+        locator: "quoting the SCA"
+    research_note_ref: "01 §8"
+    used_by: [M, P]
+    comment: Industry convention (SCA, as quoted by Cameron 2020), hence grade D.
+    status: draft
+
+  - id: shot.dose.double
+    name: Dose, double basket
+    description: Dry coffee dose of a double espresso.
+    units: g
+    prior: {distribution: uniform, min: 14, max: 18}
+    range: {min: 7, max: 25}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+        locator: "quoting the SCA"
+    research_note_ref: "01 §8"
+    used_by: [M, P]
+    comment: >-
+      Industry convention (SCA, as quoted by Cameron 2020), hence grade D. The validation datasets use
+      18.5–20 g (Schmieder, Cameron, Waszkiewicz): inside the valid range (PLAN §4: doses of ~7–25 g),
+      above this typical prior; see shot.dose.cafe.
+    status: draft
+
+  - id: shot.dose.cafe
+    name: Dose, café practice
+    description: Dry coffee dose used in cafés.
+    units: g
+    prior: {distribution: uniform, min: 15, max: 22}
+    range: {min: 7, max: 25}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+    research_note_ref: "01 §8"
+    used_by: [M, P]
+    comment: Note 01 §8 lists 15–22 g (café) with the SCA single and double ranges.
+    status: draft
+
+  - id: shot.beverage_mass
+    name: Beverage mass
+    description: Mass of espresso in the cup at the end of the shot.
+    units: g
+    prior: {distribution: uniform, min: 20, max: 60}
+    range: {min: 0}
+    conditions: Brew ratio (beverage/dose) 1:1–1:3 for a 20 g dose.
+    tag: estimated
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+    research_note_ref: "01 §8"
+    used_by: [M, C]
+    comment: Ristretto, espresso and lungo at 20, 40 and 60 g (Schmieder 2023). Brew ratio is the first lever on cup composition (02 §3.3).
+    status: draft
+
+  - id: shot.pressure
+    name: Brew pressure
+    symbol: ΔP
+    description: Pump or basket pressure during the main extraction phase.
+    units: bar
+    value: 9
+    prior: {distribution: uniform, min: 7, max: 11}
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Ellero M., Navarini L. (2019) Mesoscopic modelling and simulation of espresso coffee extraction. J. Food Eng. 263:181–194."
+        doi: "10.1016/j.jfoodeng.2019.05.038"
+    research_note_ref: "01 §8"
+    used_by: [M]
+    comment: >-
+      "9 ± 2 bar (common)", read here as the range 7–11 bar. Cameron used 6 bar because 9 bar clogged
+      fine grinds; 1–12 bar studied by Waszkiewicz 2026.
+    status: draft
+
+  - id: shot.temperature
+    name: Brew water temperature
+    symbol: T
+    description: Set temperature of the brew water.
+    units: degC
+    prior: {distribution: uniform, min: 88, max: 96}
+    range: {min: 20, max: 100}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+    research_note_ref: "01 §7"
+    used_by: [M, H, X]
+    comment: >-
+      Machines run at 88–96 °C (SCA 92–95 °C), the typical range this prior describes. Experiments go wider:
+      under flow control, 80, 89 and 98 °C (79.1, 88.2 and 96.5 °C above the puck) gave no measurable
+      change in the cup masses of the four measured species (Schmieder 2023).
+    status: draft
+
+  - id: shot.time.observed
+    name: Shot time
+    symbol: t
+    description: Duration of the shot from pump start to stop.
+    units: s
+    prior: {distribution: uniform, min: 14, max: 40}
+    range: {min: 0}
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+      - citation: "Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics. Sci. Rep. 14:5612."
+        doi: "10.1038/s41598-024-55831-x"
+    research_note_ref: "01 §2"
+    used_by: [M, C]
+    comment: 14–40 s observed; the SCA definition is 20–30 s (as quoted by Cameron 2020).
+    status: draft
+
+  - id: shot.flow_rate
+    name: Flow rate
+    symbol: Q
+    description: Volumetric flow of water through the puck during the main extraction phase.
+    units: "mL/s"
+    prior: {distribution: uniform, min: 1, max: 4}
+    range: {min: 0}
+    conditions: 58 mm baskets.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+      - citation: "Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024) Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng. 368:111913."
+        doi: "10.1016/j.jfoodeng.2023.111913"
+    research_note_ref: "01 §8"
+    used_by: [M, H]
+    comment: >-
+      1–3 mL/s (Schmieder); 2.5–4 mL/s (Vaca Guerra 2024); fitted long-time 1.7–1.9 g/s at 5–12 bar
+      (Waszkiewicz 2026). The prior covers all of them. Note 01 §8 grades the row A.
+    status: draft
+
+  - id: shot.tds.cup
+    name: Cup strength (TDS)
+    symbol: TDS
+    description: Total dissolved solids of the whole cup, as a mass fraction.
+    units: "%"
+    value: 9.68
+    prior: {distribution: uniform, min: 8, max: 12}
+    range: {min: 0, max: 100}
+    conditions: "Value: mean over all 15 Schmieder conditions for 20 g → 40 g."
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+    research_note_ref: "01 §8"
+    used_by: [C]
+    comment: 8–12% typical (note 01 §8). Older Italian-style shots hold about 4–5.6% total solids (Gloess 2013; 02 §6.6).
+    status: draft
+
+  - id: shot.tds.first_drops
+    name: TDS of the first drops
+    description: Dissolved-solids mass fraction of the first drops of a shot (amplitude of a tanh fit to fraction TDS).
+    units: "%"
+    value: 25.6
+    prior: {distribution: normal, mean: 25.6, sd: 1.3}
+    range: {min: 0, max: 100}
+    conditions: 18.5 g, 58 mm basket; TDS in 5 s fractions.
+    tag: fitted
+    evidence_grade: B
+    sources:
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+    research_note_ref: "01 §5.5"
+    used_by: [C, X]
+    comment: >-
+      Reported as 25.6 ± 1.3% (± read as one standard deviation), a fitted tanh amplitude. About 25% TDS
+      ≈ 275 kg/m³ (01 §5.5); PLAN §10 V4 targets a first-fraction TDS of 25 ± 3%. Note 01 §5.5 grades the
+      row A/B; the weaker grade is recorded, as for extraction.saturation.lumped.
+    status: draft
+
+  - id: shot.extraction_yield
+    name: Extraction yield
+    symbol: EY
+    description: Mass of dissolved solids in the cup divided by the dry dose.
+    units: "%"
+    prior: {distribution: uniform, min: 17, max: 23}
+    range: {min: 0, max: 100}
+    conditions: Modern espresso, about 1:2; Cameron's EK43 series measured 20–23%.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+      - citation: "Gloess A.N. et al. (2013) Comparison of nine common coffee extraction methods: instrumental and sensory analysis. Eur. Food Res. Technol. 236:607–627."
+        doi: "10.1007/s00217-013-1917-x"
+      - citation: "Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics. Sci. Rep. 14:5612."
+        doi: "10.1038/s41598-024-55831-x"
+    research_note_ref: "01 §8"
+    used_by: [C]
+    comment: >-
+      Note 01 §8: 17–23% "tasty" band, 20–23% measured (Cameron, whose EY peaks near GS 1.7 at about 23%).
+      The prior uses 17–23% because other measured shots fall below 20%: 17.7–22.1% across Gloess 2013, and
+      10–15 s shots reach 17–18% (Smrke 2024). Schmieder's centre point gives 3.88 g of solids from 20 g,
+      19.4% [derived].
+    status: draft

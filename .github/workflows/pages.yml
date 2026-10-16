@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Deploys the web app to GitHub Pages, but only a build that passed every
+# check: the checks job is web.yml (lint, format, types, tests, build, licence
+# check, browser smoke test), which also uploads exactly that build.
+# The repository's Pages source must be set to "GitHub Actions"
+# (Settings → Pages → Build and deployment → Source).
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time; a queued run waits rather than cancelling one in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Checks
+    uses: ./.github/workflows/web.yml
+    with:
+      pages-artifact: true
+
+  deploy:
+    name: Deploy
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

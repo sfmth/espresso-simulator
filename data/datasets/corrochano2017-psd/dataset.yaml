@@ -1,0 +1,84 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for psd_parameters.csv. The numbers are facts cited from a copyrighted thesis (see
+# `licence`); this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: corrochano2017-psd
+title: >-
+  Dry- and wet-measured particle-size parameters (D[3,2], D[4,3], fines share, X50, coarse peak) of
+  roast and ground coffee grinds (Roman Corrochano 2017, Tables 4.1 and 4.2)
+citation: >-
+  Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis,
+  University of Birmingham. Tables 4.1 and 4.2.
+url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+licence: facts-cited
+redistribution: cite-only
+retrieved: "2026-10-14"
+research_note_ref: ["03 §1.2", "03 §1.4", "03 §5.2"]
+
+obtained: >-
+  Transcribed by hand from Tables 4.1 (dry) and 4.2 (wet) of the thesis PDF (sha256
+  f131d9893e2ac78ce0664d5528beac4be51a02cf1ae684e41920fbc6cadc8818); every number was checked by script
+  to occur in the PDF text layer.
+
+uncertainty: >-
+  Transcription: none expected. Statistical: the *_sd_* columns are the ± printed in the tables
+  (averages of repeated measurements); the coarse peak has SD 0 (footnote 2 of Table 4.1). Method:
+  laser diffraction, dry and wet dispersion; the fines share is the volume below 100 µm, or below
+  105 µm (the nearest output size) for ΨA–ΨD and Blend 3 in the dry table and for all wet values.
+  Wet measurement reports far smaller D[3,2] and more fines, because it detects particles of 1–10 µm
+  (§4.2): the method matters (research note 03 §1.4).
+
+columns:
+  - name: grind
+    type: string
+    description: Grind ΨA–ΨH (Blend 1; A–E disc grinder, F–H roller grinder), flakes (Blend 2), or Blend 3 at two roast colours.
+  - name: method
+    type: string
+    description: "dry or wet laser-diffraction measurement."
+  - name: d32_um
+    type: number
+    units: um
+    description: Sauter mean diameter D[3,2].
+  - name: d32_sd_um
+    type: number
+    units: um
+    description: ± of D[3,2].
+  - name: d43_um
+    type: number
+    units: um
+    description: Volume-weighted mean diameter D[4,3].
+  - name: d43_sd_um
+    type: number
+    units: um
+    description: ± of D[4,3].
+  - name: fines_percent
+    type: number
+    units: "%"
+    description: Volume share of fines (below 100 or 105 µm, see uncertainty).
+  - name: fines_sd_percent
+    type: number
+    units: "%"
+    description: ± of the fines share.
+  - name: x50_um
+    type: number
+    units: um
+    description: Volume median diameter X50.
+  - name: x50_sd_um
+    type: number
+    units: um
+    description: ± of X50.
+  - name: coarse_peak_um
+    type: number
+    units: um
+    required: false
+    description: Position of the coarse peak (dry measurements only).
+
+files:
+  - path: psd_parameters.csv
+    format: csv
+    description: 11 dry and 4 wet rows.
+
+notes: >-
+  ΨB–ΨE are the espresso-range grinds of the permeability study (corrochano2017-permeability). The thesis
+  also tabulates full distributions only as figures, which are not used. Facts only: the thesis is
+  copyright of its author (no redistribution); cite it.

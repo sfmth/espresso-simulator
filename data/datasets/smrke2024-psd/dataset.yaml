@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for psd.csv. The data are digitised from a CC BY 4.0 article (see `licence`); this
+# metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: smrke2024-psd
+title: >-
+  Median particle size X50 and share of fines below 100 µm for Bentwood Vertical 63 grinds at six burr
+  gaps, with 1, 2 or 4 g of sieved fines added at three of them (Smrke et al. 2024, Fig. 2)
+citation: >-
+  Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics.
+  Sci. Rep. 14:5612. Figure 2.
+doi: "10.1038/s41598-024-55831-x"
+url: "https://www.nature.com/articles/s41598-024-55831-x"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-14"
+research_note_ref: ["03 §5.2", "01 §9"]
+
+obtained: >-
+  Digitised by script (python/puckworks_tools/sources/smrke2024.py, using sources/raster.py) from the
+  article's full-size Fig. 2 image (PNG, 1298 × 1310 px, sha256
+  da45e27a3a980badc9218ce430a09affb7c1753abef65592de8115281485b337): the axes were calibrated with the
+  intensity-weighted centres of the 7 x and 4 y tick marks; the dotted fit lines were removed by a
+  5 × 5 morphological opening; each marker centre is the best fit of a disc of the marker's radius.
+  The data are available from the authors only on request (data availability statement).
+
+uncertainty: >-
+  Digitisation: axis-fit residuals 0.04 µm and 0.004 points; marker centres are good to about ±1 px,
+  i.e. ±0.15 µm in X50 and ±0.02 points in Q100µm. Statistical: each point is the mean of three
+  Camsizer X2 measurements of one sample (the figure shows no error bars). X50 is the volume-weighted
+  median of the projected-area size from dynamic image analysis, not a laser-diffraction diameter.
+
+columns:
+  - name: grinder_setting_um
+    type: integer
+    description: Bentwood Vertical 63 grinder setting, which the grinder's scale gives as the burr gap in µm.
+  - name: fines_added_g
+    type: integer
+    description: Sieved fines (below 120 µm) added to the dose; the dose stays 20 g (19 + 1, 18 + 2, 16 + 4 g).
+  - name: x50_um
+    type: number
+    units: um
+    description: Volume-weighted median particle size.
+  - name: q100_percent
+    type: number
+    units: "%"
+    description: Share of fines, the volume share of particles below 100 µm.
+
+files:
+  - path: psd.csv
+    format: csv
+    description: 15 samples (6 settings without added fines, 9 with).
+
+notes: >-
+  Assignment: the six black points are the settings 160–250 µm in order of X50; each red point lies on
+  the dotted line through its base setting's black point, ordered by the amount of fines. A mass
+  balance confirms it: Q100µm(mix) = [Q100µm(base)·(20 − m) + s·m]/20 gives the share s of the added
+  fines below 100 µm as 0.53–0.69 for every red point (the sieve passes up to 120 µm). Coffee:
+  pulped-natural Costa Rica Arabica, roast colour 143 Colorette Pt. The fines were sieved (120 µm)
+  from finely ground coffee in advance and shaken into the dose in a Weber blind shaker.
+  Attribution: cite the article (CC BY 4.0).

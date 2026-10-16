@@ -1,0 +1,7 @@
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <ellipse cx="16" cy="22" rx="13" ry="6" fill="#6b4226"/>
+  <ellipse cx="16" cy="19" rx="13" ry="6" fill="#8a5a3b"/>
+  <ellipse cx="16" cy="19" rx="10" ry="4" fill="#c08457"/>
+  <path d="M10 12c0-3 3-3 3-6M16 12c0-3 3-3 3-6M22 12c0-3 3-3 3-6" stroke="#2a78d6" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

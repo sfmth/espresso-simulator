@@ -1,0 +1,490 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  Particle-size distribution priors (grinder model G; bed builder P; extraction X): fines mode, X50
+  and burr gap, fines fraction and its slope, sphericity, measurement-method offsets and 2-class
+  radii. Transcribed from research note 03 §0–§2 and Implications A, and note 01 §8.
+
+parameters:
+  - id: psd.fines_mode
+    name: Fines mode of the volume-weighted PSD
+    symbol: μ_f
+    description: Particle diameter at the fines peak of the volume-weighted size distribution; nearly invariant with the burr gap.
+    units: um
+    value: 40
+    prior: {distribution: uniform, min: 20, max: 50}
+    range: {min: 10, max: 80}
+    conditions: Volume weighting; the value depends on the measurement method.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Fig. A1"
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+    research_note_ref: ["03 Implications A", "03 §1.1"]
+    used_by: [G]
+    licence_note: "Corrochano 2017 thesis: open access, copyright retained; values used with citation (PLAN §11)."
+    comment: >-
+      μ_f ≈ 40 µm, method-dependent 20–50 µm (03 Implications A). Fines peak 40–50 µm for all eight
+      grinds by dry LD (Corrochano, C); ~20–30 µm dry for the E65S (Schmieder, A); ≤ 8 µm shift between
+      grinders, implying ≈40 µm [derived from Gagné 2023, D]. Uman 2016's number mode (13–14 µm) and
+      surface mode (≈27 µm) are other weightings, so they are not part of this volume-weighted prior.
+      Grade: the thesis row of 03 §1.1 that sets 40–50 µm.
+    status: draft
+
+  - id: psd.x50_gap_ratio
+    name: Ratio of median size to burr spacing
+    symbol: κ_G
+    description: Volume median X50 divided by the nominal burr spacing, for a grinder with a dial calibrated in micrometres.
+    units: "1"
+    value: 1.4
+    prior: {distribution: lognormal, lower: 0.99, upper: 2.05, coverage: 0.95}
+    range: {min: 0.3, max: 5}
+    relation:
+      formula: >-
+        κ_G = X50/g, with X50 digitized against the nominal spacing g: 232/160 = 1.45 … 352/250 = 1.41
+    conditions: >-
+      Bentwood Vertical 63 (63 mm flat burrs), spacing 160–250 µm, Camsizer X2 projected-area size
+      (x_area), coffee without added fines.
+    tag: derived
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics. Sci. Rep. 14:5612."
+        doi: "10.1038/s41598-024-55831-x"
+        locator: "Fig. 2 (digitized in note 03)"
+    research_note_ref: "03 §2.2"
+    used_by: [G]
+    licence_note: "Smrke 2024 (Sci. Rep.) is CC BY 4.0: attribution required (03 Implications E)."
+    comment: >-
+      X50/spacing = 1.45, 1.44, 1.43, 1.41, 1.40 and 1.41 at 160, 170, 180, 190, 210 and 250 µm, from
+      values digitized to about ±3 µm; pairing assumes X50 increases monotonically with spacing.
+      X50 above the gap is plausible because the size is a projected-area diameter and the dial reads a
+      nominal spacing. Evidence from one grinder and one size definition: κ_G must be fitted per grinder
+      and per size definition (μ_c = κ_G g f_roast f_T, 03 Implications A). The prior therefore extends
+      the observed 1.40–1.45 by a factor √2 on each side as its 95% interval, a judgement rather than
+      data.
+    status: draft
+
+  - id: psd.fines_slope
+    name: Fall in fines fraction per micrometre of X50
+    symbol: β
+    description: >-
+      Decrease of the volume fraction of fines (< 100 µm), in percentage points, per micrometre
+      increase of the median X50, in w_f = u_G − β (X50 − 340 µm).
+    units: "%/um"
+    prior: {distribution: lognormal, lower: 0.062, upper: 0.14, coverage: 0.95}
+    range: {min: 0}
+    relation:
+      formula: >-
+        β = −ΔQ100/ΔX50 across a grinder's settings: (15.0 − 25.6)/(352 − 232) = −0.088 (Smrke) and
+        (16.7 − 35.9)/(383 − 190) = −0.099 (Corrochano) percentage points per µm
+    conditions: Two grinders and two methods (Camsizer X2; dry laser diffraction).
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics. Sci. Rep. 14:5612."
+        doi: "10.1038/s41598-024-55831-x"
+        locator: "Fig. 2 (digitized in note 03)"
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "03 §2.2"
+    used_by: [G]
+    comment: >-
+      Derived in note 03: (15.0 − 25.6)/(352 − 232) ≈ −0.088 points per µm (Smrke, Camsizer) and
+      (16.7 − 35.9)/(383 − 190) ≈ −0.099 (Corrochano, dry LD, disc grinder); note 03 rounds to
+      0.09–0.10. Intercepts differ by grinder (the "unimodality" u_G). Evidence from two grinders: fit
+      per grinder (03 Implications A). The prior extends the observed 0.088–0.099 by a factor √2 on each
+      side as its 95% interval, a judgement rather than data. Grade: weakest input (thesis).
+    status: draft
+
+  - id: psd.fines_fraction.dry
+    name: Fines fraction of espresso grinds, dry methods
+    description: Volume fraction of particles below 100 µm in espresso-range grinds, measured dry (laser diffraction or image analysis).
+    units: "%"
+    prior: {distribution: uniform, min: 15, max: 36}
+    range: {min: 0, max: 100}
+    conditions: Dry laser diffraction (disc grinder) and dynamic image analysis (Bentwood V63).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+      - citation: "Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics. Sci. Rep. 14:5612."
+        doi: "10.1038/s41598-024-55831-x"
+    research_note_ref: "03 §0"
+    used_by: [G, H]
+    comment: >-
+      Dry fines 35.9 / 26.6 / 20.1 / 16.7% (Corrochano, grinds B–E); Q100 ≈ 25.6 → 15.0% (Smrke). Note 01
+      §8 gives 10–36% (dry) for the same quantity, but no dry value below 15.0% appears in the notes'
+      tables; note 03 (the PSD note) and PLAN §6 #7 use 15–36%. Pooling sources needs a measurement
+      model.
+    status: draft
+
+  - id: psd.fines_fraction.wet
+    name: Fines fraction of espresso grinds, wet laser diffraction
+    description: Volume fraction of particles below 100 µm in espresso-range grinds, measured by wet laser diffraction.
+    units: "%"
+    prior: {distribution: uniform, min: 30, max: 49}
+    range: {min: 0, max: 100}
+    conditions: Wet laser diffraction (Mastersizer 2000), the same disc-grinder grinds as the dry values.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "03 §0"
+    used_by: [G]
+    comment: Wet fines 49.1 / 40.3 / 32.9 / 29.7%; wet laser diffraction also detects 1–10 µm fragments.
+    status: draft
+
+  - id: psd.x50.espresso
+    name: Volume median size of espresso grinds
+    symbol: X50
+    description: Volume median particle diameter of espresso-range grinds.
+    units: um
+    prior: {distribution: uniform, min: 150, max: 383}
+    range: {min: 0}
+    tag: measured
+    evidence_grade: D
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+      - citation: "Smrke S., Eiermann A., Yeretzian C. (2024) The role of fines in espresso extraction dynamics. Sci. Rep. 14:5612."
+        doi: "10.1038/s41598-024-55831-x"
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+    research_note_ref: ["03 §0", "03 §1.2"]
+    used_by: [G]
+    licence_note: "Coffee ad Astra is copyrighted: numbers cited, no scraping (PLAN §11)."
+    comment: >-
+      Note 03 §0 summarises "~190–380 µm", depending on grinder and method: dry X50 190–383 µm
+      (Corrochano); 232–352 µm (Smrke, Camsizer); espresso x50 typically 150–350 µm across 24 grinders
+      (Gagné 2023, D). The prior covers all of them, so its grade is that of the weakest source (D).
+    status: draft
+
+  - id: psd.boulder_mode_ratio
+    name: Ratio of boulder-tail mode to coarse mode
+    description: Mode of the boulder-tail component divided by the coarse mode, in the three-component log-normal PSD model.
+    units: "1"
+    prior: {distribution: uniform, min: 1.5, max: 2}
+    range: {min: 1, max: 5}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Gagné J. (2023) What I learned from analyzing 300 particle size distributions for 24 espresso grinders. Coffee ad Astra."
+        url: "https://coffeeadastra.com/2023/09/21/what-i-learned-from-analyzing-300-particle-size-distributions-for-24-espresso-grinders/"
+      - citation: "Kaffeemacher. Test protocol espresso grinders."
+        url: "https://kaffeemacher.de/en/blogs/kaffeewissen/test-protocol-espresso-grinders"
+    research_note_ref: "03 Implications A"
+    used_by: [G]
+    licence_note: "Coffee ad Astra and Kaffeemacher are copyrighted: numbers cited, no scraping (PLAN §11)."
+    comment: '"μ_b ≈ 1.5–2 × μ_c (assumption to be fitted)" (03 Implications A).'
+    status: draft
+
+  - id: psd.sphericity
+    name: Particle sphericity
+    symbol: ψ
+    description: Sphericity of ground-coffee particles, used with the Sauter diameter in Kozeny–Carman-type closures.
+    units: "1"
+    value: 0.75
+    prior: {distribution: triangular, min: 0.75, mode: 0.75, max: 0.85}
+    range: {min: 0, max: 1}
+    conditions: QICPIC image analysis (Corrochano).
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+      - citation: "Moroney K.M., O'Connell K., Meikle-Janney P., O'Brien S.B.G., Walker G.M., Lee W.T. (2019) Analysing extraction uniformity from porous coffee beds. PLoS ONE 14:e0219906."
+        doi: "10.1371/journal.pone.0219906"
+    research_note_ref: ["03 §1.1", "01 §8"]
+    used_by: [G, H]
+    comment: Note 01 §8 gives ~0.75 (0.75–0.85); note 03 §1.1 gives ≈0.75 by QICPIC imaging (C).
+    status: draft
+
+  - id: psd.measurement.wet_ld_d32_factor
+    name: Dry-to-wet laser-diffraction Sauter diameter ratio
+    description: Sauter diameter D32 measured by dry laser diffraction divided by that measured wet, for the same grind.
+    units: "1"
+    prior: {distribution: uniform, min: 3, max: 4}
+    range: {min: 0}
+    relation:
+      formula: "D32,dry / D32,wet for the same grind, e.g. 79.7/22.3 ≈ 3.6 (01 §4.2)"
+    conditions: Dalla Corte disc grinder, grinds B–E; dry Sympatec HELOS/RODOS, wet Mastersizer 2000.
+    tag: derived
+    evidence_grade: C
+    sources:
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: ["03 Implications A", "01 §4.2"]
+    used_by: [G]
+    comment: >-
+      Wet laser diffraction adds a 1–10 µm population: D32 roughly ÷3–4 (03 Implications A), e.g. 79.7
+      vs 22.3 µm for the same grind (01 §4.2). Dry D32 80–131 µm vs wet 22–39 µm (03 §1.2; note 01 §8
+      gives 22–38 µm). The same comparison adds 13–14 points of fines (03 Implications A). The factor
+      is setup-specific: Schmieder's dry and wet PSDs of the Mahlkönig E65S "showed high similarity"
+      (03 §1.2), apart from a ~1–2 µm peak in the wet curve, so do not apply it to the E65S preset.
+    status: draft
+
+  - id: psd.two_class.fines_radius.literature_range
+    name: Fines radius in two-class models
+    symbol: a_f
+    description: Radius of the representative fines particle in two-class (fines + boulders) extraction models.
+    units: um
+    prior: {distribution: uniform, min: 3.65, max: 25}
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+      - citation: "Moroney K.M., O'Connell K., Meikle-Janney P., O'Brien S.B.G., Walker G.M., Lee W.T. (2019) Analysing extraction uniformity from porous coffee beds. PLoS ONE 14:e0219906."
+        doi: "10.1371/journal.pone.0219906"
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+    research_note_ref: "01 §8"
+    used_by: [X, G]
+    comment: Grudeva uses a_f = 3.65 µm. For the 2-class literature mode (PLAN §7.3 X).
+    status: draft
+
+  - id: psd.two_class.boulder_radius.espresso_range
+    name: Boulder radius in two-class models
+    symbol: a_b
+    description: Radius of the representative boulder particle in two-class (fines + boulders) extraction models.
+    units: um
+    prior: {distribution: uniform, min: 100, max: 250}
+    range: {min: 0}
+    conditions: Espresso grinds.
+    tag: estimated
+    evidence_grade: C
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+      - citation: "Moroney K.M., O'Connell K., Meikle-Janney P., O'Brien S.B.G., Walker G.M., Lee W.T. (2019) Analysing extraction uniformity from porous coffee beds. PLoS ONE 14:e0219906."
+        doi: "10.1371/journal.pone.0219906"
+      - citation: "Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis, University of Birmingham."
+        url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+      - citation: "Waszkiewicz R., Myck F., Białas Ł., Puciata-Mroczynska M., Dzikowski M., Szymczak P., Lisicki M. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. Phys. Fluids 38:063113."
+        doi: "10.1063/5.0319611"
+    research_note_ref: "01 §8"
+    used_by: [X, G]
+    comment: >-
+      Note 01 §8: 50–460 µm across sources, espresso grinds mostly 100–250 µm; the prior uses the
+      espresso range. Grudeva uses a_b = 229 µm. Boulders of radius 150–250 µm need tens to hundreds of
+      seconds to empty (01 §1).
+    status: draft
+
+  - id: psd.two_class.fines_radius.grudeva2026
+    name: Fines radius in the Grudeva et al. 2026 parameter set
+    symbol: a_f
+    description: Radius of the fines in the Grudeva, Moroney & Foster two-class model.
+    units: um
+    value: 3.65
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [X, G]
+    comment: Part of the Grudeva literature set (2-class mode). Fines are treated as non-porous.
+    status: draft
+
+  - id: psd.two_class.boulder_radius.grudeva2026
+    name: Boulder radius in the Grudeva et al. 2026 parameter set
+    symbol: a_b
+    description: Radius of the boulders in the Grudeva, Moroney & Foster two-class model.
+    units: um
+    value: 229
+    range: {min: 0}
+    tag: estimated
+    evidence_grade: B
+    sources:
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+        locator: "Table 1"
+    research_note_ref: "01 §3.5"
+    used_by: [X, G]
+    comment: Part of the Grudeva literature set (2-class mode). Boulders are porous (φ_lb = 0.35–0.55).
+    status: draft
+
+  # -- Named grinders ----------------------------------------------------------------
+  - id: psd.grinder.e65s.indicator_step
+    name: Mahlkönig E65S burr movement per dial indicator
+    symbol: Δ
+    description: Change in nominal burr spacing per indicator of the E65S adjustment dial, in g = g₀ + Δ(s − s₀).
+    units: um
+    value: 5
+    range: {min: 0}
+    relation:
+      formula: "(580 − 180) µm / 80 indicators ≈ 5 µm per indicator, if the scale is linear"
+    conditions: Mahlkönig E65S, 65 mm steel burrs, 80-indicator scale.
+    tag: derived
+    evidence_grade: D
+    sources:
+      - citation: "Mahlkönig/Hemro. E65S product brochure (DE)."
+        url: "https://downloads.mahlkoenig.de/Products/Mahlkoenig_E65S_Espresso_Grinder_Product_Brochure_DE.pdf"
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "§2.4"
+    research_note_ref: ["03 §2.2", "03 Implications A"]
+    used_by: [G]
+    comment: >-
+      Note 03 reads the brochure's "bandwidth of 180 to 580 µm" as axial burr movement; Schmieder 2023
+      describes the same figure as a manufacturer-declared volume-mean-diameter bandwidth, so whether it
+      is a gap or a particle size is uncertain. GL 1.4 → 2.0 is 7.5% of the scale, ≈30 µm nominal
+      [derived, 03 §2.2]. Manufacturer specification, hence grade D.
+    status: draft
+
+  - id: psd.grinder.e65s.d43_wet.gl1_4
+    name: E65S volume mean diameter at GL 1.4 (wet laser diffraction)
+    symbol: D43
+    description: Volume mean particle diameter D[4,3] of E65S grounds at grind level 1.4, measured by wet laser diffraction.
+    units: um
+    value: 273
+    prior: {distribution: normal, mean: 273, sd: 7.6}
+    range: {min: 0}
+    conditions: Sympatec HELOS/BR with wet (QUIXEL) dispersion; washed Colombian Arabica.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "§2.4"
+    research_note_ref: "03 §1.2"
+    used_by: [G]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: SD of repeated measurements. Dry and wet PSDs "showed high similarity", apart from a ~1–2 µm peak in the wet curve.
+    status: draft
+
+  - id: psd.grinder.e65s.d43_wet.gl1_7
+    name: E65S volume mean diameter at GL 1.7 (wet laser diffraction)
+    symbol: D43
+    description: Volume mean particle diameter D[4,3] of E65S grounds at grind level 1.7, measured by wet laser diffraction.
+    units: um
+    value: 277
+    prior: {distribution: normal, mean: 277, sd: 17}
+    range: {min: 0}
+    conditions: Sympatec HELOS/BR with wet (QUIXEL) dispersion; washed Colombian Arabica.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "§2.4"
+    research_note_ref: "03 §1.2"
+    used_by: [G]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: SD of repeated measurements. The grind level of the Schmieder centre point (data/datasets/schmieder2023-centre-point).
+    status: draft
+
+  - id: psd.grinder.e65s.d43_wet.gl2_0
+    name: E65S volume mean diameter at GL 2.0 (wet laser diffraction)
+    symbol: D43
+    description: Volume mean particle diameter D[4,3] of E65S grounds at grind level 2.0, measured by wet laser diffraction.
+    units: um
+    value: 295
+    prior: {distribution: normal, mean: 295, sd: 18}
+    range: {min: 0}
+    conditions: Sympatec HELOS/BR with wet (QUIXEL) dispersion; washed Colombian Arabica.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "§2.4"
+    research_note_ref: "03 §1.2"
+    used_by: [G]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: SD of repeated measurements. Across GL 1.4–2.0 (≈30 µm nominal) D43 moved by only 22 µm, near the repeatability of PSD measurement (03 §2.2).
+    status: draft
+
+  - id: psd.grinder.e65s.d32_wet.gl1_4
+    name: E65S Sauter mean diameter at GL 1.4 (wet laser diffraction)
+    symbol: D32
+    description: Sauter mean diameter D[3,2] of E65S grounds at grind level 1.4, measured by wet laser diffraction.
+    units: um
+    value: 28.3
+    range: {min: 0}
+    conditions: Sympatec HELOS/BR with wet (QUIXEL) dispersion; washed Colombian Arabica.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "§2.4"
+    research_note_ref: "03 §1.2"
+    used_by: [G, H]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: The paper also prints an SD of 1.6 µm (not given in note 03). Wet D32 includes the 1–10 µm debris that dry methods miss.
+    status: draft
+
+  - id: psd.grinder.e65s.d32_wet.gl1_7
+    name: E65S Sauter mean diameter at GL 1.7 (wet laser diffraction)
+    symbol: D32
+    description: Sauter mean diameter D[3,2] of E65S grounds at grind level 1.7, measured by wet laser diffraction.
+    units: um
+    value: 26.9
+    range: {min: 0}
+    conditions: Sympatec HELOS/BR with wet (QUIXEL) dispersion; washed Colombian Arabica.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "§2.4"
+    research_note_ref: "03 §1.2"
+    used_by: [G, H]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: The paper also prints an SD of 3.2 µm (not given in note 03).
+    status: draft
+
+  - id: psd.grinder.e65s.d32_wet.gl2_0
+    name: E65S Sauter mean diameter at GL 2.0 (wet laser diffraction)
+    symbol: D32
+    description: Sauter mean diameter D[3,2] of E65S grounds at grind level 2.0, measured by wet laser diffraction.
+    units: um
+    value: 29.2
+    range: {min: 0}
+    conditions: Sympatec HELOS/BR with wet (QUIXEL) dispersion; washed Colombian Arabica.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "§2.4"
+    research_note_ref: "03 §1.2"
+    used_by: [G, H]
+    licence_note: "Schmieder 2023 is CC BY 4.0: derived parameters may be bundled with attribution (PLAN §11)."
+    comment: The paper also prints an SD of 1.4 µm (not given in note 03).
+    status: draft
+
+  - id: psd.grinder.ek43.dark_roast_mean_reduction
+    name: EK43 mean-size reduction of the darkest roast
+    description: >-
+      How much finer the mean particle size of the darkest roast was than that of the lightest roast at
+      the same Mahlkönig EK43 setting.
+    units: um
+    value: 100
+    range: {min: 0}
+    conditions: >-
+      EK43 with stock coffee burrs, aligned, settings 1.0–6.0; Mastersizer 2000 with Scirocco dry
+      dispersion at 2 bar; Ikawa roast series.
+    tag: measured
+    evidence_grade: A
+    sources:
+      - citation: "Méndez Harper J. et al. (2024; online 2023) Moisture-controlled triboelectrification during coffee grinding. Matter 7:1–18."
+        doi: "10.1016/j.matt.2023.11.005"
+    research_note_ref: ["03 §2.1", "03 §1.2"]
+    used_by: [G, B]
+    licence_note: "Raw data on Figshare (doi:10.6084/m9.figshare.23277320.v2) under CC BY 4.0: attribution required (PLAN §11)."
+    comment: >-
+      "≈100 µm finer mean" (darker grinds finer): light at setting 2.0 matched dark at 2.3. Roasting makes
+      beans brittle; f_roast in μ_c = κ_G g f_roast f_T (03 Implications A).
+    status: draft

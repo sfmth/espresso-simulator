@@ -1,0 +1,26 @@
+distribution,brewed_mass_g,quantity,value,sd,unit,source_locator
+A,30,flow_rate,3.31,0.17,mL/s,Tables 1 and 2
+B,30,flow_rate,3.11,0.18,mL/s,Tables 1 and 2
+C,30,flow_rate,2.5,0.17,mL/s,Tables 1 and 2
+D,30,flow_rate,2.64,0.12,mL/s,Tables 1 and 2
+B,60,flow_rate,3.17,0.15,mL/s,Table 3
+A,,dose,15.2,,g,Table 1
+B,,dose,16.5,,g,Table 1
+C,,dose,16.5,,g,Table 1
+D,,dose,16.1,,g,Table 1
+A,30,bodenstein,8.70,0.84,1,Table 2
+B,30,bodenstein,10.01,2.82,1,Tables 2 and 3
+C,30,bodenstein,10.36,1.15,1,Table 2
+D,30,bodenstein,8.98,1.07,1,Table 2
+B,60,bodenstein,7.74,1.29,1,Table 3
+all,,bed_length,13.4,,mm,Section 3.1
+all,,bed_diameter,59,,mm,Section 3.1
+all,,brew_temperature,88,2,degC,Section 2.2
+A,,sauter_diameter,105,,um,Fig. 3 caption
+B,,sauter_diameter,113,,um,Fig. 3 caption
+C,,sauter_diameter,134,,um,Fig. 3 caption
+D,,sauter_diameter,120,,um,Fig. 3 caption
+A,,sauter_diameter_coarse,272,,um,Fig. 3 caption
+B,,sauter_diameter_coarse,343,,um,Fig. 3 caption
+C,,sauter_diameter_coarse,438,,um,Fig. 3 caption
+D,,sauter_diameter_coarse,337,,um,Fig. 3 caption

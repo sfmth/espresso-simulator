@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+[workspace]
+resolver = "3"
+members = ["crates/puckcore", "crates/puckmodel", "crates/puckcore-wasm", "crates/puckcore-py"]
+# The Python extension needs a Python interpreter and is built with maturin,
+# so plain `cargo build` / `cargo test` skip it.
+default-members = ["crates/puckcore", "crates/puckmodel", "crates/puckcore-wasm"]
+
+[workspace.package]
+version = "0.3.0"
+edition = "2024"
+license = "GPL-2.0-or-later"
+authors = ["Puckworks contributors"]
+publish = false
+
+[workspace.dependencies]
+puckcore = { path = "crates/puckcore" }
+puckmodel = { path = "crates/puckmodel" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# The wasm-bindgen CLI must match this exact version (scripts/build_wasm.sh checks it).
+wasm-bindgen = "=0.2.129"
+pyo3 = { version = "0.29.3", features = ["abi3-py310"] }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+
+# The solver dominates test time: optimise it even in debug and test builds
+# (about 3.5 min → seconds for the puckmodel tests). Rust never contracts or
+# reorders floating-point operations, so results are identical at every
+# optimisation level.
+[profile.dev.package.puckcore]
+opt-level = 3

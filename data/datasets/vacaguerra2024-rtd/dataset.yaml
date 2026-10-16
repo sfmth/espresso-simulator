@@ -1,0 +1,85 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for rtd.csv. The numbers are facts cited from an article published under CC BY-NC-ND
+# (see `licence` and `notes`); this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: vacaguerra2024-rtd
+title: >-
+  Bodenstein numbers, flow rates, doses and particle sizes of espresso beds for four particle-size
+  distributions, as used by the V2 dispersion case (Vaca Guerra et al. 2024)
+citation: >-
+  Vaca Guerra M., Harshe Y.M., Fries L., Payan Lozada J., Atxutegi A., Palzer S., Heinrich S. (2024)
+  Modeling the extraction of espresso components as dispersed flow through a packed bed. J. Food Eng.
+  368:111913. Tables 1–3, Sections 2.2 and 3.1, Fig. 3 caption.
+doi: "10.1016/j.jfoodeng.2023.111913"
+url: "https://tore.tuhh.de/entities/publication/313fb619-97a3-40fb-a075-9b8cfdec4af0"
+licence: facts-cited
+redistribution: cite-only
+retrieved: "2026-10-14"
+research_note_ref: ["01 §4.8", "01 §9"]
+
+obtained: >-
+  Transcribed by hand from the published version (Elsevier PDF from the TUHH open repository TORE,
+  doi:10.15480/882.9180, sha256 488d8c48cc0f5258d71c8746cb48211f8083abe1467d4f51de33c4260f896415):
+  the values the V2 case builder uses: doses (Table 1), flow rates and Bodenstein numbers of the five
+  modelled experiments (A–D after 30 g, Tables 1–2; B after 60 g, Table 3), the model's bed length and
+  diameter (§3.1), the brew temperature (§2.2) and the Sauter diameters in the Fig. 3 caption. Every
+  number was checked by script to occur verbatim in the PDF's text layer. Only these 25 values are kept
+  (the tables are not copied wholesale: residence times, porosities, velocities, the dry-bed and
+  steady-state Bodenstein numbers and the other diameters were removed on 2026-10-15).
+
+uncertainty: >-
+  Transcription: none expected (verbatim check). Statistical: `sd` is the ± printed in the tables, the
+  standard deviation of triplicate tracer experiments (Fig. 6 caption). Tracer runs used a KCl pulse
+  (0.01 g/mL, 9 ± 0.5 mL) at 22 ± 2 °C in a parallel rig with the same ULKA pump, on beds first
+  extracted to the stated brewed mass in a Bezzera machine at 88 ± 2 °C; residence-time distributions
+  from inline conductivity at the bed exit; Bo from the variance of the distribution (closed-closed
+  vessel, their Eq. 7). Mean residence times use the initial dry-bed porosity, so the plug-flow time τ
+  is a nominal value.
+
+columns:
+  - name: distribution
+    type: string
+    description: "Particle-size distribution: A (finest), B (mid), C (coarsest), D (mid, narrower coarse mode), or all."
+  - name: brewed_mass_g
+    type: number
+    units: g
+    required: false
+    description: Beverage mass extracted before the tracer experiment (extraction stage); empty for bed properties.
+  - name: quantity
+    type: string
+    description: >-
+      flow_rate, dose, bodenstein (Bo = vL/D_ax), bed_length, bed_diameter, brew_temperature,
+      sauter_diameter, sauter_diameter_coarse (particles above 100 µm).
+  - name: value
+    type: number
+    units_column: unit
+    description: The value as printed.
+  - name: sd
+    type: number
+    units_column: unit
+    required: false
+    description: Standard deviation as printed (±), where given.
+  - name: unit
+    type: string
+    description: Unit of value and sd.
+  - name: source_locator
+    type: string
+    description: Where in the article the number is printed.
+
+files:
+  - path: rtd.csv
+    format: csv
+    description: 25 values.
+
+notes: >-
+  Licence: the article is open access under CC BY-NC-ND 4.0. Non-commercial material is never bundled
+  (docs/PLAN.md §11), so only cited facts are kept here: no figure, table layout or text is reproduced,
+  and the outlet-concentration curves of TDS, caffeine, trigonelline and 5-CQA (figures, three PSDs)
+  were not digitised. Those curves come from the authors' earlier paper (Vaca Guerra et al. 2023,
+  J. Food Eng. 340:111301, doi:10.1016/j.jfoodeng.2022.111301), which is not open access; using them
+  needs the authors' permission. Findings used by Puckworks: Bo is about 9–10 after 30 g whatever the
+  PSD, 16.8 in the initially dry bed and 7.7 after 60 g, so axial dispersion is not negligible (research
+  note 01 §4.8; registry extraction.dispersion.bodenstein); the authors model the steady state with
+  Bo = 9.76 ± 1.86. The tracer mean residence time is about 5 times the plug-flow time τ. Machine:
+  Bezzera with an ULKA pump, 15–16.5 g doses, about 3 mL/s; bed modelled as 13.4 mm long and 59 mm in
+  diameter. Used for the V2 dispersion calibration. Cite the article.

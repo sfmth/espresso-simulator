@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# setuptools output of non-editable installs (pip install ./python)
+/build/

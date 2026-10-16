@@ -1,0 +1,173 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Machines and shot programs. A program is a list of phases in the recipe's machine.profile format:
+# control "pressure" (target in bar, limit = flow cap in mL/s), "flow" (target in mL/s, limit =
+# pressure cap in bar) or "pump" (full power on the pump curve), with optional ramps and exit
+# conditions. Phases run in order; the last runs until the stop rule fires.
+#
+# Pumps: "ideal" follows the program within its limits (profiling machines, levers); "vibratory"
+# follows Q = Q_free (1 − P/P_stall) with an optional over-pressure valve (OPV). Omitted pump values
+# come from the registry (model.machine.*). No research note covers pump curves, so every pump number
+# here is an estimate (grade D).
+schema: puckworks.preset-file/1
+kind: machine
+description: Generic machines and pressure/flow programs.
+presets:
+  - id: flat-9-bar
+    name: Flat 9 bar
+    description: Constant 9 bar at the puck from a profiling (ideal) pump, after a 2 s ramp.
+    flags: [generic]
+    notes:
+      - "An ideal pump holds the programmed pressure exactly, within its flow limit (8 mL/s by default)."
+    sources:
+      - citation: "Ellero M., Navarini L. (2019) Mesoscopic modelling and simulation of espresso coffee extraction. J. Food Eng. 263:181–194."
+        doi: "10.1016/j.jfoodeng.2019.05.038"
+    evidence_grade: B
+    tag: estimated
+    registry_refs: [shot.pressure, model.machine.ideal_max_flow, model.machine.ideal_max_pressure]
+    program:
+      - {control: pressure, target: 9, ramp_s: 2}
+    temperature_c: 93
+
+  - id: declining-9-6
+    name: Declining 9 → 6 bar
+    description: 9 bar for 8 s, then a linear decline to 6 bar over 15 s, held to the end (profiling pump).
+    flags: [generic, estimated]
+    notes:
+      - "A common profiling shape; the timings are typical, not from a published protocol."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: typical program, estimated."
+    evidence_grade: D
+    tag: estimated
+    program:
+      - {control: pressure, target: 9, ramp_s: 2, until_time_s: 8}
+      - {control: pressure, target: 6, ramp_s: 15}
+    temperature_c: 93
+
+  - id: spring-lever
+    name: Spring lever
+    description: >-
+      Pre-infusion at boiler pressure while the lever is held down, then the spring pushes the piston:
+      a peak near 9 bar that declines as the spring extends.
+    flags: [generic, estimated]
+    notes:
+      - "A spring lever's pressure falls with piston travel, i.e. with the volume dispensed; here it falls linearly with time (9 → 4.5 bar over 22 s), an approximation."
+      - "Pre-infusion at about 1.2 bar of boiler pressure for 8 s; peak and decline values are typical, not measured on a particular machine."
+      - "Lever groups have no three-way valve: the water above the puck drips into the cup after the stop."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: typical program, estimated."
+    evidence_grade: D
+    tag: estimated
+    pump: {type: ideal, max_flow_ml_s: 10, max_pressure_bar: 10}
+    vent_headspace: false
+    program:
+      - {control: pressure, target: 1.2, ramp_s: 0.5, until_time_s: 8}
+      - {control: pressure, target: 9, ramp_s: 1.5, until_time_s: 3}
+      - {control: pressure, target: 4.5, ramp_s: 22}
+    temperature_c: 92
+
+  - id: blooming
+    name: Blooming espresso
+    description: >-
+      Fill at 4 mL/s until about 3.5 bar, pause 20 s with the pump off while the puck soaks, then
+      extract at up to 9 bar with the flow capped at 3 mL/s (profiling pump).
+    flags: [generic, estimated]
+    notes:
+      - "Timings are typical of blooming programs on profiling machines, not from a published protocol."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: typical program, estimated."
+    evidence_grade: D
+    tag: estimated
+    program:
+      - {control: flow, target: 4, limit: 4, until_pressure_bar: 3.5, until_time_s: 12}
+      - {control: flow, target: 0, until_time_s: 20}
+      - {control: pressure, target: 9, ramp_s: 3, limit: 3}
+    temperature_c: 93
+
+  - id: turbo-6-bar
+    name: Turbo shot, 6 bar
+    description: >-
+      6 bar with a high flow cap, for coarse "turbo" shots (about 15 s at a 1:3 ratio); lower pressure
+      avoided the clogging Cameron 2020 saw at 9 bar with fine grinds.
+    flags: [generic, estimated]
+    notes:
+      - "Grind much coarser than for a 9 bar shot and use a longer ratio (about 1:3)."
+    sources:
+      - citation: "Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T., Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling and experiment. Matter 2:631–648."
+        doi: "10.1016/j.matt.2019.12.019"
+    evidence_grade: D
+    tag: estimated
+    program:
+      - {control: pressure, target: 6, ramp_s: 2, limit: 6}
+    temperature_c: 93
+
+  - id: flow-2-ml-s
+    name: Flow profile, 2 mL/s
+    description: Constant 2 mL/s from a flow-controlled pump, with pressure capped at 10 bar.
+    flags: [generic]
+    notes:
+      - "At 2 mL/s the headspace fills slowly, so the first drops come later than with a pressure profile."
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+    evidence_grade: B
+    tag: estimated
+    registry_refs: [shot.flow_rate]
+    program:
+      - {control: flow, target: 2, ramp_s: 1, limit: 10}
+    temperature_c: 93
+
+  - id: allonge
+    name: Allongé
+    description: A long, very coarse shot at 4.5 mL/s with pressure capped at 6 bar (profiling pump).
+    flags: [generic, estimated]
+    notes:
+      - "Allongé shots use a very coarse grind and a 1:4–1:5 ratio; the flow and pressure cap are typical, not from a published protocol."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: typical program, estimated."
+    evidence_grade: D
+    tag: estimated
+    program:
+      - {control: flow, target: 4.5, ramp_s: 2, limit: 6}
+    temperature_c: 93
+
+  - id: vibratory-pump
+    name: Vibratory pump, no profiling
+    description: >-
+      A typical home machine: a vibratory pump at full power on its pump curve, with an over-pressure
+      valve (OPV) at 12 bar.
+    flags: [generic, estimated]
+    notes:
+      - "Linear pump curve with registry defaults (9 mL/s free flow, 16 bar stall) and an OPV at 12 bar: typical values, not a particular pump. A gauge reading during a shot calibrates them."
+      - "No three-way valve assumed: many budget vibratory machines lack one, but others have it (it hisses into the drip tray at the stop and leaves a dry puck); then set machine.vent_headspace to true."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: typical vibratory pump, estimated."
+    evidence_grade: D
+    tag: estimated
+    registry_refs: [model.machine.vibratory_free_flow, model.machine.vibratory_stall_pressure]
+    pump: {type: vibratory, opv_bar: 12}
+    vent_headspace: false
+    program:
+      - {control: pump}
+    temperature_c: 93
+
+  - id: e61-rotary
+    name: Rotary pump, E61-style group
+    description: >-
+      A rotary pump with its bypass set to about 9 bar (a nearly constant-pressure source) feeding a
+      heavy E61-style group, whose mechanical pre-infusion chamber softens the pressure rise.
+    flags: [generic, estimated]
+    notes:
+      - "The flow restrictor (gicleur) caps the flow, here at 6 mL/s; the pre-infusion chamber is approximated by a 4 s pressure ramp. Both are estimates."
+      - "E61-style groups have a three-way solenoid valve that vents the group at the stop, so no headspace water drips into the cup."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: typical machine, estimated."
+    evidence_grade: D
+    tag: estimated
+    pump: {type: ideal, max_flow_ml_s: 6, max_pressure_bar: 9.5}
+    program:
+      - {control: pressure, target: 9, ramp_s: 4}
+    temperature_c: 93
+    drip_tau_s: 1.0
+    vent_headspace: true
+    preheat_temp_c: 88

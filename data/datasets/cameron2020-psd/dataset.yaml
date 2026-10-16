@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for psd.csv. The numbers are facts read from a copyrighted article (see `licence`); this
+# metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: cameron2020-psd
+title: >-
+  Volume particle-size distributions of EK43 espresso grinds at grind settings 1.0, 1.5, 2.0 and 2.5
+  (Cameron et al. 2020, Fig. 2B), on a log-spaced diameter grid
+citation: >-
+  Cameron M.I., Morisco D., Hofstetter D., Uman E., Wilkinson J., Kennedy Z.C., Fontenot S.A., Lee W.T.,
+  Hendon C.H., Foster J.M. (2020) Systematically improving espresso: insights from mathematical modeling
+  and experiment. Matter 2:631–648. Figure 2B. Accepted manuscript: OSTI 1973594.
+doi: "10.1016/j.matt.2019.12.019"
+url: "https://www.osti.gov/biblio/1973594"
+licence: facts-cited
+redistribution: cite-only
+retrieved: "2026-10-14"
+research_note_ref: ["03 §1.2", "03 §2.2", "01 §9"]
+
+obtained: >-
+  Read from the vector graphics of Fig. 2B in the accepted manuscript (OSTI 1973594 PDF, sha256
+  0fa006c50429cab73e8d53840d39d9a058718129cca62d31d9305c29d6b22673) by script
+  (python/puckworks_tools/sources/cameron2020.py). The GS 2.5 curve is a stroked outline; the other
+  three are drawn as outlined strokes (thin filled bands), so the curve is the band's centre line,
+  taken as the midpoint of its upper and lower edges at each diameter. The curves were identified by
+  their label leader lines and sampled at 40 points per decade from 5 to 2000 µm; the axes were
+  calibrated with the vector tick marks (log10 of diameter: 4 decade ticks; volume percent: 5 ticks).
+
+uncertainty: >-
+  Reading: axis-fit residuals 0.0012 decade (0.3% in diameter) and 0.0003 volume-percent points; the
+  band centre line is good to about ±0.4 pt, i.e. ±0.05 volume-percent points. Integrating each curve
+  over log10(diameter) gives 9.90–10.03, i.e. the plotted values are volume percent per 0.1-decade
+  channel and sum to 99–100%, a check on the reading. The curves are the authors' smoothed drawings of
+  the instrument output (a few dozen Bézier segments each), so channel-scale detail is not
+  reproduced. Statistical: the article gives no replicate information for the PSDs. Method: Beckman
+  Coulter LS13 320 laser diffraction (Meritics Ltd.), dispersion not stated.
+
+columns:
+  - name: grind_setting
+    type: number
+    units: "1"
+    description: EK43 grind setting.
+  - name: diameter_um
+    type: number
+    units: um
+    description: Particle diameter (log-spaced grid, 40 points per decade).
+  - name: volume_percent
+    type: number
+    units: "%"
+    description: Volume percent per 0.1-decade channel at this diameter, as plotted (0 outside the drawn curve).
+
+files:
+  - path: psd.csv
+    format: csv
+    description: 4 grind settings × 105 diameters.
+
+notes: >-
+  Peaks read here: GS 2.5, 20.1% at 411–422 µm; 2.0, 17.5% at 335 µm; 1.5, 15.2% at 329–335 µm;
+  1.0, 14.3% at 266–272 µm; the fines mode sits at 50 µm for all settings and grows as the setting gets
+  finer, while its position stays put (the article's Fig. 2B caption). Volume share below 100 µm:
+  0.279, 0.228, 0.209 and 0.156 for GS 1.0, 1.5, 2.0 and 2.5. The supplement's two-class description
+  (cameron2020-two-class) gives smaller fines shares, and its boulder "radius" equals the modal
+  diameter read here. Used for the V3 (held-out) case builder. Facts only; cite the article.

@@ -1,0 +1,177 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  CO₂ in roasted coffee (bean model B; hydraulics H; extraction X): total releasable CO₂ and the
+  Weibull degassing fits of whole beans by roast degree, M(t) = M∞ [1 − exp(−(t/λ)^k)], and the
+  residual CO₂ of ground coffee. Transcribed from research note 02 §1.1, §4.3–§4.4 and 01 §4.9.
+
+parameters:
+  - id: bean.co2.total.light
+    name: Releasable CO₂ of whole beans, light roast
+    symbol: M∞
+    description: Total CO₂ released by whole beans, from a Weibull fit to gravimetric degassing data.
+    units: "mg/g"
+    prior: {distribution: uniform, min: 3.4, max: 3.7}
+    range: {min: 0.01, max: 100}
+    conditions: Whole beans, light roast (131 Pt, Colorette); Weibull fit over 400 h.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B, H, X]
+    comment: >-
+      Fits to 400 h underestimate the total: a light roast followed to 800 h gives M∞ 5.07 mg/g, λ 715 h,
+      k 0.842 (02 §4.4). Measured release over 400 h: 2.5–2.8 mg/g (02 Table 1).
+    status: draft
+
+  - id: bean.co2.total.medium
+    name: Releasable CO₂ of whole beans, medium roast
+    symbol: M∞
+    description: Total CO₂ released by whole beans, from a Weibull fit to gravimetric degassing data.
+    units: "mg/g"
+    prior: {distribution: uniform, min: 5.7, max: 7.3}
+    range: {min: 0.01, max: 100}
+    conditions: Whole beans, medium roast (101 Pt, Colorette); Weibull fit over 400 h.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B, H, X]
+    comment: Measured release over 400 h 4.7–6.6 mg/g (02 Table 1). Faster roasts degas faster at medium and dark roast.
+    status: draft
+
+  - id: bean.co2.total.dark
+    name: Releasable CO₂ of whole beans, dark roast
+    symbol: M∞
+    description: Total CO₂ released by whole beans, from a Weibull fit to gravimetric degassing data.
+    units: "mg/g"
+    prior: {distribution: uniform, min: 10.2, max: 12.7}
+    range: {min: 0.01, max: 100}
+    conditions: Whole beans, dark roast (78 Pt, Colorette); Weibull fit over 400 h.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B, H, X]
+    comment: >-
+      Measured release over 400 h 8.5–11.9 mg/g (02 Table 1). In fast-roasted dark beans the data split
+      into a fast pool of 20% (2.18 mg/g, τ 37.6 h) and a slow pool of 80% (10.34 mg/g, τ 182.5 h)
+      (02 §4.4). Across roasts, whole-bean M∞ is 3.4–12.7 mg/g (01 §4.9).
+    status: draft
+
+  - id: bean.co2.weibull_scale.light
+    name: Weibull degassing time scale, light roast
+    symbol: λ
+    description: Time scale λ of the Weibull fit M(t) = M∞ [1 − exp(−(t/λ)^k)] to whole-bean degassing.
+    units: h
+    prior: {distribution: uniform, min: 310, max: 377}
+    range: {min: 1, max: 1.0e5}
+    conditions: Whole beans, light roast (131 Pt); fit over 400 h.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B]
+    comment: Faster roasts do not degas faster at light roast (02 §4.3).
+    status: draft
+
+  - id: bean.co2.weibull_scale.medium
+    name: Weibull degassing time scale, medium roast
+    symbol: λ
+    description: Time scale λ of the Weibull fit M(t) = M∞ [1 − exp(−(t/λ)^k)] to whole-bean degassing.
+    units: h
+    prior: {distribution: uniform, min: 190, max: 270}
+    range: {min: 1, max: 1.0e5}
+    conditions: Whole beans, medium roast (101 Pt); fit over 400 h.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B]
+    comment: Note 02 gives no shape parameter k for the medium roast.
+    status: draft
+
+  - id: bean.co2.weibull_scale.dark
+    name: Weibull degassing time scale, dark roast
+    symbol: λ
+    description: Time scale λ of the Weibull fit M(t) = M∞ [1 − exp(−(t/λ)^k)] to whole-bean degassing.
+    units: h
+    prior: {distribution: uniform, min: 153, max: 242}
+    range: {min: 1, max: 1.0e5}
+    conditions: Whole beans, dark roast (78 Pt); fit over 400 h.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B]
+    status: draft
+
+  - id: bean.co2.weibull_shape.light
+    name: Weibull degassing shape, light roast
+    symbol: k
+    description: Shape exponent k of the Weibull fit M(t) = M∞ [1 − exp(−(t/λ)^k)] to whole-bean degassing.
+    units: "1"
+    prior: {distribution: uniform, min: 0.96, max: 1.00}
+    range: {min: 0.05, max: 10}
+    conditions: Whole beans, light roast (131 Pt); fit over 400 h.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B]
+    status: draft
+
+  - id: bean.co2.weibull_shape.dark
+    name: Weibull degassing shape, dark roast
+    symbol: k
+    description: Shape exponent k of the Weibull fit M(t) = M∞ [1 − exp(−(t/λ)^k)] to whole-bean degassing.
+    units: "1"
+    prior: {distribution: uniform, min: 0.85, max: 0.96}
+    range: {min: 0.05, max: 10}
+    conditions: Whole beans, dark roast (78 Pt); fit over 400 h.
+    tag: fitted
+    evidence_grade: A
+    sources:
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "02 §4.3"
+    used_by: [B]
+    status: draft
+
+  - id: bean.co2.ground_residual
+    name: Residual CO₂ in fresh ground coffee
+    description: CO₂ still held by coffee just after fine grinding.
+    units: "mg/g"
+    prior: {distribution: uniform, min: 4.5, max: 12}
+    range: {min: 0, max: 100}
+    conditions: Fine grind, shortly after grinding.
+    tag: measured
+    evidence_grade: C
+    sources:
+      - citation: "Anderson B.A., Shimoni E., Liardon R., Labuza T.P. (2003) Diffusion kinetics of CO₂ in fresh roasted and ground coffee. J. Food Eng. 59:71–78."
+        doi: "10.1016/S0260-8774(02)00432-6"
+        locator: "via Corrochano 2017 (not read in note 01)"
+      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
+        doi: "10.1021/acs.jafc.7b03310"
+    research_note_ref: "01 §4.9"
+    used_by: [B, H, X]
+    comment: >-
+      4.5–8.5 mg/g as cited by Smrke 2018; 4.5–12 mg/g as cited by Corrochano from Anderson 2003 and Wang
+      & Lim 2014 (secondary citations, hence grade C). Grinding fresh coffee releases up to 75% of the gas
+      within 90 s; some CO₂ stays sorbed and comes out only on wetting (02 §4.4). Characteristic degassing
+      time of ground coffee about 10 h at 20 °C (Corrochano, citing Anderson 2003).
+    status: draft

@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Dependency licence policy, checked in CI with `cargo deny check licenses`
+# (cargo-deny 0.20; .github/workflows/rust.yml).
+#
+# The policy is ADR 0007 (docs/decisions/0007-licensing-and-dependency-policy.md).
+# Every dependency must be compatible with GPL-2.0-or-later, and permissive
+# licences are preferred. Apache-2.0 is accepted: a build that includes
+# Apache-2.0 code is distributed under GPLv3 (D12). Non-commercial,
+# proprietary, SSPL, BUSL and other GPL-incompatible licences are never allowed.
+
+[graph]
+# Check every feature, so the Python extension's optional dependencies are covered too.
+all-features = true
+
+[licenses]
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "0BSD",
+    "CC0-1.0",
+    "BlueOak-1.0.0",
+]
+# The policy lists licences we accept, not licences we currently use.
+unused-allowed-license = "allow"
+confidence-threshold = 0.93
+# Our own crates are GPL-2.0-or-later. Only they may use it: a third-party
+# copyleft dependency needs a deliberate, reviewed exception here.
+exceptions = [
+    { allow = ["GPL-2.0-or-later"], crate = "puckcore" },
+    { allow = ["GPL-2.0-or-later"], crate = "puckcore-wasm" },
+    { allow = ["GPL-2.0-or-later"], crate = "puckcore-py" },
+    { allow = ["GPL-2.0-or-later"], crate = "puckmodel" },
+]
+
+[licenses.private]
+# Our crates are unpublished (`publish = false`); check them anyway.
+ignore = false

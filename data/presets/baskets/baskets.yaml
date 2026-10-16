@@ -1,0 +1,205 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Generic baskets, named by geometry rather than brand. Every dimension is an ESTIMATE of a typical
+# basket of that kind (no basket drawings are in the research notes): inner wall profiles as
+# [height above the floor, inner diameter] in mm, the diameter of the perforated field, and for
+# pressurised (dual-wall) baskets the diameter of the single outlet orifice. Measure your own basket
+# and describe it with recipe basket.custom for better results.
+#
+# Hole open area is left to the registry default (model.basket.open_area_fraction): at shot flows
+# the holes add a negligible pressure drop, and the hole pattern acts through the edge multiplier
+# (perforated vs floor diameter; model.basket.*, model.prep.edge_multiplier.*).
+schema: puckworks.preset-file/1
+kind: basket
+description: Generic espresso baskets with estimated dimensions.
+presets:
+  # -- 58 mm precision (near-straight walls, small floor fillet) ---------------------------
+  - id: 58-precision-15g
+    name: 58 mm precision basket, 15 g
+    description: Straight-walled 58 mm precision basket for 13–16 g doses.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 58 mm precision basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 15
+    dose_range_g: [13, 16]
+    profile_mm: [[0, 54.0], [2, 57.0], [5, 58.0], [18, 58.5]]
+    perforated_diameter_mm: 50
+
+  - id: 58-precision-18g
+    name: 58 mm precision basket, 18 g
+    description: Straight-walled 58 mm precision basket for 16–19 g doses.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 58 mm precision basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 18
+    dose_range_g: [16, 19]
+    profile_mm: [[0, 54.0], [2, 57.0], [5, 58.0], [21, 58.5]]
+    perforated_diameter_mm: 50
+
+  - id: 58-precision-20g
+    name: 58 mm precision basket, 20 g
+    description: Straight-walled 58 mm precision basket for 18–21 g doses.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 58 mm precision basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 20
+    dose_range_g: [18, 21]
+    profile_mm: [[0, 54.0], [2, 57.0], [5, 58.0], [23, 58.5]]
+    perforated_diameter_mm: 50
+
+  - id: 58-precision-22g
+    name: 58 mm precision basket, 22 g
+    description: Straight-walled 58 mm precision basket for 20–23 g doses.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 58 mm precision basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 22
+    dose_range_g: [20, 23]
+    profile_mm: [[0, 54.0], [2, 57.0], [5, 58.0], [25, 58.5]]
+    perforated_diameter_mm: 50
+
+  # -- 58 mm stock (tapered) ---------------------------------------------------------------
+  - id: 58-stock-double
+    name: 58 mm stock double basket, tapered
+    description: >-
+      The tapered double basket supplied with many 58 mm machines: a narrower floor and a smaller
+      perforated field than a precision basket.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical tapered 58 mm stock double basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 16
+    dose_range_g: [14, 18]
+    profile_mm: [[0, 46.0], [4, 50.0], [12, 55.0], [24, 58.0]]
+    perforated_diameter_mm: 40
+
+  - id: 58-stock-single
+    name: 58 mm stock single basket
+    description: A shallow, strongly tapered 58 mm single basket.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 58 mm single basket, not measurements."
+      - "Single baskets are strongly tapered, so the bed's cross-section changes a lot with depth."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 8
+    dose_range_g: [7, 10]
+    profile_mm: [[0, 30.0], [6, 40.0], [12, 50.0], [18, 57.0]]
+    perforated_diameter_mm: 26
+
+  # -- Other diameters (double baskets) -----------------------------------------------------
+  - id: 54-double
+    name: 54 mm double basket
+    description: A double basket for 54 mm portafilters, nearly straight-walled.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 54 mm double basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 18
+    dose_range_g: [16, 19]
+    profile_mm: [[0, 49.0], [3, 52.5], [22, 53.5]]
+    perforated_diameter_mm: 44
+
+  - id: 53-double
+    name: 53 mm double basket
+    description: A double basket for 53 mm portafilters.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 53 mm double basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 16
+    dose_range_g: [14, 18]
+    profile_mm: [[0, 48.0], [3, 51.5], [21, 52.5]]
+    perforated_diameter_mm: 43
+
+  - id: 51-double
+    name: 51 mm double basket
+    description: A tapered double basket for 51 mm portafilters.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 51 mm double basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 14
+    dose_range_g: [12, 16]
+    profile_mm: [[0, 42.0], [5, 48.0], [20, 50.5]]
+    perforated_diameter_mm: 37
+
+  - id: 49-double
+    name: 49 mm double basket
+    description: A tapered double basket for 49 mm portafilters.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions are estimates of a typical 49 mm double basket, not measurements."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 13
+    dose_range_g: [11, 14]
+    profile_mm: [[0, 40.0], [5, 46.0], [19, 48.5]]
+    perforated_diameter_mm: 35
+
+  # -- Pressurised (dual-wall) --------------------------------------------------------------
+  - id: 58-pressurised-double
+    name: 58 mm pressurised (dual-wall) double basket
+    description: >-
+      A dual-wall double basket for 58 mm portafilters: the extract leaves through one small orifice,
+      which adds a flow-dependent resistance in series with the puck.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions and the 0.4 mm outlet orifice are estimates, not measurements; the orifice diameter dominates the pressure such a basket builds (ΔP ∝ Q²/d⁴)."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 16
+    dose_range_g: [14, 18]
+    profile_mm: [[0, 46.0], [4, 50.0], [12, 55.0], [24, 58.0]]
+    perforated_diameter_mm: 40
+    pressurised_orifice_mm: 0.4
+
+  - id: 51-pressurised-double
+    name: 51 mm pressurised (dual-wall) double basket
+    description: A dual-wall double basket for 51 mm portafilters with a single outlet orifice.
+    flags: [generic, estimated]
+    notes:
+      - "Basket dimensions and the 0.4 mm outlet orifice are estimates, not measurements; the orifice diameter dominates the pressure such a basket builds (ΔP ∝ Q²/d⁴)."
+    sources:
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: estimated basket dimensions."
+    evidence_grade: D
+    tag: estimated
+    nominal_dose_g: 14
+    dose_range_g: [12, 16]
+    profile_mm: [[0, 42.0], [5, 48.0], [20, 50.5]]
+    perforated_diameter_mm: 37
+    pressurised_orifice_mm: 0.4

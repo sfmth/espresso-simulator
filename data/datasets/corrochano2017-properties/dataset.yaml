@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Sidecar for properties.csv. The numbers are facts cited from a copyrighted thesis (see
+# `licence`); this metadata file is part of Puckworks.
+schema: puckworks.dataset/1
+id: corrochano2017-properties
+title: >-
+  Bed and particle properties of roast and ground coffee: tapped bed porosity, solid density, particle
+  porosity, solid–liquid partition coefficient, permeameter geometry and consolidation
+  (Roman Corrochano 2017)
+citation: >-
+  Roman Corrochano B. (2017) Advancing the engineering understanding of coffee extraction. EngD thesis,
+  University of Birmingham. Tables 4.4, 4.5, 4.6 and 4.10; Sections 6.2–6.2.2.
+url: "https://etheses.bham.ac.uk/id/eprint/7176/"
+licence: facts-cited
+redistribution: cite-only
+retrieved: "2026-10-14"
+research_note_ref: ["01 §4.4", "01 §5.5", "01 §4.5"]
+
+obtained: >-
+  Transcribed by hand from the thesis PDF (sha256
+  f131d9893e2ac78ce0664d5528beac4be51a02cf1ae684e41920fbc6cadc8818); every number was checked by script
+  to occur in the PDF text layer.
+
+uncertainty: >-
+  Transcription: none expected. Statistical: `pm` is the ± printed, where printed. The tapped bed
+  porosities of Table 4.4 are estimates from a linear mixing model (Yu and Standish 1993) of two
+  log-normal size classes, not measurements; open porosity of Blend 3 comes from a single mercury
+  porosimetry run; the partition coefficient assumes a swelling factor of 1 (experiments in
+  triplicate, RSD about 1%).
+
+columns:
+  - name: quantity
+    type: string
+    description: >-
+      tapped_bed_porosity, fine_to_coarse_size_ratio and coarse_percent (Table 4.4); solid_density
+      (Table 4.5); open_, closed_ and particle_porosity (Table 4.6); partition_coefficient (Table 4.10);
+      permeameter_cross_section, permeameter_volume, permeameter_temperature; consolidation_max and
+      consolidation_min (steady-state shortening of the bed under flow).
+  - name: subject
+    type: string
+    description: Grind (A–E), blend, the permeameter cell, or grind and initial bed density (e.g. B-360).
+  - name: temperature_c
+    type: number
+    units: degC
+    required: false
+    description: Temperature of the measurement, where it matters.
+  - name: value
+    type: number
+    units_column: unit
+    description: The value as printed.
+  - name: pm
+    type: number
+    units_column: unit
+    required: false
+    description: The ± printed with the value, if any.
+  - name: unit
+    type: string
+    description: Unit of value and pm.
+  - name: source_locator
+    type: string
+    description: Table or section of the thesis.
+
+files:
+  - path: properties.csv
+    format: csv
+    description: 39 values.
+
+notes: >-
+  Used by the V6 case builder (corrochano2017-permeability): the 20 cm³ cell (diameter:length 2:1,
+  cross-section 1.1×10⁻³ m², 80 °C), the solid density of Blend 1 (1337 kg/m³) and its particle porosity
+  (0.57, measured on ΨE) give the intergranular porosity of each packed bed. The partition coefficient
+  was measured on ΨA. Facts only: the thesis is copyright of its author (no redistribution); cite it.
