@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## Unreleased
+
+### Documentation
+- Record the owner's decision to calibrate from online research and community measurements, without depending on the owner's equipment or requiring academic publication.
+- Audit community shot archives and distinguish measured traces, machine targets, firmware estimates, synthetic examples, and missing metadata. Candidate sources remain separate from accepted calibration datasets.
+- Check Gagné's 11 original DE1 traces against the matching measurement log, recording source checksums and observed 0.5/1.0 g crossing ranges without changing the model or interpreting logged clocks as pump-start times ([source audit](docs/research/04-community-shot-data.md)).
+- This research update leaves the 0.3.0 solver, fitted values and validation artifacts unchanged; no model release is made.
+
 ## [0.3.0] — 2026-10-15
 
 M1.1: startup physics and conservative headspace filling. M2 remains deferred.

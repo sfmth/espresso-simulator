@@ -20,6 +20,8 @@ Nothing you enter leaves your browser.
 
 M1.1 takes priority over M2's full compound set and water chemistry ([plan §12](docs/PLAN.md#12-roadmap-and-milestones)). The owner's AMZCHEF preset now records a confirmed **58 mm single-wall basket**.
 
+Calibration source selection includes online community shot archives and controlled hobbyist experiments; it does not depend on the owner's equipment. The [community-source audit](docs/research/04-community-shot-data.md) records candidate datasets and what each can support. Newly discovered sources have not yet entered the numerical fit.
+
 ## Repository
 
 | Path | Contents |
@@ -47,6 +49,7 @@ M1.1 takes priority over M2's full compound set and water chemistry ([plan §12]
   - [01 Extraction and flow physics](docs/research/01-extraction-and-flow-physics.md)
   - [02 Chemistry and sensory](docs/research/02-chemistry-and-sensory.md)
   - [03 Grinding, PSD and data](docs/research/03-grinding-psd-and-data.md)
+  - [04 Community shot data](docs/research/04-community-shot-data.md): online archives, measurement provenance and calibration admission.
 - [Contributing](CONTRIBUTING.md): setup, everyday commands and project rules.
 - [Changelog](CHANGELOG.md).
 
