@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.4.0] — 2026-10-16
+
+Offline community-shot comparisons. M1.1's physics and fitted values remain unchanged; M2 stays deferred.
+
+### Added
+- Safe literal-data parsing of DE1 `.shot` files, without executing Tcl. The Gagné importer verifies source hashes, joins the original 11 traces to their measurement log and preserves signed scale readings and missing observations.
+- `puckworks-tools community` runs reproducible comparisons against fixed model scenarios using local source files. Recorded pressure drives are conditional diagnostics, not pressure predictions; unknown PSD and geometry remain explicit scenario assumptions. No community observations are fitted and no validation thresholds change.
+- The [community comparison report](docs/validation/community-shot-comparison.md) examines startup and the nominal bloom pause, distinguishing the recorded 0.0625 mL/s flow floor from an exact pump-off command. Downloaded sources and detailed results stay outside tracked data, under an ignored local directory by default.
+
+### Documentation
+- Record the owner's decision to calibrate from online research and community measurements, without depending on the owner's equipment or requiring academic publication.
+- Audit community shot archives and distinguish measured traces, machine targets, firmware estimates, synthetic examples, and missing metadata. Candidate sources remain separate from accepted calibration datasets.
+- Check Gagné's 11 original DE1 traces against the matching measurement log, recording source checksums and observed 0.5/1.0 g crossing ranges without changing the model or interpreting logged clocks as pump-start times ([source audit](docs/research/04-community-shot-data.md)).
+- The release adds research tooling, without changing solver equations or fitted values. Rebuilt golden fixtures differ from 0.3.0 only in their version labels.
+
+### Validation
+- Rerun the original validation cases with the unchanged v2 fit. Fit-quality blocks and held-out predictions are identical to 0.3.0; the scientific failures remain. Cached leave-one-condition-out refits retain their original 0.3.0 identity and are marked historical after the package/build version change, not presented as newly rerun. The [original M1.1 report](docs/validation/baseline-v0.3.0/README.md) is preserved.
+- Complete 124 community simulations across the 11 original shots, with no invalid or incomplete runs. The fixed flow-command probes produce 1.45–1.51 g during bloom against 3.02–5.85 g observed; exact zero-command probes produce effectively no drainage. This motivates pressure/storage and drainage work, but the unmatched inputs do not identify a unique physical cause.
+- Halving the time step in the representative pressure replay changes the 0.5 g crossing by 0.0023 s and record-end mass by 0.039 g. Worst relative hydraulic volume and solute mass residuals across the community runs are 7.17×10⁻¹⁴ and 1.54×10⁻¹⁴. Numerical conservation does not establish experimental accuracy.
+- All 61 new source-import and comparison tests pass, alongside the existing Python suite. The 72 targeted WebAssembly engine and cross-language tests pass; native fixtures remain exact over 4,203 kernel values and 52,279 shot values. Registry export, release versions and validation-report freshness checks pass.
+
 ## [0.3.0] — 2026-10-15
 
 M1.1: startup physics and conservative headspace filling. M2 remains deferred.

@@ -12,7 +12,10 @@ the original downloads, so every number can be traced back to its source:
 - ``cameron2020``: Figures 2B and 4 of the accepted manuscript, read from the
   PDF's vector graphics, and the supplement's Tables S2 and S3 (facts, cited);
 - ``smrke2024``: Figures 2 and 3 of the article, digitised from the published
-  raster images (CC BY 4.0).
+  raster images (CC BY 4.0);
+- ``de1`` and ``gagne2021``: safe literal-data parsing and qualification of
+  locally downloaded community logs; outputs stay outside tracked source data
+  until their measurement provenance and reuse basis support formal intake.
 
 The Corrochano 2017 and Vaca Guerra 2024 datasets are short tables of numbers
 transcribed by hand (cited facts); their sidecars say how they were checked.

@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.3.0 · Last updated 2026-10-15 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup implementation added. Scientific validation exit criteria remain open (see §12 and §15).*
+*Version 0.4.0 · Last updated 2026-10-16 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup implementation and community comparisons added. Scientific validation exit criteria remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -79,11 +79,12 @@ This plan consolidates the planning Q&A of 2026-10-13 and three research notes. 
 | D7 | Compounds | **~30 non-volatiles + ~25 key odorants.** Each parameter is tagged measured / derived / estimated / fitted |
 | D8 | Taste | **Explainable + learnable.** A chemistry-based estimate with uncertainty that learns from the user's own ratings, locally |
 | D9 | User data | **Never collected.** A static site forever: no accounts, uploads, analytics or telemetry. Models improve only through new releases |
-| D10 | Owner's gear | Machine: **AMZCHEF Ultra**, with a **58 mm single-wall basket** and a pressure gauge. Grinder: **AMZCHEF single-dose grinder**. A scale. **No refractometer yet** (planned), so early calibration uses dose, yield, time and gauge pressure. These are only the first presets; see principle 7. *(Corrected 2026-10-13; it previously said "refractometer". Basket, gauge and scale confirmed 2026-10-14; single-wall basket confirmed 2026-10-15.)* |
+| D10 | Owner's gear | Machine: **AMZCHEF Ultra**, with a **58 mm single-wall basket** and a pressure gauge. Grinder: **AMZCHEF single-dose grinder**. A scale; no refractometer. These describe presets, not a calibration rig: the owner considers the setup insufficiently accurate and repeatable for simulator calibration. Use online measurements (D15). *(Basket, gauge and scale confirmed 2026-10-14; single-wall basket and calibration preference confirmed 2026-10-15.)* |
 | D11 | First milestone | **Validated core + lab view** |
 | D12 | Licence | **GPL-2.0-or-later.** Combined builds that include Apache-2.0 or GPL-3.0 code are distributed under GPLv3 |
 | D13 | Name | **Puckworks** |
 | D14 | Hosting | **GitHub Pages.** It cannot set custom HTTP headers, so the app must not rely on cross-origin isolation or SharedArrayBuffer (§7.5) |
+| D15 | Calibration data | **Use online data, including community and hobbyist measurements.** Academic publication is not an admission requirement. Core development must not depend on the owner's shots or new equipment. Select data by measurement provenance, useful metadata, repeatability, uncertainty and reuse terms; see the [community-source audit](research/04-community-shot-data.md). *(Owner direction, 2026-10-15.)* |
 
 Implementation choices (stack, numerics) are not locked. §7 proposes them, and each is recorded as an ADR (architecture decision record) in `docs/decisions/` when made.
 
@@ -550,6 +551,8 @@ Water    SCA target                   │                                       
 
 **Validation** checks that they are the right equations. Datasets are split into calibration and held-out sets, and reported accuracy comes only from held-out sets.
 
+**Source selection (D15).** Community shot archives and controlled hobbyist experiments are eligible alongside academic datasets. A recorded recipe or a machine's target curve is not a measured shot. For startup calibration, establish the time origin and distinguish inlet flow, scale-derived outlet flow and firmware-estimated weight. Unknown dose, basket or grinder inputs remain unknown; do not fill them with presets and score the result as a matched experiment. Hold out whole operators/machines and experimental sessions, and keep duplicates or samples from one trace in the same split. Source credibility and measurement uncertainty determine a dataset's role; publication venue alone does not.
+
 | ID | Dataset | Observable | Role | Initial target |
 |---|---|---|---|---|
 | V1 | Schmieder 2023 (CC BY) | TDS, caffeine, trigonelline, 5-CQA in 10 fractions; 15 conditions over flow, grind, temperature | calibration, with a leave-one-condition-out check | λ and cup masses within ±10% (fit) and ±15% (left out) |
@@ -560,7 +563,7 @@ Water    SCA target                   │                                       
 | V6 | Corrochano 2015/2017 | permeability vs grind and density; partition; consolidation | calibration of relative closures | relative change in κ with density within ×1.5 |
 | V7 | Gloess 2013 | per-cup compounds, extraction efficiencies, titratable acidity | held out (M2) | measured species within ±25%; estimated species reported, not scored |
 | V8 | Ribes 2020/21 (community) | radial EY with and without bottom paper and puck screen | weak calibration | edge/centre ratio in the right direction and range |
-| V9 | Your shots ([§13](#13-calibration-experiments-you-can-run)) | time, yield, TDS → EY; ratings | prospective test (M4) | time ±3 s and EY ±1 point on ≥10 shots after calibration |
+| V9 | Optional local calibration shots ([§13](#13-calibration-experiments-you-can-run)) | time, yield, TDS → EY; ratings | prospective test of the future M4 feature; not a requirement on the owner's setup | time ±3 s and EY ±1 point on ≥10 shots after calibration |
 
 A Python script regenerates a validation report (plots and tables) into `docs/validation/` for every release. The site's Science page shows the latest one.
 
@@ -622,6 +625,9 @@ Size L. **Status: delivered in 0.2.0 (2026-10-15); its validation exit criteria 
 
 ### M1.1: Startup physics
 Size M. **Selected by the owner on 2026-10-15, before M2; implementation in 0.3.0.**
+- **Data direction:** use online research and community measurements (D15), with the [source audit](research/04-community-shot-data.md) as the intake record. The owner's equipment is not required for calibration. Candidate discovery does not change the existing training/held-out split or make a source calibration-ready.
+- **Community comparison tooling (0.4.0):** the [online-shot investigation](validation/community-shot-comparison.md) uses original DE1 logs and their matching measurement sheet for reproducible exploratory comparisons. It distinguishes measured, estimated and target channels, and exact pump-off from the recorded bloom-flow floor. Fixed scenarios expose missing mechanisms and input uncertainty without fitting community observations or changing the existing scientific gates.
+- **Next physics investigation:** pressure relaxation and drainage of retained water during bloom. Across the 11 logged shots, the fixed flow-command scenario delivers 1.45–1.51 g during the selected bloom plateau, against 3.02–5.85 g measured. Exact zero-command probes produce effectively no drainage. These conditional results expose a missing storage/drainage response; uncertain inlet flow and puck properties prevent assigning the discrepancy to one physical mechanism or fitting its coefficients yet.
 - **Outcome:** startup improves, but the scientific gates remain open. V4 first drops move from 1.8 to 6.8 s (12.8 s measured), and the flow rise from 6.7 to 12.1 s (25.5 s measured). V1 extraction rates within ±10% regress from 57/60 to 48/60. Generic 18 → 36 g pump-stop times remain short at 15.6–17.0 s. The [M1.1 investigation](validation/m11-startup.md) documents the remaining failures and ablations; M2 stays deferred.
 - Count accessible particle pore water in the infiltration budget and continuum holdup, with particle extraction states represented as effective soluble loading. This is an explicit single-liquid approximation.
 - Add a local pore-air mobility relaxation, separate from roast-dependent CO₂. Its amplitude, power and moisture-diffusion mapping remain grade-D estimates, fixed before held-out evaluation.
@@ -684,10 +690,10 @@ Open-ended.
 
 ## 13. Calibration experiments you can run
 
-These experiments produce the data for V9 and for your personal calibration, and everything stays in your local journal.
+These are optional experiments for the future local personalization feature (V9/M4), not a request to the owner or a prerequisite for core development. The owner has ruled out relying on their current setup for simulator calibration; use online sources under D15. Any future local measurements stay in the user's journal.
 
-- **With only a scale and timer** (your current setup), E1, E3 and E6 already teach the model the hydraulics: grinder mapping and permeability, from dose, yield and time.
-- **E2 and the TDS parts of E4 and E5 need a refractometer.** They wait until you have one.
+- **With a sufficiently repeatable setup, scale and timer**, E1, E3 and E6 can inform local grinder mapping and permeability from dose, yield and time; these quantities alone do not identify startup mechanisms.
+- **E2 and the TDS parts of E4 and E5 need a refractometer.** They are optional future capabilities, not a planned purchase for the owner.
 
 | ID | Experiment | Design | Teaches the model |
 |---|---|---|---|
@@ -738,10 +744,12 @@ These experiments produce the data for V9 and for your personal calibration, and
 - **Repository:** created by the owner; assistant git operations authorized 2026-10-15 (§16).
 - **Basket (2026-10-15):** 58 mm single-wall. The AMZCHEF preset uses the plain 58 mm stock double; its detailed dimensions remain estimates.
 - **Next milestone (2026-10-15):** M1.1 startup physics before M2.
+- **Calibration source (2026-10-15):** online data, including community archives and hobbyist experiments; no dependency on measurements from the owner's setup (D15).
 
 **Still open**
 1. **Voluntary contributions:** may people contribute their exported data to the project through GitHub (CC0), outside the site? The site itself never collects anything (D9).
 2. **M1.1 research gaps:**
+   - pressure/storage and drainage during bloom, motivated by the [community comparisons](validation/community-shot-comparison.md); examine this response before tuning startup coefficients against these logs;
    - quantitative startup accuracy: M1.1 adds water capacity, an estimated pore-air mobility closure and conservative filling; separate immobile-water uptake, gas pressure and simultaneous headspace/puck filling remain unresolved;
    - permeability against particle size: the calibration datasets give different reference permeabilities (current spread in the validation report), and both the D32² scaling and the PSD measurement basis are untested;
    - the slow flow rise seen in measured shots;

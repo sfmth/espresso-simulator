@@ -1,13 +1,24 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # Datasets
 
-Literature data used to calibrate and validate Puckworks. Each dataset lives in its own folder with
+Published research and community measurements admitted to calibrate and validate Puckworks. Each dataset lives in its own folder with
 the data files and a metadata sidecar, `dataset.yaml`, which records where the data come from, under
 what licence, how they were obtained or digitised, and how uncertain they are.
 
 Validation roles are those of [PLAN §10](../../docs/PLAN.md#10-verification-and-validation); the case builders
 that turn each dataset into shot specs are described in
 [docs/validation/case-builders.md](../../docs/validation/case-builders.md).
+
+Academic publication is not required. The owner has directed core development to use online measurements
+without relying on their own equipment. The [community-source audit](../../docs/research/04-community-shot-data.md)
+lists discovered archives, measurement limitations and admission status separately from the datasets
+already accepted below. Public visibility, a file format, and a project's code licence are not by
+themselves evidence that a collection contains usable, licensed experimental measurements.
+
+The [community comparison command](../../python/README.md#reproduce-the-community-comparison) reads
+local original files and writes detailed exploratory results under `.local/` (ignored by Git).
+Its [aggregate report](../../docs/validation/community-shot-comparison.md) does not add those raw logs
+to the accepted inventory or change the fitting/held-out split below.
 
 | Folder | Content | Licence | Role |
 |---|---|---|---|
