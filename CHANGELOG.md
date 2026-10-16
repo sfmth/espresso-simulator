@@ -2,6 +2,35 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.3.0] — 2026-10-15
+
+M1.1: startup physics and conservative headspace filling. M2 remains deferred.
+
+### Validation
+- **Experimental increment; no complete M1 scientific exit criterion passes.** The [startup investigation](docs/validation/m11-startup.md) compares the preserved v1 baseline with the fully recalibrated v2 model, including all 15 leave-one-condition-out refits and all seven structural sensitivity refits.
+- V4 first drops improve from 1.8 to 6.83 s against 12.76 s measured; the flow rise improves from 6.7 to 12.08 s against 25.48 s. Both remain outside their unchanged targets. Interpolation of the same measured curve corrects the archived rise from 25.78 to 25.48 s. The 15-second overshoot check passes; later overshoot remains.
+- V4 time to 36 g improves from 22.2 to 30.47 s against 47.69 s. Generic pump-stop times at 36 g improve from 10.5–13.2 to 15.6–17.0 s, still below the 25–35 s sanity range. Final cup EY and TDS include modeled post-stop drip.
+- **Extraction regresses:** V1 rates within ±10% fall from 57/60 to 48/60, and cup masses from 167/180 to 163/180. Leave-one-condition-out rates within ±15% fall from 59/60 to 54/60, and cup masses from 179/180 to 178/180.
+- V3 peak magnitude passes at 22.09% EY, but the peak location still fails. V2 dispersion now fails its range check; V5 EY/time rank correlation falls from 0.84 to 0.54, below the 0.8 target.
+- Fixed-v2 ablations isolate the assumptions without refitting. Disabling pore air changes V4 first drops from 6.83 to 2.21 s; halving the particle-water inventory changes them to 5.51 s. These variants do not reproduce the historical v1 fit.
+
+### Changed
+- The recipe builder supplies a full accessible pore-water capacity separately from the effective particle loading scale. The continuum holdup counts this water once; this is an explicit approximation, not a resolved model of mobile and immobile water.
+- Trapped pore air reduces early permeability separately from roast-dependent CO₂. The local wetting age, PSD and an independent moisture-diffusion estimate set its relaxation; the new grade-D parameters were fixed before held-out evaluation and are exposed through the registry and sandbox.
+- Headspace fill integrates pressure/flow programs and pump caps exactly and lands on the fill event. Zero-pressure phases deliver no water; a dry wait cannot age the pore-air relaxation. Post-stop drainage cannot consume more headspace water than remains.
+- A hydraulic carrier-volume diagnostic complements soluble mass conservation. Raw specs without the new optional inputs retain their legacy closure defaults.
+- The AMZCHEF preset records the owner's confirmed **58 mm single-wall basket**. Pump characteristics and detailed basket dimensions remain estimated.
+- Calibration v1 and its original validation report are preserved. Calibration v2 uses the original calibration/held-out split and unchanged scientific targets. Validation now rejects unobserved time origins and endpoints instead of extrapolating them.
+- The project working agreements now record the owner's authorization to use git, commit and push on a feature branch.
+
+### Verification
+- New startup verification covers analytical pore-filling times and capped fill ramps, pump-off phases, delayed starts, late-flow recovery, legacy defaults, conservation through partial fill/wetting/drip/vent, and time-step convergence.
+- On the controlled startup test, halving the time step from 0.05 to 0.025 s changes first drops by 0.0063 s, shot time by 0.0118 s and EY by 0.0099 percentage point.
+- Golden shot cases exercise both cubic and noninteger permeability powers and a disabled pore-air closure across native and WebAssembly builds.
+- All 117 validation simulations succeed, with worst relative hydraulic carrier-volume error 1.06×10⁻¹³ and soluble mass error 3.04×10⁻¹⁴. The volume diagnostic does not claim exact solvent-mass conservation.
+- **Final local checks:** 201 Rust tests (one additional preset sweep remains opt-in), 338 Python tests, 430 web tests and 55 browser end-to-end checks pass. Formatting, linting, type checks, dependency licences, registry export, version checks, report freshness and both native fixture checks pass. Native shot fixtures agree exactly over 52,279 numerical values and replay exactly in WebAssembly.
+- **Browser performance:** tier 1 takes 584 ms for the default 16.18 s shot; tier 0 takes 34.3 ms on first use and 12.5 ms after an edit on the test machine. The warm preview still exceeds the plan's 10 ms target. Release WebAssembly is 982.79 kB (319.72 kB gzip); main JavaScript is 474.99 kB (153.07 kB gzip).
+
 ## [0.2.0] — 2026-10-15
 
 Milestone M1: the shot core and the lab view. **The validation exit criteria are not met.** The validation section below says why.

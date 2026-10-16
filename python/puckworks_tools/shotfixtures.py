@@ -15,7 +15,8 @@ Format::
 ``spec`` is ``build.spec`` of ``simulate_recipe(recipe)`` and ``result`` its ``result``. Floats use
 Python's shortest round-trip representation, so parsing gives back exactly the doubles the core
 produced; the file holds no wall-clock times. The cases cover tiers 0 and 1, a vibratory pump, a
-pressurised basket, flow-controlled programs, a custom tapered basket and a measured PSD.
+pressurised basket, flow-controlled programs, a custom tapered basket, a measured PSD, and
+both a noninteger pore-air permeability exponent and a disabled pore-air closure.
 
 ``--check`` regenerates the document from ``CASES`` and compares it with the committed file: names,
 recipes, keys and strings exactly; numbers in ``spec`` and ``result`` to ``--tolerance`` (absolute;
@@ -80,13 +81,15 @@ CASES: tuple[tuple[str, dict[str, Any]], ...] = (
                 machine={"profile": [{"control": "flow", "target": 4.0, "until_pressure_bar": 3.0},
                                      {"control": "pressure", "target": 8.0, "ramp_s": 3.0}],
                          "temperature_c": 91.0},
-                stop={"beverage_g": 40.0, "time_s": 40.0}, numerics={"tier": 0}),
+                stop={"beverage_g": 40.0, "time_s": 40.0}, numerics={"tier": 0},
+                overrides={"model.hydraulics.pore_air_permeability_exponent": 2.5}),
     ),
     (
         "spring_lever_tier0",
         _recipe(bean={"preset": "medium-natural-brazil"}, grinder={"preset": "bentwood-v63", "setting": 200.0},
                 basket={"preset": "58-precision-15g"}, prep={"dose_g": 15.0}, machine={"preset": "spring-lever"},
-                stop={"beverage_g": 30.0, "time_s": 40.0}, numerics={"tier": 0}),
+                stop={"beverage_g": 30.0, "time_s": 40.0}, numerics={"tier": 0},
+                overrides={"model.hydraulics.pore_air_amplitude": 0}),
     ),
 )
 

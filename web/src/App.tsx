@@ -75,7 +75,7 @@ export function App() {
       <header className="app-header">
         <div className="brand">
           <h1>Puckworks</h1>
-          <p className="tagline">Espresso simulator · M1 preview</p>
+          <p className="tagline">Espresso simulator · M1.1 preview</p>
         </div>
         <ModeTabs mode={mode} onChange={setMode} />
       </header>

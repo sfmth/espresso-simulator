@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.2.0 · Last updated 2026-10-15 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered, but its validation exit criteria are not met (see §12 and §15).*
+*Version 0.3.0 · Last updated 2026-10-15 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup implementation added. Scientific validation exit criteria remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -79,7 +79,7 @@ This plan consolidates the planning Q&A of 2026-10-13 and three research notes. 
 | D7 | Compounds | **~30 non-volatiles + ~25 key odorants.** Each parameter is tagged measured / derived / estimated / fitted |
 | D8 | Taste | **Explainable + learnable.** A chemistry-based estimate with uncertainty that learns from the user's own ratings, locally |
 | D9 | User data | **Never collected.** A static site forever: no accounts, uploads, analytics or telemetry. Models improve only through new releases |
-| D10 | Owner's gear | Machine: **AMZCHEF Ultra**, with a 58 mm basket and a pressure gauge. Grinder: **AMZCHEF single-dose grinder**. A scale. **No refractometer yet** (planned), so early calibration uses dose, yield, time and gauge pressure. These are only the first presets; see principle 7. *(Corrected 2026-10-13; it previously said "refractometer". Basket, gauge and scale confirmed 2026-10-14.)* |
+| D10 | Owner's gear | Machine: **AMZCHEF Ultra**, with a **58 mm single-wall basket** and a pressure gauge. Grinder: **AMZCHEF single-dose grinder**. A scale. **No refractometer yet** (planned), so early calibration uses dose, yield, time and gauge pressure. These are only the first presets; see principle 7. *(Corrected 2026-10-13; it previously said "refractometer". Basket, gauge and scale confirmed 2026-10-14; single-wall basket confirmed 2026-10-15.)* |
 | D11 | First milestone | **Validated core + lab view** |
 | D12 | Licence | **GPL-2.0-or-later.** Combined builds that include Apache-2.0 or GPL-3.0 code are distributed under GPLv3 |
 | D13 | Name | **Puckworks** |
@@ -591,7 +591,7 @@ Sizes are relative (S, M, L). The site can be deployed as a labelled preview fro
 
 ### M0: Foundations
 Size S. **Status: complete (v0.1.0, 2026-10-14).** The exit criteria are met; see the [verification report](validation/m0-kernel-verification.md) and the [CHANGELOG](../CHANGELOG.md).
-- **Repository:** LICENSE (GPL-2.0-or-later), CONTRIBUTING, `.gitignore`, and CI for Rust, Python and web. The owner creates the git repository and handles all git operations.
+- **Repository:** LICENSE (GPL-2.0-or-later), CONTRIBUTING, `.gitignore`, and CI for Rust, Python and web. The owner created the git repository and authorized assistant git operations on 2026-10-15.
 - **Toolchain:** Rust (stable, with the `wasm32-unknown-unknown` target), wasm-bindgen CLI, Node, and a Python virtual environment with maturin.
 - **Code skeleton:** Rust workspace with `puckcore` and its WASM and Python bindings; a Vite + React skeleton.
 - **Data:** the parameter-registry schema with first entries from the research notes; a dataset folder with licences.
@@ -599,11 +599,11 @@ Size S. **Status: complete (v0.1.0, 2026-10-14).** The exit criteria are met; se
 - **Exit:** CI green. A sphere-diffusion demo gives identical results in the browser and in Python, and matches Crank's solution.
 
 ### M1: Validated core and lab view
-Size L. **Status: delivered in 0.2.0 (2026-10-15); the validation exit criteria are not met.** Under the strict criteria, all three validation exit criteria fail ([the validation report](validation/m1-validation.md)).
+Size L. **Status: delivered in 0.2.0 (2026-10-15); its validation exit criteria were not met.** The following numbers describe the preserved [0.2.0 baseline report](validation/baseline-v0.2.0/m1-validation.md); the [current report](validation/m1-validation.md) evaluates M1.1.
   - V1 misses narrowly: λ is within ±10% for 57 of 60 experiment–analyte pairs, and every pair must be.
   - V3: the EY peak lands at the edge of the grind range.
   - V4: the flow rise is too fast, reaching 90% of final flow at 6.7 s against 25.8 s measured, with first drops 1.8 s against 12.8 s after full pressure.
-  - Shot times come out at 0.43–0.47× the measured ones. That holds even for a calibration case, so the missing start-up transient, not the permeability value, explains most of it. The contract between workstreams is [docs/model/m1-contract.md](model/m1-contract.md).
+  - Shot times come out at 0.43–0.47× the measured ones, including a case calibrated on long-time flow. This motivated M1.1's investigation of startup physics. Total shot time combines startup and permeability effects; it cannot isolate either cause. The contract between workstreams is [docs/model/m1-contract.md](model/m1-contract.md).
 - **Tier 1 physics:**
   - Hydraulics: pressure and flow control, wetting front, series resistance, the κ_eff closure, poroelastic saturation, viscosity, gas, swelling, fines layer.
   - Extraction: ~30 size classes plus a 2-class literature mode; surface pool and kernel; saturation; dispersion.
@@ -619,6 +619,17 @@ Size L. **Status: delivered in 0.2.0 (2026-10-15); the validation exit criteria 
   - calibrated on V1, V2 (dispersion), V4 (Q(P)) and V6;
   - held out: V3, V4 (transient), V5.
 - **Exit:** verification suite green; V1 within targets; V3 peak and V4 flow rise reproduced; Tier 1 ≤ 1 s and Tier 0 ≤ 10 ms.
+
+### M1.1: Startup physics
+Size M. **Selected by the owner on 2026-10-15, before M2; implementation in 0.3.0.**
+- **Outcome:** startup improves, but the scientific gates remain open. V4 first drops move from 1.8 to 6.8 s (12.8 s measured), and the flow rise from 6.7 to 12.1 s (25.5 s measured). V1 extraction rates within ±10% regress from 57/60 to 48/60. Generic 18 → 36 g pump-stop times remain short at 15.6–17.0 s. The [M1.1 investigation](validation/m11-startup.md) documents the remaining failures and ablations; M2 stays deferred.
+- Count accessible particle pore water in the infiltration budget and continuum holdup, with particle extraction states represented as effective soluble loading. This is an explicit single-liquid approximation.
+- Add a local pore-air mobility relaxation, separate from roast-dependent CO₂. Its amplitude, power and moisture-diffusion mapping remain grade-D estimates, fixed before held-out evaluation.
+- Conserve headspace fill through ramps and phase changes, respect pump-off phases, and bound drip by retained water. Report a hydraulic carrier-volume balance separately from soluble mass balance.
+- Preserve the original calibration and validation. Refit only the original calibration blocks; V3, the V4 transient and V5 retain their held-out status and strict scoring targets.
+- Verify analytical filling times, timestep convergence, conservation and cross-platform agreement. Report experimental improvements and failures separately from numerical verification.
+- Final local verification passes 201 Rust, 338 Python and 430 web tests, plus 55 browser checks. The measured browser run takes 584 ms; the warm preview takes 12.5 ms and still misses the 10 ms target. These timings describe the tested machine and recipe, not a guarantee across hardware and inputs.
+- Full two-phase flow, finite-rate mobile/immobile water exchange and simultaneous compressible headspace dynamics remain research gaps ([ADR 0010](decisions/0010-startup-water-and-pore-air.md)). Passing all M1 validation gates is still required before calling the core validated.
 
 ### M2: Chemistry, beans and water
 Size L.
@@ -724,22 +735,23 @@ These experiments produce the data for V9 and for your personal calibration, and
     - Grinder: 40 mm conical burrs, stepless adjustment with about 75 marked settings, roughly 450 rpm, under 0.2 g retention.
 - **Hosting:** GitHub Pages (D14).
 - **Data requests:** too early. No outreach to data holders for now.
-- **Repository:** the owner creates the git repository and handles git manually (§16).
+- **Repository:** created by the owner; assistant git operations authorized 2026-10-15 (§16).
+- **Basket (2026-10-15):** 58 mm single-wall. The AMZCHEF preset uses the plain 58 mm stock double; its detailed dimensions remain estimates.
+- **Next milestone (2026-10-15):** M1.1 startup physics before M2.
 
 **Still open**
 1. **Voluntary contributions:** may people contribute their exported data to the project through GitHub (CC0), outside the site? The site itself never collects anything (D9).
-2. **Basket type:** is the owner's 58 mm basket single-wall or pressurised (dual-wall)? Both will be supported.
-3. **After M1 validation (2026-10-15):** fix the hydraulics first (an "M1.1"), or move on to M2? The open gaps are:
-   - the missing slow start-up: dry-bed uptake, gas, headspace filling and preinfusion. It makes shots run about 2.2× too fast and the flow rise far too quick;
-   - permeability against particle size: the calibration datasets disagree about 3×, and both the D32² scaling and the PSD measurement basis are untested;
+2. **M1.1 research gaps:**
+   - quantitative startup accuracy: M1.1 adds water capacity, an estimated pore-air mobility closure and conservative filling; separate immobile-water uptake, gas pressure and simultaneous headspace/puck filling remain unresolved;
+   - permeability against particle size: the calibration datasets give different reference permeabilities (current spread in the validation report), and both the D32² scaling and the PSD measurement basis are untested;
    - the slow flow rise seen in measured shots;
-   - first-fraction TDS (20.3% against 25 ± 3%).
+   - first-fraction TDS against the 25 ± 3% target (current values in the validation report).
 
 ---
 
 ## 16. Working agreements
 
-- Git belongs to the owner. Tools and agents never run git commands in this repository.
+- The owner authorized tools and agents to use git, commit and push on 2026-10-15. Preserve existing work and use a feature branch for development.
 - Every change updates the README, the relevant docs and the CHANGELOG, and bumps the version (semantic versioning; while on 0.x, minor for features and patch for fixes).
 - Changelog entries cite the measurement behind a change, such as validation numbers.
 - Locked decisions live in §2; implementation decisions are ADRs in `docs/decisions/`.

@@ -39,6 +39,10 @@ def test_coverage(document):
     assert any(s["machine"]["pump"]["type"] == "vibratory" for s in specs)
     assert any(s["basket"]["outlet"]["type"] == "pressurised" for s in specs)
     assert any(p["control"]["type"] == "flow" for s in specs for p in s["machine"]["phases"])
+    assert any(s["hydraulics"]["pore_air_permeability_exponent"] == 2.5 for s in specs)
+    assert any(s["hydraulics"]["pore_air"]["amplitude"] == 0 for s in specs)
+    assert any(s["hydraulics"]["pore_air"]["amplitude"] > 0 for s in specs)
+    assert all(s["hydraulics"]["intraparticle_water_fraction"] == 1 for s in specs)
     recipes = [c["recipe"] for c in document["cases"]]
     assert any("psd" in r["grinder"] for r in recipes)
     tapered = [r["basket"]["custom"]["profile_mm"] for r in recipes if "custom" in r["basket"]]

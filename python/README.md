@@ -4,7 +4,7 @@
 Offline Python tools for Puckworks. They check the parameter registry and the datasets, write the
 golden fixtures shared with the web tests, produce the kernel verification report, calibrate the M1
 model against the literature datasets and write the M1 validation report, export presets and registry
-for the model crate, and check that versions agree across the repository. Version 0.2.0,
+for the model crate, and check that versions agree across the repository. Version 0.3.0,
 GPL-2.0-or-later.
 
 ## Install

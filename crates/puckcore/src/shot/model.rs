@@ -189,7 +189,7 @@ pub(crate) struct Model {
     /// Kernel shells per cell (all classes).
     pub shells_per_cell: usize,
     pub eps0: f64,
-    /// Total wetting porosity φ_T = ε₀ + (1 − ε₀) ε_p · uptake.
+    /// Filled water porosity φ_T = ε₀ + (1 − ε₀) ε_p · water fraction.
     pub phi_t: f64,
     /// Water imbibed into the particles per bed volume, φ_T − ε₀: part of the
     /// bed-liquid holdup, which is ε + (φ_T − ε₀).
@@ -283,9 +283,14 @@ impl Model {
 
         let (mut classes, shells_per_cell) = classes(spec, tier);
         let s0 = s.extractable_fraction * bed.skeletal_density_kg_m3 * (1.0 - eps_p);
-        // The pools' and kernels' pore liquid: the imbibed share of the pores
-        // is mobile and counted in the holdup instead.
+        // Reference capacity of the pools/kernels. In the startup closure
+        // these are soluble loadings, not an additional solvent inventory;
+        // the front and holdup count the water once using water_fraction.
         let eps_c = eps_p * (1.0 - spec.hydraulics.wetting_uptake);
+        let water_fraction = spec
+            .hydraulics
+            .intraparticle_water_fraction
+            .unwrap_or(spec.hydraulics.wetting_uptake);
         for c in &mut classes {
             c.phi = (1.0 - eps0) * c.fraction;
             c.pool_pore = eps_c * c.pool_fraction * c.phi;
@@ -360,8 +365,8 @@ impl Model {
             groups,
             shells_per_cell,
             eps0,
-            phi_t: eps0 + (1.0 - eps0) * eps_p * spec.hydraulics.wetting_uptake,
-            imbibed: (1.0 - eps0) * eps_p * spec.hydraulics.wetting_uptake,
+            phi_t: eps0 + (1.0 - eps0) * eps_p * water_fraction,
+            imbibed: (1.0 - eps0) * eps_p * water_fraction,
             s0,
             dry_density: bed.skeletal_density_kg_m3 * (1.0 - eps_p) * (1.0 - eps0),
             liquid,

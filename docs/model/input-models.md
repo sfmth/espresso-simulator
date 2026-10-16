@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # Input models (M1): from a recipe to a shot spec
 
-*Puckworks M1 · workstream D · 2026-10-14 · code: `crates/puckmodel`.*
+*Puckworks M1.1 · version 0.3.0 · 2026-10-15 · code: `crates/puckmodel`.*
 
 The input models turn a recipe (gear as a person describes it, [contract](m1-contract.md) §1) into a complete `ShotSpec` for the solver. They implement PLAN §7.3 modules **B** (bean), **G** (grinder → PSD), **P** (basket, bed, puck prep) and **M** (machine), on top of the parameter registry (module **R**, [ADR 0006](../decisions/0006-parameter-registry.md)) and the presets in `data/presets/`.
 
@@ -309,9 +309,34 @@ Distribution, WDT, papers, screens and headspace rest on single-operator communi
 | `fines_layer` | amplitude 0 (off), τ 10 s | `model.hydraulics.fines_layer_amplitude`, `…_time` (D): off until calibrated |
 | `axial_dispersion_m2_s` | 5×10⁻⁶ | `extraction.dispersion.axial_coefficient` (C, derived from Bo) |
 | `viscosity` | a1 3.75, a2 14.1, γ 0.45 | `model.hydraulics.viscosity_ln_a1/a2`: exact solve through Moreno 2015's 20% and 35% w/w points at 4 °C (A, derived); `…_temperature_exponent` γ derived so 25% w/w extract is 2.25× water at brew temperature, the centre of `hydraulics.viscosity.extract_relative` (B) |
-| `wetting_uptake` | 0.5 | `model.hydraulics.wetting_uptake` (D, 0–0.9): the mobile share of the particles' pore liquid, which mostly sets the wetting time (shot-model.md §5.1) |
+| `wetting_uptake` | 0.5 | `model.hydraulics.wetting_uptake` (D, 0–0.9): effective particle loading normalization; legacy raw specs also use it for water capacity |
+| `intraparticle_water_fraction` | 1 | `model.hydraulics.intraparticle_water_fraction` (D): fills the accessible particle pore volume along with intergranular pores; counted once in the continuum holdup |
+| `pore_air` | A = 0.5; τ = (D32/2)²/(π² D_m), capped at 600 s | `model.hydraulics.pore_air_amplitude` and `…moisture_diffusivity`; D_m = 2.5×10⁻¹¹ m²/s from Mateus 2007 moisture diffusion, extrapolated to hydraulic mobility (D) |
+| `pore_air_permeability_exponent` | 3 | `model.hydraulics.pore_air_permeability_exponent` (D): power-law closure for incomplete wetting, separate from CO₂ |
 | `dissolution_kozeny_carman` | true | solver default (contract §4) |
 | `dissolution_porosity_share` | θ = 0 | `hydraulics.dissolution_porosity_share` (estimated, C; triangular 0/0/1, mode 0): the share of dissolved volume that becomes intergranular porosity (shot-model.md §5.5); an override sets it in the sandbox. Lee 2023's θ = 1 is the upper bound |
+
+### 6.1 M1.1 startup assumptions
+
+Each wetted cell's permeability is multiplied by `(1 − A exp(−wet_age/τ))^n`.
+This represents recovery of connected liquid paths as the bed wets, in addition to the existing
+roast-dependent CO₂ term. It is an effective mobility law, not a gas-volume balance. Its clock starts
+when water reaches each cell; a dry cell cannot finish wetting while the headspace fills.
+
+The timescale uses the recipe's PSD Sauter diameter in metres, even when the solver later reduces
+the PSD for a preview. Thus both tiers receive the same physical τ. The 600 s cap produces a build
+note. All four new inputs have registry records, provenance and sandbox overrides.
+
+These defaults were fixed before testing the held-out transients. The moisture coefficient was
+inferred from swelling in [Mateus et al. (2007)](https://doi.org/10.1021/jf062841g); the mapping from
+that coefficient and a Sauter radius to a mobility timescale, the amplitude and the cubic power are
+unvalidated estimates. [Foster et al. (2025)](https://doi.org/10.1063/5.0245167) motivate incomplete
+saturation but do not supply a measured espresso relative-permeability law. The model does not
+resolve air pressure, capillarity or separate mobile/immobile water exchange. Full accessible pore
+capacity is an upper-envelope approximation, not a claim of instantaneous microscopic hydration.
+The pool and kernel states represent effective soluble loading, so their normalization does not
+add a second water inventory. Setting pore-air amplitude to zero disables that mobility closure;
+older raw specs omit the new fields and retain their legacy defaults.
 
 ---
 
@@ -424,14 +449,15 @@ The registry ids behind these fields are listed in [`crates/puckmodel/registry-r
 
 ---
 
-## 10. New registry records (`data/params/model.yaml`)
+## 10. Input-model registry records
 
-72 records for what the registry lacked; it passes `puckworks-tools validate-registry`. Grades: most are **estimated, D** with wide priors; derived, fitted or class-assigned records are B–C (the fines-relation slope γ is a project fit, C), and the viscosity-fit coefficients A (an exact solve through A-grade data, whose transfer to brew temperature is the separate grade-B exponent).
+The original input models added 72 records in `data/params/model.yaml`. M1.1 adds four startup records in `data/params/startup.yaml`. They pass `puckworks-tools validate-registry`. Grades: most are **estimated, D** with wide priors; derived, fitted or class-assigned records are B–C (the fines-relation slope γ is a project fit, C), and the viscosity-fit coefficients A (an exact solve through A-grade data, whose transfer to brew temperature is the separate grade-B exponent).
 
 | Group | Records |
 |---|---|
 | PSD (G) | `model.psd.fines_log_width`, `boulder_log_width`, `coarse_log_width`, `boulder_weight`, `fines_weight_slope`, `roast_coefficient`, `cold_size_reduction` |
 | Bed, hydraulics (P, H) | `model.hydraulics.reference_sauter_diameter`, `swelling_pore_closure`, `gas_amplitude_max`, `gas_half_content`, `gas_relaxation_time`, `fines_layer_amplitude`, `fines_layer_time`, `viscosity_ln_a1`, `viscosity_ln_a2`, `viscosity_temperature_exponent`, `wetting_uptake` |
+| Startup (M1.1) | `model.hydraulics.intraparticle_water_fraction`, `pore_air_amplitude`, `pore_air_permeability_exponent`, `moisture_diffusivity` |
 | Extraction (X) | `model.extraction.broken_shell_thickness`, `solute_apparent_density`; `model.species.{caffeine, trigonelline, cqa5, acids}.surface_fraction_scale`; `model.species.{trigonelline, cqa5, acids}.{diffusivity_80c, partition}` |
 | Bean (B) | `model.bean.intraparticle_porosity_medium`, `intraparticle_porosity_roast_slope`, `extractable_roast_slope`, `extractable_robusta_increase`, `trigonelline.{arabica, robusta}_{light, dark}`, `cqa5_roast_change`, `cqa5_robusta_ratio`, `co2_grinding_loss`, `roast_index.colorette_{light, dark}` |
 | Prep, basket (P) | `model.prep.sigma_ln_permeability.{none, tap, wdt}`, `sigma_fines_sensitivity`, `edge_multiplier.{base, paper, screen}`, `prewet_max`, `prewet_half_headspace`, `prewet_screen_reduction`, `prewet_jet_flow`; `model.bed.edge_area_fraction`; `model.basket.edge_reference_ratio`, `edge_ratio_exponent`, `open_area_fraction`, `pressurised_discharge_coefficient` |

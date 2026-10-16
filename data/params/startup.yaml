@@ -1,0 +1,101 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: >-
+  M1.1 startup closures. Pore-water capacity and transient relative permeability are estimates,
+  fixed before evaluating the held-out shot transients. They do not prescribe a first-drop time.
+
+parameters:
+  - id: model.hydraulics.intraparticle_water_fraction
+    name: Particle pore-water capacity during infiltration
+    description: >-
+      Fraction of intraparticle pore volume supplied by the wetting front and counted in the
+      continuum liquid holdup. Particle extraction states represent effective soluble loading,
+      not a second water inventory, in this approximation.
+    units: "1"
+    value: 1
+    prior: {distribution: uniform, min: 0.5, max: 1}
+    range: {min: 0, max: 1}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks M1.1 (2026), docs/model/shot-model.md: effective single-liquid pore-water inventory; full accessible pore capacity is an assumption."
+      - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
+        doi: "10.1017/S095679252500018X"
+    research_note_ref: ["01 §3.5", "01 §4.8"]
+    used_by: [H, X]
+    comment: >-
+      Capacity, not a measured hydration rate. Full capacity is an upper-envelope approximation:
+      moisture penetration into intact particles is slow. The retained pool/kernel normalization
+      wetting_uptake remains an effective loading scale and is not another liquid volume.
+      No V3, V4 transient or V5 observations set this value. A raw ShotSpec without this field
+      keeps the legacy wetting_uptake-based water inventory for reproducibility.
+    status: draft
+
+  - id: model.hydraulics.pore_air_amplitude
+    name: Initial pore-air mobility deficit
+    description: >-
+      Initial deficit A in the wetting permeability factor (1 − A exp(−wet_age/τ))^n.
+      Represents trapped-air and incomplete-wetting effects separately from roast-dependent CO₂.
+    units: "1"
+    value: 0.5
+    prior: {distribution: uniform, min: 0, max: 0.9}
+    range: {min: 0, max: 0.95}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks M1.1 (2026), docs/model/input-models.md §6: a fixed, uncertain power-law relative-permeability closure, not a fit to a shot transient."
+      - citation: "Foster J. et al. (2025) Dynamics of liquid infiltration into an espresso bed using time-resolved micro-computed tomography: Insights from experiment and modeling. Physics of Fluids 37:013383."
+        doi: "10.1063/5.0245167"
+    research_note_ref: ["01 §4.8", "01 §4.9"]
+    used_by: [H]
+    comment: >-
+      Foster et al. motivate incomplete saturation and explicitly identify the lack of measured
+      saturation–permeability relations. Neither this amplitude nor the power is measured for
+      coffee. A is an effective mobility deficit, not a gas volume fraction: it creates no second
+      pore-water inventory. Set A to zero to disable the closure. Not calibrated to held-out data.
+    status: draft
+
+  - id: model.hydraulics.pore_air_permeability_exponent
+    name: Power of the pore-air mobility factor
+    description: >-
+      Power n applied to the relaxing wetting mobility factor. The default cubic dependence
+      represents nonlinear connectivity of liquid paths; its magnitude is unmeasured for coffee.
+    units: "1"
+    value: 3
+    prior: {distribution: uniform, min: 2, max: 5}
+    range: {min: 1, max: 10}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Puckworks M1.1 (2026), docs/model/input-models.md §6: power-law modelling assumption, fixed before validation, with no coffee-specific measured exponent."
+      - citation: "Foster J. et al. (2025) Dynamics of liquid infiltration into an espresso bed using time-resolved micro-computed tomography: Insights from experiment and modeling. Physics of Fluids 37:013383."
+        doi: "10.1063/5.0245167"
+    research_note_ref: ["01 §4.8", "01 §4.9"]
+    used_by: [H]
+    comment: A power of one recovers a linear mobility factor. This is an estimated closure, not a measured saturation law.
+    status: draft
+
+  - id: model.hydraulics.moisture_diffusivity
+    name: Moisture diffusivity used for the wetting timescale
+    description: >-
+      Effective moisture diffusivity used to estimate the pore-air relaxation time as
+      (D32/2)^2/(π² D). Its use for pressurized espresso and air displacement is an extrapolation.
+    units: "m^2/s"
+    value: 2.5e-11
+    prior: {distribution: uniform, min: 2.0e-11, max: 3.0e-11}
+    range: {min: 1.0e-12, max: 1.0e-9}
+    tag: estimated
+    evidence_grade: D
+    sources:
+      - citation: "Mateus M.-L., Rouvet M., Gumy J.-C., Liardon R. (2007) Interactions of water with roasted and ground coffee in the wetting process investigated by a combination of physical determinations. J. Agric. Food Chem. 55:2979–2984."
+        doi: "10.1021/jf062841g"
+        locator: "Abstract: moisture diffusion coefficients approximately (2–3)×10⁻¹¹ m²/s, inferred from swelling curves."
+      - citation: "Puckworks M1.1 (2026), docs/model/input-models.md §6: first diffusion-mode timescale using the Sauter radius; mapping to pore-air mobility is a model assumption."
+    research_note_ref: ["01 §4.6", "01 §4.8"]
+    used_by: [H]
+    comment: >-
+      The source coefficient is inferred from particle swelling, not espresso flow. Selecting D32
+      as the representative diameter and equating moisture and mobility relaxation are uncertain
+      assumptions. No time, temperature or pressure fit to V3/V4/V5 is applied. Derived times above
+      the solver's 600 s limit are capped with a visible build note.
+    status: draft

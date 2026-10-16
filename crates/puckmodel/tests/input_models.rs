@@ -498,6 +498,65 @@ fn short_measured_psds_are_used_as_given() {
 }
 
 #[test]
+fn startup_timescale_uses_measured_particles_and_is_independent_of_solver_tier() {
+    let recipe = |scale: f64, tier: u8| {
+        let r = with(
+            generic_recipe(),
+            "grinder",
+            json!({"psd": {
+                "diameter_um": [40.0 * scale, 160.0 * scale],
+                "volume_fraction": [0.5, 0.5]
+            }}),
+        );
+        with(r, "numerics", json!({"tier": tier}))
+    };
+    let fine = build_ok(&recipe(1.0, 1));
+    let coarse = build_ok(&recipe(2.0, 1));
+    let preview = build_ok(&recipe(1.0, 0));
+    let time = |b: &Value| num(b, "spec.hydraulics.pore_air.tau_s");
+    // Diffusive times change as length squared; tier reduction must not
+    // silently change the physical input inferred from the measured PSD.
+    assert!((time(&coarse) / time(&fine) - 4.0).abs() < 1e-12);
+    assert_eq!(time(&fine), time(&preview));
+    let faster = build_ok(&with(
+        recipe(1.0, 1),
+        "overrides",
+        json!({"model.hydraulics.moisture_diffusivity": 5e-11}),
+    ));
+    assert!((time(&faster) / time(&fine) - 0.5).abs() < 1e-12);
+    assert!(
+        fine["derived"]["provenance"]["hydraulics.pore_air.tau_s"]
+            .as_str()
+            .unwrap()
+            .contains("recipe:grinder.psd")
+    );
+}
+
+#[test]
+fn pore_air_is_separate_from_roast_gas_and_can_be_disabled() {
+    let fresh = build_ok(&with(generic_recipe(), "bean.days_off_roast", json!(1)));
+    let old = build_ok(&with(generic_recipe(), "bean.days_off_roast", json!(60)));
+    assert!(
+        num(&fresh, "spec.hydraulics.gas.amplitude") > num(&old, "spec.hydraulics.gas.amplitude")
+    );
+    assert_eq!(
+        fresh["spec"]["hydraulics"]["pore_air"],
+        old["spec"]["hydraulics"]["pore_air"]
+    );
+    let disabled = build_ok(&with(
+        generic_recipe(),
+        "overrides",
+        json!({"model.hydraulics.pore_air_amplitude": 0}),
+    ));
+    assert_eq!(num(&disabled, "spec.hydraulics.pore_air.amplitude"), 0.0);
+    assert!(!notes(&disabled).contains("trapped pore air reduces early permeability"));
+    assert_eq!(
+        num(&disabled, "spec.hydraulics.intraparticle_water_fraction"),
+        1.0
+    );
+}
+
+#[test]
 fn custom_baskets_of_any_shape() {
     let shapes = [
         (
@@ -1024,6 +1083,10 @@ fn provenance_is_filled_and_every_token_resolves() {
         "hydraulics.axial_dispersion_m2_s",
         "hydraulics.viscosity",
         "hydraulics.wetting_uptake",
+        "hydraulics.intraparticle_water_fraction",
+        "hydraulics.pore_air.amplitude",
+        "hydraulics.pore_air.tau_s",
+        "hydraulics.pore_air_permeability_exponent",
         "thermal.water_temp_c",
         "thermal.initial_bed_temp_c",
         "thermal.heat_capacity_j_k",

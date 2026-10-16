@@ -92,13 +92,15 @@ parameters:
       divided by that factor (8.4×10⁻¹⁵/0.332 = 2.5×10⁻¹⁴ m²) within 4%. The prior spans the effective
       in-shot range at its low end and, at its high end, the bare κ₀ implied by beds whose PSD was
       measured with many fines (a small laser-diffraction D32 inflates the D32² scaling). Grade D: an
-      in-house fit with a convention-dependent PSD scaling, not a reviewed value. The M1 calibration
-      (data/calibration/v1.yaml, which the app embeds) pools 1.24×10⁻¹³ m² from Schmieder 2023
+      in-house fit with a convention-dependent PSD scaling, not a reviewed value. The historical M1
+      calibration (data/calibration/v1.yaml) pooled 1.24×10⁻¹³ m² from Schmieder 2023
       (7.2×10⁻¹⁴, scaled through the E65S preset) and Waszkiewicz 2026 (2.1×10⁻¹³, scaled through its
-      measured PSD, whose coarse tail ends at 182 µm); the two differ ×3.0. Held-out Cameron and Smrke
-      shots then run at 0.43–0.44 of their measured times, as does the V4 9-bar calibration case at 0.47,
-      whose long-time flow matches: the shortfall is mostly the model's missing start-up transient
-      (docs/validation/m1-validation.md, "Known biases"), so it does not isolate κ_ref.
+      measured PSD, whose coarse tail ends at 182 µm); the two differed ×3.0. Held-out Cameron and Smrke
+      shots then ran at 0.43–0.44 of their measured times, and the V4 9-bar case at 0.47.
+      The app embeds data/calibration/current.yaml. M1.1 refits the original calibration blocks after
+      adding startup water capacity and pore-air mobility; see docs/validation/m1-validation.md for
+      current values and the preserved baseline-v0.2.0 report for the historical comparison.
+      Total shot times combine startup and permeability effects and do not isolate κ_ref.
     status: draft
 
   - id: hydraulics.permeability.permeameter

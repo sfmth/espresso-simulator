@@ -87,15 +87,21 @@ fn base_permeability_scales_the_reference_once() {
 }
 
 #[test]
-fn generic_9_bar_shot_takes_a_plausible_time() {
+fn legacy_permeability_does_not_apply_compaction_twice() {
     // Plausibility of the builder → solver chain, decoupled from the calibrated default:
     // κ_ref = 4e-14 m² is set explicitly. It is the bare reference permeability that gives
     // this generic recipe (flat traditional burrs at 190 µm, 58 mm precision 18 g basket,
     // flat 9 bar, 18 → 36 g) about 30 s with θ = 0 (solver of 2026-10-15). A builder that
     // applied compaction or swelling twice (v1's in-shot κ gave 96 s), or a unit slip, leaves
-    // the 20–40 s band.
+    // the 20–40 s band. Keep the legacy water capacity and no pore-air penalty:
+    // this regression isolates the permeability conversion, not M1.1 startup
+    // accuracy (which is scored on held-out data by the validation harness).
     let mut r = with(generic_recipe(), "numerics", json!({"tier": 1}));
-    r["overrides"] = json!({"hydraulics.permeability.reference": 4e-14});
+    r["overrides"] = json!({
+        "hydraulics.permeability.reference": 4e-14,
+        "model.hydraulics.intraparticle_water_fraction": 0.5,
+        "model.hydraulics.pore_air_amplitude": 0
+    });
     let run = simulate(&r);
     let s = &run["result"]["summary"];
     assert_eq!(s["stop_reason"], "beverage_mass");
@@ -619,7 +625,10 @@ fn flow_targets_above_the_pump_get_a_note() {
 
 #[test]
 fn unit_conversions_keep_short_decimals() {
-    let text = puckmodel::api::build_shot_spec_json(&generic_recipe().to_string()).unwrap();
+    // Exercise a known conversion independently of the fitted shell thickness.
+    let mut recipe = generic_recipe();
+    recipe["overrides"] = json!({"model.extraction.broken_shell_thickness": 25});
+    let text = puckmodel::api::build_shot_spec_json(&recipe.to_string()).unwrap();
     assert!(
         text.contains("\"extra_headspace_m3\":5e-6"),
         "{}",

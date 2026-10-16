@@ -71,6 +71,31 @@ parameters:
 # data, or identified but with no evidence against the registry value and no registry id to carry it.
 # Numbers are from the trial fits of 2026-10-14 (docs/validation/calibration.md, "Identifiability").
 fixed:
+  - id: model.hydraulics.intraparticle_water_fraction
+    reason: >-
+      M1.1 fills the complete intraparticle pore-water inventory behind the front (fraction 1), rather
+      than counting only the mobile share. This is a water-volume accounting choice, not a fit to shot
+      times. The effective-loading approximation is documented in the startup model and remains subject
+      to validation against independent uptake measurements.
+  - id: model.hydraulics.pore_air_amplitude
+    reason: >-
+      The initial effective connectivity deficit is a grade D model assumption (0.5), separate from coffee
+      CO2; it is not a measured gas volume fraction.
+      None of the calibration observables identifies a transient relative-permeability law. It is held
+      at its prior rather than fitted to the held-out V4 first-drop delay or flow rise.
+  - id: model.hydraulics.pore_air_permeability_exponent
+    reason: >-
+      The effective connectivity-to-relative-permeability exponent is a grade D closure (3), not measured for these
+      pucks. Held fixed; the V4 transient, V3 and V5 shot times do not select it.
+  - id: model.hydraulics.moisture_diffusivity
+    reason: >-
+      The pore-air relaxation time uses (D32/2)^2/(pi^2 D), capped at 600 s, with D = 2.5e-11 m^2/s from
+      the independent Mateus moisture-uptake range. Using moisture diffusion for air clearance is a
+      grade D model assumption. Neither this diffusivity nor its time scale is fitted to held-out shots.
+  - id: model.hydraulics.wetting_uptake
+    reason: >-
+      In M1.1 this is the fixed effective-loading normalization inherited from the extraction model,
+      distinct from the full intraparticle water inventory. It is not fitted to startup observations.
   - id: extraction.diffusivity.caffeine.particle_80c
     reason: >-
       Species kernel diffusivities trade off with the coffee's contents (correlation −0.89 to −0.95): their

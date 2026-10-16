@@ -100,6 +100,11 @@ pub(crate) struct State {
     pub groups: Vec<SpeciesState>,
     pub cup_water: f64,
     pub cup_solute: f64,
+    /// Integrated carrier-liquid volumes for hydraulic conservation. Solute
+    /// displacement and dissolution-created porosity are not water sources.
+    pub volume_in: f64,
+    pub volume_out: f64,
+    pub volume_vented: f64,
     pub min_conc: f64,
     /// Largest lumped bed-liquid concentration seen, kg/m³.
     pub max_conc: f64,
@@ -192,6 +197,9 @@ impl State {
             groups,
             cup_water: 0.0,
             cup_solute: 0.0,
+            volume_in: 0.0,
+            volume_out: 0.0,
+            volume_vented: 0.0,
             min_conc: f64::INFINITY,
             max_conc: 0.0,
             initial_solubles: 0.0,
@@ -552,36 +560,34 @@ impl<'a> Sim<'a> {
                     }
                 };
                 let limit = ph.limit.unwrap_or(f64::INFINITY);
-                let (supply, demand) = match ph.control {
-                    Control::Pressure { target_pa } => (
-                        Supply {
-                            flow_cap: fmin(limit, flow_cap),
-                            pump,
-                            pressure_cap: fmin(ramp(target_pa), p_cap),
-                        },
-                        target_pa > 0.0,
-                    ),
+                let supply = match ph.control {
+                    Control::Pressure { target_pa } => Supply {
+                        flow_cap: fmin(limit, flow_cap),
+                        pump,
+                        pressure_cap: fmin(ramp(target_pa), p_cap),
+                    },
                     Control::Flow { target_m3_s } => {
                         let q = ramp(target_m3_s);
-                        (
-                            Supply {
-                                flow_cap: fmin(q, flow_cap),
-                                pump,
-                                pressure_cap: fmin(limit, p_cap),
-                            },
-                            q > 0.0,
-                        )
-                    }
-                    Control::PumpFull => (
                         Supply {
-                            flow_cap,
+                            flow_cap: fmin(q, flow_cap),
                             pump,
-                            pressure_cap: p_cap,
-                        },
-                        true,
-                    ),
+                            pressure_cap: fmin(limit, p_cap),
+                        }
+                    }
+                    Control::PumpFull => Supply {
+                        flow_cap,
+                        pump,
+                        pressure_cap: p_cap,
+                    },
                 };
-                let fill = if demand { supply.at(0.0) } else { 0.0 };
+                // A zero pressure limit disables delivery even while the
+                // headspace is empty. During a pressure ramp-down, the
+                // instantaneous positive command still delivers water.
+                let fill = if supply.pressure_cap > 0.0 {
+                    supply.at(0.0)
+                } else {
+                    0.0
+                };
                 (supply, fill)
             }
         }
@@ -598,6 +604,41 @@ impl<'a> Sim<'a> {
                 if s.pressure_cap > 0.0 { fill } else { 0.0 }
             }
         }
+    }
+
+    /// Exact integral of the unpressurised fill flow within the current
+    /// phase. A flow ramp is piecewise affine after the pump caps; pressure
+    /// programs deliver their free flow whenever the instantaneous pressure
+    /// command is positive. Midpoints avoid counting the isolated zero at
+    /// the start of a pressure ramp as half an integration interval.
+    fn fill_volume(&self, t0: f64, t1: f64) -> f64 {
+        if !matches!(self.mode, Mode::Program) {
+            return 0.0;
+        }
+        let ph = &self.spec.machine.phases[self.program.phase];
+        let mut edges = vec![t0, t1];
+        if ph.ramp_s > 0.0 {
+            let end = self.program.start + ph.ramp_s;
+            if end > t0 && end < t1 {
+                edges.push(end);
+            }
+            if let Control::Flow { target_m3_s } = ph.control {
+                let slope = (target_m3_s - self.program.ramp_from) / ph.ramp_s;
+                if slope != 0.0 {
+                    let (cap, _, pump) = self.pump_caps();
+                    let cap = pump.map_or(cap, |(free, _)| fmin(cap, free));
+                    let at_cap = self.program.start + (cap - self.program.ramp_from) / slope;
+                    if at_cap > t0 && at_cap < t1 && at_cap < end {
+                        edges.push(at_cap);
+                    }
+                }
+            }
+        }
+        edges.sort_by(|a, b| a.total_cmp(b));
+        edges
+            .windows(2)
+            .map(|w| (w[1] - w[0]) * self.supply(0.5 * (w[0] + w[1])).1)
+            .sum()
     }
 
     // ----- Hydraulics ------------------------------------------------------------
@@ -627,7 +668,7 @@ impl<'a> Sim<'a> {
         }
     }
 
-    /// Swelling × gas permeability factor of a cell wetted at `t_wet`.
+    /// Swelling × CO₂ × pore-air permeability factor since a cell wetted.
     fn time_factor(&self, t: f64, t_wet: f64) -> f64 {
         let h = &self.spec.hydraulics;
         let since = if t_wet < t { t - t_wet } else { 0.0 };
@@ -648,6 +689,17 @@ impl<'a> Sim<'a> {
             };
             f *= 1.0 - h.gas.amplitude * decay;
         }
+        if h.pore_air.amplitude > 0.0 && h.pore_air.tau_s > 0.0 {
+            let connectivity = 1.0 - h.pore_air.amplitude * math::exp(-since / h.pore_air.tau_s);
+            let n = h.pore_air_permeability_exponent;
+            f *= if n == 1.0 {
+                connectivity
+            } else if n == 3.0 {
+                connectivity * connectivity * connectivity
+            } else {
+                math::exp(n * math::ln(connectivity))
+            };
+        }
         f
     }
 
@@ -656,7 +708,8 @@ impl<'a> Sim<'a> {
         let m = self.model;
         let h = &self.spec.hydraulics;
         let nc = m.n_cells();
-        let timed = h.swelling.amplitude > 0.0 || h.gas.amplitude > 0.0;
+        let timed =
+            h.swelling.amplitude > 0.0 || h.gas.amplitude > 0.0 || h.pore_air.amplitude > 0.0;
         for (i, column) in m.columns.iter().enumerate() {
             let w = wetted[i];
             let through = w >= column.volume * (1.0 - 1e-12);
@@ -820,12 +873,6 @@ impl<'a> Sim<'a> {
                 target = x;
             }
         };
-        if !self.state.headspace_full && self.hydro.pump_flow > 0.0 {
-            consider(
-                t + (self.model.headspace_volume - self.state.headspace_filled)
-                    / self.hydro.pump_flow,
-            );
-        }
         // Land on each column's breakthrough, so that outflow starts at a
         // step boundary and the mass events below can be predicted from it.
         if self.state.headspace_full {
@@ -880,6 +927,16 @@ impl<'a> Sim<'a> {
             }
         }
         let mut reach: Option<f64> = None;
+        if !self.state.headspace_full {
+            let remaining = self.model.headspace_volume - self.state.headspace_filled;
+            if self.fill_volume(t, target) > remaining {
+                target = hydraulics::solve_increasing(
+                    |end| self.fill_volume(t, end) - remaining,
+                    t,
+                    target,
+                );
+            }
+        }
         if let Mode::Program = self.mode {
             let phases = &spec.machine.phases;
             let exit = if self.program.phase + 1 < phases.len() {
@@ -986,11 +1043,12 @@ impl<'a> Sim<'a> {
         let mut outflow = vec![0.0; ncol];
         let mut active = vec![0usize; ncol];
         let mut bed_inflow = 0.0;
+        let mut supplied_volume = 0.0;
         if !self.state.headspace_full {
-            // The headspace fills at zero pressure; trapezoidal pump flow.
-            let (_, fill1) = self.supply(t1);
-            let fill = 0.5 * (h0.pump_flow + fill1);
-            self.state.headspace_filled += dt * fill;
+            // Land on the fill event using the integral of the commanded
+            // flow, so ramp/cap changes cannot silently discard excess water.
+            supplied_volume = self.fill_volume(t0, t1);
+            self.state.headspace_filled += supplied_volume;
             if self.state.headspace_filled >= model.headspace_volume * (1.0 - 1e-12) {
                 self.state.headspace_filled = model.headspace_volume;
                 self.state.headspace_full = true;
@@ -1012,8 +1070,23 @@ impl<'a> Sim<'a> {
             }
             self.build_curve(t1, &w_pred);
             let h1 = self.solve_hydro(t1, true);
+            let mut average: Vec<f64> = h0
+                .col_flow
+                .iter()
+                .zip(&h1.col_flow)
+                .map(|(a, b)| 0.5 * (a + b))
+                .collect();
+            if matches!(self.mode, Mode::Drip { .. }) {
+                let requested: f64 = dt * average.iter().sum::<f64>();
+                if requested > self.drip_water {
+                    let scale = self.drip_water / requested;
+                    for q in &mut average {
+                        *q *= scale;
+                    }
+                }
+            }
             for i in 0..ncol {
-                let q = 0.5 * (h0.col_flow[i] + h1.col_flow[i]);
+                let q = average[i];
                 flow[i] = q;
                 bed_inflow += q;
                 if self.state.through[i] {
@@ -1061,6 +1134,9 @@ impl<'a> Sim<'a> {
 
         if let Mode::Drip { .. } = self.mode {
             self.drip_water = fmax(self.drip_water - dt * bed_inflow, 0.0);
+            self.state.headspace_filled = self.drip_water;
+        } else {
+            supplied_volume += dt * bed_inflow;
         }
 
         // Thermal node (backward Euler), then extraction and transport.
@@ -1095,6 +1171,11 @@ impl<'a> Sim<'a> {
         } else {
             self.dt_prev
         };
+        // Only commit the accounting after transport accepted the step. A
+        // failed attempt restores the light state; a mass re-land restores
+        // the complete State, including these integrated volumes.
+        self.state.volume_in += supplied_volume;
+        self.state.volume_out += dt * outflow.iter().sum::<f64>();
         Ok(true)
     }
 
@@ -1256,6 +1337,10 @@ impl<'a> Sim<'a> {
             (t + DRIP_TAUS * stop.drip_tau_s, self.state.headspace_filled)
         };
         self.drip_water = water;
+        if stop.vent_headspace {
+            self.state.volume_vented += self.state.headspace_filled;
+            self.state.headspace_filled = 0.0;
+        }
         self.mode = Mode::Drip {
             t_stop: t,
             p_stop: self.hydro.pressure,
@@ -1554,6 +1639,18 @@ impl<'a> Sim<'a> {
         } else {
             0.0
         };
+        let retained_volume =
+            self.state.headspace_filled + m.phi_t * self.state.wetted.iter().sum::<f64>();
+        let hydraulic_volume_balance_error = if self.state.volume_in > 0.0 {
+            (self.state.volume_in
+                - self.state.volume_out
+                - retained_volume
+                - self.state.volume_vented)
+                .abs()
+                / self.state.volume_in
+        } else {
+            0.0
+        };
         let columns = m
             .columns
             .iter()
@@ -1596,6 +1693,7 @@ impl<'a> Sim<'a> {
                 class_ey,
             },
             diagnostics: Diagnostics {
+                hydraulic_volume_balance_error,
                 mass_balance_error: self.mass_error,
                 steps: self.steps,
                 warnings: self.warnings,

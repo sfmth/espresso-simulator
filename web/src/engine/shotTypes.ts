@@ -267,6 +267,11 @@ export interface HydraulicsSpec {
   axial_dispersion_m2_s: number;
   viscosity: { ln_relative_a1: number; ln_relative_a2: number; temperature_exponent: number };
   wetting_uptake: number;
+  /** M1.1 pore-water inventory; omitted/null retains the legacy uptake-based holdup. */
+  intraparticle_water_fraction?: number | null;
+  /** Effective trapped-air mobility closure, separate from the CO₂ penalty. */
+  pore_air?: Relaxation;
+  pore_air_permeability_exponent?: number;
   /** Share of dissolution that opens intergranular porosity (added by the M1 solver). */
   dissolution_porosity_share?: number;
 }
@@ -462,6 +467,8 @@ export interface Diagnostics {
    * flags an inconsistency) (newer cores).
    */
   outflow_integral_error?: number;
+  /** Hydraulic carrier-volume residual; not an exact solvent-mass balance. */
+  hydraulic_volume_balance_error?: number;
 }
 
 // ---------------------------------------------------------------- derived

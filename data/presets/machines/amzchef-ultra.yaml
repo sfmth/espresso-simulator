@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# The project owner's machine (PLAN D10). Listing specifications (58 mm portafilter, nominal "20 bar"
-# pump, pressure gauge, PID from 88 to 96 °C) are UNVERIFIED (PLAN §15). Its pump curve and whether
+# The project owner's machine (PLAN D10). The owner confirmed a 58 mm single-wall basket and
+# pressure gauge. Listing specifications (nominal "20 bar" pump, PID from 88 to 96 °C) are
+# UNVERIFIED (PLAN §15). Its pump curve and whether
 # it has an over-pressure valve are UNKNOWN: the values below are estimates for a cheap vibratory
 # pump, to be calibrated against the machine's own gauge.
 schema: puckworks.preset-file/1
@@ -15,12 +16,14 @@ presets:
       gauge and a PID set from 88 to 96 °C. Pump curve and over-pressure valve are unknown.
     flags: [owner-gear, unverified, estimated]
     notes:
-      - "UNVERIFIED: 58 mm portafilter, \"20 bar\" pump, pressure gauge and PID range 88–96 °C come from retail listings only (PLAN §15)."
+      - "Owner confirmed: 58 mm single-wall basket and pressure gauge (PLAN D10; basket type confirmed 2026-10-15). Basket depth, taper and open area remain estimated."
+      - "UNVERIFIED: \"20 bar\" pump and PID range 88–96 °C come from retail listings only (PLAN §15)."
       - "UNKNOWN pump curve and over-pressure valve: estimated as 8 mL/s free flow and 17 bar stall, with no OPV. If the gauge never rises above a fixed value during a choked shot, that value is the OPV: set machine.pump.opv_bar."
       - "The gauge of such machines may read pump pressure rather than pressure at the puck."
       - "UNVERIFIED: no three-way valve assumed (many budget vibratory machines lack one), so the water above the puck drips into the cup after the stop. If the machine hisses into the drip tray at the stop and leaves a dry puck, it has one: set machine.vent_headspace to true."
-      - "Basket type unconfirmed (plain or pressurised, PLAN §15 open question 2): the default is the 58 mm stock double; choose 58-pressurised-double if yours is dual-wall."
+      - "The default 58 mm stock double represents the owner's confirmed single-wall basket."
     sources:
+      - citation: "Project owner (2026-10-15): confirmed 58 mm single-wall basket; pressure gauge confirmed 2026-10-14 (PLAN D10)."
       - citation: "Retail and aggregator listings for the AMZCHEF Ultra espresso machine (accessed 2026-10-13; no manufacturer page confirmed them)."
       - citation: "Puckworks input models (2026), docs/model/input-models.md: pump curve estimated, to be calibrated."
     evidence_grade: D

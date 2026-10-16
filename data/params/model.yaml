@@ -453,11 +453,11 @@ parameters:
     status: draft
 
   - id: model.hydraulics.wetting_uptake
-    name: Mobile share of the particles' pore liquid
+    name: Legacy pore partition and extraction loading scale
     description: >-
-      Share u_w of the particles' pore liquid that the wetting front supplies and that exchanges freely
-      with the intergranular liquid (shot-model.md §5.1). It mostly sets the water the front consumes,
-      hence the wetting time; the pools and kernels keep the rest, 1 − u_w, of the pore liquid.
+      Parameter u_w setting the effective pool and kernel loading normalization ε_p(1 − u_w).
+      Raw legacy specs also use u_w for wetting-front water capacity; M1.1 recipes set that
+      capacity separately with intraparticle_water_fraction (shot-model.md §5.1).
     units: "1"
     value: 0.5
     prior: {distribution: uniform, min: 0.2, max: 0.9}
@@ -469,12 +469,13 @@ parameters:
       - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
         doi: "10.1017/S095679252500018X"
     research_note_ref: ["01 §3.5", "01 §4.8"]
-    used_by: [H]
+    used_by: [H, X]
     comment: >-
       Grudeva's wetting front fills the intergranular liquid plus the boulders' pores (uptake ≈ 1);
-      moisture uptake into particles is slow (D ≈ 2–3×10⁻¹¹ m²/s, Mateus 2007, 01 §4.6). The wetting
-      time (5–10 s, hydraulics.wetting.time) is the calibration target. The solver caps u_w at 0.9 so
-      the pools keep a pore volume; EY is insensitive to it (21.8–22.1% over 0–0.9, shot-model.md §5.1).
+      moisture uptake into particles is slow (D ≈ 2–3×10⁻¹¹ m²/s, Mateus 2007, 01 §4.6).
+      The solver caps u_w at 0.9 to keep the loading normalization positive. M1.1 counts water
+      only in the continuum holdup and treats particle states as effective solute loading,
+      not additional water. This grade-D parameter is fixed, not fitted to held-out wetting times.
     status: draft
 
   # -- Extraction (module X) ------------------------------------------------------------

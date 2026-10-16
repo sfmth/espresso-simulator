@@ -12,9 +12,9 @@ numbers in ``docs/validation/m1-validation.json``.
 2. Held-out checks with pass/fail against PLAN §10:
    - V3 Cameron 2020: EY peaks at 22–24% at grind settings 1.5–1.9; shot time falls monotonically as
      the grind coarsens;
-   - V4 transient (Waszkiewicz 2026, 9 bar): flow rises after the first drops (to 90% of its 100 s
-     value within 5–35 s, and by at least 20% between 2 s and 15 s after them); first 5 s fraction at
-     25 ± 3% TDS;
+   - V4 transient (Waszkiewicz 2026, 9 bar): first-drop delay and time to 90% of its 100 s flow each
+     within ×1.5 of the data, without an overshoot at 15 s after the first drops; first 5 s fraction
+     at 25 ± 3% TDS;
    - V5 Smrke 2024: added fines lengthen shots at every burr gap; EY tracks shot time (Spearman
      ρ ≥ 0.8); shots of 10–15 s reach 17–18% EY.
 
@@ -229,9 +229,13 @@ def fit_quality(problem: Problem, x: np.ndarray) -> tuple[dict[str, Any], dict[s
     return {"blocks": summary, "checks": checks}, observations
 
 
-def loo_check(loo: Mapping[str, Any] | None) -> dict[str, Any]:
+def loo_check(loo: Mapping[str, Any] | None, *, stale_reasons: Sequence[str] = ()) -> dict[str, Any]:
     """The V1 leave-one-condition-out check, from the calibration file's ``fit.loo`` (``calibrate --loo``)."""
     target = f"λ and cup masses of each left-out experiment within ±{100 * LOO_TOLERANCE:.0f}%"
+    if loo and stale_reasons:
+        return _check("V1 leave-one-condition-out (±15%)", None,
+                      "not run for this model/configuration; the calibration file's cached refits are historical ("
+                      + "; ".join(stale_reasons) + ")", target)
     if not loo:
         return _check("V1 leave-one-condition-out (±15%)", None,
                       "not run (`puckworks-tools calibrate --loo` records it in the calibration file)", target)
@@ -240,6 +244,41 @@ def loo_check(loo: Mapping[str, Any] | None) -> dict[str, Any]:
                    f"λ {loo['lambda_within']}/{loo['lambda_total']}, cup masses {loo['cup_within']}/{loo['cup_total']} "
                    "within ±15% when predicted without their own experiment", target)
     return {**check, "within": loo["lambda_within"] + loo["cup_within"], "total": loo["lambda_total"] + loo["cup_total"]}
+
+
+def calibration_reuse_issues(document: Mapping[str, Any], solver: Mapping[str, Any],
+                             inputs: Mapping[str, Any]) -> list[str]:
+    """Reasons cached refits cannot score this run, allowing the normal post-fit registry export.
+
+    Parameters can be evaluated with a changed model, but recorded leave-one-out scores and
+    uncertainties still belong to the solver and inputs that actually produced those refits.
+    """
+    fit = document.get("fit") or {}
+    if not fit:
+        return []
+    previous = fit.get("solver") or {}
+    issues = []
+    if previous.get("puckcore_version") != solver.get("puckcore_version"):
+        issues.append("core version changed")
+    trees = ("crates/puckcore/src", "crates/puckmodel/src", "crates/puckcore-py")
+    old_sources, sources = previous.get("sources_sha256") or {}, solver.get("sources_sha256") or {}
+    if any(not old_sources.get(tree) or old_sources.get(tree) != sources.get(tree) for tree in trees):
+        issues.append("solver/model sources changed or lack an identity")
+    if (previous.get("files_sha256") or {}) != (solver.get("files_sha256") or {}):
+        issues.append("solver build inputs changed")
+    recorded = fit.get("inputs") or {}
+    if not recorded.get("config_sha256") or recorded.get("config_sha256") != inputs.get("config_sha256"):
+        issues.append("calibration configuration changed or lacks an identity")
+    if (recorded.get("datasets_sha256") or {}) != (inputs.get("datasets_sha256") or {}):
+        issues.append("calibration datasets changed")
+    if not recorded.get("registry_inputs_sha256") or recorded.get("registry_inputs_sha256") != inputs.get("registry_inputs_sha256"):
+        issues.append("numeric registry defaults changed or lack an identity")
+    if not recorded.get("presets_sha256") or recorded.get("presets_sha256") != inputs.get("presets_sha256"):
+        issues.append("preset inputs changed or lack an identity")
+    if (not recorded.get("calibration_sources_sha256")
+            or recorded.get("calibration_sources_sha256") != inputs.get("calibration_sources_sha256")):
+        issues.append("Python calibration/case sources changed or lack an identity")
+    return issues
 
 
 # -- held-out checks ----------------------------------------------------------------------------
@@ -302,20 +341,21 @@ def psd_tail(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
 
 def check_held_out_times(v3: Mapping[str, Any], v5: Mapping[str, Any],
                          v4t: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    """The held-out shot times against the data (V3 Cameron, V5 Smrke), next to the V4 9-bar calibration
-    case's time to 36 g: when that case matches its long-time flow yet reaches 36 g at the same fraction of
-    the measured time, the shortfall is a shared start-up bias rather than a test of κ_ref."""
+    """Held-out shot times alongside the V4 case whose long-time flow is calibrated separately.
+
+    Both startup and permeability affect total time; this reports the evidence without attributing
+    every discrepancy to the same cause or asserting that the long-time calibration is a good fit.
+    """
     parts = []
     for name, extra in (("V3 Cameron", v3), ("V5 Smrke", v5)):
         if extra.get("rows"):
             parts.append(f"{name}: model/data ×{_fmt(extra.get('time_ratio'), 2)} (mean error "
                          f"{_fmt(extra.get('bias_time'), 2)} s, RMS {_fmt(extra.get('rms_time'), 2)} s)")
     if v4t and _finite(v4t.get("time_to_mass_ratio")):
-        parts.append(f"V4 9 bar (a calibration case whose long-time flow matches): time to 36 g "
+        parts.append(f"V4 9 bar (long-time flow is a calibration observable): time to 36 g "
                      f"×{_fmt(v4t['time_to_mass_ratio'], 2)}")
     return _check("Held-out shot times against the data", None, "; ".join(parts) or "no held-out shots",
-                  "reported, not a test of κ_ref alone: a shortfall shared with the V4 calibration case comes mostly "
-                  "from the start-up transient the model misses (Known biases); κ_ref is not tuned to these times",
+                  "reported: shot times depend on startup and permeability; κ_ref is not tuned to these times",
                   info=True)
 
 
@@ -373,7 +413,7 @@ def v4_transient_metrics(case: Any, obs: Mapping[str, Any] | None) -> dict[str, 
     95% of the target), for the model and the data."""
     from .cases import waszkiewicz2026 as mod
 
-    if case is None or not obs or not _finite(obs.get("drops_s")):
+    if case is None or not obs or not _finite(obs.get("drops_s")) or not _finite(obs.get("offset_s")):
         return None
     offset = obs["offset_s"]
     t = np.array(obs["flow_t_s"])
@@ -404,16 +444,22 @@ def check_v4_transient(v4_block: Any, observations: list[dict[str, Any] | None])
                      (None, None))
     m = v4_transient_metrics(case, obs)
     rise_target = (f"90% of the 100 s flow within ×{V4_TIME_FACTOR:g} of the data's time after the first drops, and "
-                   "no overshoot (flow 15 s after the first drops ≤ flow at 100 s)")
+                   "no overshoot at the 15 s check (flow 15 s after the first drops ≤ flow at 100 s)")
     delay_target = f"delay from full pressure to the first drops ({mod.FIRST_DROPS_G:g} g) within ×{V4_TIME_FACTOR:g} of the data's"
     if m is None:
-        checks.append(_check("V4 flow rises after the first drops", False, "no first drops in the 9-bar shot", rise_target))
-        checks.append(_check("V4 first drops after full pressure", False, "no first drops in the 9-bar shot", delay_target))
-        checks.append(_check("V4 first-fraction TDS 25 ± 3%", False, "no first drops", "first 5 s fraction 22–28% TDS"))
+        reason = ("the 9-bar shot never reaches 95% of its target pressure"
+                  if obs and not _finite(obs.get("offset_s")) else "no first drops in the 9-bar shot")
+        checks.append(_check("V4 flow rises after the first drops", False, reason, rise_target))
+        checks.append(_check("V4 first drops after full pressure", False, reason, delay_target))
+        first = ((obs or {}).get("tds_fractions") or [{"tds_percent": math.nan}])[0]["tds_percent"]
+        checks.append(_check("V4 first-fraction TDS 25 ± 3%", _finite(first) and V4_FIRST_TDS[0] <= first <= V4_FIRST_TDS[1],
+                             f"model first 5 s fraction {first:.1f}% TDS" if _finite(first) else reason,
+                             "first 5 s fraction 22–28% TDS"))
         return checks, {}
     rise, rise_data = m["rise_model"], m["rise_data"]
+    flow_covered = all(_finite(rise[k]) for k in ("q2", "q15", "q_end", "t90_s"))
     overshoot = rise["q15"] > rise["q_end"]
-    ok = _within_factor(rise["t90_s"], rise_data["t90_s"], V4_TIME_FACTOR) and not overshoot
+    ok = flow_covered and _within_factor(rise["t90_s"], rise_data["t90_s"], V4_TIME_FACTOR) and not overshoot
 
     def overall(r: Mapping[str, float]) -> float:
         return r["q_end"] / r["q2"] if r["q2"] > 0 else math.inf
@@ -423,7 +469,8 @@ def check_v4_transient(v4_block: Any, observations: list[dict[str, Any] | None])
                          f"{rise_data['t90_s']:.1f} s); flow ×{rise['ratio_15_2']:.2f} from 2 s to 15 s and "
                          f"×{overall(rise):.2f} to 100 s (data ×{rise_data['ratio_15_2']:.2f}, ×{overall(rise_data):.2f}); "
                          + (f"overshoot: {rise['q15']:.2f} g/s at 15 s against {rise['q_end']:.2f} g/s at 100 s"
-                            if overshoot else "no overshoot"), rise_target))
+                            if overshoot else ("no overshoot at the 15 s check" if flow_covered
+                                               else "incomplete flow window")), rise_target))
     checks.append(_check("V4 first drops after full pressure",
                          _within_factor(m["drops_model_s"], m["drops_data_s"], V4_TIME_FACTOR),
                          f"model {m['drops_model_s']:.1f} s, data {m['drops_data_s']:.1f} s after the pressure reaches "
@@ -436,9 +483,9 @@ def check_v4_transient(v4_block: Any, observations: list[dict[str, Any] | None])
     ratio = m["time_to_mass_model_s"] / m["time_to_mass_data_s"] if _finite(m["time_to_mass_data_s"]) else math.nan
     checks.append(_check(f"V4 time to {mod.TIME_TO_MASS_G:g} g (9 bar)", None,
                          f"model {m['time_to_mass_model_s']:.1f} s, data {m['time_to_mass_data_s']:.1f} s after the "
-                         f"pressure rise: ×{ratio:.2f}, while the long-time flow matches ({m['long_time_model_g_s']:.2f} "
-                         f"against {m['long_time_data_g_s']:.2f} g/s)",
-                         "reported: the size of the start-up shortfall in a calibration case", info=True))
+                         f"pressure rise: ×{ratio:.2f}; long-time flow {m['long_time_model_g_s']:.2f} "
+                         f"against {m['long_time_data_g_s']:.2f} g/s",
+                         "reported: time to the target mass in the case calibrated on long-time flow", info=True))
     t = np.array(obs["flow_t_s"])
     q = np.array(obs["flow_g_s"])
     rows = case.info["transient"]
@@ -855,17 +902,27 @@ def run_validation(
     module: ModuleType | None = None,
 ) -> dict[str, Any]:
     """Runs every check and returns the report document."""
-    config = load_config(config_path or paths.root / "data" / "calibration" / "config.yaml")
+    config_path = config_path or paths.root / "data" / "calibration" / "config.yaml"
+    config = load_config(config_path)
     if n_classes is not None:
         config = {**config, "n_classes": n_classes}
     calibration_path = calibration_path or paths.root / "data" / "calibration" / "current.yaml"
     calibration_doc = load_calibration_document(calibration_path)
     calibrated = calibrated_values(calibration_doc)
+    from .identity import input_hashes, solver_identity
+
+    solver = solver_identity(paths, module)
+    fit_doc = calibration_doc.get("fit") or {}
+    reuse_issues = calibration_reuse_issues(
+        calibration_doc, solver, input_hashes(paths, str(config_path), fit_doc.get("datasets") or []))
     problem = build_problem(paths, config, tier=tier, jobs=jobs, simulate=simulate, module=module)
+    # Record the M1.1 water-inventory ledger over this validation run. Historical calibration
+    # robustness remains as recorded; this does not imply the older fit collected the diagnostic.
+    problem.runner.WORST_MAX = (*problem.runner.WORST_MAX, "hydraulic_volume_balance_error")
     try:
         x = _calibration_x(problem, calibrated)
         calibration, observations = fit_quality(problem, x)
-        calibration["checks"].insert(2, loo_check(calibration_doc.get("fit", {}).get("loo")))
+        calibration["checks"].insert(2, loo_check(fit_doc.get("loo"), stale_reasons=reuse_issues))
         values = problem.values(x)
         # the fitted values at x, plus app-facing values that are not fit parameters (the pooled reference
         # permeability), so that held-out builders see exactly what the app's builder will use
@@ -944,15 +1001,14 @@ def run_validation(
                 "calibrated": True, "sd": None,
                 "prior_sd_ratio": None, "at_bound": None}
 
-        from .identity import solver_identity
-
         report = {
             "schema": "puckworks.validation-report/1",
             "created": datetime.date.today().isoformat(),
             "tools_version": __version__,
             "core_version": core(module).__version__,
-            "solver": solver_identity(paths, module),
+            "solver": solver,
             "calibration_solver": (calibration_doc.get("fit") or {}).get("solver"),
+            "calibration_statistics_issues": reuse_issues,
             "placeholder": problem.runner.placeholder,
             "solver_warnings": sorted(problem.runner.warnings),
             "calibration_file": paths.relative(calibration_path) if calibrated else None,
@@ -1004,31 +1060,34 @@ def known_biases(report: Mapping[str, Any]) -> list[str]:
     items = []
     held = report.get("held_out") or {}
     v4t = held.get("v4_transient") or {}
-    if v4t.get("rise_model"):
+    startup_checks = {c["check"]: c["status"] for c in report.get("held_out_checks", [])}
+    startup_failed = any(startup_checks.get(name) == "fail" for name in (
+        "V4 flow rises after the first drops", "V4 first drops after full pressure"))
+    if v4t.get("rise_model") and startup_failed:
         items.append(
-            f"**Start-up shortfall.** The V4 9-bar calibration case matches its long-time flow "
-            f"({_fmt(v4t.get('long_time_model_g_s'))} against {_fmt(v4t.get('long_time_data_g_s'))} g/s) yet reaches 36 g "
-            f"at ×{_fmt(v4t.get('time_to_mass_ratio'), 2)} of the measured time: the model's flow reaches 90% of its "
+            f"**Startup mismatch.** The V4 9-bar case has long-time flow "
+            f"{_fmt(v4t.get('long_time_model_g_s'))} against {_fmt(v4t.get('long_time_data_g_s'))} g/s and reaches 36 g "
+            f"at ×{_fmt(v4t.get('time_to_mass_ratio'), 2)} of the measured time. The model's flow reaches 90% of its "
             f"100 s value {_fmt(v4t['rise_model']['t90_s'])} s after the first drops instead of "
             f"{_fmt(v4t['rise_data']['t90_s'])} s, and "
             f"its first drops come {_fmt(v4t.get('drops_model_s'))} s after full pressure instead of "
-            f"{_fmt(v4t.get('drops_data_s'))} s. The held-out V3 and V5 times show the same factor "
-            f"(×{_fmt((held.get('v3') or {}).get('time_ratio'), 2)}, ×{_fmt((held.get('v5') or {}).get('time_ratio'), 2)}), "
-            "so they mostly measure this missing transient, not κ_ref.")
+            f"{_fmt(v4t.get('drops_data_s'))} s. The held-out V3 and V5 time ratios are "
+            f"×{_fmt((held.get('v3') or {}).get('time_ratio'), 2)} and ×{_fmt((held.get('v5') or {}).get('time_ratio'), 2)}. "
+            "Total shot times combine startup and permeability errors; they do not isolate κ_ref.")
     v1 = next((b for b in (report.get("calibration") or {}).get("blocks", {}).values() if b.get("pump_limited")), None)
     if v1:
         pump = v1["pump_limited"]
         trans = [v for v in pump.get("transition_s", {}).values() if v > 0]
         capped = pump.get("pour_capped") or []
-        items.append(
-            f"**Pump saturation in V1.** {len(trans)} of {len(pump.get('transition_s', {}))} Schmieder shots sit at the "
-            f"pump's 12 bar limit for {_fmt(min(trans) if trans else math.nan, 2)}–{_fmt(max(trans) if trans else math.nan, 2)} s "
-            "during the preinfusion-to-pour switch"
-            + (f"; the pours of experiment(s) {', '.join(str(e) for e in capped)} reach the limit "
-               f"(longest {_fmt(max(pump.get('pour_s', {}).values() or [0.0]), 3)} s)" if capped else "")
-            + ". The measured per-shot maxima are 2.5–9.3 bar (Table S3). Missing physics: the DE1's preinfusion "
-            "control and the "
-            "dry bed's water uptake and headspace filling.")
+        if trans or capped:
+            items.append(
+                f"**Pump saturation in V1.** {len(trans)} of {len(pump.get('transition_s', {}))} Schmieder shots reach "
+                "the pump's 12 bar limit during the preinfusion-to-pour switch"
+                + (f" (for {_fmt(min(trans), 2)}–{_fmt(max(trans), 2)} s)" if trans else "")
+                + (f"; the pours of experiment(s) {', '.join(str(e) for e in capped)} reach the limit "
+                   f"(longest {_fmt(max(pump.get('pour_s', {}).values() or [0.0]), 3)} s)" if capped else "")
+                + ". The measured per-shot maxima are 2.5–9.3 bar (Table S3). The simplified DE1 control and "
+                "startup hydraulics do not reproduce those maxima.")
     ref = report.get("reference_permeability") or {}
     sens = ((report.get("sensitivity") or {}).get("variants") or {})
     spreads = []
@@ -1045,7 +1104,7 @@ def known_biases(report: Mapping[str, Any]) -> list[str]:
         spreads.append(f"×{_fmt(ref['value_m2'] / theta['pooled_kappa_ref_m2'], 2)} between θ = 0 and θ = 0.27")
     if spreads:
         items.append("**κ_ref rests on structural choices.** " + "; ".join(spreads)
-                     + ". The fit uncertainties (about 10%) are far smaller.")
+                     + ". Fit uncertainties describe the chosen model and do not include this structural spread.")
     blocks = report.get("calibration_blocks") or {}
     if blocks:
         per = ", ".join(f"{name} {_fmt(b.get('chi2_per_residual', (b['chi2'] / b['residuals']) if b.get('residuals') else math.nan), 3)}"
@@ -1083,6 +1142,11 @@ def render_markdown(report: Mapping[str, Any], figures: Sequence[str]) -> str:
         lines += ["> **The solver reported itself as a placeholder.** These numbers test the report machinery only;",
                   "> they say nothing about the model. Regenerate this report once the M1 solver has landed.", ""]
     calib = report["calibration_file"]
+    if report.get("calibration_statistics_issues"):
+        lines += ["Cached calibration statistics are historical for this run: "
+                  + "; ".join(report["calibration_statistics_issues"]) + ". "
+                  "The parameters are evaluated below, but the calibration file's uncertainties and sensitivity "
+                  "refits belong to its recorded solver/configuration. Its leave-one-out scores are not reused.", ""]
     lines += known_biases(report)
     lines += ["Datasets, case builders and the calibration harness: [case-builders.md](case-builders.md),",
               "[calibration.md](calibration.md). Targets: [PLAN §10](../PLAN.md#10-verification-and-validation).",
@@ -1153,13 +1217,12 @@ def render_markdown(report: Mapping[str, Any], figures: Sequence[str]) -> str:
         lines += ["", "**Tension with typical espresso grinds.** Published espresso grinds have a dry D32 of about "
                   "80–145 µm (Cameron, Corrochano ΨB–E, Smrke), while Waszkiewicz's grind measures about 49 µm (it was "
                   "chosen for the SCA guideline of 37 g in 32 s at 9 bar; the article's own 9 bar shots reached 37 g "
-                  "at about 48 s). κ₀ scales with D32², so the Waszkiewicz estimate makes grinds with a typical D32 "
-                  "run several times faster than the Schmieder one does. The held-out shot times come out at "
+                  "at about 48 s). κ₀ scales with D32², so differences in the measured PSD affect the "
+                  "reference permeability inferred from each dataset. The held-out shot times come out at "
                   f"×{_fmt(v3.get('time_ratio'), 2)} (V3 Cameron, mean error {_fmt(v3.get('bias_time'), 2)} s) and "
-                  f"×{_fmt(v5.get('time_ratio'), 2)} (V5 Smrke, {_fmt(v5.get('bias_time'), 2)} s), but the V4 calibration "
-                  f"case, whose long-time flow matches, comes out at ×{_fmt(v4t.get('time_to_mass_ratio'), 2)} too: the "
-                  "shortfall is mostly the start-up transient (Known biases), so these times do not isolate κ_ref. "
-                  "κ_ref is not moved to rescue them.",
+                  f"×{_fmt(v5.get('time_ratio'), 2)} (V5 Smrke, {_fmt(v5.get('bias_time'), 2)} s). The V4 case, "
+                  f"calibrated on long-time flow, reaches 36 g at ×{_fmt(v4t.get('time_to_mass_ratio'), 2)} of its "
+                  "measured time. These times combine startup and permeability effects. κ_ref is not tuned to them.",
                   "",
                   f"- *Waszkiewicz's PSD is atypical.* X50 {_fmt(tail.get('x50_um'), 3)} µm, X90 "
                   f"{_fmt(tail.get('x90_um'), 3)} µm, {_fmt(_pct(tail.get('share_below_100um')), 3)}% of the "
@@ -1372,9 +1435,12 @@ def render_markdown(report: Mapping[str, Any], figures: Sequence[str]) -> str:
     generic = held.get("generic")
     if generic and generic.get("rows"):
         lines += ["", "### Generic app shots", "",
-                  "18 g → 36 g at a flat 9 bar (medium washed arabica, 58 mm precision basket) with the calibrated "
-                  "parameters, one per grinder preset: a sanity check of the reference permeability the app uses.", "",
-                  "| Grinder preset | Setting | κ₀ (m²) | Shot time (s) | EY (%) | Stop |", "|---|---|---|---|---|---|"]
+                  "18 g dose with a 36 g pump-stop target at a flat 9 bar (medium washed arabica, 58 mm precision "
+                  "basket) with the calibrated parameters, one per grinder preset: a sanity check of the reference "
+                  "permeability the app uses. Time ends when the pump stops at 36 g. EY includes subsequent drip "
+                  "into the cup, so it describes a larger final beverage rather than a 36 g cup.", "",
+                  "| Grinder preset | Setting | κ₀ (m²) | Pump-stop time (s) | EY after drip (%) | Stop |",
+                  "|---|---|---|---|---|---|"]
         lines += [f"| {r['grinder']} | {r['setting']} | {_fmt(r.get('kappa0_m2', math.nan), 3)} | "
                   f"{_fmt(r.get('time_s', math.nan))} | {_fmt(r.get('ey_percent', math.nan))} | {r.get('stop', r.get('error', ''))} |"
                   for r in generic["rows"]]
@@ -1433,7 +1499,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 
 def check_committed(paths: RepoPaths, out_dir: Path | None = None) -> list[str]:
     """Problems with the committed report: its Markdown differs from a re-render of its JSON, or its
-    calibration's solver identity differs from current.yaml's."""
+    calibrated values or calibration's solver identity differ from current.yaml's."""
     out_dir = out_dir or paths.validation_dir
     md, js = out_dir / f"{REPORT_NAME}.md", out_dir / f"{REPORT_NAME}.json"
     if not js.is_file() or not md.is_file():
@@ -1447,6 +1513,18 @@ def check_committed(paths: RepoPaths, out_dir: Path | None = None) -> list[str]:
     current = (calibration.get("fit") or {}).get("solver")
     if report.get("calibration_solver") != current:
         problems.append("the report's calibration solver identity differs from data/calibration/current.yaml's "
+                        "(re-run validate after calibrating)")
+    # A calibration can be refitted or edited on the same solver build. The already-recorded
+    # parameter rows include shared, case and nuisance values; no extra report fingerprint is needed.
+    recorded_values = {**(report.get("nuisance") or {}),
+                       **{pid: row["value"] for pid, row in (report.get("parameters") or {}).items()
+                          if row.get("calibrated")}}
+    current_values = calibrated_values(calibration)
+    if recorded_values.keys() != current_values.keys() or any(
+        not math.isclose(value, recorded_values[pid], rel_tol=1e-12, abs_tol=0.0)
+        for pid, value in current_values.items() if pid in recorded_values
+    ):
+        problems.append("the report's calibrated values differ from data/calibration/current.yaml's "
                         "(re-run validate after calibrating)")
     return problems
 

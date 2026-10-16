@@ -115,6 +115,10 @@ model.hydraulics.viscosity_ln_a1
 model.hydraulics.viscosity_ln_a2
 model.hydraulics.viscosity_temperature_exponent
 model.hydraulics.wetting_uptake
+model.hydraulics.intraparticle_water_fraction
+model.hydraulics.pore_air_amplitude
+model.hydraulics.pore_air_permeability_exponent
+model.hydraulics.moisture_diffusivity
 hydraulics.dissolution_porosity_share
 extraction.dispersion.axial_coefficient
 extraction.saturation.lumped

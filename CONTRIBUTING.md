@@ -13,7 +13,7 @@ This page covers the project rules, one-time setup and everyday commands.
 4. **Physical parameters go through the registry** (`data/params/`), each with a source, an evidence grade and a tag. From M1 on, physics code refers to registry entries, not bare numbers.
 5. **Privacy.** The site never collects user data: no network requests, analytics or cookies, and user data stays in the browser ([PLAN §7.7](docs/PLAN.md#77-privacy-by-construction-d9)).
 6. **Data licences.** Datasets follow [PLAN §11](docs/PLAN.md#11-data-and-licensing-rules) and carry a metadata sidecar.
-7. **Version control.** Automated assistants working in this repository never run git commands; the maintainer handles version control.
+7. **Version control.** The maintainer authorized assistants to use git, create commits and push changes on 2026-10-15. Preserve existing work, run the relevant checks, and use a feature branch for development.
 
 ## One-time setup
 

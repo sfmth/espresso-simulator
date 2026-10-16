@@ -184,6 +184,7 @@ Recorded here by the lead as workstreams report them (rule 3).
 | `spatial.snapshots[].wetted_fraction` | second round: the wetted share of each [column][depth] cell, 0–1 |
 | `diagnostics.outflow_integral_error` | second round: cup solute against ∫q·c dt, as a relative difference. This is a quadrature-consistency check; it cannot detect errors inside the bed (third round wording) |
 | `diagnostics.max_regime_solves`, `diagnostics.rejected_steps` | third round: the most policy-iteration solves in one step, and how many steps were rejected and retried at Δt/2 |
+| `diagnostics.hydraulic_volume_balance_error` | M1.1: relative hydraulic carrier-volume residual, including retained and vented headspace water; separate from soluble mass conservation and not an exact solvent-mass balance with dissolution |
 
 **Solver semantics** (second round, after the independent review):
 - Every spec number is bounded (`docs/model/shot-model.md` §2.1, mirrored in the schema), and the model size is capped.
@@ -196,6 +197,7 @@ Recorded here by the lead as workstreams report them (rule 3).
   - A step whose pool regimes do not converge is rejected and retried at Δt/2, never accepted; after 12 halvings the run fails with `Numerical`.
   - Pools and kernels hold the pore liquid ε_p(1 − u_w), and the mobile holdup is ε + (1−ε₀)·ε_p·u_w, so liquid volume always equals total porosity.
   - `hydraulics.wetting_uptake` (u_w ≤ 0.9) is the mobile share of the particles' pore liquid; it mostly sets the wetting time.
+  - **M1.1 (0.3.0), additive fields:** `hydraulics.intraparticle_water_fraction` (null/omitted for legacy capacity, otherwise 0–1) sets the water inventory independently of `wetting_uptake`, which remains the effective particle loading normalization. Recipe builds use 1 and count this pore water once in the continuum holdup. `hydraulics.pore_air` (`amplitude`, `tau_s`, off when omitted) and `hydraulics.pore_air_permeability_exponent` (default 1) describe a separate local wetting-mobility relaxation. These are estimated closures, not a fixed first-drop delay; see [input-models.md §6.1](input-models.md#61-m11-startup-assumptions).
   - Validation rejects v̄·max(c_sat, K·s₀) ≥ 0.9, with s₀ = E_max·ρ_s·(1−ε_p), and warns when K·s₀ > c_sat.
   - Total work is bounded: steps × model values ≤ 1e10.
   - Mass stops land within 0.2 mg.

@@ -334,6 +334,29 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
     let a2 = ctx.param("model.hydraulics.viscosity_ln_a2", "1")?;
     let gamma = ctx.param("model.hydraulics.viscosity_temperature_exponent", "1")?;
     let uptake = ctx.param("model.hydraulics.wetting_uptake", "1")?;
+    let particle_water = ctx.param("model.hydraulics.intraparticle_water_fraction", "1")?;
+    let pore_air_amp = ctx.param("model.hydraulics.pore_air_amplitude", "1")?;
+    let pore_air_power = ctx.param("model.hydraulics.pore_air_permeability_exponent", "1")?;
+    let moisture_d = ctx.param("model.hydraulics.moisture_diffusivity", "m^2/s")?;
+    // First diffusion-mode time at the Sauter radius. Mapping moisture uptake
+    // to hydraulic mobility is an explicit grade-D approximation, not a fit
+    // to the held-out first-drop/flow-rise observations.
+    let pore_radius = d32 / 2e6;
+    let pore_air_tau =
+        pore_radius * pore_radius / (std::f64::consts::PI * std::f64::consts::PI * moisture_d.v);
+    let pore_air_tau = if pore_air_tau > 600.0 {
+        ctx.note(format!(
+            "Wetting: the estimated pore-air relaxation time ({pore_air_tau:.0} s) exceeds the solver's 600 s limit and is capped; this grind lies outside the startup closure's useful range."
+        ));
+        600.0
+    } else {
+        pore_air_tau
+    };
+    if pore_air_amp.v > 0.0 {
+        ctx.note(format!(
+            "Wetting: trapped pore air reduces early permeability, relaxing over an estimated {pore_air_tau:.1} s. The mobility law and its moisture-diffusion timescale are uncertain (grade D); they were not fitted to held-out shot times."
+        ));
+    }
     let theta = ctx.param("hydraulics.dissolution_porosity_share", "1")?;
 
     // Solubles.
@@ -444,6 +467,13 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
                 ..Default::default()
             },
             wetting_uptake: uptake.v,
+            intraparticle_water_fraction: Some(particle_water.v),
+            pore_air: Relaxation {
+                amplitude: pore_air_amp.v,
+                tau_s: pore_air_tau,
+                ..Default::default()
+            },
+            pore_air_permeability_exponent: pore_air_power.v,
             dissolution_porosity_share: Some(theta.v),
             ..Default::default()
         },
@@ -572,6 +602,23 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
             join(&[&a1.src, &a2.src, &gamma.src]),
         ),
         ("hydraulics.wetting_uptake", uptake.src.clone()),
+        (
+            "hydraulics.intraparticle_water_fraction",
+            particle_water.src.clone(),
+        ),
+        ("hydraulics.pore_air.amplitude", pore_air_amp.src.clone()),
+        (
+            "hydraulics.pore_air.tau_s",
+            join(&[
+                &psd.src,
+                &moisture_d.src,
+                "model:Sauter-radius diffusion time capped at 600 s",
+            ]),
+        ),
+        (
+            "hydraulics.pore_air_permeability_exponent",
+            pore_air_power.src.clone(),
+        ),
         ("thermal.water_temp_c", machine.temperature.src.clone()),
         ("thermal.initial_bed_temp_c", t0.src.clone()),
         ("thermal.heat_capacity_j_k", capacity.src.clone()),

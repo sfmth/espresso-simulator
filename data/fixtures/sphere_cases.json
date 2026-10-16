@@ -1,6 +1,6 @@
 {
   "schema": "puckworks.sphere-cases/1",
-  "core_version": "0.2.0",
+  "core_version": "0.3.0",
   "generator": "puckworks-tools fixtures",
   "cases": [
     {

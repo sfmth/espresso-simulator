@@ -194,6 +194,12 @@ pub struct ClassEy {
 #[cfg_attr(feature = "serde", serde(default))]
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct Diagnostics {
+    /// Relative final carrier-liquid volume residual: pump delivery minus
+    /// basket outflow, retained startup pore/headspace liquid, and vented
+    /// liquid, divided by delivery (0 without delivery). Uses the solver's
+    /// incompressible hydraulic convention; not an exact solvent-mass
+    /// balance including solute displacement or dissolution-created pores.
+    pub hydraulic_volume_balance_error: f64,
     /// Relative error in the soluble mass balance (particles + liquid + cup):
     /// the largest over the run's check points, over the lumped solubles and
     /// every tracked species, each relative to its initial mass.

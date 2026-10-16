@@ -2,21 +2,23 @@
 
 An open-source espresso simulator that runs entirely in the browser. It models a shot from bean and grinder, through the puck and the flow, to the cup. The goal is to follow the ~55 compounds that dissolve and to end with an explainable taste estimate, giving every number a source and an uncertainty band. The status below says what exists today.
 
-**Status:** version 0.2.0 delivers milestone M1: the shot core and the lab view. **M1's validation targets are not met.** The model is calibrated against published experiments. Tested on experiments it was not fitted to, it predicts shot times about 2.2× too short (0.43–0.47× the measured times), mainly because the slow start of real shots is missing. Treat its times and extraction yields as indicative. The details are in the [validation report](docs/validation/m1-validation.md).
+**Status:** version 0.3.0 adds M1.1 startup physics to the shot core and lab view: pore-water storage, a separate trapped-air mobility closure and conservative headspace filling. **The scientific validation targets are still not all met.** The new startup parameters are explicitly labelled estimates and were not fitted to held-out shot times. Treat predicted times and extraction yields as indicative; see the [validation report](docs/validation/m1-validation.md) and the preserved [0.2.0 baseline](docs/validation/baseline-v0.2.0/m1-validation.md).
+
+First drops improve from 1.8 to 6.8 s against 12.8 s measured, and the flow rise from 6.7 to 12.1 s against 25.5 s. Extraction accuracy regresses: 48/60 fitted rates meet the ±10% target, versus 57/60 before. No complete M1 scientific exit criterion passes. The [M1.1 investigation](docs/validation/m11-startup.md) records the improvements, regressions and remaining model gaps.
 
 | Part | What exists |
 |---|---|
-| Shot simulator | A physics solver for the whole shot. It covers flow through any basket shape (plain or pressurised), the wetting front, puck compaction, ideal or vibratory pumps, extraction from ~30 particle-size classes, four tracked compounds, temperature and the post-shot drip. It gives bit-identical results in Rust, Python and WebAssembly. A full shot takes about 20 ms in the browser for a default recipe, and a live preview takes about 3 ms. |
+| Shot simulator | A physics solver for the whole shot. It covers flow through any basket shape (plain or pressurised), the wetting front, puck compaction, ideal or vibratory pumps, extraction from ~30 particle-size classes, four tracked compounds, temperature and the post-shot drip. It gives bit-identical results in Rust, Python and WebAssembly. Full shots run in a browser worker, with a cheaper tier for live previews; measured runtimes are in the [changelog](CHANGELOG.md). |
 | Input models | Bean, grinder (burr family and gap, a grinder preset with its dial, or your own measured particle sizes), basket (any profile), puck preparation and machine programs. Every value has a source in the parameter registry. |
 | Presets | 7 grinders, 12 baskets, 10 machine programs and 6 beans. The owner's own gear is just one set of presets, marked unverified. |
 | Shot lab (web) | A recipe editor for gear described by preset or from scratch; the shot graph, summary tiles and particle-size chart; a compound table with sources; a cross-section of the puck with the wetting front; 1D sweeps, pinned overlays and exports. |
-| Calibration and validation | 17 published datasets (Schmieder, Waszkiewicz, Cameron, Corrochano, Smrke, Vaca Guerra), with calibration on some and held-out tests on others. |
-| Parameter registry | 226 sourced parameters, each with an evidence grade. |
+| Calibration and validation | 18 published datasets (Schmieder, Waszkiewicz, Cameron, Corrochano, Smrke, Vaca Guerra), with calibration on some and held-out tests on others. |
+| Parameter registry | 230 sourced parameters, each with an evidence grade. The startup assumptions are exposed in the sandbox. |
 | CI | Rust, Python and web workflows, plus GitHub Pages deployment. |
 
 Nothing you enter leaves your browser.
 
-The next milestone is M2: the full compound set and water chemistry ([plan §12](docs/PLAN.md#12-roadmap-and-milestones)).
+M1.1 takes priority over M2's full compound set and water chemistry ([plan §12](docs/PLAN.md#12-roadmap-and-milestones)). The owner's AMZCHEF preset now records a confirmed **58 mm single-wall basket**.
 
 ## Repository
 
@@ -39,6 +41,7 @@ The next milestone is M2: the full compound set and water chemistry ([plan §12]
 - [Input models](docs/model/input-models.md): from a recipe to the physics, including the presets.
 - [Particle kernel](docs/model/particle-kernel.md): the diffusion solver, with measured verification results.
 - [M1 validation report](docs/validation/m1-validation.md) and [calibration](docs/validation/calibration.md).
+- [M1.1 startup investigation](docs/validation/m11-startup.md): before/after results, fixed-fit ablations and remaining work.
 - [M0 kernel verification report](docs/validation/m0-kernel-verification.md), generated by `puckworks-tools verify`.
 - Research notes:
   - [01 Extraction and flow physics](docs/research/01-extraction-and-flow-physics.md)
@@ -59,7 +62,7 @@ cd web && npm ci && npm run dev       # run the web app locally
 ## Principles
 
 - **Physics first,** with machine learning for the gaps.
-- **Provenance and uncertainty.** Every parameter has a source and an evidence grade, and every output an uncertainty band.
+- **Provenance and uncertainty.** Every parameter has a source and an evidence grade; output uncertainty bands remain planned work.
 - **Private by construction.** The site never collects user data. Everything you enter stays in your browser.
 
 ## Licence

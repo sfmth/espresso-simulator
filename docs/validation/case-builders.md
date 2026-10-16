@@ -85,13 +85,11 @@ Data: [schmieder2023-design](../../data/datasets/schmieder2023-design/), [-fract
   It is fitted with one permeability per grinding level, the V1 nuisance parameters.
 - The switch from preinfusion to the pour flow follows the article's Fig. A2 (set flow 2 mL/s): the DE1's
   flow falls from 7 to 2 mL/s over about 4 s after the basket fills. The case ramps linearly over 4 s. The
-  model cannot pass that flow: at the calibrated values its pump sits at the 12 bar limit for seconds during
-  the switch in every experiment, and in some the pour reaches the limit too (the report lists the seconds),
-  whereas the measured maxima are 2.5–9.3 bar (2.6–2.9 bar at 1 mL/s, just above the 2.5 bar exit). The
-  model lacks the DE1's preinfusion control and the dry bed's water uptake and headspace filling. So the
-  calibration compares only the pour-phase maximum, and flags pump-capped pours (calibration.md, "V1 peak
-  pressure"). The 4 s ramp fits V1 better than a 1 s or 0.3 s ramp only while the pump saturates: with a
-  0.3 s ramp the model's 1 mL/s maxima match the data, but the V1 cost is higher (the sensitivity table).
+  original M1 model could not pass that flow: its pump sat at the 12 bar limit for seconds during the switch
+  in every experiment, whereas the measured maxima are 2.5–9.3 bar (2.6–2.9 bar at 1 mL/s, just above the
+  2.5 bar exit). M1.1 revises the startup hydraulics while retaining the idealised DE1 control. The
+  calibration continues to compare the pour-phase maximum and flags pump-capped pours (calibration.md,
+  "V1 peak pressure"); the current report gives the remaining saturation and the ramp sensitivities.
 - Each case runs at its experiment's mean measured flow (Table 2). For experiment 15 the replicates differ
   (2.47, 2.85 and 3.01 mL/s; RSD 8%, the largest of the design), so its single mean-flow shot represents
   them less well than elsewhere.
@@ -142,7 +140,9 @@ Data: [waszkiewicz2026-flow-pressure](../../data/datasets/waszkiewicz2026-flow-p
 **Observables.**
 - The cup mass flow, smoothed like the authors' (Savitzky–Golay, order 1, 3 s).
 - The long-time flow, at t = 100 s on the data clock. The data clock starts when the pressure rise ends;
-  the model's clock is shifted by the time its inlet pressure first reaches 95% of the target.
+  the model's clock is shifted by the interpolated time its inlet pressure first reaches 95% of the target.
+  A shot that never reaches that pressure has no clock origin and cannot pass the startup checks. The
+  simulation must cover the observation window; endpoints are never extrapolated to supply a 100 s flow.
 - The transient on the data grid.
 - The TDS of consecutive 5 s fractions counted from the model's first drops. The authors put the TDS clock
   8 s after the flow clock's zero, near the first drops at 9 bar.
@@ -151,6 +151,9 @@ Data: [waszkiewicz2026-flow-pressure](../../data/datasets/waszkiewicz2026-flow-p
 - The basket pressure varies by about 0.14 bar within a shot as the flow changes. The model holds it at
   its long-time value.
 - The temperature is not reported.
+- The 95% model-pressure crossing approximates the authors' end-of-rise clock, which they derive from
+  measured pump-pressure stability (dataset sidecar). Headspace filling before this crossing is absent
+  from the reported delay, so a uniform pump-clock shift cannot fix the first-drop validation target.
 
 ### V6 Corrochano 2017: `cases/corrochano2017.py`
 

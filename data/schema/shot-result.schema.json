@@ -347,6 +347,10 @@
       "description": "Solver diagnostics.",
       "type": "object",
       "properties": {
+        "hydraulic_volume_balance_error": {
+          "description": "Final relative carrier-liquid volume residual: supplied minus outlet, retained startup pore/headspace liquid and vented liquid, over supplied volume (0 without supply). This follows the incompressible hydraulic convention, not exact solvent mass including solute displacement or dissolution-created pore volume.",
+          "type": "number"
+        },
         "mass_balance_error": {
           "description": "Relative error in the soluble mass balance (particles + liquid + cup): the largest over the run's check points, over the lumped solubles and every tracked species, each relative to its initial mass.",
           "type": "number"

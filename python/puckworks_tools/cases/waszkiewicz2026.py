@@ -134,19 +134,24 @@ def build_cases(
 
 
 def alignment_time(result: Mapping[str, Any], target_pa: float) -> float:
-    """Model time at which the inlet pressure first reaches ALIGN_FRACTION of its target."""
+    """First crossing of ALIGN_FRACTION of the target, interpolated between output samples.
+
+    An unreachable target has no pressure-clock origin: returning NaN makes the corresponding
+    calibration residual fail instead of silently treating the pump start as full pressure.
+    """
     t = series(result, "t_s")
     p = series(result, "pressure_pa")
-    above = np.nonzero(p >= ALIGN_FRACTION * target_pa)[0]
-    return float(t[above[0]]) if above.size else float(t[0])
+    return _first_crossing(t, p, ALIGN_FRACTION * target_pa)
 
 
 def observe(case: Case, result: Mapping[str, Any]) -> dict[str, Any]:
     t, q = mass_flow_g_s(result)
     offset = alignment_time(result, case.info["target_bar"] * 1e5)
     data_t = np.array([r["time_s"] for r in case.info["transient"]])
-    model_q = np.interp(data_t + offset, t, q, right=float(q[-1]) if q.size else math.nan)
-    long_time = float(np.interp(LONG_TIME_S + offset, t, q))
+    # Neither a truncated shot nor a delayed pressure rise supplies a measurement at t = 100 s
+    # unless the simulation actually covers that time. Endpoint extrapolation can hide failure.
+    model_q = np.interp(data_t + offset, t, q, left=math.nan, right=math.nan)
+    long_time = float(np.interp(LONG_TIME_S + offset, t, q, left=math.nan, right=math.nan))
     first_drops = result["summary"].get("first_drops_s")
     out: dict[str, Any] = {
         # model clock (from the pump start); the data clock starts at the end of the pressure rise
@@ -208,11 +213,17 @@ def tds_fractions(result: Mapping[str, Any], start_s: float, n: int = 12) -> lis
 
 def flow_rise(t: np.ndarray, q: np.ndarray, start_s: float, end_s: float) -> dict[str, float]:
     """Flow-rise metrics after ``start_s`` (first drops): ratio of the flow 15 s and 2 s after it,
-    and the time from it to 90% of the flow at ``end_s``."""
-    q_end = float(np.interp(end_s, t, q))
-    q2, q15 = float(np.interp(start_s + 2.0, t, q)), float(np.interp(start_s + 15.0, t, q))
-    after = np.nonzero((t >= start_s) & (q >= 0.9 * q_end))[0]
-    t90 = float(t[after[0]] - start_s) if after.size else math.nan
+    and the interpolated time from it to 90% of the flow at ``end_s``. Unobserved windows stay NaN."""
+    q_end = float(np.interp(end_s, t, q, left=math.nan, right=math.nan))
+    q2 = float(np.interp(start_s + 2.0, t, q, left=math.nan, right=math.nan))
+    q15 = float(np.interp(start_s + 15.0, t, q, left=math.nan, right=math.nan))
+    t90 = math.nan
+    if math.isfinite(start_s) and math.isfinite(end_s) and t[0] <= start_s <= end_s <= t[-1] and q_end > 0:
+        # Include the first-drop boundary itself so a coarse output grid cannot invent a delay.
+        between = (t > start_s) & (t < end_s)
+        window_t = np.concatenate(([start_s], t[between], [end_s]))
+        window_q = np.interp(window_t, t, q)
+        t90 = _first_crossing(window_t, window_q, 0.9 * q_end) - start_s
     return {"q2": q2, "q15": q15, "ratio_15_2": q15 / q2 if q2 > 0 else math.inf, "t90_s": t90, "q_end": q_end}
 
 

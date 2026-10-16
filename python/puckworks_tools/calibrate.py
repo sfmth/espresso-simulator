@@ -1377,7 +1377,7 @@ def load_calibration(path: Path) -> dict[str, float]:
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", type=Path, help="calibration config (default: data/calibration/config.yaml)")
     parser.add_argument("--out-dir", type=Path, help="output directory (default: data/calibration)")
-    parser.add_argument("--label", default="v1", help="name of the versioned output file (default: v1)")
+    parser.add_argument("--label", default="v2", help="name of the versioned output file (default: v2; M1.1)")
     parser.add_argument("--no-current", action="store_true", help="do not write current.yaml")
     parser.add_argument("--blocks", help="comma-separated subset of blocks, e.g. V1,V4")
     parser.add_argument("--tier", type=int, help="override the config's numerics tier")

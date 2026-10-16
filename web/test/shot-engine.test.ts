@@ -37,6 +37,8 @@ function expectLabFields(result: ShotResult) {
     expect(Math.min(...snap.local_ey.flat())).toBeGreaterThan(-1e-8);
   }
   expect(result.diagnostics.outflow_integral_error).toBeTypeOf('number');
+  expect(result.diagnostics.hydraulic_volume_balance_error).toBeTypeOf('number');
+  expect(result.diagnostics.hydraulic_volume_balance_error).toBeLessThan(1e-9);
 }
 
 const BASE: Recipe = {

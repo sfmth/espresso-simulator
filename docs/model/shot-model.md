@@ -1,9 +1,11 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # Shot model: from first water to the cup
 
-*puckcore 0.2.0 · Milestone M1, workstream A · Last updated 2026-10-15 (independent-review fixes and their verification).*
+*puckcore 0.3.0 · Milestones M1 and M1.1 · Last updated 2026-10-15.*
 
 This is the specification of `puckcore::shot::simulate_shot`, the M1 shot solver behind `simulateShot` (JavaScript) and `puckcore.simulate_shot` (Python). It implements §4 of the [M1 contract](m1-contract.md) for both fidelity tiers, as modules H and X of [PLAN §7.3](../PLAN.md#73-modules).
+
+M1.1 adds an explicit dry-pore water budget and a locally timed pore-air permeability closure. These are an **effective single-liquid approximation**, with estimated startup parameters, not a resolved two-phase or kinetic dual-porosity model. Existing raw shot specs retain their legacy defaults; recipe-built specs enable the new closure through the registry. The [startup decision](../decisions/0010-startup-water-and-pore-air.md) records its assumptions. Validation thresholds remain unchanged; see the [validation report](../validation/m1-validation.md) for held-out results.
 
 **Code** (all in `crates/puckcore/src/shot/`):
 
@@ -68,10 +70,12 @@ Defaults are the registry's central values where an entry exists (the centre of 
 | — | dissolution Kozeny–Carman on/off | `hydraulics.dissolution_kozeny_carman` | on | note 01 §4.11 |
 | A_sw, τ_sw | swelling | `hydraulics.swelling` | 0, 26 s | `hydraulics.swelling.relaxation_time` (centre of 19–33 s); amplitude off by default (§4.2) |
 | A_g, τ_g | gas | `hydraulics.gas` | 0, 5 s | — (`hydraulics.gas.potential_volume_ratio` is a candidate scale for `puckmodel`) |
+| A_air, τ_air, n_air | dry-pore connectivity penalty | `hydraulics.pore_air`, `.pore_air_permeability_exponent` | raw: off, n = 1; recipe: A = 0.5, n = 3, τ = (D32/2)²/(π² D_water), capped at 600 s | `model.hydraulics.pore_air_amplitude`, `.pore_air_permeability_exponent`, `.moisture_diffusivity`; grade D mapping |
 | A_f, τ_f | fines layer | `hydraulics.fines_layer` | 0, 10 s | — |
 | D_ax | axial dispersion | `hydraulics.axial_dispersion_m2_s` | 5e-6 m²/s | `extraction.dispersion.axial_coefficient` |
 | a1, a2, γ | extract viscosity | `hydraulics.viscosity` | 4.2, 11.8, 0.45 | a1, a2 fit Moreno 2015 (4 °C); γ gives 2.24 at 25% w/w, the centre of `hydraulics.viscosity.extract_relative` (1.5–3) |
-| u_w | mobile (imbibed) share of the particles' pore liquid, 0–0.9 (§5.1) | `hydraulics.wetting_uptake` | 0.5 | `model.hydraulics.wetting_uptake` (D); the wetting time `hydraulics.wetting.time` is a check |
+| u_w | legacy mobile share / particle-loading capacity normalisation, 0–0.9 (§5.1) | `hydraulics.wetting_uptake` | 0.5 | `model.hydraulics.wetting_uptake` (D) |
+| f_water | water-filled share of intraparticle porosity | `hydraulics.intraparticle_water_fraction` | raw: null → u_w; recipe: 1 | `model.hydraulics.intraparticle_water_fraction`; when set, u_w normalises particle loading, not a second solvent inventory (§5.1) |
 | θ | dissolved volume that becomes intergranular | `hydraulics.dissolution_porosity_share` | null = 0 (§5.5) | `hydraulics.dissolution_porosity_share` (triangular 0/0/1, mode 0); Lee 2023 (θ = 1, upper bound) |
 | T_w | brew water temperature | `thermal.water_temp_c` | 92 °C | `shot.temperature` (centre of 88–96) |
 | T₀ | initial bed temperature | `thermal.initial_bed_temp_c` | 70 °C | — |
@@ -85,7 +89,7 @@ Fixed constants (not spec fields): water heat capacity c_w = 4200 J/(kg K) (with
 
 ### 2.1 Plausibility bounds
 
-Every number has a range (`validate.rs`; the same bounds are in the JSON Schema, and `tests/shot_schema.rs` pushes each of the 249 bounded values just outside its bound and checks that validation rejects it, naming that field). The ranges are wide enough for any espresso equipment and recipe and narrow enough that the numerics hold: no overflow, no loss of the M-matrix structure, a bounded state and a bounded number of steps. The main ones:
+Every number has a range (`validate.rs`; the same bounds are in the JSON Schema, and `tests/shot_schema.rs` pushes every bounded value just outside its bound and checks that validation rejects it, naming that field). The ranges are wide enough for any espresso equipment and recipe and narrow enough that the numerics hold: no overflow, no loss of the M-matrix structure, a bounded state and a bounded number of steps. The main ones:
 
 | quantity | range |
 |---|---|
@@ -95,7 +99,8 @@ Every number has a range (`validate.rs`; the same bounds are in the JSON Schema,
 | κ₀; P_c; D_ax; σ | 1e-18–1e-10 m²; 1e4–1e8 Pa; 0–1e-3 m²/s; 0–3 |
 | fines amplitude; relaxation τ; drip τ | 0–100; 0–600 s; 0–60 s |
 | pressures; flows; times; beverage targets | ≤ 200 bar; ≤ 100 mL/s; ≤ 3600 s; ≤ 10 kg |
-| wetting uptake u_w | 0–0.9 (the pools and kernels keep a pore-liquid share 1 − u_w) |
+| loading-capacity normalisation u_w | 0–0.9 (keeps the reference particle capacity ε_p(1 − u_w) positive) |
+| intraparticle water fraction; pore-air amplitude; exponent | 0–1 or null; [0,1); 1–10 |
 | max_dt; steps; output points | ≤ 0.5 s; (max_duration + 8τ_drip)/min(Δt_max, Δt_out) ≤ 2e6; output values ≤ 1e7 |
 | model size | columns × cells × classes × (shells + 1) × (1 + species) ≤ 1e7; snapshots × columns × cells ≤ 1e6 |
 | total work | steps (as above) × model size ≤ 1e10, about 30 s natively at the measured 1.5–6 ns per value and step; above 1e9 validation warns |
@@ -145,7 +150,7 @@ The front cell contributes its exact partial integral, from its top to the front
 
 ### 4.2 Permeability closure
 
-$$\kappa_{ij}=\kappa_0\;m_i\;\frac{\mathrm{KC}(\varepsilon_{ij})}{\mathrm{KC}(\varepsilon_0)}\;f_\text{sw}(t-t_{w,ij})\;f_\text{gas}(t-t_{w,ij})\;\times f_\text{poro}(\Delta P_i),\qquad \mathrm{KC}(\varepsilon)=\frac{\varepsilon^3}{(1-\varepsilon)^2}.$$
+$$\kappa_{ij}=\kappa_0\;m_i\;\frac{\mathrm{KC}(\varepsilon_{ij})}{\mathrm{KC}(\varepsilon_0)}\;f_\text{sw}(t-t_{w,ij})\;f_\text{gas}(t-t_{w,ij})\;f_\text{air}(t-t_{w,ij})\;f_\text{poro}(\Delta P_i),\qquad \mathrm{KC}(\varepsilon)=\frac{\varepsilon^3}{(1-\varepsilon)^2}.$$
 
 - **κ₀** is calibrated, never predicted from the size distribution (PLAN §6 #2).
 - **Kozeny–Carman** enters only as a relative factor, through the local porosity of §5.5. With the default θ = 0 the porosity does not change, so the factor stays 1; `dissolution_kozeny_carman = false` turns it off for any θ.
@@ -154,6 +159,11 @@ $$\kappa_{ij}=\kappa_0\;m_i\;\frac{\mathrm{KC}(\varepsilon_{ij})}{\mathrm{KC}(\v
   - gas: f_gas = 1 − A_g e^{−t/τ_g}.
 
   Both amplitudes must be in [0, 1). τ = 0 makes the change immediate.
+- **Dry-pore air** is separate from roast-dependent CO₂. The effective connectivity factor is
+
+  $$f_\text{air}(a)=\left[1-A_\text{air} e^{-a/\tau_\text{air}}\right]^{n_\text{air}},\qquad a=\max(0,t-t_w).$$
+
+  A_air ∈ [0,1), n_air ∈ [1,10]; A_air = 0 or τ_air = 0 disables the penalty. Dry cells do not age merely because the pump clock runs. Wet cells continue to relax during a soak. This factor describes hydraulic connectivity, **not a literal gas saturation**; it neither creates water nor subtracts pore volume. Its eventual value is 1, so it does not change the bare late-time permeability. Recipe defaults and their broad priors are in `data/params/startup.yaml`. The diffusion-time mapping from moisture diffusivity and a representative particle radius is an estimate; no startup coefficient was selected against the held-out flow curves.
 - **Why swelling defaults to 0.** The registry's swelling is a diameter increase (`hydraulics.swelling.diameter_increase`, 0–15%), not a permeability factor. In a confined bed, Kozeny–Carman turns even a 2% diameter increase (ε 0.17 → 0.12) into a 70% permeability loss, so mapping one onto the other needs a confined-swelling closure that no data constrain. The amplitude is a calibration parameter.
 
 **Poroelastic factor (Waszkiewicz et al. 2026).** The flow through a bed with pressure drop ΔP is Q = Φ(ΔP)/R, where R is the Darcy resistance without compaction and
@@ -211,16 +221,16 @@ The program and the pump deliver at most S(P), which never increases with P, bel
 
 - **Vibratory pump.** The curve is Q_free(1 − P/P_stall); an over-pressure valve caps P at `opv_pa`. An ideal pump has no curve.
 - **Ramps.** The target moves linearly over `ramp_s`. It starts from the value of the controlled quantity when the phase starts: 0 for the first phase, then the achieved pressure or flow.
-- **Headspace fill.** While the headspace fills, the pressure is 0. The pump then delivers S(0): under pressure control if the target is above 0, and under flow control if the ramped target is above 0.
+- **Headspace fill.** While the headspace fills, the pressure is 0. The pump then delivers S(0) if the instantaneous command permits positive pressure and flow. Its delivered volume is integrated exactly over a flow ramp, splitting at the ramp end and pump-flow cap. A scalar root lands on the full-headspace event; excess delivery is never discarded by clamping the volume. This remains a sequential, vented-headspace approximation. It does not yet resolve simultaneous ponding/infiltration or compressible headspace pressure.
 - **Drip.** After the stop the bed flow drains the water held in the headspace (all of it when the headspace was full). The drip ends when that water is gone (steps land on the moment), after 8τ, or at once with `vent_headspace`. Its size is set by the headspace water and by the poroelastic law: as the pressure decays the bed decompresses, so the flow falls more slowly than the pressure (Q ∝ 1 − (1 − ΔP/P_c)⁴). The decompression shapes the drip; the headspace water is its source.
 
 ### 4.7 Wetting front
 
 The front in column i advances as its wetted bed volume W_i grows:
 
-$$\frac{dW_i}{dt}=\frac{Q_i}{\phi_T},\qquad \phi_T=\varepsilon_0+(1-\varepsilon_0)\,\varepsilon_p\,u_w,$$
+$$\frac{dW_i}{dt}=\frac{Q_i}{\phi_T},\qquad \phi_T=\varepsilon_0+(1-\varepsilon_0)\,\varepsilon_p\,f_\text{water},$$
 
-where u_w is the mobile share of the particles' pore liquid (§5.1).
+where f_water is `intraparticle_water_fraction`, or u_w when that option is null (§5.1). The same φ_T enters the liquid holdup and thermal capacity. With f_water = 1 the pump must supply all initial pore water; it is not enough to change only the front speed, which would concentrate solute into an under-counted holdup.
 
 Tracking volume rather than position keeps tapered baskets exact. The front depth inside its cell comes from inverting the exact frustum volume.
 - **First drops.** A column drips once W_i reaches its volume. Its outlet flow in that step is the share of the step after the crossing.
@@ -234,18 +244,22 @@ Tracking volume rather than position keeps tapered baskets exact. The front dept
 
 The solubles, E_max of the dry dose, are spread uniformly through the solid: s₀ = E_max ρ_s (1 − ε_p) per particle (envelope) volume.
 
-**Liquid volumes.** The wet bed's pores, the total porosity ε_T = ε₀ + (1 − ε₀)ε_p, hold three liquids: the intergranular liquid ε; the mobile share u_w of the particles' pore liquid, which fills from the front and mixes with the intergranular liquid within its cell (together the holdup H = ε + (1 − ε₀)ε_p u_w, §5.4); and the particles' remaining pore liquid ε_c = ε_p(1 − u_w) per particle volume, in which the pools and kernels hold the solubles. They add up to ε_T exactly at every state. (The previous version counted the imbibed water twice, in the holdup and in the full particle pore volume, 0.867 of the bed against ε_T = 0.635.) Each particle of class k splits into two pools:
-- **Surface pool.** The broken-cell shell of thickness δ, a volume share f_s = 1 − ((a − δ)/a)³ (f_s = 1 when a ≤ δ). It holds S = f_s φ_k s₀ per bed volume in the pore volume V_p = ε_c f_s φ_k. Its pore concentration is c_pool = S/V_p, initially s₀/ε_c.
-- **Kernel.** The intact sphere of radius a_k = a − δ, with pore concentration u(r) (soluble mass per pore-liquid volume), initially u₀ = s₀/ε_c. Its mass per bed volume is σ Σ_l Ṽ_l u_l, with σ = 3φ_k ε_c (a_k/a)³. Kernel release does not depend on ε_c: σ u and the boundary value scale together.
+**Liquid volume and particle loading.** The liquid holdup is H = ε + (1 − ε₀)ε_p f_water. Recipe-built M1.1 specs use f_water = 1, filling the total initial porosity ε_T = ε₀ + (1 − ε₀)ε_p. Particle states retain the reference capacity ε_c = ε_p(1 − u_w), but are interpreted as **effective soluble loadings**, not another physical water inventory. Water is counted only in H. This approximation makes the intraparticle water locally accessible to the liquid continuum while retaining diffusive particle loading; it does not resolve an immobile water reservoir, finite-rate water ingress, or a measured saturation field. Increasing H also changes dilution, residence time and extraction kinetics, so the extraction fit must be reassessed. Water-volume conservation does not establish the accuracy of this approximation.
 
-**What u_w means.** u_w (`wetting_uptake`, 0–0.9) is the share of the particles' pore liquid that the wetting front supplies and that exchanges freely with the intergranular liquid. It sets the water the front consumes (φ_T, hence the wetting time), the holdup that dilutes and delays the solute, and the pools' pore volume. It is uncalibrated. Its sensitivity is now small (default spec, κ₀ = 2.4e-14): u_w = 0 / 0.25 / 0.5 / 0.75 / 0.9 give EY 21.76 / 21.87 / 21.95 / 22.02 / 22.05% and first drops at 5.5 / 6.2 / 6.9 / 7.5 / 7.9 s, and first-10 g TDS stays at 21.3–21.6%. At κ₀ = 1.25e-14 the EY spread is 21.77–21.89%; the review measured 21.77 / 21.01 / 20.22% for u_w = 0 / 0.5 / 1 before. u_w is capped at 0.9 so the pools keep a pore volume.
+**Legacy mode.** With `intraparticle_water_fraction = null`, f_water = u_w and the previous equations are recovered. M1 described ε_c as a fully filled second liquid without charging the pump for that water; that interpretation was not a complete startup water budget. The null option preserves numerical compatibility, not a claim that all dry pores have been filled.
+
+Each particle of class k splits into two loading states:
+- **Surface pool.** The broken-cell shell of thickness δ, a volume share f_s = 1 − ((a − δ)/a)³ (f_s = 1 when a ≤ δ). It holds S = f_s φ_k s₀ per bed volume with reference capacity V_p = ε_c f_s φ_k. Its concentration-equivalent loading is c_pool = S/V_p, initially s₀/ε_c.
+- **Kernel.** The intact sphere of radius a_k = a − δ, with concentration-equivalent loading u(r), initially u₀ = s₀/ε_c. Its mass per bed volume is σ Σ_l Ṽ_l u_l, with σ = 3φ_k ε_c (a_k/a)³. Kernel release does not depend on the normalisation ε_c: σ u and the boundary value scale together.
+
+**What u_w means.** u_w (`wetting_uptake`, 0–0.9) retains the M1 loading-capacity normalisation. In legacy mode it also sets water uptake, holdup and front speed. With an explicit f_water those water quantities are independent of u_w; its remaining influence is the effective surface-pool capacity. The cap at 0.9 keeps that capacity positive. The M1 sensitivity figures in §8–§9 refer to legacy mode, not a calibrated assessment of the new startup approximation.
 
 ### 5.2 Surface pool: saturating flux (Grudeva form)
 
 $$\frac{dS}{dt}=-k_s\,b_k\,\big(\min(c_\text{pool},c_\text{sat})-c\big).$$
 
 - **Initial state.** The pool starts above saturation (s₀/ε_c = 595 kg/m³ against c_sat = 245 with the defaults). It first dissolves at the saturated rate k_s b(c_sat − c), then decays exponentially once c_pool falls below c_sat.
-- **Reverse flux, capped.** If the liquid exceeds the pool's level, solute returns to the pool, but never beyond the pool's initial content S₀: no solute is parked in the pools. In backward Euler the cap is the loss max(L(c′), S − S₀), where L is the free (saturated or unsaturated) loss. Because the liquid stays at or below saturation (§5.4), precipitation from a supersaturated liquid does not arise at all; the cap bounds re-uptake into the broken cells' pores. An empty pool still exchanges as a dead-end pore volume.
+- **Reverse flux, capped.** If the liquid exceeds the pool's level, solute returns to the pool, but never beyond the pool's initial content S₀: no additional solute is parked beyond the original loading. In backward Euler the cap is the loss max(L(c′), S − S₀), where L is the free (saturated or unsaturated) loss. With K s₀ ≤ c_sat, the liquid stays at or below saturation (§5.4), so the cap prevents excess re-uptake rather than modelling precipitation. An empty pool retains its effective exchange capacity; in M1.1 that capacity is not a separate water volume.
 - **Rate.** k_s b/ε ≈ 10²–10³ s⁻¹ for fines (note 01 §2), so the pool is integrated implicitly (§7.3).
 
 ### 5.3 Kernel: diffusion in a sphere with a partition boundary
@@ -253,7 +267,7 @@ $$\frac{dS}{dt}=-k_s\,b_k\,\big(\min(c_\text{pool},c_\text{sat})-c\big).$$
 $$\frac{\partial u}{\partial t}=\frac{D(T)}{r^2}\frac{\partial}{\partial r}\Big(r^2\frac{\partial u}{\partial r}\Big),\qquad \partial_r u|_0=0,\qquad u(a_k,t)=u_s=\min\Big(\frac{c}{K\,\varepsilon_c},\,u_0\Big).$$
 
 - **Spatial discretisation.** This is the M0 kernel ([particle-kernel.md](particle-kernel.md), ADR 0005) on equal-volume shells, with conductances exact for parabolic profiles. The perfect sink is replaced by the boundary value u_s: the broken shell's pores are taken to be in perfect contact with the bed liquid.
-- **Partition basis.** Corrochano (2017, eq. 3.15–3.17) defines K = c_liquid/C_s at equilibrium, with C_s the soluble mass per particle envelope volume: pore solution and matrix-bound solute together. He takes the swollen envelope equal to the dry one (no swelling), and `bed.intraparticle_porosity` (0.56) likewise follows from the dry bulk density, so the bases agree. The particles hold their solubles as pore liquid u in the pore-liquid share ε_c = ε_p(1 − u_w), so C_s = ε_c u and the boundary value in pore-liquid terms is c/(K ε_c). At equilibrium a kernel holds the liquid at K s₀, whatever ε_c. The conversion is exact only if no solute stays bound to the matrix; bound solute would make the true pore concentration lower than C_s/ε_c. (The first version used c/K, as if K were per pore volume.)
+- **Partition basis.** Corrochano (2017, eq. 3.15–3.17) defines K = c_liquid/C_s at equilibrium, with C_s the soluble mass per particle envelope volume: pore solution and matrix-bound solute together. He takes the swollen envelope equal to the dry one (no swelling), and `bed.intraparticle_porosity` (0.56) likewise follows from the dry bulk density, so the bases agree. Here C_s = ε_c u with the reference capacity ε_c = ε_p(1 − u_w), so the boundary loading is c/(K ε_c). At equilibrium a kernel holds the liquid at K s₀, whatever ε_c. With explicit M1.1 water capacity, u is a concentration-equivalent loading, not a measured internal pore-liquid concentration. Treating it as literal pore-liquid concentration would additionally assume no matrix binding. (The first version used c/K, as if K were per pore volume.)
 - **Loading cap** (`solubles.kernel_loading_cap`, default on). With the defaults K s₀ = 0.61 × 166.6 = 102 kg/m³, well below c_sat = 245: at equilibrium with saturated liquid a linear partition would load kernels to 2.4 times their initial content. On the default spec the coarse kernels then take up 0.59 g, 27% of their initial 2.14 g (gross, `the_loading_cap_bounds_reuptake` in `sim.rs`), and EY falls from 21.95% to 21.31% (§9); fines have no kernel. The partition coefficient was measured in dilute batch extraction, and nothing constrains a linear isotherm at near-saturated espresso concentrations. The default therefore caps the boundary value at u₀: a kernel takes back at most what it lost, and never ends above its initial content. Capped kernels always step by backward Euler, which keeps u ≤ u₀ exactly (the discrete maximum principle): a kernel capped at the previous step starts the step by backward Euler, and one that becomes capped within a BDF2 step is re-solved by backward Euler and its column solved again. With the cap, the default spec's coarse kernels take up nothing: the liquid that reaches them is already above K s₀, so they stay capped until it falls below. This is a modelling assumption beyond the data; `kernel_loading_cap = false` restores the linear partition, and validation then warns when K s₀ < c_sat. Conservation is exact either way: the cap changes only the boundary value, which the liquid sees through the same linear functions.
 - **Kernels above saturation.** When K s₀ > c_sat (K > 1.47 with the defaults; allowed up to 100) the kernels hold the liquid above saturation, up to K s₀: nothing limits their release by solubility. Validation warns, and rejects a K at which the liquid would hold almost no water (v̄ K s₀ ≥ 0.9). Measured maxima of the liquid: 261 kg/m³ at K = 2 (outlet TDS 24.5%), 279 at K = 3 (395 before the front-cell scaling of §5.4), 295 at K = 5; K = 100 is rejected.
 - **Temperature.** The diffusivity scales with temperature by Stokes–Einstein: D(T) = D_ref (T/T_ref)(μ_w(T_ref)/μ_w(T)), with absolute temperatures. This gives ×1.24 from 80 to 95 °C, matching `extraction.diffusivity.temperature_coefficient`.
@@ -270,7 +284,7 @@ $$\frac{\partial(H c)}{\partial t}+\frac{\partial}{\partial z}\Big(\frac{Q_i}{A_
   - Inlet: Danckwerts with fresh water, so no solute crosses the inlet face.
   - Outlet: zero dispersive flux; the outflow Q c_last goes to the cup.
   - Front: a face carries flow (and dispersion) only for the part of the step after the front crossed it, the share (w₁ − edge)/(w₁ − w₀) of the column's wetted volume w; the bottom face of the front cell carries nothing.
-- **Holdup.** The liquid holdup is H = ε_ij(t) + (φ_T − ε₀): the intergranular liquid plus the mobile share of the particles' pore liquid (§5.1), which fills from the front and exchanges locally. Solute therefore travels at the speed of the wetting front, Q/(A φ_T). The front cell holds only its wetted share of the holdup, H w V, and only its wetted share of particles exchanges: their pool lines, cap and kernel losses scale by w (the wetted part is a scaled copy of the cell), and the kernels become u + w(u_full − u), a convex combination stepped by backward Euler (positive, at or below u₀). Before, the whole front cell's particles released into its thin wetted sliver, which with a large K held the front cell far above saturation (7380 kg/m³ at K = 100).
+- **Holdup.** The liquid holdup is H = ε_ij(t) + (φ_T − ε₀): the intergranular liquid plus the selected water-filled intraparticle share (§5.1), which fills from the front and exchanges locally in this effective continuum. Solute therefore travels at the speed of the wetting front, Q/(A φ_T). The front cell holds only its wetted share of the holdup, H w V, and only its wetted share of particles exchanges: their pool lines, cap and kernel losses scale by w (the wetted part is a scaled copy of the cell), and the kernels become u + w(u_full − u), a convex combination stepped by backward Euler (positive, at or below u₀). Before, the whole front cell's particles released into its thin wetted sliver, which with a large K held the front cell far above saturation (7380 kg/m³ at K = 100).
 - **Why.** The previous version held only εV and let the imbibed water (φ_T − ε₀ = 0.23 of the bed) carry no solute, while the front advanced at Q/φ_T. Solute then outran its water and piled up in the front cell, which exceeded saturation (270 kg/m³, 322 with 120 cells, against c_sat = 245); the pools re-precipitated the excess, parking up to 0.56 g, and local EY reached −18.6% (−33.5% with 120 cells), getting worse with the grid. Now every cell's holdup grows by exactly the water that enters it, so backward Euler gives each cell a weighted average of its old concentration, its inflow and the local equilibria: the liquid never exceeds max(c_sat, K s₀, inflow), with or without the loading cap. Measured (§8): the liquid stays at c_sat to 3e-9, local EY never falls below −2e-14, first-drop TDS is 23.161% (the saturation value) on every grid from 15 to 120 cells and at every u_w, and EY converges (21.88 → 21.98% from 15 to 120 cells).
 
 ### 5.5 Porosity growth with dissolution
@@ -279,7 +293,7 @@ Consider a cell whose particles have lost a share EY_loc of their dry mass. The 
 
 $$\varepsilon=\varepsilon_0+\theta\,\max(\mathrm{EY}_\text{loc},0)\,(1-\varepsilon_0)\qquad(\text{capped at }0.95,\ \text{never decreasing}).$$
 
-- **Default: θ = 0** (`dissolution_porosity_share` = null or absent). Solubles leave from inside cells whose insoluble walls keep the particle envelope, so dissolution raises the intraparticle porosity, not ε. This is also what the transport assumes: solubles are pore solute of the particles, and the intraparticle share of the freed volume is not tracked. The registry record `hydraulics.dissolution_porosity_share` is triangular 0/0/1 with mode 0.
+- **Default: θ = 0** (`dissolution_porosity_share` = null or absent). Solubles leave from inside cells whose insoluble walls keep the particle envelope, so dissolution raises the intraparticle porosity, not ε. The transport follows effective soluble particle loadings; changes in the intraparticle share of the freed volume are not tracked. The registry record `hydraulics.dissolution_porosity_share` is triangular 0/0/1 with mode 0.
 - **θ = 1.** Particles shrink at constant envelope density. This is the closure of Lee, Smith & Arshad (2023), EY = (ε − ε₀)/(1 − ε₀), and the upper bound: note 01 §4.11 gives ×4 at EY 10% and ×12 at 20%.
 - **Change.** null used to mean the proportional rule θ = ε₀/(ε₀ + (1 − ε₀)ε_p) = 0.27. That rule had no mechanism in this model, and at ε₀ = 0.17 Kozeny–Carman makes it a strong lever (d ln KC/dε ≈ 20, ×2.8 permeability at 26% local EY). It is dropped; null now means 0, the same as an explicit 0 (bit-identical, `tests/shot_regressions.rs`). θ is not tuned to any flow data.
 
@@ -294,7 +308,7 @@ Each species is a linear passenger on the lumped solution: same flows, porosity 
   - while solute returns: κ = 1 and g = −loss/c′.
 
   This is linear in the species state, positive, and conservative. It replaces a per-species saturation, which has no data (only lumped c_sat is known); the composition of the surface pool is what the species' own data constrain.
-- **Kernels.** The species' kernel boundary is c′_s/(K_s ε_p), capped at its own initial content when the loading cap is on (a policy iteration over the kernel caps only; the species pools are linear).
+- **Kernels.** The species' kernel boundary is c′_s/(K_s ε_c), using the same reference loading capacity ε_c = ε_p(1 − u_w) as the lumped kernel. It is capped at its own initial content when the loading cap is on (a policy iteration over the kernel caps only; the species pools are linear).
 - **Groups.** Species with identical (D_s, K_s, s_s) form a group, solved once for a unit mass fraction; each member is that solution times its mass fraction. The loading cap scales with the content, so the scaling is exact (a species alone and the same species in a group give bit-identical results).
 - **Cost.** Each group costs about one lumped solve: 4.6 ms per group natively on the default bed, 55 ms on the 30-class bed, 0.47 ms in tier 0 (§8). Fifty-five species with distinct parameters cost 0.29 s natively on the default bed, but 3.1 s on the 30-class bed and 29 ms in tier 0, beyond the budgets; 55 species sharing one parameter set cost 19 ms. Builders should map species onto a few shared (D, K, surface-scale) sets.
 - **Check.** A species identical to the lumped solubles reproduces their cup mass to 4.7e-15 (§8).
@@ -323,7 +337,7 @@ $$\big(C+\rho_wc_w\,\phi_T\textstyle\sum_iW_i\big)\frac{dT}{dt}=\rho_wc_wQ_\text
 | 1 | `heterogeneity.columns` (1–64) | `numerics.depth_cells` (2–1000) | as specified (≤ 200) | `numerics.kernel_shells` equal-volume shells (2–64) |
 | 0 | 3 conditional-mean strata (1 without spread) plus the edge annulus | 8 | 2: fines (< 100 µm) and coarse, each at its Sauter radius | coarse: two equal-volume shells; fines: linear driving force (one shell) |
 
-Tier 0 used to be one column at the area-mean multiplier with linear-driving-force kernels. It ignored the spread (EY +24.9% against tier 1 at σ = 0.7) and its single-shell kernel missed −7.3% at coarse grind. With three strata and two-shell coarse kernels it agrees with tier 1 within 2.9% on EY and TDS and 0.6% on shot time across the review's twelve cases (§8), and stays within the 10 ms budget (§8).
+The original tier 0 used one column at the area-mean multiplier with linear-driving-force kernels. It ignored the spread (EY +24.9% against tier 1 at σ = 0.7) and its single-shell kernel missed −7.3% at coarse grind. With three strata and two-shell coarse kernels, the M1 legacy-closure verification found agreement within 2.9% on EY and TDS and 0.6% on shot time across twelve cases, within the 10 ms benchmark budget (§8). Those historical figures do not establish M1.1 recipe accuracy or runtime; the current validation report compares the tiers with the active closure.
 
 ### 7.2 Time steps and events
 
@@ -337,7 +351,7 @@ Tier 0 used to be one column at the area-mean multiplier with linear-driving-for
 - **Step guards.** Validation bounds (max_duration + 8τ_drip)/min(Δt_max, Δt_out) and the number of output points at 2e6, and the total work at 1e10 value-steps. Previously Δt_max had no cap: Δt_max = 100 s took 3 steps and stopped at 446 g instead of 36 g, and the 8τ drip was not counted (508 000 steps at Δt_max = 1 ms and τ = 60 s).
 - **Rejected steps.** A step is never accepted with unconverged choices. If a column's policy iteration exceeds its solve limit (§7.3), the transport reports it before changing any state (all columns are solved before any is back-substituted), the hydraulic and front state is restored, and the step is retried at half its length, by backward Euler (the kernels' previous time level is gone). After twelve halvings the run fails with `ShotError::Numerical`, naming the time and step. A step that may reach a mass target (within four times the current mass flow over the step) keeps a full copy of the state; if it overshoots the target by more than 0.1 mg it is re-landed with a secant step on its own mass gain (at most eight times). `diagnostics.rejected_steps` counts both; none occurs on the default spec.
 - **Within each step:**
-  1. **Hydraulics.** Heun predictor–corrector: flows at the start, a predicted front, flows at the end (with the old concentrations), and their mean, which carries both the front and the transport. The headspace fill uses the trapezoidal pump flow.
+  1. **Hydraulics.** Heun predictor–corrector: flows at the start, a predicted front, flows at the end (with the old concentrations), and their mean, which carries both the front and the transport. Headspace delivery uses the exact integral of the capped fill program. A final drip step is bounded by its actual remaining headspace volume.
   2. **Thermal node.** Backward Euler.
   3. **Extraction and transport.** Implicit (§7.3); the porosity then updates.
   4. **Bookkeeping.** Hydraulics are refreshed at the new state, then outputs and events are processed.
@@ -364,6 +378,10 @@ If the limit is reached the step is rejected and retried shorter (§7.2); unconv
 
 **Conservation.** The liquid receives exactly what the pools and kernels lose, as the same linear functions of c′. Interior face fluxes cancel, the inlet carries nothing, and the outlet flux goes to the cup. The soluble mass of particles + liquid + cup is therefore conserved to round-off for every scheme. The species obey the same identity.
 
+**Hydraulic carrier volume.** `diagnostics.hydraulic_volume_balance_error` checks the final identity V_pump = V_outlet + φ_T ΣW_i + V_headspace,left + V_vented, using the accepted steps' actual volume transfers. The residual is divided by delivered volume, or zero with no delivery. Dripping subtracts the same water from the headspace that it supplies to the bed; venting has its own discharged volume. This is a check of the solver's incompressible carrier-volume convention, **not an exact solvent-mass balance** including dissolved-solids displacement or dissolution-created pore volume. Pure-water tests check the actual water budget at fill, partial wetting, breakthrough, drip and venting.
+
+**M1.1 startup verification.** `tests/shot_startup.rs` verifies exact constant-flow full-pore breakthrough and a capped flow ramp across multiple steps, disabled-closure compatibility, dry waiting versus wet-age relaxation, pump-off phases, late-flow recovery and conservation. In a raw default spec with f_water = 1 and test air values A = 0.5, τ = 10 s, n = 3, reducing Δt from 0.05 to 0.025 s changes first drops by 0.0063 s, shot time by 0.0118 s and EY by 0.0099 percentage point. These are numerical checks, not observations used to calibrate startup.
+
 **Conservation degrades with stiffness.** The balance is exact algebra, but its round-off grows with the size of the terms in a cell's equation: a pool line's terms are k_sbΔt c_sat, so a stiff pool (k_sbΔt ≫ V_p) loses digits. Measured: 2e-15 at the defaults, 2.0e-12 at k_s = 1 m/s (the bound), 8.9e-11 at k_s = 1 m/s with 0.1 µm fines (both bounds), 2.7e-13 at D_ax = 1e-3 m²/s. The review measured 3.7e-7 at k_s = 1e5 and 1.9 at D_ax = 1e10, now outside the bounds. A run warns above 1e-9 and fails above 1e-6.
 
 **Outlet check.** `diagnostics.outflow_integral_error` compares the cup's solute (the implicit outflow of every step) with the trapezoidal integral of Σ q_i c_i at the step ends. Both integrate the same outlet q·c, so it is a quadrature-consistency check of the outlet bookkeeping, not an independent budget of the bed: it could not have seen the old front supersaturation. It converges at first order, 8.4e-3 at Δt = 0.1 s, 3.5e-3 at 0.05 s and 1.05e-3 at 0.0125 s. The bed's own budget (particles from local EY × dry mass, liquid c·H·w·V, cup) closes to ≤ 5e-15 every step in the independent verification.
@@ -385,9 +403,11 @@ If the limit is reached the step is rejected and retried shorter (§7.2); unconv
 
 ---
 
-## 8. Verification (measured)
+## 8. Verification (M1 legacy-closure measurements)
 
-Measured on an AMD Ryzen 9 7945HX with Rust 1.99.0 (release build), with other work running (load ≈ 3). Every row is asserted in `cargo test` (`tests/shot_verification.rs`, `shot_regressions.rs`, `shot_validation.rs`, `shot_robustness.rs`, `shot_schema.rs`, plus unit tests).
+These tables preserve the M1 0.2.0 verification record: raw defaults use the legacy water fraction and have no pore-air penalty. They are not measurements of recipe-built M1.1 shots. The new startup checks and their timestep results are described in §7.3; current fitted and held-out predictions are in the [validation report](../validation/m1-validation.md).
+
+The M1 measurements used an AMD Ryzen 9 7945HX with Rust 1.99.0 (release build), with other work running (load ≈ 3). The corresponding checks remain in `cargo test` (`tests/shot_verification.rs`, `shot_regressions.rs`, `shot_validation.rs`, `shot_robustness.rs`, `shot_schema.rs`, plus unit tests).
 
 | check | setup | result |
 |---|---|---|
@@ -399,7 +419,7 @@ Measured on an AMD Ryzen 9 7945HX with Rust 1.99.0 (release build), with other w
 | Wetting time | flow control 2 mL/s, one column | first drops = (V_hs + φ_T V)/Q: rel. error **2.8e-15** |
 | Washburn wetting | 9 bar, flow-limited start, Δt 0.01 s | first drops vs t_fill + t₁ + μφ_T(L² − z*²)/(2κP): rel. error **6.6e-4** |
 | Perfect sink (M0 kernel) | one class, no pool, 1 g bed flushed at 100 mL/s, K = 100 (boundary ≈ 0), 32 shells, Δt 0.05 s | released − Crank: **+3.7e-4** (τ = 0.01), +2.1e-4 (0.03), +7.1e-5 (0.1), +3.8e-5 (0.3), +5.2e-6 (0.6); the shells converge at second order (change 1.6e-4 from 16 to 32 shells, 4.0e-5 from 32 to 64) |
-| Closed-system equilibrium | wet, then zero flow for 120 s; holdup ε + mobile water, pools and kernels in ε_c, kernels at c/(K ε_c); mobile + particle liquid = ε_T asserted | every cell at c_eq to **6e-13**: 155.67 kg/m³ (K = 1, uncapped), 148.53 (K = 0.61, kernels capped at u₀), 124.22 (K = 0.61, linear) |
+| Closed-system equilibrium | legacy mode: wet, then zero flow for 120 s; liquid holdup ε + mobile water and effective particle capacity ε_c, kernels at c/(K ε_c); reference capacities sum to ε_T | every cell at c_eq to **6e-13**: 155.67 kg/m³ (K = 1, uncapped), 148.53 (K = 0.61, kernels capped at u₀), 124.22 (K = 0.61, linear) |
 | Mass conservation | default, tier 0, stepped taper, pressurised, vibratory, all effects (each with 3 species) | **2.5e-15 to 4.7e-15** |
 | Species copy | a species with the lumped D, K and E_max | cup mass equals the lumped cup mass to **4.7e-15** |
 | Species groups | a species alone and the same species in a group | bit-identical; members scale exactly with their mass fractions |
@@ -460,13 +480,13 @@ At the defaults the discretisation contributes less than 0.03 EY points. Steps c
 | tier 1, default + 55 species in one group | 18.7 ms | — |
 | tier 0, default + 16 / 55 distinct species | 10.1 / 28.4 ms | — |
 
-Interleaved with the previous build under the same load, this one costs 3–7% more (the saved front state per step, the wetted shares and the full copy kept for steps near a mass target). Both budgets (tier 0 ≤ 10 ms, tier 1 ≤ 1 s per 30 s shot) are met for the standard specs. Species with distinct parameters scale linearly (§5.6).
+In the M1 measurement, interleaving the reviewed build with its predecessor under the same load showed 3–7% more runtime (the saved front state per step, wetted shares and full copy kept near mass targets). Both budgets (tier 0 ≤ 10 ms, tier 1 ≤ 1 s per 30 s shot) were met for those legacy standard specs. Species with distinct parameters scale linearly (§5.6).
 
 ---
 
-## 9. Plausibility (uncalibrated defaults, tier 1)
+## 9. Plausibility (historical M1 raw defaults, tier 1)
 
-Workstream C calibrates against Schmieder 2023, Waszkiewicz 2026, Vaca Guerra 2024, Corrochano, Cameron 2020 and Smrke 2024. These numbers only show that the physics responds sensibly. κ₀ is now the registry's `hydraulics.permeability.reference` (2.4e-14 m², a bare permeability at the reference Sauter diameter, ADR 0009), so the default shot is faster than before.
+These uncalibrated M1 0.2.0 raw-spec results use the legacy water fraction and no pore-air penalty. They show directional responses and are retained as a numerical reference; they do not describe M1.1 recipe-built shots. The raw κ₀ is 2.4e-14 m², a bare reference permeability (ADR 0009). The separate calibration uses Schmieder 2023, Vaca Guerra 2024, Waszkiewicz 2026 long-time flow and Corrochano; Cameron 2020, Smrke 2024 and Waszkiewicz's startup transient are held out. See the current [calibration and validation report](../validation/m1-validation.md) for those results.
 
 | case | shot time s | first drops s | beverage g (drip) | TDS % | EY % | max P bar | flow mL/s: drops + 2 s → mid → stop |
 |---|---|---|---|---|---|---|---|
@@ -512,41 +532,44 @@ Using the back-calculated value as κ₀ counts these effects twice. κ₀ defau
 ## 10. Limitations
 
 - **Flow geometry.** The columns are 1D stream tubes without cross-flow. In a tapered basket each keeps its share of the cross-section; there is no radial redistribution or 2D flow (that is Tier 2). Edge and hole-pattern effects enter only through the edge multiplier and the outlet orifices.
-- **Wetting.** The front is sharp, with no capillarity and no relative permeability while gas fills the pores (the gas factor is a decaying multiplier). The headspace fills at zero pressure and has no compliance: once full, the pressure follows the bed instantly.
+- **Wetting.** The front is sharp, without capillary pressure or a resolved saturation field. M1.1 adds a time-dependent effective relative-permeability factor for pore-air connectivity, but its amplitude, power and moisture-to-mobility timescale mapping are estimated. It does not solve two-phase flow, gas transport or finite-rate particle hydration. The headspace still fills at zero pressure before infiltration and has no compliance: once full, pressure follows the bed instantly.
 - **The front cell.** The front cell holds the wetted share of its liquid, its faces carry flow only after the front has passed them, and only its wetted share of particles exchanges, so solute and water stay in step. The wetted share is mixed into one cell average (newly wetted and earlier wetted particles are not told apart), and a cell activated part-way through a step exchanges from the step's start. This smears particle exchange over one cell and one step (resistance and front position stay exact).
-- **Liquid volume.** The mobile share u_w of the particles' pore liquid joins the cell's liquid at the cell's concentration (local equilibrium between intra- and intergranular liquid on the cell scale); its actual exchange time with the broken cells is of order δ²/D ≈ 10 s. u_w is uncalibrated; it mainly sets the wetting time (§5.1). The liquid's volume flow is unchanged by dissolution (∂Q/∂z = 0), the porosity growth of §5.5 creates its holdup without a water source, and thermal expansion is neglected. Water is budgeted only for the headspace (fill and drip).
+- **Liquid volume.** The explicit intraparticle water fraction sets both front uptake and continuum holdup. Full pore capacity is an upper-envelope single-liquid approximation: the added water mixes locally and changes dilution and residence time, whereas real intraparticle water can exchange slowly. u_w retains its effective loading-capacity role; it sets water uptake only in legacy mode (§5.1). M1.1 budgets pump delivery, initial pore fill, headspace storage, outlet flow, drip and venting. The reported hydraulic residual excludes dissolved-solids displacement, thermal expansion and the additional holdup created by nonzero dissolution porosity (§5.5); it is not an exact solvent-mass balance.
 - **Particle geometry.** Particles do not change size: swelling acts through permeability only, and porosity growth (§5.5, off by default) through holdup and Kozeny–Carman only.
 - **Exchange closures.**
-  - Kernels are in perfect contact with the bed liquid (no film resistance). Their partition is linear in c up to the loading cap at u₀ (§5.3, an assumption beyond the data), with K converted to pore liquid by ε_c, exact only without matrix-bound solute. Nothing limits their release by solubility: with K s₀ > c_sat they hold the liquid above saturation (warned).
+  - Kernels are in perfect contact with the bed liquid (no film resistance). Their partition is linear in c up to the loading cap at u₀ (§5.3, an assumption beyond the data), with the per-envelope coefficient K converted to concentration-equivalent loading by ε_c. This conversion does not measure internal pore-liquid concentration or resolve matrix binding. Nothing limits their release by solubility: with K s₀ > c_sat they can hold the liquid above saturation (warned).
   - Pools take back at most their initial content.
   - k_s, K, c_sat and D_ax do not depend on temperature.
   - The viscosity's temperature dependence beyond water is a constant exponent γ.
 - **Thermal.** One node: no axial temperature profile; the outlet temperature is the node temperature.
 - **Fines.** Fines migration is a relaxing outlet resistance, without particle transport or erosion.
 - **Species.** Species are linear passengers. Their pools dissolve congruently with the lumped pool, and they have no saturation of their own. Each group of distinct transport parameters costs about one lumped solve (§5.6), so tens of distinct species exceed the budgets.
-- **Tier 0.** Tier 0 agrees with tier 1 within 2.9% on EY and TDS and 0.6% on shot time over the review's twelve cases (§8): it reads about 1–3% low on two-class beds (coarse kernels of two shells) and 1% high on the 30-class bed. The tolerance per regime: within 1.5% at flow control, at fine grind (×0.6–0.75) and at high spread; within 2% at the defaults and at 3–9 bar; within 3% for a coarse grind (×1.33) or a single tier-1 column. First drops depend on the fastest stratum and so on the strata count. Its `class_ey` lists the two merged classes.
+- **Tier 0.** The historical M1 comparison over twelve legacy-closure cases gave differences within 2.9% on EY/TDS and 0.6% on shot time (§8). That is not an accuracy bound for M1.1 recipes; consult the current validation report's tier comparison. First drops depend on the fastest stratum and so on the strata count. Tier 0's `class_ey` lists the two merged classes.
 - **Outputs.**
+  - `shot_time_s` ends at pump stop. Beverage mass, TDS and EY include the subsequent modeled drip. A 36 g mass stop therefore does not guarantee a final 36 g cup; subtract `drip_mass_kg` from the final mass to recover the mass at stop, and use the series at `shot_time_s` for extraction at that point.
   - Snapshots are the stored candidates nearest k·t_end/n. Very coarse output intervals can repeat one.
   - Mass events land within 0.1 mg.
   - Pressure exits fire at the end of the step that reaches them.
-- **Speed.** The tier-1 timings are from a fast desktop CPU. A slower laptop may need Δt_max = 0.1 s for heavy specs (30 classes + 4 species).
+- **Speed.** The historical tier-1 timings are from a fast desktop CPU and the legacy closure. Longer startup trajectories require more steps; M1.1 performance must be measured for the actual recipe. A slower laptop may need Δt_max = 0.1 s for heavy specs (30 classes + 4 species).
 - **Conservation at the bounds.** Round-off grows with stiffness: up to about 1e-10 at the most extreme bounds (§7.3).
-- **Defaults.** The defaults are uncalibrated registry central values. In particular κ₀, γ, σ, the swelling, gas and fines amplitudes, and the thermal parameters await workstream C. θ is a mechanistic 0, not fitted.
+- **Defaults.** Raw `ShotSpec` defaults preserve the legacy closure and are not the fitted recipe defaults. Recipe construction combines registry values with the current calibration; startup capacity and pore-air parameters remain fixed grade-D assumptions rather than experimentally identified coefficients. θ is a mechanistic 0, not fitted. Current failures and uncertainties belong in the calibration/validation report, not in the historical raw-spec tables above.
 
 ## References
 
 - Abramowitz M, Stegun IA (1964) *Handbook of Mathematical Functions*, formula 7.1.26. National Bureau of Standards.
 - Bokanowski O, Maroso S, Zidani H (2009) Some convergence results for Howard's algorithm. *SIAM J Numer Anal* 47:3001–3026. doi:10.1137/08073041X
 - Roman Corrochano B (2017) *Advancing the engineering understanding of coffee extraction*. EngD thesis, University of Birmingham (eq. 3.15–3.17: the partition coefficient per swollen particle envelope volume).
+- Foster J et al. (2025) Dynamics of liquid infiltration into an espresso bed using time-resolved micro-computed tomography: Insights from experiment and modeling. *Phys Fluids* 37:013383. [doi:10.1063/5.0245167](https://doi.org/10.1063/5.0245167)
 - Glueckauf E (1955) Formulae for diffusion into spheres and their application to chromatography. *Trans Faraday Soc* 51:1540–1551. doi:10.1039/TF9555101540
 - Hoffman AJ, Karp RM (1966) On nonterminating stochastic games. *Management Science* 12:359–370. doi:10.1287/mnsc.12.5.359
 - Grudeva Y, Moroney KM, Foster JM (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. *Eur J Appl Math* 37:496–519. doi:10.1017/S095679252500018X
 - Kell GS (1975) Density, thermal expansivity, and compressibility of liquid water from 0° to 150 °C. *J Chem Eng Data* 20:97–105. doi:10.1021/je60064a005
 - Kestin J, Sokolov M, Wakeham WA (1978) Viscosity of liquid water in the range −8 °C to 150 °C. *J Phys Chem Ref Data* 7:941–948. doi:10.1063/1.555581
 - Lee WT, Smith A, Arshad A (2023) Uneven extraction in coffee brewing. *Phys Fluids* 35:054110. doi:10.1063/5.0138998
+- Mateus M-L et al. (2007) Interactions of water with roasted and ground coffee in the wetting process investigated by a combination of physical determinations. *J Agric Food Chem* 55:2979–2984. [doi:10.1021/jf062841g](https://doi.org/10.1021/jf062841g)
 - Moreno FL et al. (2015) Rheological behaviour, freezing curve, and density of coffee solutions near freezing. *Int J Food Prop* 18:426–438. doi:10.1080/10942912.2013.833221
 - Scharfetter DL, Gummel HK (1969) Large-signal analysis of a silicon Read diode oscillator. *IEEE Trans Electron Devices* 16:64–77. doi:10.1109/T-ED.1969.16566
 - Waszkiewicz R et al. (2026) Under pressure: poroelastic regulation of flow in espresso brewing. *Phys Fluids* 38:063113. doi:10.1063/5.0319611
 - Research note 01 ([extraction and flow physics](../research/01-extraction-and-flow-physics.md)) §3–§6, §8, §10; [particle-kernel.md](particle-kernel.md); ADRs 0002, 0005 and 0008.
 
-The DOIs of Bokanowski 2009, Hoffman & Karp 1966, Kell 1975, Kestin 1978 and Scharfetter & Gummel 1969, and the Abramowitz & Stegun citation, are given from the publications' records and were not re-checked against Crossref here (Corrochano 2017 is as cited in `data/params/extraction.yaml`); the others are as verified in research note 01.
+The DOIs of Bokanowski 2009, Hoffman & Karp 1966, Kell 1975, Kestin 1978 and Scharfetter & Gummel 1969, and the Abramowitz & Stegun citation, are given from the publications' records and were not re-checked against Crossref here (Corrochano 2017 is as cited in `data/params/extraction.yaml`). For M1.1 the Foster paper and Mateus abstract were read from primary publication records; the remaining references follow research note 01.

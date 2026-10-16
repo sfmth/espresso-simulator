@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 
 import pytest
@@ -138,6 +139,12 @@ def test_v5_checks_compare_like_with_like(report):
     assert "250 µm + 1 g" in fast["detail"]
 
 
+def test_validation_records_the_startup_water_ledger(report):
+    worst = report["robustness"]["worst"]
+    assert "hydraulic_volume_balance_error" in worst
+    assert 0 <= worst["hydraulic_volume_balance_error"] < 1e-8
+
+
 def test_not_independent_checks_are_marked(report):
     marked = {c["check"] for c in report["held_out_checks"] if c.get("independent") is False}
     assert marked == set(validate.NOT_INDEPENDENT)
@@ -155,3 +162,18 @@ def test_committed_report_check_detects_drift(report, tmp_path, repo):
         assert any("calibration solver" in p for p in problems)
     written[0].write_text(written[0].read_text(encoding="utf-8") + "edited\n", encoding="utf-8")
     assert any("does not match" in p for p in validate.check_committed(repo, tmp_path))
+
+
+def test_committed_report_check_detects_refit_on_same_solver(report, tmp_path, repo, monkeypatch):
+    checked = copy.deepcopy(report)
+    pid = next(iter(checked["parameters"]))
+    checked["parameters"][pid]["calibrated"] = True
+    value = checked["parameters"][pid]["value"]
+    calibration = {"parameters": {pid: value}, "fit": {"solver": checked["calibration_solver"]}}
+    monkeypatch.setattr(validate, "load_calibration_document", lambda _: calibration)
+    validate.write_report(checked, tmp_path)
+    assert validate.check_committed(repo, tmp_path) == []
+    calibration["parameters"][pid] = value * 1.01
+    problems = validate.check_committed(repo, tmp_path)
+    assert problems == ["the report's calibrated values differ from data/calibration/current.yaml's "
+                        "(re-run validate after calibrating)"]

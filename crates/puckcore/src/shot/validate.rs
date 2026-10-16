@@ -415,6 +415,13 @@ fn hydraulics(h: &HydraulicsSpec) -> Check {
     }
     relaxation("hydraulics.swelling", &h.swelling, 1.0, true)?;
     relaxation("hydraulics.gas", &h.gas, 1.0, true)?;
+    relaxation("hydraulics.pore_air", &h.pore_air, 1.0, true)?;
+    closed(
+        "hydraulics.pore_air_permeability_exponent",
+        h.pore_air_permeability_exponent,
+        1.0,
+        10.0,
+    )?;
     relaxation("hydraulics.fines_layer", &h.fines_layer, 100.0, false)?;
     closed(
         "hydraulics.axial_dispersion_m2_s",
@@ -452,6 +459,14 @@ fn hydraulics(h: &HydraulicsSpec) -> Check {
     // The imbibed share of the particle pores joins the mobile liquid; the
     // pools and kernels keep the rest, which must not vanish.
     closed("hydraulics.wetting_uptake", h.wetting_uptake, 0.0, 0.9)?;
+    if let Some(fraction) = h.intraparticle_water_fraction {
+        closed(
+            "hydraulics.intraparticle_water_fraction",
+            fraction,
+            0.0,
+            1.0,
+        )?;
+    }
     if let Some(theta) = h.dissolution_porosity_share {
         closed("hydraulics.dissolution_porosity_share", theta, 0.0, 1.0)?;
     }

@@ -16,6 +16,11 @@ arrives in M4, Explore in M5). The Lab (milestone M1) has two views:
 - **Kernel verification**, the M0 demo: diffusion out of a sphere into a
   perfect sink, solved by puckcore and compared with Crank's analytic solution.
 
+Version 0.3.0 adds M1.1 startup physics. The sandbox exposes the pore-water capacity,
+pore-air mobility and moisture-diffusion estimates with their sources and evidence grades.
+The results note links to the current [validation report](../docs/validation/m1-validation.md);
+remaining timing and extraction limitations are reported there.
+
 ## The shot lab
 
 A shot is described as a recipe (`puckworks.recipe/1`,

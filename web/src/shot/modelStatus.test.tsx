@@ -14,7 +14,8 @@ describe('model status note', () => {
   it('names the calibration and the held-out results, without calling the model uncalibrated', () => {
     const text = modelStatusText(REPO);
     expect(text).toMatch(/^Calibrated against published experiments \(Schmieder 2023, /);
-    expect(text).toContain('shot times about 2.2× too short');
+    expect(text).toContain('errors in startup flow and extraction');
+    expect(text).toContain('Startup assumptions are estimated');
     expect(text).toContain('No uncertainty bands yet.');
     expect(text).not.toMatch(/uncalibrated|before calibration/i);
   });
@@ -34,7 +35,7 @@ describe('model status note', () => {
     expect(screen.queryByRole('link')).toBeNull();
     expect(document.querySelector('.model-status')?.textContent).toBe(modelStatusText(null));
     expect(modelStatusText(null)).toContain(
-      'Held-out tests (docs/validation/m1-validation.md in the source code) show',
+      'Held-out tests (docs/validation/m1-validation.md in the source code) still show',
     );
   });
 });

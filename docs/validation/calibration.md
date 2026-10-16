@@ -9,6 +9,12 @@ Schmieder 2023, V2 Vaca Guerra 2024 (dispersion), V4 Waszkiewicz 2026 (long-time
 `python/puckworks_tools/calibrate.py`; the configuration is
 [data/calibration/config.yaml](../../data/calibration/config.yaml).
 
+M1.1 writes the next calibration as **v2**, preserving `data/calibration/v1.yaml`. The original 0.2.0
+validation and calibration inputs are archived in [baseline-v0.2.0](baseline-v0.2.0/). The V4 transient,
+V3 and V5 remain outside the fit. The first-drop and flow-rise targets remain within ×1.5 of the measured
+times, with the same no-overshoot check at 15 s after first drops; interpolated pressure crossings and explicit observation-window
+coverage prevent the report from inventing a clock origin or a long-time measurement.
+
 ## Parameters, registry ids and spec fields
 
 Every fitted parameter is a parameter-registry record. The record supplies:
@@ -56,8 +62,11 @@ always fitted. The calibration run applies the same rule to the shared parameter
 **Path independence.** Fixed parameters and the reference permeability (an output of the calibration, not a
 fit parameter) are passed to every case at their registry values, and the fitted values explicitly, so a
 calibration already embedded in puckcore cannot change any result: `validate` recomputes the calibration
-blocks to the same RMS as the calibration file, and the report shows both. `fit.inputs` hashes the config and
-every dataset folder used, and `fit.solver` identifies the build.
+blocks to the same RMS as the calibration file, and the report shows both. `fit.inputs` hashes the config,
+every dataset folder used, the numeric registry inputs (units, values, priors and ranges, excluding prose
+and the calibration overlay), the preset inputs, and the Python calibration/case sources; `fit.solver` identifies the build.
+Validation rejects cached leave-one-out scores when those inputs or the solver/model sources change.
+The expected post-fit registry export does not by itself invalidate the cached refits.
 
 The review also checks parameters outside the fit (the dissolution share θ, the viscosity exponent γ, the
 swelling and gas amplitudes, the critical pressure in V1) by adding each one alone at the V1 optimum:
@@ -69,7 +78,8 @@ at two values instead (θ below).
 ### Review of 2026-10-14 (V1 trial fits)
 
 The review ran on V1 alone, on the build of 2026-10-14 before the input-model fixes; the final fit's ratios
-are in `fit.uncertainties` and the validation report.
+are in `fit.uncertainties` and the validation report. These trial-fit decisions predate M1.1's startup
+model; the fixed startup assumptions have their own reasons in the current config.
 
 | Parameter | SD ratio | Finding | Decision |
 |---|---|---|---|
@@ -87,8 +97,8 @@ are in `fit.uncertainties` and the validation report.
 With the species diffusivities fixed and the surface-pool scales fitted, λ still misses ±10% for
 trigonelline (+9% on average) and caffeine (−11%), and TDS λ runs +12% with c₀ −10%: the model's λ spread
 between species is narrower than the data's (15.4–22.2 g), even with the scales at their prior bounds. The
-priors were not widened to force agreement. On the final M1 solver the calibration brings λ within ±10% for
-50 of the 60 experiment–analyte pairs, with the scales inside their priors (Results).
+priors were not widened to force agreement. The final v1 calibration brought λ within ±10% for
+57 of the 60 experiment–analyte pairs, with the scales inside their priors (Results).
 
 ## Prior provenance
 
@@ -103,7 +113,91 @@ traced every builder-read record that cites a held-out dataset:
 | `hydraulics.permeability.reference`, pre-calibration value | typical shot times (`shot.time.observed`, which cites Cameron and Smrke) | the registry default only; the calibration replaces it | no effect on the held-out checks |
 | `psd.*`, `model.psd.fines_weight_slope` | Cameron, Smrke and Waszkiewicz PSDs (inputs, not outcomes) | the grinder presets; the V3 and V5 cases use their measured PSDs | no effect on the held-out checks |
 
+## Results of the M1.1 calibration (v2, 2026-10-15)
+
+The complete tier-1 run used the same fitted-parameter candidates, residual definitions, weights and
+calibration/held-out split as v1, with the five fixed startup/loading assumptions recorded in the config.
+It ran the main fit, identifiability pruning, all 15 leave-one-condition-out refits and all seven sensitivity
+variants. The final prune refit converged by `xtol` at cost **987.704** after 23 evaluations; the main/prune
+runner simulated 7,991 shots. All seven sensitivity optimizers also converged. Solver sources were
+`crates/puckcore/src` `2bc3b20936480bae` and `crates/puckmodel/src` `6d9ebc09c7f9b2d2` on puckcore 0.3.0.
+
+The reduced chi-square is **6.116**, up from 4.23 in v1. Normalised RMS by block is V1 2.284, V2 5.823,
+V4 3.571 and V6 1.679. Recomputing the exported values reproduces those RMS values within 1.5×10⁻⁶
+relative; the remaining difference is the calibration file's six-significant-digit serialization.
+The numerical run is reproducible, but the larger residuals limit what its parameter uncertainties mean.
+
+The pruning rule fixed the critical pressure at its registry value, **12 bar** (13.46 bar before pruning;
+posterior SD 0.59× the prior's). The broken-shell thickness reached its 40 µm upper bound and remains
+weakly identified (SD/prior 0.56); the rule keeps parameters at bounds. Saturation reached its 350 kg/m³
+upper bound, and the viscosity exponent reached its 0.22 lower bound. Those bounds were not widened.
+The reference permeability is **2.78039×10⁻¹³ m²**: Schmieder 3.49157×10⁻¹³ and Waszkiewicz
+2.21406×10⁻¹³ m², a factor of 1.58 between datasets. This is a fit to the original calibration observables,
+not to the held-out shot times.
+
+| Check or observable | Archived v1 / 0.2.0 | v2 / 0.3.0 | Target or interpretation |
+|---|---:|---:|---|
+| V1 λ within ±10%, fit | 57/60 | 48/60 | all 60; regressed |
+| V1 cup masses within ±10%, fit | 167/180 | 163/180 | all 180; regressed |
+| V1 λ within ±15%, leave one out | 59/60 | 54/60 | all 60; regressed |
+| V1 cup masses within ±15%, leave one out | 179/180 | 178/180 | all 180; regressed |
+| V2 Bodenstein numbers within 8–17 | 5/5 | 3/5 | all 5; pass → fail |
+| V3 model/data shot-time ratio, geometric mean | 0.429 | 0.600 | reported; still too fast |
+| V5 model/data shot-time ratio, geometric mean | 0.437 | 0.577 | reported; still too fast |
+| V5 EY/time rank correlation, Spearman ρ | 0.836 | 0.543 | at least 0.8; pass → fail |
+| V4 first drops after the pressure rise | 1.80 s | 6.83 s | 12.76 s measured, within ×1.5; fail |
+| V4 time from first drops to 90% of the 100 s flow | 6.70 s | 12.08 s | 25.48 s measured, within ×1.5; fail |
+| V4 flow at 15 s after first drops / flow at 100 s | 2.100 / 1.865 g/s | 1.839 / 1.858 g/s | no overshoot at 15 s; now passes this component |
+| V4 time to 36 g after the pressure rise | 22.24 s | 30.47 s | 47.69 s measured; reported |
+| Generic 18 g → 36 g, 9 bar shot times | 10.49–13.21 s | 15.61–17.04 s | 25–35 s sanity range; fail |
+
+This is a comparison of two calibrated releases, not an isolation of any one model change. The archived
+v1 report used its original observer: its sampled data flow-rise time was 25.78 s; interpolation of the
+same 90% crossing now gives 25.48 s. First-drop thresholds, scoring factors and overshoot targets are
+unchanged. V4 headspace filling before the pressure-clock origin does not contribute to its reported
+post-pressure delay.
+
+The overshoot criterion compares the established 15 s and 100 s endpoints only. The model's flow
+later peaks above its 100 s value, so passing this component does not mean the entire transient is
+monotonic or free of overshoot.
+
+The generic shot times end at the 36 g pump-stop target. Their reported EY includes subsequent drip,
+so it describes a larger cup: the default EK43 ablation ends at 56.89 g after 20.89 g of drip. The
+drainage model remains an approximation; these EY values are not extraction yields for a 36 g beverage.
+
+V3's maximum EY is now 22.09%, inside its 22–24% target, but it is still at the edge of the tested grind
+range (GS 1.1), so the required peak location is absent. The two V3 peak checks remain marked as not
+independent because an existing grind-spread prior used Cameron's fine-grind behaviour. The validation
+exit criteria are therefore **V1 fail, V3 partial, V4 fail**. V4 first-fraction TDS is 21.37%, below 22–28%.
+The startup closure improves timing while extraction fit quality worsens; it has not validated the full
+single-liquid water-inventory approximation or the estimated pore-air law. V2 dispersion and V5's
+EY/time rank correlation also regress from passing to failing their existing checks.
+
+The sensitivity runs retain the same seven variants as v1. The pooled permeability ranges from
+2.23×10⁻¹³ to 4.83×10⁻¹³ m² across the six V1 case variants; the whole-shot pressure variant gives the
+upper end and V1 cost 572.5 versus 821.5 in the main fit. The full structural refit at θ = 0.27 gives
+1.71×10⁻¹³ m² and total cost 1153. The main fit retains v1's pour-phase pressure comparison. Its
+preinfusion-to-pour transitions still spend 0.7–3.4 s at the pump limit, although none of its pours is
+capped. These controller and structural sensitivities remain material.
+
+The additional [startup ablations](m11-startup-sensitivity.json), reproduced by
+`python/scripts/m11-startup-sensitivity.py`, hold every fitted v2 coefficient fixed while disabling pore
+air, halving the intraparticle water inventory, or doing both. They show the response to those assumptions;
+they do not identify their values from measurements, and the combined variant is not the historical v1
+solver. Its default V4 metrics match the final report; the default generic time agrees to floating-point
+roundoff. All 117 final validation simulations succeeded, with worst relative hydraulic volume-balance
+error 1.06×10⁻¹³. That diagnostic was collected by validation and the ablations; it was not retrospectively
+added to the calibration run's robustness statistics.
+
+The first v2 document's two fixed-assumption descriptions were clarified after fitting: pore-air amplitude
+is an effective connectivity deficit, not a measured gas-volume fraction. `fit.provenance_refresh` records
+the exact prose changes and confirms that no numeric values, solver identity, LOO or sensitivity results
+changed. All input fingerprints were already current; no hashes were added or replaced in that refresh.
+
 ## Results of the M1 calibration (v1, 2026-10-15)
+
+This section preserves the 0.2.0 results. Its fitted values, uncertainty review and controller behaviour
+belong to that solver; they are not the M1.1 calibration.
 
 `python/scripts/m1-pipeline.sh 8` on puckcore 0.2.0, sources `crates/puckcore/src` 164c715d8321929e and
 `crates/puckmodel/src` b1bb6c6ab6559863 (`fit.solver`; config and datasets hashed in `fit.inputs`), θ = 0,
@@ -145,10 +239,11 @@ leaving it out changes no κ_ref estimate (sensitivity below).
 - ×2.9 for the Schmieder estimate between the whole-shot and pour-phase pressure comparisons;
 - ×2.2 for the pooled value between θ = 0 and θ = 0.27.
 
-At the pooled value the held-out Cameron and Smrke shots run at ×0.43 and ×0.44 of their measured times, but
-the V4 9-bar calibration case, whose long-time flow matches (1.87 against 1.82 g/s), reaches 36 g at ×0.47
-too: the shortfall is mostly the start-up transient the model misses (its first drops come 1.8 s after full
-pressure against 12.8 s measured), not κ_ref. Generic 18 → 36 g, 9 bar recipes take 10.5–13.2 s (fail).
+At the pooled value the held-out Cameron and Smrke shots ran at ×0.43 and ×0.44 of their measured times.
+The V4 9-bar case matched its separately calibrated long-time flow (1.87 against 1.82 g/s), but reached
+36 g at ×0.47 of the measured time and first drops at 1.8 s after full pressure against 12.8 s measured.
+These results motivated the M1.1 startup work. They do not isolate how much of the total-time error came
+from permeability versus each startup mechanism. Generic 18 → 36 g, 9 bar recipes took 10.5–13.2 s (fail).
 
 **Sensitivity** (`fit.sensitivity`; V1 refits with other parameters held, unless stated):
 
@@ -190,11 +285,11 @@ A shot that fails, or an observable the model cannot produce, gets a residual of
 **V1 peak pressure.** Schmieder's Table 2 pressure is the mean of the per-shot maxima, measured by the DE1
 between boiler and portafilter. The maximum is the larger of two things: the peak at the switch from the
 7 mL/s preinfusion to the experiment's flow, and the highest pressure of the pour phase. The model's
-transition is not compared, because its early hydraulics cannot pass the article's transition flow: with the
-article's 4 s ramp (Fig. A2) the model's pump sits at its 12 bar limit for seconds during the switch in every
-V1 shot at the calibrated values (the calibration file's `fit.blocks.V1.pump_limited` and the report list the
-seconds), whereas the measured maxima are 2.5–9.3 bar. The model lacks the DE1's preinfusion control and the
-dry bed's water uptake and headspace filling. The sensitivity variant "whole-shot peak pressure" shows what
+transition is not compared: the original M1 hydraulics could not pass the article's transition flow, and
+M1.1 retains an idealised DE1 controller. With the article's 4 s ramp (Fig. A2), the M1 pump sat at its 12 bar
+limit during the switch in every V1 shot, whereas the measured maxima are 2.5–9.3 bar. The current
+calibration file's `fit.blocks.V1.pump_limited` and the report record any remaining saturation after the
+startup corrections. The sensitivity variant "whole-shot peak pressure" shows what
 comparing the whole-shot maximum would do. The residual uses the model's pour-phase maximum, which starts at
 the end of the ramp:
 - where the measured maximum exceeds the 2.5 bar exit pressure by more than 0.5 bar (`exit_margin_bar`), the
@@ -285,15 +380,16 @@ level, one for Waszkiewicz) and maps each back to κ_ref:
 
 ```yaml
 schema: puckworks.calibration/1
-label: v1
-created: 2026-10-14
-core_version: 0.1.0
-tools_version: 0.1.0
+label: v2
+created: 2026-10-15
+core_version: 0.3.0
+tools_version: 0.3.0
 parameters: {<registry id>: <value in the registry's units>}   # only what the app's builder reads
 fit:
   datasets: [dataset folders used]
   config: data/calibration/config.yaml
   solver: {puckcore_version, extension_sha256, extension_built, sources_sha256: {tree: hash}}
+  inputs: {config_sha256, datasets_sha256, registry_inputs_sha256, presets_sha256, calibration_sources_sha256}
   optimizer: {method, success, message, evaluations, simulations, start_cost, cost}
   nuisance: {<calibration.* id>: value}          # setup-specific values (spec mode)
   case_parameters: {<id>: value}                 # values applied by case builders (case mode)
@@ -327,7 +423,8 @@ placeholder, because `current.yaml` changes the app's defaults. Use `--out-dir` 
 
 ## Running it
 
-The whole pipeline (rebuild, calibrate, export, rebuild, validate, shot fixture, checks) is one command:
+The whole pipeline (rebuild, calibrate, export, rebuild, validate, fixed-prior startup ablations,
+shot fixture, checks) is one command:
 
 ```sh
 python/scripts/m1-pipeline.sh 8      # 8 parallel simulation processes
@@ -341,11 +438,13 @@ re-renders the report and its figures from `m1-validation.json` without simulati
 ```sh
 .venv/bin/puckworks-tools calibrate --dry-run                   # cases, residual counts, start cost, block check
 .venv/bin/puckworks-tools calibrate --tier 0 --out-dir /tmp/cal  # fast trial at tier 0
-.venv/bin/puckworks-tools calibrate --jobs 8 --prune --loo --sensitivity  # tier 1; writes v1.yaml, current.yaml
+.venv/bin/puckworks-tools calibrate --jobs 8 --prune --loo --sensitivity  # tier 1; writes v2.yaml, current.yaml
 .venv/bin/puckworks-tools calibrate --pool-only                 # re-pool κ_ref after a builder change
 .venv/bin/puckworks-tools calibrate --sensitivity-only --variant θ  # re-run sensitivity variants only
 .venv/bin/puckworks-tools export                                # embed current.yaml (then rebuild puckcore)
 .venv/bin/puckworks-tools validate --jobs 8                      # docs/validation/m1-validation.md
+.venv/bin/puckworks-tools validate --check                       # report rendering and calibrated values agree
+.venv/bin/python python/scripts/m11-startup-sensitivity.py        # fixed-prior startup ablations; no refit
 ```
 
 ## Leave one condition out (V1)

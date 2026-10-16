@@ -784,6 +784,12 @@ fn spec_instances() -> Vec<ShotSpec> {
         ..SpeciesSpec::default()
     }];
     v.hydraulics.dissolution_porosity_share = Some(0.3);
+    v.hydraulics.intraparticle_water_fraction = Some(1.0);
+    v.hydraulics.pore_air = Relaxation {
+        amplitude: 0.5,
+        tau_s: 10.0,
+    };
+    v.hydraulics.pore_air_permeability_exponent = 3.0;
     v.hydraulics.poroelastic_pc_pa = None;
     v.machine.stop.time_s = Some(30.0);
     vec![ShotSpec::default(), v]
@@ -821,6 +827,29 @@ fn defaults_carry_the_schema_ids() {
     // Integers stay integers, so the schema's integer types are checked.
     let n = v.get("numerics").unwrap();
     assert_eq!(n.get("tier"), Some(&Value::Int(1)));
+}
+
+#[test]
+fn old_specs_without_startup_fields_keep_the_legacy_closure() {
+    let expected = ShotSpec::default();
+    let Value::Obj(mut root) = to_value(&expected) else {
+        panic!("a shot spec is an object");
+    };
+    let (_, Value::Obj(hydraulics)) = root
+        .iter_mut()
+        .find(|(key, _)| key == "hydraulics")
+        .unwrap()
+    else {
+        panic!("hydraulics is an object");
+    };
+    hydraulics.retain(|(key, _)| {
+        !matches!(
+            key.as_str(),
+            "intraparticle_water_fraction" | "pore_air" | "pore_air_permeability_exponent"
+        )
+    });
+    let restored: ShotSpec = from_value(Value::Obj(root)).expect("legacy JSON remains accepted");
+    assert_eq!(restored, expected);
 }
 
 #[test]

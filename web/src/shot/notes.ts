@@ -21,6 +21,7 @@ const PREFIXES: [string, NoteSection][] = [
   ['Stop:', 'stop'],
   ['Override ', 'overrides'],
   ['Overrides:', 'overrides'],
+  ['Wetting:', 'overrides'],
 ];
 
 export function emptyRouting(): Record<NoteSection, string[]> {

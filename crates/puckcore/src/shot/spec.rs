@@ -346,6 +346,15 @@ pub struct HydraulicsSpec {
     /// Gas (CO₂): permeability factor 1 − A·e^(−t/τ), t since the cell
     /// wetted; A in [0, 1).
     pub gas: Relaxation,
+    /// Initial pore-air connectivity penalty, independent of roast CO₂.
+    /// Its permeability factor is (1 − A·exp(−wet_age/τ))^n, where n is
+    /// `pore_air_permeability_exponent`. This effective hydraulic closure
+    /// does not represent a literal gas volume or a fixed startup delay.
+    pub pore_air: Relaxation,
+    /// Exponent n of the pore-air permeability factor, 1–10. A value above
+    /// 1 represents nonlinear recovery of liquid connectivity. Coffee's
+    /// relative-permeability curve is not measured; this is an estimate.
+    pub pore_air_permeability_exponent: f64,
     /// Fines migration: outlet resistance A·R_bed(0)·(1 − e^(−t/τ)), t since
     /// the column's first drops; R_bed(0) is the column's fully wetted
     /// resistance with water at the brew temperature.
@@ -360,6 +369,13 @@ pub struct HydraulicsSpec {
     /// kernels hold the solubles in the rest, ε_p·(1 − u_w) of the particle
     /// volume, so mobile and particle liquid together fill the total porosity.
     pub wetting_uptake: f64,
+    /// Fraction of intraparticle porosity filled by the sharp front and
+    /// included in the liquid holdup, 0–1. `None` preserves the legacy
+    /// `wetting_uptake` fraction. With `Some`, particle pool/kernel states
+    /// are effective soluble loadings (normalised by the legacy capacity),
+    /// not a second water inventory. `Some(1)` fills the full dry pore volume.
+    /// This is a single-liquid approximation, not kinetic dual-porosity flow.
+    pub intraparticle_water_fraction: Option<f64>,
     /// Share θ of the dissolved solid volume that becomes intergranular pore
     /// space, [0, 1]: ε = ε₀ + θ·EY_local·(1 − ε₀), never decreasing. `null`
     /// (the default, replacing the former proportional rule)
@@ -388,6 +404,8 @@ impl Default for HydraulicsSpec {
                 amplitude: 0.0,
                 tau_s: 5.0,
             },
+            pore_air: Relaxation::default(),
+            pore_air_permeability_exponent: 1.0,
             fines_layer: Relaxation {
                 amplitude: 0.0,
                 tau_s: 10.0,
@@ -396,6 +414,7 @@ impl Default for HydraulicsSpec {
             axial_dispersion_m2_s: 5e-6,
             viscosity: Viscosity::default(),
             wetting_uptake: 0.5,
+            intraparticle_water_fraction: None,
             // hydraulics.dissolution_porosity_share (mode 0).
             dissolution_porosity_share: None,
         }

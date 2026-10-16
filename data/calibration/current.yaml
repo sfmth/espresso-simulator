@@ -2,20 +2,20 @@
 # Written by `puckworks-tools calibrate` (python/puckworks_tools/calibrate.py); do not edit by hand.
 # Format: docs/validation/calibration.md. `parameters` are in the parameter registry's units.
 schema: puckworks.calibration/1
-label: v1
+label: v2
 created: '2026-10-15'
-core_version: 0.2.0
-tools_version: 0.2.0
+core_version: 0.3.0
+tools_version: 0.3.0
 parameters:
-  extraction.saturation.lumped: 341.853
-  model.species.caffeine.surface_fraction_scale: 0.509781
-  model.species.trigonelline.surface_fraction_scale: 1.30118
-  model.species.cqa5.surface_fraction_scale: 0.742208
-  model.hydraulics.viscosity_temperature_exponent: 0.302021
-  hydraulics.poroelastic.critical_pressure: 12.4613
-  extraction.dispersion.axial_coefficient: 3.8662e-06
-  hydraulics.kozeny_carman.density_exponent: 0.243571
-  hydraulics.permeability.reference: 1.24415e-13
+  model.extraction.broken_shell_thickness: 40.0
+  extraction.saturation.lumped: 350.0
+  model.species.caffeine.surface_fraction_scale: 0.694289
+  model.species.trigonelline.surface_fraction_scale: 1.44137
+  model.species.cqa5.surface_fraction_scale: 0.915149
+  model.hydraulics.viscosity_temperature_exponent: 0.220001
+  extraction.dispersion.axial_coefficient: 3.22358e-06
+  hydraulics.kozeny_carman.density_exponent: 0.24647
+  hydraulics.permeability.reference: 2.78039e-13
 fit:
   datasets:
   - corrochano2017-permeability
@@ -30,22 +30,22 @@ fit:
   - waszkiewicz2026-psd
   config: data/calibration/config.yaml
   solver:
-    puckcore_version: 0.2.0
-    extension_sha256: 0ddc4b4708182e5c
-    extension_built: '2026-10-15T10:09:08-07:00'
+    puckcore_version: 0.3.0
+    extension_sha256: ccb3df8adf9409ac
+    extension_built: '2026-10-15T13:41:56-07:00'
     sources_sha256:
-      crates/puckcore/src: 164c715d8321929e
-      crates/puckmodel/src: b1bb6c6ab6559863
-      crates/puckmodel/generated: 0726fc64e5d9775d
+      crates/puckcore/src: 2bc3b20936480bae
+      crates/puckmodel/src: 6d9ebc09c7f9b2d2
+      crates/puckmodel/generated: b2d7edb685fec19f
       crates/puckcore-py: 563a9328b2a48052
     files_sha256:
-      Cargo.lock: e05060c85f55b91d
+      Cargo.lock: 5f5962e663f510ac
     python:
       version: 3.14.7
       numpy: 2.5.4
       scipy: 1.18.1
   inputs:
-    config_sha256: 6df7fc1cf92bb634
+    config_sha256: 284ad4a43f62dcf6
     datasets_sha256:
       corrochano2017-permeability: d7de004c74522a46
       corrochano2017-properties: c2b8b9b501c7afa3
@@ -57,80 +57,113 @@ fit:
       vacaguerra2024-rtd: 33e194ec3c0a2e49
       waszkiewicz2026-flow-pressure: ef8c636a8bb3683a
       waszkiewicz2026-psd: d3bea166b24a1696
+    registry_inputs_sha256: 6027f2702a0578bc
+    presets_sha256: e12cc70ded553ac1
+    calibration_sources_sha256: e14ec9c7819e380c
   optimizer:
     method: scipy.optimize.least_squares (trf, x_scale=jac)
     success: true
-    message: '`ftol` termination condition is satisfied.'
-    evaluations: 24
-    simulations: 9274
-    start_cost: 1165.12
-    cost: 683.462
+    message: '`xtol` termination condition is satisfied.'
+    evaluations: 23
+    simulations: 7991
+    start_cost: 1026.28
+    cost: 987.704
   nuisance:
-    calibration.schmieder2023.extractable_fraction: 28.3343
-    calibration.schmieder2023.content.caffeine: 1.26098
-    calibration.schmieder2023.content.trigonelline: 0.66987
-    calibration.schmieder2023.content.cqa5: 0.874928
-    calibration.schmieder2023.permeability.gl1_4: 2.7746e-14
-    calibration.schmieder2023.permeability.gl1_7: 3.04693e-14
-    calibration.schmieder2023.permeability.gl2_0: 3.97277e-14
-    calibration.waszkiewicz2026.permeability: 1.87987e-14
+    calibration.schmieder2023.extractable_fraction: 29.0667
+    calibration.schmieder2023.content.caffeine: 1.31042
+    calibration.schmieder2023.content.trigonelline: 0.687113
+    calibration.schmieder2023.content.cqa5: 0.884259
+    calibration.schmieder2023.permeability.gl1_4: 1.29678e-13
+    calibration.schmieder2023.permeability.gl1_7: 1.54516e-13
+    calibration.schmieder2023.permeability.gl2_0: 1.89534e-13
+    calibration.waszkiewicz2026.permeability: 1.94149e-14
   case_parameters: {}
   reference_permeability:
     id: hydraulics.permeability.reference
-    value_m2: 1.24415e-13
+    value_m2: 2.78039e-13
     pooling: geometric mean over datasets, each dataset the geometric mean of its estimates; estimate i = fitted
       bare κ₀,i / builder scaling of case i, (D32_i/D32_ref)²·KC(ε)/KC(ε_ref)
     datasets:
-      schmieder2023: 7.22044e-14
-      waszkiewicz2026: 2.14379e-13
+      schmieder2023: 3.49157e-13
+      waszkiewicz2026: 2.21406e-13
     estimates:
     - parameter: calibration.schmieder2023.permeability.gl1_4
       dataset: schmieder2023
       scaling_basis: grinder preset mahlkoenig-e65s at GL 1.4
       cases: 5
-      kappa0_m2: 2.7746e-14
-      kappa0_sd_log: 0.099417
+      kappa0_m2: 1.29678e-13
+      kappa0_sd_log: 0.118085
       builder_scaling: 0.41431
       builder_scaling_spread: 0.0
       sauter_ratio: 0.643669
       base_id_read_by_builder: hydraulics.permeability.reference
-      kappa_ref_m2: 6.69693e-14
+      kappa_ref_m2: 3.12997e-13
     - parameter: calibration.schmieder2023.permeability.gl1_7
       dataset: schmieder2023
       scaling_basis: grinder preset mahlkoenig-e65s at GL 1.7
       cases: 5
-      kappa0_m2: 3.04693e-14
-      kappa0_sd_log: 0.103063
+      kappa0_m2: 1.54516e-13
+      kappa0_sd_log: 0.16877
       builder_scaling: 0.446983
       builder_scaling_spread: 0.0
       sauter_ratio: 0.668568
       base_id_read_by_builder: hydraulics.permeability.reference
-      kappa_ref_m2: 6.81665e-14
+      kappa_ref_m2: 3.45687e-13
     - parameter: calibration.schmieder2023.permeability.gl2_0
       dataset: schmieder2023
       scaling_basis: grinder preset mahlkoenig-e65s at GL 2.0
       cases: 5
-      kappa0_m2: 3.97277e-14
-      kappa0_sd_log: 0.0917332
+      kappa0_m2: 1.89534e-13
+      kappa0_sd_log: 0.0831282
       builder_scaling: 0.481782
       builder_scaling_spread: 0.0
       sauter_ratio: 0.694105
       base_id_read_by_builder: hydraulics.permeability.reference
-      kappa_ref_m2: 8.246e-14
+      kappa_ref_m2: 3.93403e-13
     - parameter: calibration.waszkiewicz2026.permeability
       dataset: waszkiewicz2026
       scaling_basis: the case's own PSD
       cases: 11
-      kappa0_m2: 1.87987e-14
-      kappa0_sd_log: 0.085035
+      kappa0_m2: 1.94149e-14
+      kappa0_sd_log: 0.0290478
       builder_scaling: 0.0876891
       builder_scaling_spread: 0.0
       sauter_ratio: 0.296123
       base_id_read_by_builder: hydraulics.permeability.reference
-      kappa_ref_m2: 2.14379e-13
-    log_sd: 0.552215
-    max_over_min: 3.20115
+      kappa_ref_m2: 2.21406e-13
+    log_sd: 0.246247
+    max_over_min: 1.77684
   fixed:
+    model.hydraulics.intraparticle_water_fraction:
+      value: 1.0
+      units: '1'
+      reason: M1.1 fills the complete intraparticle pore-water inventory behind the front (fraction 1), rather than
+        counting only the mobile share. This is a water-volume accounting choice, not a fit to shot times. The effective-loading
+        approximation is documented in the startup model and remains subject to validation against independent uptake
+        measurements.
+    model.hydraulics.pore_air_amplitude:
+      value: 0.5
+      units: '1'
+      reason: The initial effective connectivity deficit is a grade D model assumption (0.5), separate from coffee
+        CO2; it is not a measured gas volume fraction. None of the calibration observables identifies a transient
+        relative-permeability law. It is held at its prior rather than fitted to the held-out V4 first-drop delay
+        or flow rise.
+    model.hydraulics.pore_air_permeability_exponent:
+      value: 3.0
+      units: '1'
+      reason: The effective connectivity-to-relative-permeability exponent is a grade D closure (3), not measured
+        for these pucks. Held fixed; the V4 transient, V3 and V5 shot times do not select it.
+    model.hydraulics.moisture_diffusivity:
+      value: 2.5e-11
+      units: m^2/s
+      reason: The pore-air relaxation time uses (D32/2)^2/(pi^2 D), capped at 600 s, with D = 2.5e-11 m^2/s from
+        the independent Mateus moisture-uptake range. Using moisture diffusion for air clearance is a grade D model
+        assumption. Neither this diffusivity nor its time scale is fitted to held-out shots.
+    model.hydraulics.wetting_uptake:
+      value: 0.5
+      units: '1'
+      reason: In M1.1 this is the fixed effective-loading normalization inherited from the extraction model, distinct
+        from the full intraparticle water inventory. It is not fitted to startup observations.
     extraction.diffusivity.caffeine.particle_80c:
       value: 1.9e-10
       units: m^2/s
@@ -171,13 +204,15 @@ fit:
       reason: 'θ is fixed at its mechanistic default, 0 (the insoluble cell walls hold the particle envelope), not
         chosen by fit quality: it is collinear with the bed permeability, whose fitted values move to absorb it.
         `calibrate --sensitivity` reports the θ = 0.27 case as a structural sensitivity.'
-    model.extraction.broken_shell_thickness:
-      value: 25.0
-      units: um
-      reason: 'Pruned by the identifiability rule in the calibration run: posterior SD 0.90× the prior''s (fitted
-        value 34.62 before pruning).'
-  weakly_identified: []
+    hydraulics.poroelastic.critical_pressure:
+      value: 12.0
+      units: bar
+      reason: 'Pruned by the identifiability rule in the calibration run: posterior SD 0.59× the prior''s (fitted
+        value 13.46 before pruning).'
+  weakly_identified:
+  - model.extraction.broken_shell_thickness
   start:
+    model.extraction.broken_shell_thickness: 25.0
     extraction.saturation.lumped: 280.0
     model.species.caffeine.surface_fraction_scale: 1.0
     model.species.trigonelline.surface_fraction_scale: 1.0
@@ -190,11 +225,13 @@ fit:
     calibration.schmieder2023.permeability.gl1_7: 3.0e-14
     calibration.schmieder2023.permeability.gl2_0: 3.0e-14
     model.hydraulics.viscosity_temperature_exponent: 0.45
-    hydraulics.poroelastic.critical_pressure: 12.0
     extraction.dispersion.axial_coefficient: 5.0e-06
     calibration.waszkiewicz2026.permeability: 1.0e-14
     hydraulics.kozeny_carman.density_exponent: 1.0
   bounds:
+    model.extraction.broken_shell_thickness:
+    - 12.5
+    - 40.0
     extraction.saturation.lumped:
     - 210.0
     - 350.0
@@ -231,9 +268,6 @@ fit:
     model.hydraulics.viscosity_temperature_exponent:
     - 0.22
     - 0.6
-    hydraulics.poroelastic.critical_pressure:
-    - 3.09679
-    - 20.9032
     extraction.dispersion.axial_coefficient:
     - 1.0e-06
     - 1.0e-05
@@ -244,6 +278,7 @@ fit:
     - 0.0
     - 3.0
   modes:
+    model.extraction.broken_shell_thickness: override
     extraction.saturation.lumped: override
     model.species.caffeine.surface_fraction_scale: override
     model.species.trigonelline.surface_fraction_scale: override
@@ -256,7 +291,6 @@ fit:
     calibration.schmieder2023.permeability.gl1_7: spec
     calibration.schmieder2023.permeability.gl2_0: spec
     model.hydraulics.viscosity_temperature_exponent: override
-    hydraulics.poroelastic.critical_pressure: override
     extraction.dispersion.axial_coefficient: override
     calibration.waszkiewicz2026.permeability: spec
     hydraulics.kozeny_carman.density_exponent: override
@@ -270,28 +304,28 @@ fit:
       - schmieder2023-replicates
       cases: 15
       residuals: 315
-      rms: 1.89452
-      chi2: 1130.6
-      chi2_per_residual: 3.58922
+      rms: 2.28385
+      chi2: 1643.03
+      chi2_per_residual: 5.21597
       weight: 1.0
       failures: []
       pump_limited:
         transition_s:
-          1: 2.4
-          2: 3.5
-          3: 3.1
-          4: 2.1
-          5: 2.9
-          6: 2.8
-          7: 2.9
-          8: 2.7
-          9: 2.5
-          10: 1.8
-          11: 1.5
-          12: 3.7
-          13: 3.7
-          14: 2.8
-          15: 2.5
+          1: 1.7
+          2: 2.9
+          3: 2.7
+          4: 1.6
+          5: 2.4
+          6: 2.2
+          7: 2.3
+          8: 2.2
+          9: 2.0
+          10: 1.1
+          11: 0.7
+          12: 3.4
+          13: 3.2
+          14: 2.5
+          15: 2.1
         pour_s:
           1: 0.0
           2: 0.0
@@ -304,21 +338,20 @@ fit:
           9: 0.0
           10: 0.0
           11: 0.0
-          12: 4.71
+          12: 0.0
           13: 0.0
           14: 0.0
           15: 0.0
-        pour_capped:
-        - 12
+        pour_capped: []
     V2:
       dataset: vacaguerra2024
       datasets:
       - vacaguerra2024-rtd
       cases: 5
       residuals: 5
-      rms: 3.74992
-      chi2: 70.3096
-      chi2_per_residual: 14.0619
+      rms: 5.82299
+      chi2: 169.536
+      chi2_per_residual: 33.9072
       weight: 1.0
       failures: []
     V4:
@@ -328,9 +361,9 @@ fit:
       - waszkiewicz2026-psd
       cases: 11
       residuals: 11
-      rms: 3.60804
-      chi2: 143.197
-      chi2_per_residual: 13.0179
+      rms: 3.5713
+      chi2: 140.296
+      chi2_per_residual: 12.7542
       weight: 1.0
       failures: []
     V6:
@@ -341,159 +374,160 @@ fit:
       - corrochano2017-properties
       cases: 12
       residuals: 8
-      rms: 1.68861
-      chi2: 22.8112
-      chi2_per_residual: 2.85141
+      rms: 1.67877
+      chi2: 22.5461
+      chi2_per_residual: 2.81827
       weight: 1.0
       failures: []
   uncertainties:
+    model.extraction.broken_shell_thickness:
+      scale: linear
+      identified: true
+      sd: 4.46397
+      interval_68:
+      - 35.536
+      - 44.464
+      prior_sd_ratio: 0.562315
+      at_bound: true
     extraction.saturation.lumped:
       scale: linear
       identified: true
-      sd: 14.0753
+      sd: 20.0564
       interval_68:
-      - 327.778
-      - 355.928
-      prior_sd_ratio: 0.348272
-      at_bound: false
+      - 329.944
+      - 370.056
+      prior_sd_ratio: 0.496266
+      at_bound: true
     model.species.caffeine.surface_fraction_scale:
       scale: linear
       identified: true
-      sd: 0.0559807
+      sd: 0.064179
       interval_68:
-      - 0.4538
-      - 0.565761
-      prior_sd_ratio: 0.193923
-      at_bound: true
+      - 0.63011
+      - 0.758468
+      prior_sd_ratio: 0.222323
+      at_bound: false
     model.species.trigonelline.surface_fraction_scale:
       scale: linear
       identified: true
-      sd: 0.0475881
+      sd: 0.0644806
       interval_68:
-      - 1.25359
-      - 1.34876
-      prior_sd_ratio: 0.1099
+      - 1.37689
+      - 1.50585
+      prior_sd_ratio: 0.148911
       at_bound: false
     model.species.cqa5.surface_fraction_scale:
       scale: linear
       identified: true
-      sd: 0.039184
+      sd: 0.0437894
       interval_68:
-      - 0.703024
-      - 0.781392
-      prior_sd_ratio: 0.135737
+      - 0.87136
+      - 0.958938
+      prior_sd_ratio: 0.151691
       at_bound: false
     calibration.schmieder2023.extractable_fraction:
       scale: linear
       identified: true
-      sd: 0.286823
+      sd: 0.530909
       interval_68:
-      - 28.0475
-      - 28.6212
-      prior_sd_ratio: 0.0827986
+      - 28.5358
+      - 29.5976
+      prior_sd_ratio: 0.15326
       at_bound: false
     calibration.schmieder2023.content.caffeine:
       scale: linear
       identified: true
-      sd: 0.0125269
+      sd: 0.0172675
       interval_68:
-      - 1.24845
-      - 1.27351
-      prior_sd_ratio: 0.0542429
+      - 1.29315
+      - 1.32769
+      prior_sd_ratio: 0.0747706
       at_bound: false
     calibration.schmieder2023.content.trigonelline:
       scale: linear
       identified: true
-      sd: 0.00810688
+      sd: 0.0131146
       interval_68:
-      - 0.661763
-      - 0.677977
-      prior_sd_ratio: 0.028083
+      - 0.673999
+      - 0.700228
+      prior_sd_ratio: 0.0454302
       at_bound: false
     calibration.schmieder2023.content.cqa5:
       scale: linear
       identified: true
-      sd: 0.00951438
+      sd: 0.0147299
       interval_68:
-      - 0.865413
-      - 0.884442
-      prior_sd_ratio: 0.0274657
+      - 0.86953
+      - 0.898989
+      prior_sd_ratio: 0.0425216
       at_bound: false
     calibration.schmieder2023.permeability.gl1_4:
       scale: log
       identified: true
-      sd: 2.75843e-15
+      sd: 1.5313e-14
       interval_68:
-      - 2.51203e-14
-      - 3.06462e-14
-      prior_sd_ratio: 0.0846239
+      - 1.15234e-13
+      - 1.45931e-13
+      prior_sd_ratio: 0.100514
       at_bound: false
     calibration.schmieder2023.permeability.gl1_7:
       scale: log
       identified: true
-      sd: 3.14027e-15
+      sd: 2.60778e-14
       interval_68:
-      - 2.74854e-14
-      - 3.37771e-14
-      prior_sd_ratio: 0.0877277
+      - 1.3052e-13
+      - 1.82924e-13
+      prior_sd_ratio: 0.143658
       at_bound: false
     calibration.schmieder2023.permeability.gl2_0:
       scale: log
       identified: true
-      sd: 3.64435e-15
+      sd: 1.57557e-14
       interval_68:
-      - 3.62455e-14
-      - 4.35445e-14
-      prior_sd_ratio: 0.0780835
+      - 1.74416e-13
+      - 2.05963e-13
+      prior_sd_ratio: 0.0707589
       at_bound: false
     model.hydraulics.viscosity_temperature_exponent:
       scale: linear
       identified: true
-      sd: 0.0315221
+      sd: 0.0311848
       interval_68:
-      - 0.270499
-      - 0.333543
-      prior_sd_ratio: 0.287358
-      at_bound: false
-    hydraulics.poroelastic.critical_pressure:
-      scale: linear
-      identified: true
-      sd: 1.26719
-      interval_68:
-      - 11.1942
-      - 13.7285
-      prior_sd_ratio: 0.422396
-      at_bound: false
+      - 0.188816
+      - 0.251185
+      prior_sd_ratio: 0.284282
+      at_bound: true
     extraction.dispersion.axial_coefficient:
       scale: log
       identified: true
-      sd: 2.94513e-07
+      sd: 2.49109e-07
       interval_68:
-      - 3.58262e-06
-      - 4.17222e-06
-      prior_sd_ratio: 0.129608
+      - 2.98385e-06
+      - 3.48256e-06
+      prior_sd_ratio: 0.131481
       at_bound: false
     calibration.waszkiewicz2026.permeability:
       scale: log
       identified: true
-      sd: 1.59855e-15
+      sd: 5.63961e-16
       interval_68:
-      - 1.72662e-14
-      - 2.04672e-14
-      prior_sd_ratio: 0.0723819
+      - 1.88591e-14
+      - 1.99871e-14
+      prior_sd_ratio: 0.0247255
       at_bound: false
     hydraulics.kozeny_carman.density_exponent:
       scale: linear
       identified: true
-      sd: 0.0389484
+      sd: 0.0468591
       interval_68:
-      - 0.204622
-      - 0.282519
-      prior_sd_ratio: 0.0449737
+      - 0.199611
+      - 0.293329
+      prior_sd_ratio: 0.0541082
       at_bound: false
-  reduced_chi2: 4.23196
+  reduced_chi2: 6.11581
   correlation:
     ids:
+    - model.extraction.broken_shell_thickness
     - extraction.saturation.lumped
     - model.species.caffeine.surface_fraction_scale
     - model.species.trigonelline.surface_fraction_scale
@@ -506,620 +540,619 @@ fit:
     - calibration.schmieder2023.permeability.gl1_7
     - calibration.schmieder2023.permeability.gl2_0
     - model.hydraulics.viscosity_temperature_exponent
-    - hydraulics.poroelastic.critical_pressure
     - extraction.dispersion.axial_coefficient
     - calibration.waszkiewicz2026.permeability
     - hydraulics.kozeny_carman.density_exponent
     matrix:
     - - 1.0
-      - -0.2329
-      - -0.4648
-      - -0.3254
-      - 0.1594
-      - 0.1559
-      - 0.3913
-      - 0.2246
-      - 0.1064
-      - -0.0021
-      - 0.2977
-      - 0.2982
-      - 0.051
-      - -0.155
-      - -0.0477
-      - 0.0012
-    - - -0.2329
+      - -0.3685
+      - -0.5552
+      - -0.264
+      - -0.432
+      - -0.8391
+      - -0.56
+      - -0.6501
+      - -0.6789
+      - -0.0202
+      - -0.0355
+      - 0.0633
+      - 0.7842
+      - 0.133
+      - 0.0096
+      - 0.0
+    - - -0.3685
       - 1.0
-      - 0.3685
-      - 0.3597
-      - 0.2928
-      - -0.1754
-      - 0.0282
-      - 0.0994
-      - -0.0141
-      - 0.0456
-      - 0.1027
-      - 0.3981
-      - 0.1907
-      - 0.0876
-      - -0.1813
-      - 0.0044
-    - - -0.4648
-      - 0.3685
+      - -0.0856
+      - -0.3941
+      - -0.1905
+      - 0.3955
+      - 0.3171
+      - 0.5965
+      - 0.4184
+      - 0.094
+      - -0.1005
+      - 0.0779
+      - -0.1645
+      - -0.1986
+      - -0.002
+      - 0.0
+    - - -0.5552
+      - -0.0856
       - 1.0
-      - 0.4487
-      - 0.1994
-      - 0.0381
-      - -0.4437
-      - -0.0429
-      - 0.1354
-      - 0.0353
-      - 0.0357
-      - 0.3603
-      - -0.0134
-      - -0.0541
-      - 0.0142
-      - -0.0003
-    - - -0.3254
-      - 0.3597
-      - 0.4487
+      - 0.4426
+      - 0.4657
+      - 0.5001
+      - 0.1095
+      - 0.2171
+      - 0.3358
+      - -0.0222
+      - 0.05
+      - 0.0076
+      - -0.3291
+      - -0.0465
+      - -0.004
+      - 0.0
+    - - -0.264
+      - -0.3941
+      - 0.4426
       - 1.0
-      - 0.2789
-      - 0.1204
-      - -0.0346
-      - -0.271
-      - 0.0895
-      - 0.0398
-      - 0.0783
-      - 0.3938
-      - 0.062
-      - 0.0543
-      - -0.0579
-      - 0.0014
-    - - 0.1594
-      - 0.2928
-      - 0.1994
-      - 0.2789
-      - 1.0
-      - 0.426
-      - 0.4397
-      - 0.4286
-      - 0.1201
-      - 0.025
-      - 0.2163
-      - 0.3836
-      - 0.0683
-      - 0.5483
-      - -0.064
-      - 0.0016
-    - - 0.1559
-      - -0.1754
-      - 0.0381
-      - 0.1204
-      - 0.426
-      - 1.0
-      - 0.3889
-      - 0.3515
+      - 0.5071
+      - 0.2726
+      - 0.1355
+      - -0.3216
       - 0.0893
-      - 0.0262
-      - 0.1542
-      - 0.313
-      - 0.0533
-      - 0.421
-      - -0.0499
-      - 0.0012
-    - - 0.3913
-      - 0.0282
-      - -0.4437
-      - -0.0346
-      - 0.4397
-      - 0.3889
+      - -0.1463
+      - -0.102
+      - -0.0765
+      - -0.0777
+      - -0.0184
+      - -0.001
+      - 0.0
+    - - -0.432
+      - -0.1905
+      - 0.4657
+      - 0.5071
       - 1.0
-      - 0.444
-      - 0.0733
-      - 0.0077
-      - 0.1847
-      - 0.2482
-      - 0.0507
-      - 0.5201
-      - -0.0476
-      - 0.0012
-    - - 0.2246
-      - 0.0994
+      - 0.4128
+      - 0.2494
+      - 0.0943
+      - 0.0197
+      - -0.0988
       - -0.0429
-      - -0.271
-      - 0.4286
-      - 0.3515
-      - 0.444
+      - -0.0452
+      - -0.2172
+      - -0.0306
+      - -0.0027
+      - 0.0
+    - - -0.8391
+      - 0.3955
+      - 0.5001
+      - 0.2726
+      - 0.4128
       - 1.0
-      - 0.076
-      - 0.0148
-      - 0.1567
-      - 0.2623
-      - 0.0472
-      - 0.4771
-      - -0.0443
-      - 0.0011
-    - - 0.1064
-      - -0.0141
-      - 0.1354
-      - 0.0895
-      - 0.1201
+      - 0.6121
+      - 0.6445
+      - 0.6952
+      - 0.0208
+      - -0.0364
+      - -0.0371
+      - -0.6686
+      - 0.1799
+      - -0.0082
+      - 0.0
+    - - -0.56
+      - 0.3171
+      - 0.1095
+      - 0.1355
+      - 0.2494
+      - 0.6121
+      - 1.0
+      - 0.535
+      - 0.5577
+      - 0.0611
+      - -0.004
+      - 0.0212
+      - -0.3685
+      - 0.2682
+      - -0.0045
+      - 0.0
+    - - -0.6501
+      - 0.5965
+      - 0.2171
+      - -0.3216
+      - 0.0943
+      - 0.6445
+      - 0.535
+      - 1.0
+      - 0.6392
+      - 0.1206
+      - 0.0247
+      - 0.019
+      - -0.5077
+      - 0.1878
+      - -0.0062
+      - 0.0
+    - - -0.6789
+      - 0.4184
+      - 0.3358
       - 0.0893
-      - 0.0733
-      - 0.076
+      - 0.0197
+      - 0.6952
+      - 0.5577
+      - 0.6392
       - 1.0
-      - 0.5063
-      - 0.5885
-      - 0.2833
-      - -0.8579
-      - -0.0479
-      - 0.8238
-      - -0.0197
-    - - -0.0021
-      - 0.0456
-      - 0.0353
-      - 0.0398
-      - 0.025
-      - 0.0262
-      - 0.0077
-      - 0.0148
-      - 0.5063
+      - 0.0759
+      - 0.0048
+      - -0.0043
+      - -0.5022
+      - 0.2361
+      - -0.0062
+      - 0.0
+    - - -0.0202
+      - 0.094
+      - -0.0222
+      - -0.1463
+      - -0.0988
+      - 0.0208
+      - 0.0611
+      - 0.1206
+      - 0.0759
       - 1.0
-      - 0.3198
-      - 0.0854
-      - -0.5159
-      - -0.0086
-      - 0.4951
-      - -0.0118
-    - - 0.2977
-      - 0.1027
-      - 0.0357
-      - 0.0783
-      - 0.2163
-      - 0.1542
-      - 0.1847
-      - 0.1567
-      - 0.5885
-      - 0.3198
+      - 0.1422
+      - 0.1439
+      - 0.1096
+      - 0.0306
+      - 0.0013
+      - 0.0
+    - - -0.0355
+      - -0.1005
+      - 0.05
+      - -0.102
+      - -0.0429
+      - -0.0364
+      - -0.004
+      - 0.0247
+      - 0.0048
+      - 0.1422
       - 1.0
-      - 0.3919
-      - -0.4601
-      - -0.0382
-      - 0.4427
-      - -0.0106
-    - - 0.2982
-      - 0.3981
-      - 0.3603
-      - 0.3938
-      - 0.3836
-      - 0.313
-      - 0.2482
-      - 0.2623
-      - 0.2833
-      - 0.0854
-      - 0.3919
+      - 0.1435
+      - 0.0793
+      - -0.0383
+      - 0.001
+      - 0.0
+    - - 0.0633
+      - 0.0779
+      - 0.0076
+      - -0.0765
+      - -0.0452
+      - -0.0371
+      - 0.0212
+      - 0.019
+      - -0.0043
+      - 0.1439
+      - 0.1435
       - 1.0
-      - 0.1337
-      - -0.1379
-      - -0.1243
-      - 0.0031
-    - - 0.051
-      - 0.1907
-      - -0.0134
-      - 0.062
-      - 0.0683
-      - 0.0533
-      - 0.0507
-      - 0.0472
-      - -0.8579
-      - -0.5159
-      - -0.4601
-      - 0.1337
+      - 0.2771
+      - -0.0251
+      - 0.0034
+      - 0.0
+    - - 0.7842
+      - -0.1645
+      - -0.3291
+      - -0.0777
+      - -0.2172
+      - -0.6686
+      - -0.3685
+      - -0.5077
+      - -0.5022
+      - 0.1096
+      - 0.0793
+      - 0.2771
       - 1.0
-      - 0.0023
-      - -0.9584
-      - 0.0229
-    - - -0.155
-      - 0.0876
-      - -0.0541
-      - 0.0543
-      - 0.5483
-      - 0.421
-      - 0.5201
-      - 0.4771
-      - -0.0479
-      - -0.0086
-      - -0.0382
-      - -0.1379
-      - 0.0023
+      - -0.0739
+      - 0.0123
+      - 0.0
+    - - 0.133
+      - -0.1986
+      - -0.0465
+      - -0.0184
+      - -0.0306
+      - 0.1799
+      - 0.2682
+      - 0.1878
+      - 0.2361
+      - 0.0306
+      - -0.0383
+      - -0.0251
+      - -0.0739
       - 1.0
+      - -0.0009
+      - 0.0
+    - - 0.0096
+      - -0.002
+      - -0.004
+      - -0.001
       - -0.0027
-      - 0.0001
-    - - -0.0477
-      - -0.1813
-      - 0.0142
-      - -0.0579
-      - -0.064
-      - -0.0499
-      - -0.0476
-      - -0.0443
-      - 0.8238
-      - 0.4951
-      - 0.4427
-      - -0.1243
-      - -0.9584
-      - -0.0027
+      - -0.0082
+      - -0.0045
+      - -0.0062
+      - -0.0062
+      - 0.0013
+      - 0.001
+      - 0.0034
+      - 0.0123
+      - -0.0009
       - 1.0
-      - -0.022
-    - - 0.0012
-      - 0.0044
-      - -0.0003
-      - 0.0014
-      - 0.0016
-      - 0.0012
-      - 0.0012
-      - 0.0011
-      - -0.0197
-      - -0.0118
-      - -0.0106
-      - 0.0031
-      - 0.0229
-      - 0.0001
-      - -0.022
+      - 0.0
+    - - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
       - 1.0
   residuals:
-    V1/exp01/lambda/trigonelline: -0.941514
-    V1/exp01/c0/trigonelline: -1.93612
-    V1/exp01/cup20g/trigonelline: -2.53278
-    V1/exp01/cup40g/trigonelline: -3.13243
-    V1/exp01/cup60g/trigonelline: -3.33774
-    V1/exp01/lambda/caffeine: 0.924816
-    V1/exp01/c0/caffeine: -1.01326
-    V1/exp01/cup20g/caffeine: 0.0973475
-    V1/exp01/cup40g/caffeine: 0.136092
-    V1/exp01/cup60g/caffeine: 0.223015
-    V1/exp01/lambda/cqa5: 0.0926065
-    V1/exp01/c0/cqa5: -1.70051
-    V1/exp01/cup20g/cqa5: -1.12453
-    V1/exp01/cup40g/cqa5: -1.40267
-    V1/exp01/cup60g/cqa5: -1.30788
-    V1/exp01/lambda/tds: 1.76659
-    V1/exp01/c0/tds: -4.12018
-    V1/exp01/cup20g/tds: -3.53506
-    V1/exp01/cup40g/tds: -3.10057
-    V1/exp01/cup60g/tds: -2.8102
+    V1/exp01/lambda/trigonelline: -0.277616
+    V1/exp01/c0/trigonelline: -2.49854
+    V1/exp01/cup20g/trigonelline: -2.69086
+    V1/exp01/cup40g/trigonelline: -3.04952
+    V1/exp01/cup60g/trigonelline: -3.1435
+    V1/exp01/lambda/caffeine: 1.0913
+    V1/exp01/c0/caffeine: -1.50658
+    V1/exp01/cup20g/caffeine: -0.200136
+    V1/exp01/cup40g/caffeine: -0.13263
+    V1/exp01/cup60g/caffeine: -0.00553977
+    V1/exp01/lambda/cqa5: 0.152062
+    V1/exp01/c0/cqa5: -2.08441
+    V1/exp01/cup20g/cqa5: -1.47618
+    V1/exp01/cup40g/cqa5: -1.76788
+    V1/exp01/cup60g/cqa5: -1.63171
+    V1/exp01/lambda/tds: 4.95783
+    V1/exp01/c0/tds: -6.40386
+    V1/exp01/cup20g/tds: -4.50323
+    V1/exp01/cup40g/tds: -2.82529
+    V1/exp01/cup60g/tds: -1.87417
     V1/exp01/peak_pressure: 0.0
-    V1/exp02/lambda/trigonelline: 0.651678
-    V1/exp02/c0/trigonelline: 0.423365
-    V1/exp02/cup20g/trigonelline: 2.20141
-    V1/exp02/cup40g/trigonelline: 2.0151
-    V1/exp02/cup60g/trigonelline: 1.90889
-    V1/exp02/lambda/caffeine: -1.28671
-    V1/exp02/c0/caffeine: 0.487149
-    V1/exp02/cup20g/caffeine: 0.0806235
-    V1/exp02/cup40g/caffeine: -0.365822
-    V1/exp02/cup60g/caffeine: -0.835768
-    V1/exp02/lambda/cqa5: -0.181957
-    V1/exp02/c0/cqa5: 1.163
-    V1/exp02/cup20g/cqa5: 1.76478
-    V1/exp02/cup40g/cqa5: 1.48426
-    V1/exp02/cup60g/cqa5: 1.37237
-    V1/exp02/lambda/tds: 0.637458
-    V1/exp02/c0/tds: -0.179589
-    V1/exp02/cup20g/tds: 1.4572
-    V1/exp02/cup40g/tds: 1.72976
-    V1/exp02/cup60g/tds: 1.94733
-    V1/exp02/peak_pressure: 0.591793
-    V1/exp03/lambda/trigonelline: 1.02865
-    V1/exp03/c0/trigonelline: 0.996565
-    V1/exp03/cup20g/trigonelline: 3.11833
-    V1/exp03/cup40g/trigonelline: 3.43791
-    V1/exp03/cup60g/trigonelline: 3.11812
-    V1/exp03/lambda/caffeine: -0.226322
-    V1/exp03/c0/caffeine: 1.06278
-    V1/exp03/cup20g/caffeine: 2.54662
-    V1/exp03/cup40g/caffeine: 1.55527
-    V1/exp03/cup60g/caffeine: 1.07607
-    V1/exp03/lambda/cqa5: 0.453726
-    V1/exp03/c0/cqa5: 1.50925
-    V1/exp03/cup20g/cqa5: 2.44895
-    V1/exp03/cup40g/cqa5: 2.25439
-    V1/exp03/cup60g/cqa5: 2.05579
-    V1/exp03/lambda/tds: 1.00162
-    V1/exp03/c0/tds: 0.282696
-    V1/exp03/cup20g/tds: 2.7417
-    V1/exp03/cup40g/tds: 2.58649
-    V1/exp03/cup60g/tds: 2.17498
-    V1/exp03/peak_pressure: -1.82392
-    V1/exp04/lambda/trigonelline: -0.621429
-    V1/exp04/c0/trigonelline: -0.469353
-    V1/exp04/cup20g/trigonelline: 0.00111561
-    V1/exp04/cup40g/trigonelline: -0.516493
-    V1/exp04/cup60g/trigonelline: -0.695449
-    V1/exp04/lambda/caffeine: -0.85629
-    V1/exp04/c0/caffeine: -0.593321
-    V1/exp04/cup20g/caffeine: -0.0588979
-    V1/exp04/cup40g/caffeine: -0.769051
-    V1/exp04/cup60g/caffeine: -1.1147
-    V1/exp04/lambda/cqa5: -1.04327
-    V1/exp04/c0/cqa5: -1.2184
-    V1/exp04/cup20g/cqa5: -0.964516
-    V1/exp04/cup40g/cqa5: -1.79204
-    V1/exp04/cup60g/cqa5: -2.14361
-    V1/exp04/lambda/tds: 0.17851
-    V1/exp04/c0/tds: -1.31471
-    V1/exp04/cup20g/tds: -0.457592
-    V1/exp04/cup40g/tds: -0.701422
-    V1/exp04/cup60g/tds: -0.731867
-    V1/exp04/peak_pressure: -4.391
-    V1/exp05/lambda/trigonelline: 0.46888
-    V1/exp05/c0/trigonelline: -2.11804
-    V1/exp05/cup20g/trigonelline: -1.79171
-    V1/exp05/cup40g/trigonelline: -1.62321
-    V1/exp05/cup60g/trigonelline: -1.31358
-    V1/exp05/lambda/caffeine: -0.05521
-    V1/exp05/c0/caffeine: -1.38113
-    V1/exp05/cup20g/caffeine: -0.325773
-    V1/exp05/cup40g/caffeine: -0.715467
-    V1/exp05/cup60g/caffeine: -1.24436
-    V1/exp05/lambda/cqa5: 0.0113856
-    V1/exp05/c0/cqa5: -0.946597
-    V1/exp05/cup20g/cqa5: -0.0566666
-    V1/exp05/cup40g/cqa5: -0.38233
-    V1/exp05/cup60g/cqa5: -0.458605
-    V1/exp05/lambda/tds: -0.869037
-    V1/exp05/c0/tds: 0.00679294
-    V1/exp05/cup20g/tds: 0.286682
-    V1/exp05/cup40g/tds: -0.274919
-    V1/exp05/cup60g/tds: -0.370846
-    V1/exp05/peak_pressure: -1.5957
-    V1/exp06/lambda/trigonelline: -0.0997634
-    V1/exp06/c0/trigonelline: -0.532522
-    V1/exp06/cup20g/trigonelline: 0.120945
-    V1/exp06/cup40g/trigonelline: -0.08755
-    V1/exp06/cup60g/trigonelline: -0.133785
-    V1/exp06/lambda/caffeine: -0.870035
-    V1/exp06/c0/caffeine: -0.200411
-    V1/exp06/cup20g/caffeine: 0.1328
-    V1/exp06/cup40g/caffeine: -0.204245
-    V1/exp06/cup60g/caffeine: -0.341243
-    V1/exp06/lambda/cqa5: -0.812986
-    V1/exp06/c0/cqa5: 0.327462
-    V1/exp06/cup20g/cqa5: 0.551868
-    V1/exp06/cup40g/cqa5: 0.294366
-    V1/exp06/cup60g/cqa5: 0.175832
-    V1/exp06/lambda/tds: 0.496365
-    V1/exp06/c0/tds: -1.42195
-    V1/exp06/cup20g/tds: -0.482636
-    V1/exp06/cup40g/tds: -0.625234
-    V1/exp06/cup60g/tds: -0.562402
+    V1/exp02/lambda/trigonelline: -0.186903
+    V1/exp02/c0/trigonelline: 0.761139
+    V1/exp02/cup20g/trigonelline: 2.76702
+    V1/exp02/cup40g/trigonelline: 1.79517
+    V1/exp02/cup60g/trigonelline: 1.46043
+    V1/exp02/lambda/caffeine: -0.78635
+    V1/exp02/c0/caffeine: -0.496494
+    V1/exp02/cup20g/caffeine: 0.263627
+    V1/exp02/cup40g/caffeine: -0.195252
+    V1/exp02/cup60g/caffeine: -0.58814
+    V1/exp02/lambda/cqa5: -0.264296
+    V1/exp02/c0/cqa5: 0.840565
+    V1/exp02/cup20g/cqa5: 2.09196
+    V1/exp02/cup40g/cqa5: 1.57968
+    V1/exp02/cup60g/cqa5: 1.39556
+    V1/exp02/lambda/tds: 1.69447
+    V1/exp02/c0/tds: -1.72442
+    V1/exp02/cup20g/tds: 1.06001
+    V1/exp02/cup40g/tds: 1.83545
+    V1/exp02/cup60g/tds: 2.44406
+    V1/exp02/peak_pressure: -0.871482
+    V1/exp03/lambda/trigonelline: 1.05516
+    V1/exp03/c0/trigonelline: 0.70941
+    V1/exp03/cup20g/trigonelline: 3.11092
+    V1/exp03/cup40g/trigonelline: 3.37484
+    V1/exp03/cup60g/trigonelline: 3.05744
+    V1/exp03/lambda/caffeine: 0.253439
+    V1/exp03/c0/caffeine: 0.196097
+    V1/exp03/cup20g/caffeine: 2.39539
+    V1/exp03/cup40g/caffeine: 1.52364
+    V1/exp03/cup60g/caffeine: 1.12956
+    V1/exp03/lambda/cqa5: 0.613889
+    V1/exp03/c0/cqa5: 1.06219
+    V1/exp03/cup20g/cqa5: 2.43406
+    V1/exp03/cup40g/cqa5: 2.22875
+    V1/exp03/cup60g/cqa5: 2.0485
+    V1/exp03/lambda/tds: 2.45096
+    V1/exp03/c0/tds: -1.51232
+    V1/exp03/cup20g/tds: 2.05231
+    V1/exp03/cup40g/tds: 2.72491
+    V1/exp03/cup60g/tds: 2.60005
+    V1/exp03/peak_pressure: -4.88483
+    V1/exp04/lambda/trigonelline: -2.17456
+    V1/exp04/c0/trigonelline: 0.413788
+    V1/exp04/cup20g/trigonelline: 0.357073
+    V1/exp04/cup40g/trigonelline: -0.843274
+    V1/exp04/cup60g/trigonelline: -1.32438
+    V1/exp04/lambda/caffeine: -1.19101
+    V1/exp04/c0/caffeine: -0.377587
+    V1/exp04/cup20g/caffeine: 0.60319
+    V1/exp04/cup40g/caffeine: -0.384755
+    V1/exp04/cup60g/caffeine: -0.849973
+    V1/exp04/lambda/cqa5: -1.8025
+    V1/exp04/c0/cqa5: -0.805623
+    V1/exp04/cup20g/cqa5: -0.440262
+    V1/exp04/cup40g/cqa5: -1.66717
+    V1/exp04/cup60g/cqa5: -2.21748
+    V1/exp04/lambda/tds: 1.98517
+    V1/exp04/c0/tds: -2.83767
+    V1/exp04/cup20g/tds: -0.890559
+    V1/exp04/cup40g/tds: -0.420531
+    V1/exp04/cup60g/tds: -0.035644
+    V1/exp04/peak_pressure: -5.62108
+    V1/exp05/lambda/trigonelline: -0.492918
+    V1/exp05/c0/trigonelline: -1.93144
+    V1/exp05/cup20g/trigonelline: -1.97957
+    V1/exp05/cup40g/trigonelline: -2.3404
+    V1/exp05/cup60g/trigonelline: -2.10973
+    V1/exp05/lambda/caffeine: 0.0874206
+    V1/exp05/c0/caffeine: -2.07252
+    V1/exp05/cup20g/caffeine: -0.391994
+    V1/exp05/cup40g/caffeine: -0.889202
+    V1/exp05/cup60g/caffeine: -1.51816
+    V1/exp05/lambda/cqa5: -0.257558
+    V1/exp05/c0/cqa5: -1.22356
+    V1/exp05/cup20g/cqa5: -0.10827
+    V1/exp05/cup40g/cqa5: -0.772482
+    V1/exp05/cup60g/cqa5: -0.976282
+    V1/exp05/lambda/tds: 0.63637
+    V1/exp05/c0/tds: -2.03894
+    V1/exp05/cup20g/tds: -0.697466
+    V1/exp05/cup40g/tds: -0.461918
+    V1/exp05/cup60g/tds: -0.307062
+    V1/exp05/peak_pressure: -5.13511
+    V1/exp06/lambda/trigonelline: -0.739877
+    V1/exp06/c0/trigonelline: -0.359823
+    V1/exp06/cup20g/trigonelline: 0.301236
+    V1/exp06/cup40g/trigonelline: -0.256436
+    V1/exp06/cup60g/trigonelline: -0.443242
+    V1/exp06/lambda/caffeine: -0.592316
+    V1/exp06/c0/caffeine: -0.689191
+    V1/exp06/cup20g/caffeine: 0.169114
+    V1/exp06/cup40g/caffeine: -0.208471
+    V1/exp06/cup60g/caffeine: -0.334363
+    V1/exp06/lambda/cqa5: -1.03614
+    V1/exp06/c0/cqa5: 0.2098
+    V1/exp06/cup20g/cqa5: 0.633409
+    V1/exp06/cup40g/cqa5: 0.271532
+    V1/exp06/cup60g/cqa5: 0.10631
+    V1/exp06/lambda/tds: 2.93433
+    V1/exp06/c0/tds: -3.32346
+    V1/exp06/cup20g/tds: -1.01117
+    V1/exp06/cup40g/tds: -0.426435
+    V1/exp06/cup60g/tds: 0.135825
     V1/exp06/peak_pressure: 0.0
-    V1/exp07/lambda/trigonelline: -0.562635
-    V1/exp07/c0/trigonelline: 0.496358
-    V1/exp07/cup20g/trigonelline: 1.56071
-    V1/exp07/cup40g/trigonelline: 1.05915
-    V1/exp07/cup60g/trigonelline: 0.785898
-    V1/exp07/lambda/caffeine: -1.81561
-    V1/exp07/c0/caffeine: 0.661967
-    V1/exp07/cup20g/caffeine: 1.31957
-    V1/exp07/cup40g/caffeine: 0.186968
-    V1/exp07/cup60g/caffeine: -0.420477
-    V1/exp07/lambda/cqa5: -1.02949
-    V1/exp07/c0/cqa5: 0.128553
-    V1/exp07/cup20g/cqa5: 0.722469
-    V1/exp07/cup40g/cqa5: 0.144485
-    V1/exp07/cup60g/cqa5: -0.13639
-    V1/exp07/lambda/tds: 0.265675
-    V1/exp07/c0/tds: -0.456987
-    V1/exp07/cup20g/tds: 1.17042
-    V1/exp07/cup40g/tds: 0.736455
-    V1/exp07/cup60g/tds: 0.578538
-    V1/exp07/peak_pressure: -1.06877
-    V1/exp08/lambda/trigonelline: 2.0545
-    V1/exp08/c0/trigonelline: -2.25186
-    V1/exp08/cup20g/trigonelline: -0.681849
-    V1/exp08/cup40g/trigonelline: -0.0100899
-    V1/exp08/cup60g/trigonelline: 0.288598
-    V1/exp08/lambda/caffeine: 2.64095
-    V1/exp08/c0/caffeine: -0.970645
-    V1/exp08/cup20g/caffeine: 0.969882
-    V1/exp08/cup40g/caffeine: 1.95677
-    V1/exp08/cup60g/caffeine: 2.54971
-    V1/exp08/lambda/cqa5: 2.43919
-    V1/exp08/c0/cqa5: -0.980239
-    V1/exp08/cup20g/cqa5: 1.33656
-    V1/exp08/cup40g/cqa5: 2.07986
-    V1/exp08/cup60g/cqa5: 2.55698
-    V1/exp08/lambda/tds: 3.41456
-    V1/exp08/c0/tds: -5.66139
-    V1/exp08/cup20g/tds: -1.17716
-    V1/exp08/cup40g/tds: -0.102087
-    V1/exp08/cup60g/tds: 1.02354
+    V1/exp07/lambda/trigonelline: -1.44687
+    V1/exp07/c0/trigonelline: 0.74073
+    V1/exp07/cup20g/trigonelline: 1.68477
+    V1/exp07/cup40g/trigonelline: 0.739016
+    V1/exp07/cup60g/trigonelline: 0.276258
+    V1/exp07/lambda/caffeine: -1.52143
+    V1/exp07/c0/caffeine: 0.112095
+    V1/exp07/cup20g/caffeine: 1.3652
+    V1/exp07/cup40g/caffeine: 0.148799
+    V1/exp07/cup60g/caffeine: -0.439563
+    V1/exp07/lambda/cqa5: -1.3396
+    V1/exp07/c0/cqa5: -0.00659459
+    V1/exp07/cup20g/cqa5: 0.821065
+    V1/exp07/cup40g/cqa5: 0.0782312
+    V1/exp07/cup60g/cqa5: -0.267605
+    V1/exp07/lambda/tds: 2.59216
+    V1/exp07/c0/tds: -2.37518
+    V1/exp07/cup20g/tds: 0.492024
+    V1/exp07/cup40g/tds: 0.841793
+    V1/exp07/cup60g/tds: 1.15593
+    V1/exp07/peak_pressure: -2.71831
+    V1/exp08/lambda/trigonelline: 3.47569
+    V1/exp08/c0/trigonelline: -3.24553
+    V1/exp08/cup20g/trigonelline: -0.886172
+    V1/exp08/cup40g/trigonelline: 0.341126
+    V1/exp08/cup60g/trigonelline: 0.881134
+    V1/exp08/lambda/caffeine: 3.27561
+    V1/exp08/c0/caffeine: -1.70247
+    V1/exp08/cup20g/caffeine: 0.57763
+    V1/exp08/cup40g/caffeine: 1.69817
+    V1/exp08/cup60g/caffeine: 2.42015
+    V1/exp08/lambda/cqa5: 3.1166
+    V1/exp08/c0/cqa5: -1.70769
+    V1/exp08/cup20g/cqa5: 0.839573
+    V1/exp08/cup40g/cqa5: 1.818
+    V1/exp08/cup60g/cqa5: 2.43746
+    V1/exp08/lambda/tds: 5.41064
+    V1/exp08/c0/tds: -8.11472
+    V1/exp08/cup20g/tds: -1.63188
+    V1/exp08/cup40g/tds: 0.385799
+    V1/exp08/cup60g/tds: 2.30549
     V1/exp08/peak_pressure: 0.0
-    V1/exp09/lambda/trigonelline: -2.07679
-    V1/exp09/c0/trigonelline: -1.02064
-    V1/exp09/cup20g/trigonelline: -0.908673
-    V1/exp09/cup40g/trigonelline: -1.2538
-    V1/exp09/cup60g/trigonelline: -1.34449
-    V1/exp09/lambda/caffeine: -0.745283
-    V1/exp09/c0/caffeine: -1.5669
-    V1/exp09/cup20g/caffeine: -0.861567
-    V1/exp09/cup40g/caffeine: -0.942962
-    V1/exp09/cup60g/caffeine: -0.924162
-    V1/exp09/lambda/cqa5: -0.597261
-    V1/exp09/c0/cqa5: -2.17691
-    V1/exp09/cup20g/cqa5: -1.24772
-    V1/exp09/cup40g/cqa5: -1.28055
-    V1/exp09/cup60g/cqa5: -1.20257
-    V1/exp09/lambda/tds: 0.866858
-    V1/exp09/c0/tds: -4.12208
-    V1/exp09/cup20g/tds: -2.12023
-    V1/exp09/cup40g/tds: -1.73195
-    V1/exp09/cup60g/tds: -1.54123
+    V1/exp09/lambda/trigonelline: -0.344539
+    V1/exp09/c0/trigonelline: -2.50961
+    V1/exp09/cup20g/trigonelline: -1.05738
+    V1/exp09/cup40g/trigonelline: -1.09746
+    V1/exp09/cup60g/trigonelline: -1.07254
+    V1/exp09/lambda/caffeine: -0.0184678
+    V1/exp09/c0/caffeine: -2.58842
+    V1/exp09/cup20g/caffeine: -1.17379
+    V1/exp09/cup40g/caffeine: -1.11654
+    V1/exp09/cup60g/caffeine: -1.01944
+    V1/exp09/lambda/cqa5: 0.230705
+    V1/exp09/c0/cqa5: -3.15371
+    V1/exp09/cup20g/cqa5: -1.66123
+    V1/exp09/cup40g/cqa5: -1.48307
+    V1/exp09/cup60g/cqa5: -1.30628
+    V1/exp09/lambda/tds: 4.95362
+    V1/exp09/c0/tds: -6.97551
+    V1/exp09/cup20g/tds: -2.78028
+    V1/exp09/cup40g/tds: -1.59527
+    V1/exp09/cup60g/tds: -1.07595
     V1/exp09/peak_pressure: 0.0
-    V1/exp10/lambda/trigonelline: 2.11932
-    V1/exp10/c0/trigonelline: -3.01698
-    V1/exp10/cup20g/trigonelline: -0.510204
-    V1/exp10/cup40g/trigonelline: 0.00208887
-    V1/exp10/cup60g/trigonelline: 0.110667
-    V1/exp10/lambda/caffeine: 3.19985
-    V1/exp10/c0/caffeine: -1.92102
-    V1/exp10/cup20g/caffeine: 0.558136
-    V1/exp10/cup40g/caffeine: 0.847918
-    V1/exp10/cup60g/caffeine: 0.96133
-    V1/exp10/lambda/cqa5: 2.18869
-    V1/exp10/c0/cqa5: -2.65087
-    V1/exp10/cup20g/cqa5: -0.253068
-    V1/exp10/cup40g/cqa5: 0.146116
-    V1/exp10/cup60g/cqa5: 0.289601
-    V1/exp10/lambda/tds: 2.97898
-    V1/exp10/c0/tds: -2.72958
-    V1/exp10/cup20g/tds: 0.0739268
-    V1/exp10/cup40g/tds: 0.462417
-    V1/exp10/cup60g/tds: 0.575227
+    V1/exp10/lambda/trigonelline: 2.62552
+    V1/exp10/c0/trigonelline: -3.76743
+    V1/exp10/cup20g/trigonelline: -0.605025
+    V1/exp10/cup40g/trigonelline: -0.00300825
+    V1/exp10/cup60g/trigonelline: 0.130829
+    V1/exp10/lambda/caffeine: 3.24087
+    V1/exp10/c0/caffeine: -2.26266
+    V1/exp10/cup20g/caffeine: 0.625178
+    V1/exp10/cup40g/caffeine: 0.83782
+    V1/exp10/cup60g/caffeine: 0.944613
+    V1/exp10/lambda/cqa5: 2.36876
+    V1/exp10/c0/cqa5: -3.18876
+    V1/exp10/cup20g/cqa5: -0.364043
+    V1/exp10/cup40g/cqa5: 0.0699235
+    V1/exp10/cup60g/cqa5: 0.233748
+    V1/exp10/lambda/tds: 5.67374
+    V1/exp10/c0/tds: -5.2831
+    V1/exp10/cup20g/tds: -0.488179
+    V1/exp10/cup40g/tds: 0.517498
+    V1/exp10/cup60g/tds: 0.805228
     V1/exp10/peak_pressure: 0.0
-    V1/exp11/lambda/trigonelline: -1.38446
-    V1/exp11/c0/trigonelline: -3.49169
-    V1/exp11/cup20g/trigonelline: -4.96809
-    V1/exp11/cup40g/trigonelline: -5.82041
-    V1/exp11/cup60g/trigonelline: -6.12817
-    V1/exp11/lambda/caffeine: 1.52564
-    V1/exp11/c0/caffeine: -2.55558
-    V1/exp11/cup20g/caffeine: -1.68916
-    V1/exp11/cup40g/caffeine: -1.44466
-    V1/exp11/cup60g/caffeine: -1.16977
-    V1/exp11/lambda/cqa5: 0.132321
-    V1/exp11/c0/cqa5: -4.0625
-    V1/exp11/cup20g/cqa5: -4.33435
-    V1/exp11/cup40g/cqa5: -4.30208
-    V1/exp11/cup60g/cqa5: -3.81006
-    V1/exp11/lambda/tds: 1.60065
-    V1/exp11/c0/tds: -4.82023
-    V1/exp11/cup20g/tds: -4.3702
-    V1/exp11/cup40g/tds: -4.10732
-    V1/exp11/cup60g/tds: -3.88014
+    V1/exp11/lambda/trigonelline: -0.507766
+    V1/exp11/c0/trigonelline: -4.18539
+    V1/exp11/cup20g/trigonelline: -5.10359
+    V1/exp11/cup40g/trigonelline: -5.63991
+    V1/exp11/cup60g/trigonelline: -5.79981
+    V1/exp11/lambda/caffeine: 1.21153
+    V1/exp11/c0/caffeine: -2.62199
+    V1/exp11/cup20g/caffeine: -1.58698
+    V1/exp11/cup40g/caffeine: -1.57095
+    V1/exp11/cup60g/caffeine: -1.39915
+    V1/exp11/lambda/cqa5: 0.187527
+    V1/exp11/c0/cqa5: -4.37925
+    V1/exp11/cup20g/cqa5: -4.57209
+    V1/exp11/cup40g/cqa5: -4.54642
+    V1/exp11/cup60g/cqa5: -4.02312
+    V1/exp11/lambda/tds: 5.04633
+    V1/exp11/c0/tds: -7.20415
+    V1/exp11/cup20g/tds: -5.31171
+    V1/exp11/cup40g/tds: -3.72179
+    V1/exp11/cup60g/tds: -2.77473
     V1/exp11/peak_pressure: 0.0
-    V1/exp12/lambda/trigonelline: 0.295309
-    V1/exp12/c0/trigonelline: 1.82015
-    V1/exp12/cup20g/trigonelline: 3.08372
-    V1/exp12/cup40g/trigonelline: 4.56833
-    V1/exp12/cup60g/trigonelline: 5.92727
-    V1/exp12/lambda/caffeine: -1.28331
-    V1/exp12/c0/caffeine: 2.2614
-    V1/exp12/cup20g/caffeine: 1.56227
-    V1/exp12/cup40g/caffeine: 1.23924
-    V1/exp12/cup60g/caffeine: 0.970977
-    V1/exp12/lambda/cqa5: -0.595793
-    V1/exp12/c0/cqa5: 2.6145
-    V1/exp12/cup20g/cqa5: 3.11775
-    V1/exp12/cup40g/cqa5: 3.6401
-    V1/exp12/cup60g/cqa5: 4.27062
-    V1/exp12/lambda/tds: -0.0116196
-    V1/exp12/c0/tds: 1.5248
-    V1/exp12/cup20g/tds: 2.66168
-    V1/exp12/cup40g/tds: 5.08491
-    V1/exp12/cup60g/tds: 4.98173
-    V1/exp12/peak_pressure: 2.5663
-    V1/exp13/lambda/trigonelline: 0.331897
-    V1/exp13/c0/trigonelline: 1.54154
-    V1/exp13/cup20g/trigonelline: 4.15163
-    V1/exp13/cup40g/trigonelline: 4.64666
-    V1/exp13/cup60g/trigonelline: 3.68845
-    V1/exp13/lambda/caffeine: -1.30886
-    V1/exp13/c0/caffeine: 1.31878
-    V1/exp13/cup20g/caffeine: 1.76903
-    V1/exp13/cup40g/caffeine: 0.45608
-    V1/exp13/cup60g/caffeine: -0.278462
-    V1/exp13/lambda/cqa5: -0.302081
-    V1/exp13/c0/cqa5: 1.60988
-    V1/exp13/cup20g/cqa5: 2.95665
-    V1/exp13/cup40g/cqa5: 2.87097
-    V1/exp13/cup60g/cqa5: 2.45001
-    V1/exp13/lambda/tds: -0.0531581
-    V1/exp13/c0/tds: 0.653637
-    V1/exp13/cup20g/tds: 2.10728
-    V1/exp13/cup40g/tds: 2.08524
-    V1/exp13/cup60g/tds: 1.55348
-    V1/exp13/peak_pressure: 0.0614928
-    V1/exp14/lambda/trigonelline: -0.739227
-    V1/exp14/c0/trigonelline: 0.823933
-    V1/exp14/cup20g/trigonelline: 1.08313
-    V1/exp14/cup40g/trigonelline: 0.833373
-    V1/exp14/cup60g/trigonelline: 0.529822
-    V1/exp14/lambda/caffeine: -2.30158
-    V1/exp14/c0/caffeine: 1.23479
-    V1/exp14/cup20g/caffeine: 0.846009
-    V1/exp14/cup40g/caffeine: -0.124879
-    V1/exp14/cup60g/caffeine: -0.877668
-    V1/exp14/lambda/cqa5: -2.00008
-    V1/exp14/c0/cqa5: 1.40302
-    V1/exp14/cup20g/cqa5: 2.32746
-    V1/exp14/cup40g/cqa5: 0.350411
-    V1/exp14/cup60g/cqa5: -0.478237
-    V1/exp14/lambda/tds: -1.2434
-    V1/exp14/c0/tds: 2.02231
-    V1/exp14/cup20g/tds: 2.96111
-    V1/exp14/cup40g/tds: 1.87955
-    V1/exp14/cup60g/tds: 1.38465
-    V1/exp14/peak_pressure: 0.153008
-    V1/exp15/lambda/trigonelline: -1.07305
-    V1/exp15/c0/trigonelline: 0.810111
-    V1/exp15/cup20g/trigonelline: 1.21012
-    V1/exp15/cup40g/trigonelline: 0.422157
-    V1/exp15/cup60g/trigonelline: 0.0846787
-    V1/exp15/lambda/caffeine: -2.5445
-    V1/exp15/c0/caffeine: 0.472555
-    V1/exp15/cup20g/caffeine: 0.207643
-    V1/exp15/cup40g/caffeine: -1.05863
-    V1/exp15/cup60g/caffeine: -1.55164
-    V1/exp15/lambda/cqa5: -1.75484
-    V1/exp15/c0/cqa5: 0.0383346
-    V1/exp15/cup20g/cqa5: -0.0436206
-    V1/exp15/cup40g/cqa5: -1.34203
-    V1/exp15/cup60g/cqa5: -1.07414
-    V1/exp15/lambda/tds: -0.728805
-    V1/exp15/c0/tds: -0.0468449
-    V1/exp15/cup20g/tds: 0.2384
-    V1/exp15/cup40g/tds: -0.467809
-    V1/exp15/cup60g/tds: -0.772668
-    V1/exp15/peak_pressure: -1.66658
-    V2/A_30g/bodenstein: 4.49368
-    V2/B_30g/bodenstein: 1.83346
-    V2/C_30g/bodenstein: 1.60248
-    V2/D_30g/bodenstein: 2.87229
-    V2/B_60g/bodenstein: 5.99474
-    V4/p1/long_time_flow: 4.43005
-    V4/p2/long_time_flow: 3.79087
-    V4/p3_5/long_time_flow: 1.40102
-    V4/p4/long_time_flow: -3.11266
-    V4/p5/long_time_flow: -7.1965
-    V4/p6/long_time_flow: -2.554
-    V4/p7/long_time_flow: -2.33065
-    V4/p8/long_time_flow: -0.284512
-    V4/p9/long_time_flow: 0.634533
-    V4/p11/long_time_flow: 1.56592
-    V4/p13/long_time_flow: 5.55605
-    V6/B/400_vs_360: 1.18183
-    V6/B/480_vs_360: -0.573195
-    V6/C/400_vs_360: -1.30507
-    V6/C/480_vs_360: -1.02527
-    V6/D/400_vs_360: -0.360199
-    V6/D/480_vs_360: 1.53817
-    V6/E/400_vs_360: -3.57776
-    V6/E/480_vs_360: 1.74227
+    V1/exp12/lambda/trigonelline: 0.128177
+    V1/exp12/c0/trigonelline: 1.86869
+    V1/exp12/cup20g/trigonelline: 3.20058
+    V1/exp12/cup40g/trigonelline: 4.53588
+    V1/exp12/cup60g/trigonelline: 5.78285
+    V1/exp12/lambda/caffeine: -0.862756
+    V1/exp12/c0/caffeine: 1.65643
+    V1/exp12/cup20g/caffeine: 1.57884
+    V1/exp12/cup40g/caffeine: 1.36556
+    V1/exp12/cup60g/caffeine: 1.25458
+    V1/exp12/lambda/cqa5: -0.457989
+    V1/exp12/c0/cqa5: 2.3694
+    V1/exp12/cup20g/cqa5: 3.23861
+    V1/exp12/cup40g/cqa5: 3.80462
+    V1/exp12/cup60g/cqa5: 4.52714
+    V1/exp12/lambda/tds: 0.898145
+    V1/exp12/c0/tds: 0.381049
+    V1/exp12/cup20g/tds: 2.36565
+    V1/exp12/cup40g/tds: 5.42416
+    V1/exp12/cup60g/tds: 5.90605
+    V1/exp12/peak_pressure: -2.27426
+    V1/exp13/lambda/trigonelline: -0.0592975
+    V1/exp13/c0/trigonelline: 1.70097
+    V1/exp13/cup20g/trigonelline: 4.2667
+    V1/exp13/cup40g/trigonelline: 4.31897
+    V1/exp13/cup60g/trigonelline: 3.28098
+    V1/exp13/lambda/caffeine: -0.900746
+    V1/exp13/c0/caffeine: 0.633506
+    V1/exp13/cup20g/caffeine: 1.81499
+    V1/exp13/cup40g/caffeine: 0.60729
+    V1/exp13/cup60g/caffeine: 0.00727257
+    V1/exp13/lambda/cqa5: -0.326074
+    V1/exp13/c0/cqa5: 1.4323
+    V1/exp13/cup20g/cqa5: 3.10144
+    V1/exp13/cup40g/cqa5: 2.88809
+    V1/exp13/cup60g/cqa5: 2.42503
+    V1/exp13/lambda/tds: 0.944072
+    V1/exp13/c0/tds: -0.695755
+    V1/exp13/cup20g/tds: 1.52566
+    V1/exp13/cup40g/tds: 2.24629
+    V1/exp13/cup60g/tds: 2.08335
+    V1/exp13/peak_pressure: -4.38396
+    V1/exp14/lambda/trigonelline: -1.46272
+    V1/exp14/c0/trigonelline: 1.57758
+    V1/exp14/cup20g/trigonelline: 1.71798
+    V1/exp14/cup40g/trigonelline: 1.21136
+    V1/exp14/cup60g/trigonelline: 0.683125
+    V1/exp14/lambda/caffeine: -1.84126
+    V1/exp14/c0/caffeine: 1.05415
+    V1/exp14/cup20g/caffeine: 1.37507
+    V1/exp14/cup40g/caffeine: 0.531906
+    V1/exp14/cup60g/caffeine: -0.0577077
+    V1/exp14/lambda/cqa5: -1.95904
+    V1/exp14/c0/cqa5: 1.53178
+    V1/exp14/cup20g/cqa5: 3.25843
+    V1/exp14/cup40g/cqa5: 1.11975
+    V1/exp14/cup60g/cqa5: 0.258601
+    V1/exp14/lambda/tds: 0.403648
+    V1/exp14/c0/tds: 0.281989
+    V1/exp14/cup20g/tds: 2.83644
+    V1/exp14/cup40g/tds: 2.56367
+    V1/exp14/cup60g/tds: 2.56255
+    V1/exp14/peak_pressure: -2.18421
+    V1/exp15/lambda/trigonelline: -1.81838
+    V1/exp15/c0/trigonelline: 1.65067
+    V1/exp15/cup20g/trigonelline: 2.29126
+    V1/exp15/cup40g/trigonelline: 1.05028
+    V1/exp15/cup60g/trigonelline: 0.527525
+    V1/exp15/lambda/caffeine: -2.29403
+    V1/exp15/c0/caffeine: 0.626329
+    V1/exp15/cup20g/caffeine: 1.22021
+    V1/exp15/cup40g/caffeine: -0.229295
+    V1/exp15/cup60g/caffeine: -0.802347
+    V1/exp15/lambda/cqa5: -1.83261
+    V1/exp15/c0/cqa5: 0.418279
+    V1/exp15/cup20g/cqa5: 0.878145
+    V1/exp15/cup40g/cqa5: -0.461516
+    V1/exp15/cup60g/cqa5: -0.251528
+    V1/exp15/lambda/tds: 1.03305
+    V1/exp15/c0/tds: -1.55716
+    V1/exp15/cup20g/tds: 0.32474
+    V1/exp15/cup40g/tds: 0.465919
+    V1/exp15/cup60g/tds: 0.657812
+    V1/exp15/peak_pressure: -3.60451
+    V2/A_30g/bodenstein: 7.12385
+    V2/B_30g/bodenstein: 2.90658
+    V2/C_30g/bodenstein: 3.71782
+    V2/D_30g/bodenstein: 5.11793
+    V2/B_60g/bodenstein: 8.3859
+    V4/p1/long_time_flow: 4.69636
+    V4/p2/long_time_flow: 4.14054
+    V4/p3_5/long_time_flow: 1.58242
+    V4/p4/long_time_flow: -2.86452
+    V4/p5/long_time_flow: -6.96725
+    V4/p6/long_time_flow: -2.44911
+    V4/p7/long_time_flow: -2.28197
+    V4/p8/long_time_flow: -0.314338
+    V4/p9/long_time_flow: 0.519814
+    V4/p11/long_time_flow: 1.39155
+    V4/p13/long_time_flow: 5.32286
+    V6/B/400_vs_360: 1.18906
+    V6/B/480_vs_360: -0.491699
+    V6/C/400_vs_360: -1.32245
+    V6/C/480_vs_360: -1.01439
+    V6/D/400_vs_360: -0.380916
+    V6/D/480_vs_360: 1.48801
+    V6/E/400_vs_360: -3.59667
+    V6/E/480_vs_360: 1.67849
   solver_warnings:
   - 'a large run: up to 6.36e3 steps × 1.73e5 values = 1.10e9 (expect several seconds or more)'
   - 'a large run: up to 6.77e3 steps × 1.73e5 values = 1.17e9 (expect several seconds or more)'
   robustness:
-    simulations: 9274
+    simulations: 7991
     failed: 0
     worst:
-      mass_balance_error: 1.21864e-13
-      max_regime_solves: 9.0
+      mass_balance_error: 1.1666e-13
+      max_regime_solves: 8.0
       min_concentration_kg_m3: 0.0
-      outflow_integral_error: 0.00744602
+      outflow_integral_error: 0.00541435
       rejected_steps: 0.0
-      steps: 12250.0
+      steps: 12249.0
   loo:
     block: V1
     tolerance: 0.15
@@ -1127,405 +1160,404 @@ fit:
       exp01:
         errors:
           lambda:
-            trigonelline: -0.0326515
-            caffeine: 0.0255889
-            cqa5: 0.00184141
-            tds: 0.0499373
+            trigonelline: 0.0286867
+            caffeine: 0.0515244
+            cqa5: 0.0321221
+            tds: 0.191891
           cup:
             trigonelline:
-              20: -0.0551028
-              40: -0.067655
-              60: -0.0720142
+              20: -0.0643745
+              40: -0.0619874
+              60: -0.059621
             caffeine:
-              20: 0.0016931
-              40: 0.00236068
-              60: 0.00473466
+              20: -0.00901029
+              40: -0.00383035
+              60: 0.00197809
             cqa5:
-              20: -0.0253495
-              40: -0.031809
-              60: -0.0332444
+              20: -0.0404612
+              40: -0.0402534
+              60: -0.0375941
             tds:
-              20: -0.0726561
-              40: -0.0656961
-              60: -0.0608058
-        cost: 515.336
-        evaluations: 24
+              20: -0.101379
+              40: -0.0641626
+              60: -0.0424706
+        cost: 738.175
+        evaluations: 18
       exp02:
         errors:
           lambda:
-            trigonelline: 0.0348802
-            caffeine: -0.0620157
-            cqa5: -0.0106593
-            tds: 0.039368
+            trigonelline: -0.0098943
+            caffeine: -0.0382335
+            cqa5: -0.0147586
+            tds: 0.106327
           cup:
             trigonelline:
-              20: 0.0472944
-              40: 0.0527599
-              60: 0.0563897
+              20: 0.057102
+              40: 0.044985
+              60: 0.0412515
             caffeine:
-              20: 0.00253622
-              40: -0.0109761
-              60: -0.0233202
+              20: 0.00944331
+              40: -0.00565794
+              60: -0.0161603
             cqa5:
-              20: 0.0625495
-              40: 0.0519644
-              60: 0.0478616
+              20: 0.0724289
+              40: 0.0536444
+              60: 0.0471051
             tds:
-              20: 0.0299713
-              40: 0.0357649
-              60: 0.0403709
-        cost: 548.136
-        evaluations: 13
+              20: 0.0213567
+              40: 0.0373012
+              60: 0.0499932
+        cost: 800.614
+        evaluations: 21
       exp03:
         errors:
           lambda:
-            trigonelline: 0.0606329
-            caffeine: -0.00884705
-            cqa5: 0.0266308
-            tds: 0.06556
+            trigonelline: 0.05013
+            caffeine: 0.0111759
+            cqa5: 0.0310556
+            tds: 0.137709
           cup:
             trigonelline:
-              20: 0.0966998
-              40: 0.109503
-              60: 0.11639
+              20: 0.101493
+              40: 0.109269
+              60: 0.11429
             caffeine:
-              20: 0.0543447
-              40: 0.0453659
-              60: 0.0421203
+              20: 0.053365
+              40: 0.0459324
+              60: 0.0450147
             cqa5:
-              20: 0.0979359
-              40: 0.0984592
-              60: 0.101176
+              20: 0.1007
+              40: 0.0994508
+              60: 0.102148
             tds:
-              20: 0.0724566
-              40: 0.0849216
-              60: 0.0927338
-        cost: 520.553
-        evaluations: 25
+              20: 0.0606794
+              40: 0.0889943
+              60: 0.10662
+        cost: 756.709
+        evaluations: 14
       exp04:
         errors:
           lambda:
-            trigonelline: -0.0207659
-            caffeine: -0.0241968
-            cqa5: -0.0342306
-            tds: -0.00261103
+            trigonelline: -0.0664359
+            caffeine: -0.0363256
+            cqa5: -0.0548332
+            tds: 0.0672379
           cup:
             trigonelline:
-              20: -0.000325347
-              40: -0.0113858
-              60: -0.0152417
+              20: 0.00752449
+              40: -0.0173002
+              60: -0.02712
             caffeine:
-              20: -0.00377842
-              40: -0.0177231
-              60: -0.0243539
+              20: 0.0123498
+              40: -0.00776733
+              60: -0.0171528
             cqa5:
-              20: -0.0223839
-              40: -0.0394981
-              60: -0.0467875
+              20: -0.00961734
+              40: -0.034189
+              60: -0.0450876
             tds:
-              20: -0.00817792
-              40: -0.0154427
-              60: -0.0172679
-        cost: 542.577
-        evaluations: 21
+              20: -0.0193509
+              40: -0.0106764
+              60: -0.00336201
+        cost: 787.658
+        evaluations: 12
       exp05:
         errors:
           lambda:
-            trigonelline: 0.0183634
-            caffeine: 0.00695468
-            cqa5: 0.00209508
-            tds: -0.032316
+            trigonelline: -0.0257635
+            caffeine: 0.00623111
+            cqa5: -0.0157345
+            tds: 0.00943458
           cup:
             trigonelline:
-              20: -0.0383916
-              40: -0.0372039
-              60: -0.0357805
+              20: -0.039208
+              40: -0.0513118
+              60: -0.0555409
             caffeine:
-              20: -0.022165
-              40: -0.0255954
-              60: -0.0259827
+              20: -0.0222323
+              40: -0.0296616
+              60: -0.031142
             cqa5:
-              20: -0.00355531
-              40: -0.00891011
-              60: -0.0101656
+              20: -0.00231129
+              40: -0.0152981
+              60: -0.0199339
             tds:
-              20: 0.00311507
-              40: -0.0101173
-              60: -0.0156593
-        cost: 554.52
+              20: -0.0132078
+              40: -0.017956
+              60: -0.0181983
+        cost: 783.618
         evaluations: 13
       exp06:
         errors:
           lambda:
-            trigonelline: -0.00298843
-            caffeine: -0.0257634
-            cqa5: -0.0252414
-            tds: 0.0150024
+            trigonelline: -0.0220397
+            caffeine: -0.0176914
+            cqa5: -0.0321488
+            tds: 0.0919435
           cup:
             trigonelline:
-              20: 0.00242181
-              40: -0.00174948
-              60: -0.00267214
+              20: 0.00603404
+              40: -0.00514922
+              60: -0.00887051
             caffeine:
-              20: 0.00470755
-              40: -0.00717405
-              60: -0.012273
+              20: 0.006012
+              40: -0.00733072
+              60: -0.0120488
             cqa5:
-              20: 0.0245143
-              40: 0.0117349
-              60: 0.00668134
+              20: 0.0282329
+              40: 0.0108386
+              60: 0.00403834
             tds:
-              20: -0.0117138
-              40: -0.0124268
-              60: -0.011185
-        cost: 562.45
-        evaluations: 11
+              20: -0.0245225
+              40: -0.00865277
+              60: 0.00254723
+        cost: 809.204
+        evaluations: 18
       exp07:
         errors:
           lambda:
-            trigonelline: -0.0167585
-            caffeine: -0.0530051
-            cqa5: -0.030428
-            tds: 0.00800107
+            trigonelline: -0.0426309
+            caffeine: -0.0447164
+            cqa5: -0.0395036
+            tds: 0.0807638
           cup:
             trigonelline:
-              20: 0.0352971
-              40: 0.0214716
-              60: 0.0159015
+              20: 0.0382142
+              40: 0.0149774
+              60: 0.00560688
             caffeine:
-              20: 0.0267445
-              40: 0.00374971
-              60: -0.00836994
+              20: 0.0277287
+              40: 0.00300064
+              60: -0.00874925
             cqa5:
-              20: 0.0241166
-              40: 0.00470086
-              60: -0.00445178
+              20: 0.0274859
+              40: 0.00255626
+              60: -0.00873295
             tds:
-              20: 0.0236791
-              40: 0.0148324
-              60: 0.0116321
-        cost: 557.43
-        evaluations: 20
+              20: 0.00978486
+              40: 0.0168472
+              60: 0.0232413
+        cost: 803.889
+        evaluations: 26
       exp08:
         errors:
           lambda:
-            trigonelline: 0.0754616
-            caffeine: 0.0898158
-            cqa5: 0.0892598
-            tds: 0.234558
+            trigonelline: 0.154846
+            caffeine: 0.124896
+            cqa5: 0.135032
+            tds: 0.395872
           cup:
             trigonelline:
-              20: -0.0145731
-              40: 0.00185404
-              60: 0.00913911
+              20: -0.0255481
+              40: 0.00937371
+              60: 0.0252236
             caffeine:
-              20: 0.0236763
-              40: 0.0440814
-              60: 0.0575353
+              20: 0.0121216
+              40: 0.0391703
+              60: 0.0573751
             cqa5:
-              20: 0.0299773
-              40: 0.0490152
-              60: 0.061049
+              20: 0.0131174
+              40: 0.0422441
+              60: 0.0605182
             tds:
-              20: -0.0533454
-              40: 0.000841752
-              60: 0.0253176
-        cost: 515.412
-        evaluations: 21
+              20: -0.0786931
+              40: 0.00604615
+              60: 0.0483148
+        cost: 723.565
+        evaluations: 17
       exp09:
         errors:
           lambda:
-            trigonelline: -0.0727767
-            caffeine: -0.0250117
-            cqa5: -0.0182809
-            tds: 0.0263451
+            trigonelline: -0.000809354
+            caffeine: 0.00372399
+            cqa5: 0.015498
+            tds: 0.170073
           cup:
             trigonelline:
-              20: -0.044681
-              40: -0.0682417
-              60: -0.0775262
+              20: -0.0548366
+              40: -0.0600677
+              60: -0.0610365
             caffeine:
-              20: -0.0354566
-              40: -0.0469311
-              60: -0.0519476
+              20: -0.0500062
+              40: -0.0562792
+              60: -0.0574519
             cqa5:
-              20: -0.0430808
-              40: -0.0546219
-              60: -0.0589027
+              20: -0.0604906
+              40: -0.0645001
+              60: -0.0641534
             tds:
-              20: -0.0784782
-              40: -0.0778316
-              60: -0.0757779
-        cost: 539.081
+              20: -0.105882
+              40: -0.0742606
+              60: -0.0547293
+        cost: 756.101
         evaluations: 22
       exp10:
         errors:
           lambda:
-            trigonelline: 0.0962911
-            caffeine: 0.142494
-            cqa5: 0.10364
-            tds: 0.114713
+            trigonelline: 0.106625
+            caffeine: 0.145099
+            cqa5: 0.102613
+            tds: 0.237643
           cup:
             trigonelline:
-              20: -0.0234553
-              40: -4.46725e-05
-              60: 0.0105641
+              20: -0.0245249
+              40: -0.000222295
+              60: 0.0112482
             caffeine:
-              20: 0.0195979
-              40: 0.0515868
-              60: 0.0728657
+              20: 0.0225975
+              40: 0.0517778
+              60: 0.0725111
             cqa5:
-              20: -0.0121081
-              40: 0.00875614
-              60: 0.0226539
+              20: -0.0140702
+              40: 0.00432032
+              60: 0.0174569
             tds:
-              20: 0.00427022
-              40: 0.0309987
-              60: 0.0454252
-        cost: 532.893
-        evaluations: 14
+              20: -0.0180874
+              40: 0.0342056
+              60: 0.0642015
+        cost: 763.342
+        evaluations: 15
       exp11:
         errors:
           lambda:
-            trigonelline: -0.0465317
-            caffeine: 0.041766
-            cqa5: 0.00557155
-            tds: 0.0408249
+            trigonelline: 0.0199503
+            caffeine: 0.0507518
+            cqa5: 0.032751
+            tds: 0.180586
           cup:
             trigonelline:
-              20: -0.105236
-              40: -0.121949
-              60: -0.127982
+              20: -0.113508
+              40: -0.114842
+              60: -0.113923
             caffeine:
-              20: -0.0366793
-              40: -0.0333075
-              60: -0.028769
+              20: -0.0390087
+              40: -0.0354847
+              60: -0.0301423
             cqa5:
-              20: -0.0919341
-              40: -0.0987866
-              60: -0.100041
+              20: -0.102872
+              40: -0.104228
+              60: -0.102035
             tds:
-              20: -0.0890756
-              40: -0.0864206
-              60: -0.0832958
-        cost: 416.042
-        evaluations: 19
+              20: -0.113098
+              40: -0.0809789
+              60: -0.0614063
+        cost: 634.449
+        evaluations: 26
       exp12:
         errors:
           lambda:
-            trigonelline: 0.0282284
-            caffeine: -0.0946667
-            cqa5: -0.0486894
-            tds: -0.00369563
+            trigonelline: 0.0134226
+            caffeine: -0.0664428
+            cqa5: -0.036276
+            tds: 0.0899152
           cup:
             trigonelline:
-              20: 0.149297
-              40: 0.148364
-              60: 0.14896
+              20: 0.155545
+              40: 0.147767
+              60: 0.145733
             caffeine:
-              20: 0.0934758
-              40: 0.0558113
-              60: 0.0350912
+              20: 0.0955946
+              40: 0.0620924
+              60: 0.0452694
             cqa5:
-              20: 0.151395
-              40: 0.12507
-              60: 0.112207
+              20: 0.15771
+              40: 0.131621
+              60: 0.120052
             tds:
-              20: 0.129471
-              40: 0.117502
-              60: 0.112583
-        cost: 459.906
-        evaluations: 25
+              20: 0.113738
+              40: 0.125173
+              60: 0.134022
+        cost: 709.695
+        evaluations: 20
       exp13:
         errors:
           lambda:
-            trigonelline: 0.0228367
-            caffeine: -0.071614
-            cqa5: -0.0211147
-            tds: -0.00924436
+            trigonelline: -0.00914532
+            caffeine: -0.0524264
+            cqa5: -0.0244062
+            tds: 0.0643286
           cup:
             trigonelline:
-              20: 0.104734
-              40: 0.104922
-              60: 0.105534
+              20: 0.110801
+              40: 0.0993384
+              60: 0.0950457
             caffeine:
-              20: 0.0375804
-              40: 0.0106553
-              60: -0.00406531
+              20: 0.0403273
+              40: 0.0149321
+              60: 0.00244685
             cqa5:
-              20: 0.0874026
-              40: 0.0728552
-              60: 0.0662565
+              20: 0.0939171
+              40: 0.0752617
+              60: 0.0673481
             tds:
-              20: 0.055642
-              40: 0.0464515
-              60: 0.0426481
-        cost: 509.367
-        evaluations: 25
+              20: 0.0414464
+              40: 0.0493258
+              60: 0.0556795
+        cost: 750.2
+        evaluations: 19
       exp14:
         errors:
           lambda:
-            trigonelline: -0.0314988
-            caffeine: -0.0927801
-            cqa5: -0.0842353
-            tds: -0.0579055
+            trigonelline: -0.0607176
+            caffeine: -0.0711195
+            cqa5: -0.0782291
+            tds: 0.0127808
           cup:
             trigonelline:
-              20: 0.034062
-              40: 0.0188098
-              60: 0.01254
+              20: 0.0585753
+              40: 0.0319226
+              60: 0.0210076
             caffeine:
-              20: 0.0307986
-              40: -0.00298009
-              60: -0.0213196
+              20: 0.0511625
+              40: 0.0183445
+              60: 0.00221673
             cqa5:
-              20: 0.0518938
-              40: 0.00940696
-              60: -0.00814128
+              20: 0.0744095
+              40: 0.0291714
+              60: 0.0114136
             tds:
-              20: 0.0673459
-              40: 0.0435132
-              60: 0.0327378
-        cost: 539.68
-        evaluations: 12
+              20: 0.0671565
+              40: 0.0599301
+              60: 0.0590731
+        cost: 782.412
+        evaluations: 14
       exp15:
         errors:
           lambda:
-            trigonelline: -0.0390041
-            caffeine: -0.0832753
-            cqa5: -0.068536
-            tds: -0.0374184
+            trigonelline: -0.0628663
+            caffeine: -0.0765635
+            cqa5: -0.0689481
+            tds: 0.0430028
           cup:
             trigonelline:
-              20: 0.0265357
-              40: 0.00964928
-              60: 0.0024793
+              20: 0.0492399
+              40: 0.0228928
+              60: 0.0119655
             caffeine:
-              20: 0.00260222
-              40: -0.0262327
-              60: -0.0420112
+              20: 0.0262181
+              40: -0.00490778
+              60: -0.0207821
             cqa5:
-              20: -0.00194985
-              40: -0.0285824
-              60: -0.0240172
+              20: 0.0211617
+              40: -0.00899286
+              60: -0.00508413
             tds:
-              20: 0.00619201
-              40: -0.00996912
-              60: -0.0170162
-        cost: 549.868
-        evaluations: 19
+              20: 0.00455686
+              40: 0.0070156
+              60: 0.0106776
+        cost: 800.047
+        evaluations: 15
     held:
-      model.hydraulics.viscosity_temperature_exponent: 0.302021
-      hydraulics.poroelastic.critical_pressure: 12.4613
-      extraction.dispersion.axial_coefficient: 3.8662e-06
-    lambda_within: 59
+      model.hydraulics.viscosity_temperature_exponent: 0.220001
+      extraction.dispersion.axial_coefficient: 3.22358e-06
+    lambda_within: 54
     lambda_total: 60
-    cup_within: 179
+    cup_within: 178
     cup_total: 180
   sensitivity:
     reference_datasets:
-      schmieder2023: 7.22044e-14
-      waszkiewicz2026: 2.14379e-13
+      schmieder2023: 3.49157e-13
+      waszkiewicz2026: 2.21406e-13
     variants:
       transition ramp 1 s:
         blocks:
@@ -1535,102 +1567,102 @@ fit:
             transition_ramp_s: 1.0
         structural: false
         held:
-          model.hydraulics.viscosity_temperature_exponent: 0.302021
-          hydraulics.poroelastic.critical_pressure: 12.4613
-          extraction.dispersion.axial_coefficient: 3.8662e-06
-        cost: 776.324
+          model.hydraulics.viscosity_temperature_exponent: 0.220001
+          extraction.dispersion.axial_coefficient: 3.22358e-06
+        cost: 1441.72
         optimizer:
           success: true
-          message: '`xtol` termination condition is satisfied.'
-          evaluations: 18
+          message: '`ftol` termination condition is satisfied.'
+          evaluations: 28
         nuisance:
-          calibration.schmieder2023.extractable_fraction: 28.6398
-          calibration.schmieder2023.content.caffeine: 1.25776
-          calibration.schmieder2023.content.trigonelline: 0.657405
-          calibration.schmieder2023.content.cqa5: 0.869918
-          calibration.schmieder2023.permeability.gl1_4: 2.8979e-14
-          calibration.schmieder2023.permeability.gl1_7: 2.97529e-14
-          calibration.schmieder2023.permeability.gl2_0: 3.94162e-14
+          calibration.schmieder2023.extractable_fraction: 29.5955
+          calibration.schmieder2023.content.caffeine: 1.31642
+          calibration.schmieder2023.content.trigonelline: 0.660338
+          calibration.schmieder2023.content.cqa5: 0.872547
+          calibration.schmieder2023.permeability.gl1_4: 7.29888e-14
+          calibration.schmieder2023.permeability.gl1_7: 8.44234e-14
+          calibration.schmieder2023.permeability.gl2_0: 1.63452e-13
         shared:
-          extraction.saturation.lumped: 310.612
-          model.species.caffeine.surface_fraction_scale: 0.501454
-          model.species.trigonelline.surface_fraction_scale: 1.50416
-          model.species.cqa5.surface_fraction_scale: 0.846305
+          model.extraction.broken_shell_thickness: 40.0
+          extraction.saturation.lumped: 331.967
+          model.species.caffeine.surface_fraction_scale: 0.81681
+          model.species.trigonelline.surface_fraction_scale: 1.96501
+          model.species.cqa5.surface_fraction_scale: 1.11698
         kappa_ref_by_dataset:
-          schmieder2023: 7.24893e-14
-          waszkiewicz2026: 2.14379e-13
-        schmieder_kappa_ref_m2: 7.24893e-14
-        pooled_kappa_ref_m2: 1.2466e-13
+          schmieder2023: 2.24327e-13
+          waszkiewicz2026: 2.21406e-13
+        schmieder_kappa_ref_m2: 2.24327e-13
+        pooled_kappa_ref_m2: 2.22861e-13
         pressures:
         - experiment: 1
           data_bar: 2.7
-          pour_bar: 1.43281
-          shot_bar: 3.65432
+          pour_bar: 0.965937
+          shot_bar: 5.0356
         - experiment: 2
           data_bar: 5.3
-          pour_bar: 7.63741
-          shot_bar: 7.65615
+          pour_bar: 12.0
+          shot_bar: 12.0
         - experiment: 3
           data_bar: 3.9
-          pour_bar: 3.10783
-          shot_bar: 4.3339
+          pour_bar: 4.55386
+          shot_bar: 12.0
         - experiment: 4
           data_bar: 3.3
-          pour_bar: 2.11016
-          shot_bar: 3.42681
+          pour_bar: 1.54314
+          shot_bar: 3.32498
         - experiment: 5
           data_bar: 3.6
-          pour_bar: 3.29026
-          shot_bar: 4.19714
+          pour_bar: 3.66024
+          shot_bar: 6.79321
         - experiment: 6
           data_bar: 3.0
-          pour_bar: 2.84882
-          shot_bar: 4.01069
+          pour_bar: 3.25359
+          shot_bar: 6.18413
         - experiment: 7
           data_bar: 3.4
-          pour_bar: 2.97643
-          shot_bar: 4.09623
+          pour_bar: 3.43335
+          shot_bar: 6.44354
         - experiment: 8
           data_bar: 2.9
-          pour_bar: 1.63239
-          shot_bar: 3.91979
+          pour_bar: 1.17823
+          shot_bar: 6.28419
         - experiment: 9
           data_bar: 2.8
-          pour_bar: 1.20959
-          shot_bar: 3.73834
+          pour_bar: 0.9112
+          shot_bar: 5.69247
         - experiment: 10
           data_bar: 2.9
-          pour_bar: 1.1288
-          shot_bar: 3.22856
+          pour_bar: 0.50003
+          shot_bar: 2.8763
         - experiment: 11
           data_bar: 2.6
-          pour_bar: 0.851563
-          shot_bar: 3.08772
+          pour_bar: 0.434621
+          shot_bar: 3.04441
         - experiment: 12
           data_bar: 8.4
-          pour_bar: 9.88651
-          shot_bar: 9.88703
+          pour_bar: 12.0
+          shot_bar: 12.0
         - experiment: 13
           data_bar: 7.6
-          pour_bar: 6.32698
-          shot_bar: 6.33316
+          pour_bar: 12.0
+          shot_bar: 12.0
         - experiment: 14
           data_bar: 3.6
-          pour_bar: 3.97483
-          shot_bar: 3.98932
+          pour_bar: 3.43874
+          shot_bar: 3.44174
         - experiment: 15
           data_bar: 3.5
-          pour_bar: 3.34993
-          shot_bar: 3.71914
-        v1_cost: 776.324
-        pressure_rms: 1.46391
-        lambda_within: 49
-        cup_within: 162
+          pour_bar: 2.84482
+          shot_bar: 3.5345
+        v1_cost: 1441.72
+        pressure_rms: 2.62078
+        lambda_within: 36
+        cup_within: 159
         pump:
           transition_s:
             1: 0.0
-            2: 0.0
-            3: 0.0
+            2: 0.4
+            3: 0.2
             4: 0.0
             5: 0.0
             6: 0.0
@@ -1639,13 +1671,13 @@ fit:
             9: 0.0
             10: 0.0
             11: 0.0
-            12: 0.0
-            13: 0.0
+            12: 0.5
+            13: 0.5
             14: 0.0
             15: 0.0
           pour_s:
             1: 0.0
-            2: 0.0
+            2: 5.8
             3: 0.0
             4: 0.0
             5: 0.0
@@ -1655,11 +1687,14 @@ fit:
             9: 0.0
             10: 0.0
             11: 0.0
-            12: 0.0
-            13: 0.0
+            12: 8.1
+            13: 6.9
             14: 0.0
             15: 0.0
-          pour_capped: []
+          pour_capped:
+          - 2
+          - 12
+          - 13
       transition ramp 0.3 s:
         blocks:
         - V1
@@ -1668,97 +1703,97 @@ fit:
             transition_ramp_s: 0.3
         structural: false
         held:
-          model.hydraulics.viscosity_temperature_exponent: 0.302021
-          hydraulics.poroelastic.critical_pressure: 12.4613
-          extraction.dispersion.axial_coefficient: 3.8662e-06
-        cost: 839.389
+          model.hydraulics.viscosity_temperature_exponent: 0.220001
+          extraction.dispersion.axial_coefficient: 3.22358e-06
+        cost: 1477.23
         optimizer:
           success: true
           message: '`xtol` termination condition is satisfied.'
-          evaluations: 12
+          evaluations: 19
         nuisance:
-          calibration.schmieder2023.extractable_fraction: 28.65
-          calibration.schmieder2023.content.caffeine: 1.25596
-          calibration.schmieder2023.content.trigonelline: 0.65643
-          calibration.schmieder2023.content.cqa5: 0.869526
-          calibration.schmieder2023.permeability.gl1_4: 2.7953e-14
-          calibration.schmieder2023.permeability.gl1_7: 2.99732e-14
-          calibration.schmieder2023.permeability.gl2_0: 4.10339e-14
+          calibration.schmieder2023.extractable_fraction: 29.642
+          calibration.schmieder2023.content.caffeine: 1.31718
+          calibration.schmieder2023.content.trigonelline: 0.66008
+          calibration.schmieder2023.content.cqa5: 0.871196
+          calibration.schmieder2023.permeability.gl1_4: 7.23982e-14
+          calibration.schmieder2023.permeability.gl1_7: 8.35104e-14
+          calibration.schmieder2023.permeability.gl2_0: 1.94304e-13
         shared:
-          extraction.saturation.lumped: 303.005
-          model.species.caffeine.surface_fraction_scale: 0.502323
-          model.species.trigonelline.surface_fraction_scale: 1.53358
-          model.species.cqa5.surface_fraction_scale: 0.869024
+          model.extraction.broken_shell_thickness: 40.0
+          extraction.saturation.lumped: 331.388
+          model.species.caffeine.surface_fraction_scale: 0.814177
+          model.species.trigonelline.surface_fraction_scale: 1.98591
+          model.species.cqa5.surface_fraction_scale: 1.13355
         kappa_ref_by_dataset:
-          schmieder2023: 7.27689e-14
-          waszkiewicz2026: 2.14379e-13
-        schmieder_kappa_ref_m2: 7.27689e-14
-        pooled_kappa_ref_m2: 1.249e-13
+          schmieder2023: 2.36135e-13
+          waszkiewicz2026: 2.21406e-13
+        schmieder_kappa_ref_m2: 2.36135e-13
+        pooled_kappa_ref_m2: 2.28652e-13
         pressures:
         - experiment: 1
           data_bar: 2.7
-          pour_bar: 1.42325
-          shot_bar: 2.73328
+          pour_bar: 0.965487
+          shot_bar: 2.83775
         - experiment: 2
           data_bar: 5.3
-          pour_bar: 7.20457
-          shot_bar: 7.21751
+          pour_bar: 12.0
+          shot_bar: 12.0
         - experiment: 3
           data_bar: 3.9
-          pour_bar: 3.29719
-          shot_bar: 3.29719
+          pour_bar: 4.53723
+          shot_bar: 4.53767
         - experiment: 4
           data_bar: 3.3
-          pour_bar: 2.60933
-          shot_bar: 2.60933
+          pour_bar: 2.71479
+          shot_bar: 2.71479
         - experiment: 5
           data_bar: 3.6
-          pour_bar: 3.26107
-          shot_bar: 3.26107
+          pour_bar: 3.65765
+          shot_bar: 3.65822
         - experiment: 6
           data_bar: 3.0
-          pour_bar: 2.81275
-          shot_bar: 2.81291
+          pour_bar: 3.25071
+          shot_bar: 3.2508
         - experiment: 7
           data_bar: 3.4
-          pour_bar: 2.94073
-          shot_bar: 2.94073
+          pour_bar: 3.43138
+          shot_bar: 3.43138
         - experiment: 8
           data_bar: 2.9
-          pour_bar: 2.56501
-          shot_bar: 2.56501
+          pour_bar: 1.17683
+          shot_bar: 2.75717
         - experiment: 9
           data_bar: 2.8
-          pour_bar: 2.5248
-          shot_bar: 2.5248
+          pour_bar: 0.910676
+          shot_bar: 2.70722
         - experiment: 10
           data_bar: 2.9
-          pour_bar: 2.6493
-          shot_bar: 2.6493
+          pour_bar: 2.76982
+          shot_bar: 2.76982
         - experiment: 11
           data_bar: 2.6
-          pour_bar: 2.58086
-          shot_bar: 2.58086
+          pour_bar: 2.67546
+          shot_bar: 2.67546
         - experiment: 12
           data_bar: 8.4
           pour_bar: 12.0
           shot_bar: 12.0
         - experiment: 13
           data_bar: 7.6
-          pour_bar: 7.4564
-          shot_bar: 7.46057
+          pour_bar: 12.0
+          shot_bar: 12.0
         - experiment: 14
           data_bar: 3.6
-          pour_bar: 3.67277
-          shot_bar: 3.67328
+          pour_bar: 2.56346
+          shot_bar: 2.76753
         - experiment: 15
           data_bar: 3.5
-          pour_bar: 3.11949
-          shot_bar: 3.12096
-        v1_cost: 839.389
-        pressure_rms: 1.1746
-        lambda_within: 49
-        cup_within: 161
+          pour_bar: 2.67392
+          shot_bar: 2.67392
+        v1_cost: 1477.23
+        pressure_rms: 2.4056
+        lambda_within: 36
+        cup_within: 158
         pump:
           transition_s:
             1: 0.0
@@ -1778,7 +1813,7 @@ fit:
             15: 0.0
           pour_s:
             1: 0.0
-            2: 0.0
+            2: 5.7
             3: 0.0
             4: 0.0
             5: 0.0
@@ -1788,12 +1823,14 @@ fit:
             9: 0.0
             10: 0.0
             11: 0.0
-            12: 4.69
-            13: 0.0
+            12: 8.0
+            13: 6.8
             14: 0.0
             15: 0.0
           pour_capped:
+          - 2
           - 12
+          - 13
       upstream pressure loss 0.4 bar:
         blocks:
         - V1
@@ -1801,114 +1838,114 @@ fit:
           pressure_offset_bar: 0.4
         structural: false
         held:
-          model.hydraulics.viscosity_temperature_exponent: 0.302021
-          hydraulics.poroelastic.critical_pressure: 12.4613
-          extraction.dispersion.axial_coefficient: 3.8662e-06
-        cost: 547.439
+          model.hydraulics.viscosity_temperature_exponent: 0.220001
+          extraction.dispersion.axial_coefficient: 3.22358e-06
+        cost: 786.579
         optimizer:
           success: true
           message: '`xtol` termination condition is satisfied.'
-          evaluations: 26
+          evaluations: 22
         nuisance:
-          calibration.schmieder2023.extractable_fraction: 28.3428
-          calibration.schmieder2023.content.caffeine: 1.26258
-          calibration.schmieder2023.content.trigonelline: 0.67172
-          calibration.schmieder2023.content.cqa5: 0.87605
-          calibration.schmieder2023.permeability.gl1_4: 2.91814e-14
-          calibration.schmieder2023.permeability.gl1_7: 3.28139e-14
-          calibration.schmieder2023.permeability.gl2_0: 4.36446e-14
+          calibration.schmieder2023.extractable_fraction: 28.9316
+          calibration.schmieder2023.content.caffeine: 1.30985
+          calibration.schmieder2023.content.trigonelline: 0.688729
+          calibration.schmieder2023.content.cqa5: 0.884448
+          calibration.schmieder2023.permeability.gl1_4: 1.36205e-13
+          calibration.schmieder2023.permeability.gl1_7: 1.67438e-13
+          calibration.schmieder2023.permeability.gl2_0: 2.07363e-13
         shared:
-          extraction.saturation.lumped: 349.644
-          model.species.caffeine.surface_fraction_scale: 0.502203
-          model.species.trigonelline.surface_fraction_scale: 1.27672
-          model.species.cqa5.surface_fraction_scale: 0.73154
+          model.extraction.broken_shell_thickness: 40.0
+          extraction.saturation.lumped: 350.0
+          model.species.caffeine.surface_fraction_scale: 0.684342
+          model.species.trigonelline.surface_fraction_scale: 1.41441
+          model.species.cqa5.surface_fraction_scale: 0.901532
         kappa_ref_by_dataset:
-          schmieder2023: 7.76621e-14
-          waszkiewicz2026: 2.14379e-13
-        schmieder_kappa_ref_m2: 7.76621e-14
-        pooled_kappa_ref_m2: 1.29031e-13
+          schmieder2023: 3.75638e-13
+          waszkiewicz2026: 2.21406e-13
+        schmieder_kappa_ref_m2: 3.75638e-13
+        pooled_kappa_ref_m2: 2.8839e-13
         pressures:
         - experiment: 1
           data_bar: 2.7
-          pour_bar: 1.25722
+          pour_bar: 0.784679
           shot_bar: 12.0
         - experiment: 2
           data_bar: 5.3
-          pour_bar: 4.95461
+          pour_bar: 3.13849
           shot_bar: 12.0
         - experiment: 3
           data_bar: 3.9
-          pour_bar: 3.06489
+          pour_bar: 2.27731
           shot_bar: 12.0
         - experiment: 4
           data_bar: 3.3
-          pour_bar: 1.75082
+          pour_bar: 1.41663
           shot_bar: 12.0
         - experiment: 5
           data_bar: 3.6
-          pour_bar: 2.7727
+          pour_bar: 1.82454
           shot_bar: 12.0
         - experiment: 6
           data_bar: 3.0
-          pour_bar: 2.3884
+          pour_bar: 1.65888
           shot_bar: 12.0
         - experiment: 7
           data_bar: 3.4
-          pour_bar: 2.50892
+          pour_bar: 1.73467
           shot_bar: 12.0
         - experiment: 8
           data_bar: 2.9
-          pour_bar: 1.59933
+          pour_bar: 0.992896
           shot_bar: 12.0
         - experiment: 9
           data_bar: 2.8
-          pour_bar: 1.18681
+          pour_bar: 0.816499
           shot_bar: 12.0
         - experiment: 10
           data_bar: 2.9
-          pour_bar: 0.987032
+          pour_bar: 0.652297
           shot_bar: 12.0
         - experiment: 11
           data_bar: 2.6
-          pour_bar: 0.748777
-          shot_bar: 12.0
+          pour_bar: 0.534327
+          shot_bar: 6.65352
         - experiment: 12
           data_bar: 8.4
-          pour_bar: 8.81563
+          pour_bar: 4.64955
           shot_bar: 12.0
         - experiment: 13
           data_bar: 7.6
-          pour_bar: 5.93805
+          pour_bar: 4.03243
           shot_bar: 12.0
         - experiment: 14
           data_bar: 3.6
-          pour_bar: 3.07012
+          pour_bar: 2.50749
           shot_bar: 12.0
         - experiment: 15
           data_bar: 3.5
-          pour_bar: 2.56732
+          pour_bar: 2.11312
           shot_bar: 12.0
-        v1_cost: 547.439
-        pressure_rms: 1.34592
-        lambda_within: 57
-        cup_within: 167
+        v1_cost: 786.579
+        pressure_rms: 2.77182
+        lambda_within: 50
+        cup_within: 164
         pump:
           transition_s:
-            1: 2.3
-            2: 3.3
-            3: 3.1
-            4: 1.8
-            5: 2.8
-            6: 2.7
-            7: 2.7
-            8: 2.6
-            9: 2.5
-            10: 1.5
-            11: 1.2
-            12: 3.7
-            13: 3.6
-            14: 2.4
-            15: 2.1
+            1: 1.4
+            2: 2.6
+            3: 2.7
+            4: 1.2
+            5: 2.2
+            6: 2.0
+            7: 2.1
+            8: 2.2
+            9: 1.9
+            10: 0.6
+            11: 0.0
+            12: 3.3
+            13: 3.2
+            14: 2.1
+            15: 1.7
           pour_s:
             1: 0.0
             2: 0.0
@@ -1933,97 +1970,97 @@ fit:
           pressure: max
         structural: false
         held:
-          model.hydraulics.viscosity_temperature_exponent: 0.302021
-          hydraulics.poroelastic.critical_pressure: 12.4613
-          extraction.dispersion.axial_coefficient: 3.8662e-06
-        cost: 490.856
+          model.hydraulics.viscosity_temperature_exponent: 0.220001
+          extraction.dispersion.axial_coefficient: 3.22358e-06
+        cost: 572.481
         optimizer:
           success: true
           message: '`xtol` termination condition is satisfied.'
-          evaluations: 21
+          evaluations: 30
         nuisance:
-          calibration.schmieder2023.extractable_fraction: 28.3278
-          calibration.schmieder2023.content.caffeine: 1.26782
-          calibration.schmieder2023.content.trigonelline: 0.668085
-          calibration.schmieder2023.content.cqa5: 0.876573
-          calibration.schmieder2023.permeability.gl1_4: 8.5166e-14
-          calibration.schmieder2023.permeability.gl1_7: 9.61476e-14
-          calibration.schmieder2023.permeability.gl2_0: 9.58607e-14
+          calibration.schmieder2023.extractable_fraction: 28.437
+          calibration.schmieder2023.content.caffeine: 1.29961
+          calibration.schmieder2023.content.trigonelline: 0.683318
+          calibration.schmieder2023.content.cqa5: 0.877376
+          calibration.schmieder2023.permeability.gl1_4: 3.31684e-13
+          calibration.schmieder2023.permeability.gl1_7: 5.33985e-13
+          calibration.schmieder2023.permeability.gl2_0: 5.90845e-13
         shared:
-          extraction.saturation.lumped: 349.519
-          model.species.caffeine.surface_fraction_scale: 0.602794
-          model.species.trigonelline.surface_fraction_scale: 1.26537
-          model.species.cqa5.surface_fraction_scale: 0.746915
+          model.extraction.broken_shell_thickness: 40.0
+          extraction.saturation.lumped: 350.0
+          model.species.caffeine.surface_fraction_scale: 0.719036
+          model.species.trigonelline.surface_fraction_scale: 1.29941
+          model.species.cqa5.surface_fraction_scale: 0.859125
         kappa_ref_by_dataset:
-          schmieder2023: 2.0644e-13
-          waszkiewicz2026: 2.14379e-13
-        schmieder_kappa_ref_m2: 2.0644e-13
-        pooled_kappa_ref_m2: 2.10372e-13
+          schmieder2023: 1.0546e-12
+          waszkiewicz2026: 2.21406e-13
+        schmieder_kappa_ref_m2: 1.0546e-12
+        pooled_kappa_ref_m2: 4.83212e-13
         pressures:
         - experiment: 1
           data_bar: 2.7
-          pour_bar: 0.379347
-          shot_bar: 3.0629
+          pour_bar: 0.182247
+          shot_bar: 2.62556
         - experiment: 2
           data_bar: 5.3
-          pour_bar: 0.949595
-          shot_bar: 3.22139
+          pour_bar: 0.524103
+          shot_bar: 2.67312
         - experiment: 3
           data_bar: 3.9
-          pour_bar: 0.751053
-          shot_bar: 3.64706
+          pour_bar: 0.692227
+          shot_bar: 3.79284
         - experiment: 4
           data_bar: 3.3
-          pour_bar: 0.69202
-          shot_bar: 3.11883
+          pour_bar: 2.50294
+          shot_bar: 2.50294
         - experiment: 5
           data_bar: 3.6
-          pour_bar: 0.722282
-          shot_bar: 3.21343
+          pour_bar: 0.369956
+          shot_bar: 2.73219
         - experiment: 6
           data_bar: 3.0
-          pour_bar: 0.606701
-          shot_bar: 3.01836
+          pour_bar: 0.326981
+          shot_bar: 2.6006
         - experiment: 7
           data_bar: 3.4
-          pour_bar: 0.662252
-          shot_bar: 3.13395
+          pour_bar: 0.349564
+          shot_bar: 2.63875
         - experiment: 8
           data_bar: 2.9
-          pour_bar: 0.47019
-          shot_bar: 3.57476
+          pour_bar: 0.365461
+          shot_bar: 3.64531
         - experiment: 9
           data_bar: 2.8
-          pour_bar: 0.362674
-          shot_bar: 3.34782
+          pour_bar: 0.299832
+          shot_bar: 3.37361
         - experiment: 10
           data_bar: 2.9
-          pour_bar: 0.414527
-          shot_bar: 3.10039
+          pour_bar: 0.169946
+          shot_bar: 2.53694
         - experiment: 11
           data_bar: 2.6
-          pour_bar: 0.32003
-          shot_bar: 2.98045
+          pour_bar: 2.50998
+          shot_bar: 2.50998
         - experiment: 12
           data_bar: 8.4
-          pour_bar: 1.16004
-          shot_bar: 3.90289
+          pour_bar: 1.07476
+          shot_bar: 4.57833
         - experiment: 13
           data_bar: 7.6
-          pour_bar: 1.0025
-          shot_bar: 3.62766
+          pour_bar: 0.967541
+          shot_bar: 4.11333
         - experiment: 14
           data_bar: 3.6
-          pour_bar: 1.07797
-          shot_bar: 3.35753
+          pour_bar: 0.510678
+          shot_bar: 2.55016
         - experiment: 15
           data_bar: 3.5
-          pour_bar: 0.900802
-          shot_bar: 3.12609
-        v1_cost: 490.856
-        pressure_rms: 2.00345
-        lambda_within: 58
-        cup_within: 169
+          pour_bar: 2.50564
+          shot_bar: 2.50564
+        v1_cost: 572.481
+        pressure_rms: 2.41925
+        lambda_within: 56
+        cup_within: 170
         pump:
           transition_s:
             1: 0.0
@@ -2065,114 +2102,114 @@ fit:
           exit_margin_bar: 1.0
         structural: false
         held:
-          model.hydraulics.viscosity_temperature_exponent: 0.302021
-          hydraulics.poroelastic.critical_pressure: 12.4613
-          extraction.dispersion.axial_coefficient: 3.8662e-06
-        cost: 546.596
+          model.hydraulics.viscosity_temperature_exponent: 0.220001
+          extraction.dispersion.axial_coefficient: 3.22358e-06
+        cost: 747.554
         optimizer:
           success: true
           message: '`xtol` termination condition is satisfied.'
-          evaluations: 18
+          evaluations: 25
         nuisance:
-          calibration.schmieder2023.extractable_fraction: 28.3636
-          calibration.schmieder2023.content.caffeine: 1.2625
-          calibration.schmieder2023.content.trigonelline: 0.671594
-          calibration.schmieder2023.content.cqa5: 0.87593
-          calibration.schmieder2023.permeability.gl1_4: 2.78539e-14
-          calibration.schmieder2023.permeability.gl1_7: 3.14899e-14
-          calibration.schmieder2023.permeability.gl2_0: 4.45683e-14
+          calibration.schmieder2023.extractable_fraction: 28.8013
+          calibration.schmieder2023.content.caffeine: 1.30518
+          calibration.schmieder2023.content.trigonelline: 0.68989
+          calibration.schmieder2023.content.cqa5: 0.88228
+          calibration.schmieder2023.permeability.gl1_4: 1.39564e-13
+          calibration.schmieder2023.permeability.gl1_7: 2.05339e-13
+          calibration.schmieder2023.permeability.gl2_0: 4.5411e-13
         shared:
-          extraction.saturation.lumped: 349.562
-          model.species.caffeine.surface_fraction_scale: 0.50058
-          model.species.trigonelline.surface_fraction_scale: 1.2812
-          model.species.cqa5.surface_fraction_scale: 0.734107
+          model.extraction.broken_shell_thickness: 40.0
+          extraction.saturation.lumped: 350.0
+          model.species.caffeine.surface_fraction_scale: 0.698132
+          model.species.trigonelline.surface_fraction_scale: 1.34723
+          model.species.cqa5.surface_fraction_scale: 0.877343
         kappa_ref_by_dataset:
-          schmieder2023: 7.59519e-14
-          waszkiewicz2026: 2.14379e-13
-        schmieder_kappa_ref_m2: 7.59519e-14
-        pooled_kappa_ref_m2: 1.27603e-13
+          schmieder2023: 5.26396e-13
+          waszkiewicz2026: 2.21406e-13
+        schmieder_kappa_ref_m2: 5.26396e-13
+        pooled_kappa_ref_m2: 3.4139e-13
         pressures:
         - experiment: 1
           data_bar: 2.7
-          pour_bar: 1.32143
-          shot_bar: 12.0
+          pour_bar: 0.625288
+          shot_bar: 10.3495
         - experiment: 2
           data_bar: 5.3
-          pour_bar: 5.67837
+          pour_bar: 2.23019
           shot_bar: 12.0
         - experiment: 3
           data_bar: 3.9
-          pour_bar: 3.3386
+          pour_bar: 2.20675
           shot_bar: 12.0
         - experiment: 4
           data_bar: 3.3
-          pour_bar: 1.70416
-          shot_bar: 12.0
+          pour_bar: 0.479603
+          shot_bar: 2.97092
         - experiment: 5
           data_bar: 3.6
-          pour_bar: 2.95899
+          pour_bar: 1.39493
           shot_bar: 12.0
         - experiment: 6
           data_bar: 3.0
-          pour_bar: 2.56136
+          pour_bar: 1.26919
           shot_bar: 12.0
         - experiment: 7
           data_bar: 3.4
-          pour_bar: 2.69179
+          pour_bar: 1.32805
           shot_bar: 12.0
         - experiment: 8
           data_bar: 2.9
-          pour_bar: 1.69701
+          pour_bar: 0.968885
           shot_bar: 12.0
         - experiment: 9
           data_bar: 2.8
-          pour_bar: 1.25461
+          pour_bar: 0.796227
           shot_bar: 12.0
         - experiment: 10
           data_bar: 2.9
-          pour_bar: 0.963584
-          shot_bar: 12.0
+          pour_bar: 0.246591
+          shot_bar: 2.92648
         - experiment: 11
           data_bar: 2.6
-          pour_bar: 0.73159
-          shot_bar: 12.0
+          pour_bar: 0.197988
+          shot_bar: 2.77628
         - experiment: 12
           data_bar: 8.4
-          pour_bar: 12.0
+          pour_bar: 4.42315
           shot_bar: 12.0
         - experiment: 13
           data_bar: 7.6
-          pour_bar: 7.53214
+          pour_bar: 3.83516
           shot_bar: 12.0
         - experiment: 14
           data_bar: 3.6
-          pour_bar: 2.96387
-          shot_bar: 12.0
+          pour_bar: 0.755059
+          shot_bar: 3.22792
         - experiment: 15
           data_bar: 3.5
-          pour_bar: 2.48522
-          shot_bar: 12.0
-        v1_cost: 546.596
-        pressure_rms: 1.13135
-        lambda_within: 57
-        cup_within: 167
+          pour_bar: 0.640351
+          shot_bar: 2.99494
+        v1_cost: 747.554
+        pressure_rms: 3.78518
+        lambda_within: 52
+        cup_within: 168
         pump:
           transition_s:
-            1: 2.3
-            2: 3.4
-            3: 3.1
-            4: 1.6
-            5: 2.9
-            6: 2.7
-            7: 2.8
-            8: 2.6
-            9: 2.5
-            10: 1.4
-            11: 1.1
-            12: 3.7
-            13: 3.6
-            14: 2.3
-            15: 1.9
+            1: 0.0
+            2: 1.9
+            3: 2.5
+            4: 0.0
+            5: 1.3
+            6: 1.1
+            7: 1.3
+            8: 2.0
+            9: 1.9
+            10: 0.0
+            11: 0.0
+            12: 3.3
+            13: 3.0
+            14: 0.0
+            15: 0.0
           pour_s:
             1: 0.0
             2: 0.0
@@ -2185,128 +2222,126 @@ fit:
             9: 0.0
             10: 0.0
             11: 0.0
-            12: 3.6
+            12: 0.0
             13: 0.0
             14: 0.0
             15: 0.0
-          pour_capped:
-          - 12
+          pour_capped: []
       pump-capped pour pressures excluded:
         blocks:
         - V1
         options:
-          exclude_pressure_experiments:
-          - 12
+          exclude_pressure_experiments: []
         structural: false
         held:
-          model.hydraulics.viscosity_temperature_exponent: 0.302021
-          hydraulics.poroelastic.critical_pressure: 12.4613
-          extraction.dispersion.axial_coefficient: 3.8662e-06
-        cost: 562.009
+          model.hydraulics.viscosity_temperature_exponent: 0.220001
+          extraction.dispersion.axial_coefficient: 3.22358e-06
+        cost: 821.502
         optimizer:
           success: true
           message: '`xtol` termination condition is satisfied.'
-          evaluations: 13
+          evaluations: 12
         nuisance:
-          calibration.schmieder2023.extractable_fraction: 28.3343
-          calibration.schmieder2023.content.caffeine: 1.26098
-          calibration.schmieder2023.content.trigonelline: 0.66987
-          calibration.schmieder2023.content.cqa5: 0.874928
-          calibration.schmieder2023.permeability.gl1_4: 2.7746e-14
-          calibration.schmieder2023.permeability.gl1_7: 3.04693e-14
-          calibration.schmieder2023.permeability.gl2_0: 3.97277e-14
+          calibration.schmieder2023.extractable_fraction: 29.065
+          calibration.schmieder2023.content.caffeine: 1.31042
+          calibration.schmieder2023.content.trigonelline: 0.687114
+          calibration.schmieder2023.content.cqa5: 0.88426
+          calibration.schmieder2023.permeability.gl1_4: 1.2968e-13
+          calibration.schmieder2023.permeability.gl1_7: 1.54517e-13
+          calibration.schmieder2023.permeability.gl2_0: 1.89513e-13
         shared:
-          extraction.saturation.lumped: 341.853
-          model.species.caffeine.surface_fraction_scale: 0.509781
-          model.species.trigonelline.surface_fraction_scale: 1.30118
-          model.species.cqa5.surface_fraction_scale: 0.742208
+          model.extraction.broken_shell_thickness: 40.0
+          extraction.saturation.lumped: 350.0
+          model.species.caffeine.surface_fraction_scale: 0.694289
+          model.species.trigonelline.surface_fraction_scale: 1.44137
+          model.species.cqa5.surface_fraction_scale: 0.915151
         kappa_ref_by_dataset:
-          schmieder2023: 7.22043e-14
-          waszkiewicz2026: 2.14379e-13
-        schmieder_kappa_ref_m2: 7.22043e-14
-        pooled_kappa_ref_m2: 1.24415e-13
+          schmieder2023: 3.49146e-13
+          waszkiewicz2026: 2.21406e-13
+        schmieder_kappa_ref_m2: 3.49146e-13
+        pooled_kappa_ref_m2: 2.78034e-13
         pressures:
         - experiment: 1
           data_bar: 2.7
-          pour_bar: 1.37511
+          pour_bar: 0.857958
           shot_bar: 12.0
         - experiment: 2
           data_bar: 5.3
-          pour_bar: 6.40718
+          pour_bar: 3.66942
           shot_bar: 12.0
         - experiment: 3
           data_bar: 3.9
-          pour_bar: 3.35282
+          pour_bar: 2.43447
           shot_bar: 12.0
         - experiment: 4
           data_bar: 3.3
-          pour_bar: 1.9827
+          pour_bar: 1.61389
           shot_bar: 12.0
         - experiment: 5
           data_bar: 3.6
-          pour_bar: 3.12129
+          pour_bar: 2.05941
           shot_bar: 12.0
         - experiment: 6
           data_bar: 3.0
-          pour_bar: 2.69342
+          pour_bar: 1.87114
           shot_bar: 12.0
         - experiment: 7
           data_bar: 3.4
-          pour_bar: 2.83313
+          pour_bar: 1.95816
           shot_bar: 12.0
         - experiment: 8
           data_bar: 2.9
-          pour_bar: 1.70523
+          pour_bar: 1.04634
           shot_bar: 12.0
         - experiment: 9
           data_bar: 2.8
-          pour_bar: 1.26029
+          pour_bar: 0.861607
           shot_bar: 12.0
         - experiment: 10
           data_bar: 2.9
-          pour_bar: 1.10119
+          pour_bar: 0.724305
           shot_bar: 12.0
         - experiment: 11
           data_bar: 2.6
-          pour_bar: 0.832057
+          pour_bar: 0.586971
           shot_bar: 12.0
         - experiment: 12
           data_bar: 8.4
-          pour_bar: 12.0
+          pour_bar: 5.20941
           shot_bar: 12.0
         - experiment: 13
           data_bar: 7.6
-          pour_bar: 7.64346
+          pour_bar: 4.50116
           shot_bar: 12.0
         - experiment: 14
           data_bar: 3.6
-          pour_bar: 3.6459
+          pour_bar: 2.94525
           shot_bar: 12.0
         - experiment: 15
           data_bar: 3.5
-          pour_bar: 3.00003
+          pour_bar: 2.41901
           shot_bar: 12.0
-        v1_cost: 562.009
-        pressure_rms: 1.40121
-        lambda_within: 57
-        cup_within: 167
+        v1_cost: 821.502
+        pressure_rms: 2.96778
+        lambda_within: 48
+        cup_within: 163
         pump:
           transition_s:
-            1: 2.4
-            2: 3.5
-            3: 3.1
-            4: 2.1
-            5: 2.9
-            6: 2.8
-            7: 2.9
-            8: 2.7
-            9: 2.5
-            10: 1.8
-            11: 1.5
-            12: 3.7
-            13: 3.7
-            14: 2.8
-            15: 2.5
+            1: 1.7
+            2: 2.9
+            3: 2.7
+            4: 1.6
+            5: 2.4
+            6: 2.2
+            7: 2.3
+            8: 2.2
+            9: 2.0
+            10: 1.1
+            11: 0.7
+            12: 3.4
+            13: 3.2
+            14: 2.5
+            15: 2.1
           pour_s:
             1: 0.0
             2: 0.0
@@ -2319,12 +2354,11 @@ fit:
             9: 0.0
             10: 0.0
             11: 0.0
-            12: 4.71
+            12: 0.0
             13: 0.0
             14: 0.0
             15: 0.0
-          pour_capped:
-          - 12
+          pour_capped: []
       dissolution share θ = 0.27 (old proportional rule):
         blocks:
         - V1
@@ -2336,119 +2370,119 @@ fit:
             hydraulics.dissolution_porosity_share: 0.27
         structural: true
         held: {}
-        cost: 822.278
+        cost: 1152.98
         optimizer:
           success: true
           message: '`xtol` termination condition is satisfied.'
-          evaluations: 21
+          evaluations: 20
         nuisance:
-          calibration.schmieder2023.extractable_fraction: 30.7446
-          calibration.schmieder2023.content.caffeine: 1.36255
-          calibration.schmieder2023.content.trigonelline: 0.72181
-          calibration.schmieder2023.content.cqa5: 0.945125
-          calibration.schmieder2023.permeability.gl1_4: 1.53626e-14
-          calibration.schmieder2023.permeability.gl1_7: 1.58174e-14
-          calibration.schmieder2023.permeability.gl2_0: 2.12711e-14
-          calibration.waszkiewicz2026.permeability: 6.99066e-15
+          calibration.schmieder2023.extractable_fraction: 32.5002
+          calibration.schmieder2023.content.caffeine: 1.47495
+          calibration.schmieder2023.content.trigonelline: 0.753579
+          calibration.schmieder2023.content.cqa5: 0.991219
+          calibration.schmieder2023.permeability.gl1_4: 8.83376e-14
+          calibration.schmieder2023.permeability.gl1_7: 1.37867e-13
+          calibration.schmieder2023.permeability.gl2_0: 3.88667e-13
+          calibration.waszkiewicz2026.permeability: 6.81849e-15
         shared:
-          extraction.saturation.lumped: 349.995
-          model.species.caffeine.surface_fraction_scale: 0.574212
-          model.species.trigonelline.surface_fraction_scale: 1.38928
-          model.species.cqa5.surface_fraction_scale: 0.809812
-          model.hydraulics.viscosity_temperature_exponent: 0.221535
-          hydraulics.poroelastic.critical_pressure: 11.5515
-          extraction.dispersion.axial_coefficient: 3.55553e-06
-          hydraulics.kozeny_carman.density_exponent: 0.469129
+          model.extraction.broken_shell_thickness: 40.0
+          extraction.saturation.lumped: 350.0
+          model.species.caffeine.surface_fraction_scale: 0.898192
+          model.species.trigonelline.surface_fraction_scale: 1.66853
+          model.species.cqa5.surface_fraction_scale: 1.02658
+          model.hydraulics.viscosity_temperature_exponent: 0.22
+          extraction.dispersion.axial_coefficient: 4.35046e-06
+          hydraulics.kozeny_carman.density_exponent: 0.469737
         kappa_ref_by_dataset:
-          schmieder2023: 3.86938e-14
-          waszkiewicz2026: 7.9721e-14
-        schmieder_kappa_ref_m2: 3.86938e-14
-        pooled_kappa_ref_m2: 5.55402e-14
+          schmieder2023: 3.75756e-13
+          waszkiewicz2026: 7.77576e-14
+        schmieder_kappa_ref_m2: 3.75756e-13
+        pooled_kappa_ref_m2: 1.70932e-13
         pressures:
         - experiment: 1
           data_bar: 2.7
-          pour_bar: 1.34987
-          shot_bar: 12.0
+          pour_bar: 0.467465
+          shot_bar: 5.93903
         - experiment: 2
           data_bar: 5.3
-          pour_bar: 12.0
+          pour_bar: 1.41148
           shot_bar: 12.0
         - experiment: 3
           data_bar: 3.9
-          pour_bar: 3.47659
+          pour_bar: 1.90239
           shot_bar: 12.0
         - experiment: 4
           data_bar: 3.3
-          pour_bar: 1.97993
-          shot_bar: 12.0
+          pour_bar: 2.36616
+          shot_bar: 2.36616
         - experiment: 5
           data_bar: 3.6
-          pour_bar: 3.49495
+          pour_bar: 0.971996
           shot_bar: 12.0
         - experiment: 6
           data_bar: 3.0
-          pour_bar: 3.08186
+          pour_bar: 0.873716
           shot_bar: 12.0
         - experiment: 7
           data_bar: 3.4
-          pour_bar: 3.26684
+          pour_bar: 0.920813
           shot_bar: 12.0
         - experiment: 8
           data_bar: 2.9
-          pour_bar: 1.46005
+          pour_bar: 0.880422
           shot_bar: 12.0
         - experiment: 9
           data_bar: 2.8
-          pour_bar: 1.19118
+          pour_bar: 0.720397
           shot_bar: 12.0
         - experiment: 10
           data_bar: 2.9
-          pour_bar: 0.925266
-          shot_bar: 12.0
+          pour_bar: 0.103272
+          shot_bar: 2.50271
         - experiment: 11
           data_bar: 2.6
-          pour_bar: 0.756322
-          shot_bar: 12.0
+          pour_bar: 2.27155
+          shot_bar: 2.27155
         - experiment: 12
           data_bar: 8.4
-          pour_bar: 12.0
+          pour_bar: 3.45595
           shot_bar: 12.0
         - experiment: 13
           data_bar: 7.6
-          pour_bar: 12.0
+          pour_bar: 2.97969
           shot_bar: 12.0
         - experiment: 14
           data_bar: 3.6
-          pour_bar: 3.74339
-          shot_bar: 12.0
+          pour_bar: 2.49988
+          shot_bar: 2.49988
         - experiment: 15
           data_bar: 3.5
-          pour_bar: 3.01643
-          shot_bar: 12.0
-        v1_cost: 692.483
-        pressure_rms: 2.3467
-        lambda_within: 54
-        cup_within: 160
+          pour_bar: 2.26799
+          shot_bar: 2.26799
+        v1_cost: 1056.03
+        pressure_rms: 4.01994
+        lambda_within: 42
+        cup_within: 165
         pump:
           transition_s:
-            1: 2.8
-            2: 3.8
-            3: 3.4
-            4: 2.6
-            5: 3.4
-            6: 3.3
-            7: 3.3
-            8: 2.9
-            9: 2.8
-            10: 2.3
-            11: 2.0
-            12: 3.8
-            13: 3.8
-            14: 3.2
-            15: 2.9
+            1: 0.0
+            2: 1.4
+            3: 2.4
+            4: 0.0
+            5: 1.0
+            6: 0.3
+            7: 0.6
+            8: 1.9
+            9: 1.6
+            10: 0.0
+            11: 0.0
+            12: 3.1
+            13: 2.8
+            14: 0.0
+            15: 0.0
           pour_s:
             1: 0.0
-            2: 0.9
+            2: 0.0
             3: 0.0
             4: 0.0
             5: 0.0
@@ -2458,11 +2492,32 @@ fit:
             9: 0.0
             10: 0.0
             11: 0.0
-            12: 1.5
-            13: 0.5
+            12: 0.0
+            13: 0.0
             14: 0.0
             15: 0.0
-          pour_capped:
-          - 2
-          - 12
-          - 13
+          pour_capped: []
+  provenance_refresh:
+    created: '2026-10-15T15:06:52-07:00'
+    reason: Clarified two fixed-startup assumption descriptions after the run and verified the existing cache-input
+      identity metadata; all fingerprints were already current. Numerical configuration, registry defaults, presets,
+      datasets and simulation/fit code were unchanged during the run.
+    numeric_inputs_changed: false
+    added_input_hashes: {}
+    changed_input_hashes: {}
+    fixed_reason_changes:
+      model.hydraulics.pore_air_amplitude:
+        previous: The initial trapped-air fraction is a grade D model assumption (0.5), separate from coffee CO2.
+          None of the calibration observables identifies a transient relative-permeability law. It is held at its
+          prior rather than fitted to the held-out V4 first-drop delay or flow rise.
+        current: The initial effective connectivity deficit is a grade D model assumption (0.5), separate from coffee
+          CO2; it is not a measured gas volume fraction. None of the calibration observables identifies a transient
+          relative-permeability law. It is held at its prior rather than fitted to the held-out V4 first-drop delay
+          or flow rise.
+      model.hydraulics.pore_air_permeability_exponent:
+        previous: The saturation-to-relative-permeability exponent is a grade D closure (3), not measured for these
+          pucks. Held fixed; the V4 transient, V3 and V5 shot times do not select it.
+        current: The effective connectivity-to-relative-permeability exponent is a grade D closure (3), not measured
+          for these pucks. Held fixed; the V4 transient, V3 and V5 shot times do not select it.
+    solver_identity_preserved: true
+    optimization_rerun: false

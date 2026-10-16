@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import datetime
 import hashlib
+import json
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -36,11 +37,37 @@ def file_sha256(path: Path) -> str | None:
     return hashlib.sha256(path.read_bytes()).hexdigest()[:16] if path.is_file() else None
 
 
+def registry_inputs_sha256(paths: RepoPaths) -> str:
+    """Numeric registry inputs, before the calibrated-value overlay; prose changes do not invalidate a fit."""
+    from .registry import load_registry
+
+    records = load_registry(paths)
+    values = {key: {field: record.get(field) for field in ("units", "value", "prior", "range")}
+              for key, record in records.items()}
+    return hashlib.sha256(json.dumps(values, sort_keys=True, separators=(",", ":")).encode()).hexdigest()[:16]
+
+
+def calibration_sources_sha256(paths: RepoPaths) -> str | None:
+    """Python case builders, observables and calibration code; excludes bytecode and report formatting."""
+    package = paths.root / "python" / "puckworks_tools"
+    source = [package / "calibrate.py", *sorted((package / "cases").glob("*.py"))]
+    if not all(path.is_file() for path in source):
+        return None
+    digest = hashlib.sha256()
+    for path in source:
+        digest.update(path.relative_to(package).as_posix().encode() + b"\0")
+        digest.update(path.read_bytes() + b"\0")
+    return digest.hexdigest()[:16]
+
+
 def input_hashes(paths: RepoPaths, config_path: str | None, datasets: list[str]) -> dict[str, Any]:
-    """Hashes of a calibration's inputs: its config file and the dataset folders it read."""
+    """Hashes of a calibration's config, datasets, registry, presets and Python model interface."""
     config = paths.root / config_path if config_path else None
     return {"config_sha256": file_sha256(config) if config else None,
-            "datasets_sha256": {name: tree_sha256(paths.datasets_dir / name) for name in datasets}}
+            "datasets_sha256": {name: tree_sha256(paths.datasets_dir / name) for name in datasets},
+            "registry_inputs_sha256": registry_inputs_sha256(paths),
+            "presets_sha256": tree_sha256(paths.root / "data" / "presets"),
+            "calibration_sources_sha256": calibration_sources_sha256(paths)}
 
 
 def extension_file(module: ModuleType | None = None) -> Path | None:
@@ -76,5 +103,5 @@ def solver_identity(paths: RepoPaths, module: ModuleType | None = None) -> dict[
     return out
 
 
-__all__ = ["SOURCE_FILES", "SOURCE_TREES", "extension_file", "file_sha256", "input_hashes", "solver_identity",
-           "tree_sha256"]
+__all__ = ["SOURCE_FILES", "SOURCE_TREES", "calibration_sources_sha256", "extension_file", "file_sha256",
+           "input_hashes", "registry_inputs_sha256", "solver_identity", "tree_sha256"]

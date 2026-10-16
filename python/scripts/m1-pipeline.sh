@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 # The M1 calibration and validation pipeline (docs/validation/calibration.md, "Running it") as one command
-# sequence: rebuild puckcore from the current sources, calibrate (writes data/calibration/v1.yaml and
+# sequence: rebuild puckcore from the current sources, calibrate (writes data/calibration/v2.yaml and
 # current.yaml), export (embeds current.yaml), rebuild, write the validation report
-# (docs/validation/m1-validation.md, .json and m1/*.png), regenerate the golden shot fixture
+# (docs/validation/m1-validation.md, .json and m1/*.png), record fixed-prior startup ablations,
+# regenerate the golden shot fixture
 # (data/fixtures/shot_cases.json), then run every check. Each step stops the script on failure.
 #
 #     python/scripts/m1-pipeline.sh [JOBS]        # JOBS: parallel simulation processes, default 8
@@ -22,20 +23,22 @@ TOOLS=.venv/bin/puckworks-tools
 step() { printf '\n== %s (%s)\n' "$*" "$(date '+%H:%M:%S')"; }
 
 step "rebuild puckcore from the current sources"
-.venv/bin/pip install --quiet ./crates/puckcore-py
+.venv/bin/python -m pip install --quiet ./crates/puckcore-py
 step "registry and export are current"
 "$TOOLS" validate-registry
 "$TOOLS" export --check
 step "calibration dry run"
 "$TOOLS" calibrate --dry-run --jobs "$JOBS"
 step "calibration (prune, leave-one-out, sensitivity)"
-"$TOOLS" calibrate --jobs "$JOBS" --prune --loo --sensitivity
+"$TOOLS" calibrate --label v2 --jobs "$JOBS" --prune --loo --sensitivity
 step "export the calibration"
 "$TOOLS" export
 step "rebuild puckcore with the calibration embedded"
-.venv/bin/pip install --quiet ./crates/puckcore-py
+.venv/bin/python -m pip install --quiet ./crates/puckcore-py
 step "validation report"
 "$TOOLS" validate --jobs "$JOBS"
+step "fixed-prior startup sensitivity (no refit)"
+.venv/bin/python python/scripts/m11-startup-sensitivity.py
 step "golden fixtures (core_version follows the rebuilt extension)"
 "$TOOLS" shot-fixtures
 cp data/fixtures/sphere_cases.json "${TMPDIR:-/tmp}/sphere_cases.before.json"

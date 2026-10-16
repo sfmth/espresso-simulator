@@ -376,6 +376,16 @@
             }
           ]
         },
+        "pore_air": {
+          "description": "Effective dry-pore air connectivity penalty, independent of roast CO2: permeability factor (1 - A exp(-wet_age/tau))^n. Not a literal gas saturation or fixed time delay; disabled by default for legacy specs.",
+          "allOf": [{ "$ref": "#/$defs/Relaxation" }]
+        },
+        "pore_air_permeability_exponent": {
+          "description": "Exponent n of the effective pore-air permeability factor, default 1. Coffee's relative-permeability curve is not measured; recipe estimates are explicitly identified in the registry.",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10
+        },
         "fines_layer": {
           "description": "Fines migration: outlet resistance A·R_bed(0)·(1 − e^(−t/τ)), t since the column's first drops; R_bed(0) is the column's fully wetted resistance with water at the brew temperature.",
           "allOf": [
@@ -394,10 +404,16 @@
           "$ref": "#/$defs/Viscosity"
         },
         "wetting_uptake": {
-          "description": "Share u_w of the particles' pore liquid that is mobile, 0–0.9: it fills from the front, which advances at q/φ_T with φ_T = ε + (1 − ε)·ε_p·u_w, and mixes with the intergranular liquid within its cell; the pools and kernels hold the solubles in the rest, ε_p(1 − u_w) of the particle volume. Mobile and particle liquid together fill the total porosity.",
+          "description": "Legacy mobile intraparticle-water share and particle loading-capacity normalization, 0–0.9. With intraparticle_water_fraction null this sets front water uptake and holdup. With an explicit water fraction it only retains the effective particle loading capacity ε_p(1 − u_w); it is not a second physical water inventory.",
           "type": "number",
           "minimum": 0,
           "maximum": 0.9
+        },
+        "intraparticle_water_fraction": {
+          "description": "Fraction of intraparticle pores filled by the front and counted in liquid holdup. null preserves legacy wetting_uptake; 1 fills all initial pores. When set, particle states are effective soluble loadings rather than a second physical water inventory. This is an effective single-liquid approximation, not kinetic dual-porosity flow.",
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
         },
         "dissolution_porosity_share": {
           "description": "Share θ of the dissolved solid volume that becomes intergranular pore space, [0, 1]: ε = ε₀ + θ·EY_local·(1 − ε₀), never decreasing. null (the default) means θ = 0: solubles leave from inside cells whose insoluble walls keep the particle envelope, so dissolution raises the intraparticle porosity, not ε (registry hydraulics.dissolution_porosity_share, mode 0). 1 is particles shrinking at constant envelope density (Lee 2023), the upper bound.",
