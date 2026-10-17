@@ -96,6 +96,74 @@ def test_cases_rebuild_with_parameters(built, repo):
     assert two["hydraulics"]["poroelastic_pc_pa"] == pytest.approx(1.0e6)
 
 
+def test_schmieder_reports_preparation_without_inventing_a_distribution_category(built):
+    from puckworks_tools.cases.common import base_spec
+
+    for case in built["schmieder2023"]:
+        preparation = case.info["preparation"]
+        assert preparation["reported_distributor"] == "Grande TRE (Sahdia Enterprises)"
+        assert preparation["reported_tamp_kgf"] == 25.0
+        assert preparation["builder_distribution_fallback"] == "tap"
+        assert case.recipe["prep"]["tamp_kgf"] == 25.0
+        assert "distribution" not in case.recipe["prep"]
+        # Recording the reported load must not alter legacy physics: the builder has no
+        # numerical tamp effect at this load, and no Grande TRE closure was introduced.
+        legacy_recipe = copy.deepcopy(case.recipe)
+        del legacy_recipe["prep"]["tamp_kgf"]
+        legacy_spec = base_spec(legacy_recipe)
+        case.finalize(legacy_spec, {})
+        assert legacy_spec == case.spec
+
+
+def test_schmieder_preparation_nuisances_replace_only_the_two_v1_spec_fields(repo):
+    from puckworks_tools.calibrate import build_problem, load_config
+    from puckworks_tools.cases import schmieder2023 as sch
+
+    config = copy.deepcopy(load_config(repo.root / "data/calibration/config.yaml"))
+    config["parameters"] = [p for p in config["parameters"] if p["id"] in sch.PREPARATION_NUISANCES]
+    config["fixed"] = []
+    assert {p["id"] for p in config["parameters"]} == set(sch.PREPARATION_NUISANCES)
+    assert all(p["mode"] == "spec" and p["applies_to"] == sch.KEY for p in config["parameters"])
+    problem = build_problem(repo, config, blocks=["V1", "V4"])
+    values = {sch.PREPARATION_NUISANCES[0]: 0.3, sch.PREPARATION_NUISANCES[1]: 0.4}
+    try:
+        for block in problem.blocks:
+            for case in block.cases:
+                baseline = block.spec_for(case, {}, [])
+                changed = block.spec_for(case, values, problem.params)
+                expected = copy.deepcopy(baseline)
+                if block.name == "V1":
+                    expected["bed"]["heterogeneity"]["sigma_ln_permeability"] = 0.3
+                    expected["bed"]["heterogeneity"]["edge_multiplier"] = 0.4
+                assert changed == expected
+                # Neither this dataset's conditional values nor a fictitious distribution
+                # category may enter the registry overrides consumed by the native builder.
+                assert not set(sch.PREPARATION_NUISANCES).intersection(case.recipe["overrides"])
+    finally:
+        problem.runner.close()
+
+
+def test_schmieder_preparation_priors_are_transformed_existing_supports(repo):
+    from puckworks_tools.calibrate import registry_default
+    from puckworks_tools.cases import schmieder2023 as sch
+    from puckworks_tools.registry import load_registry
+
+    records = load_registry(repo)
+    cases = sch.build_cases(sch.load(repo), psd_source="wet_cdf", n_classes=16)
+    tap = records["model.prep.sigma_ln_permeability.tap"]
+    factors = [c.spec["bed"]["heterogeneity"]["sigma_ln_permeability"] / registry_default(tap) for c in cases]
+    actual_sigma = records[sch.PREPARATION_NUISANCES[0]]["prior"]
+    assert actual_sigma["min"] == pytest.approx(max(f * tap["prior"]["min"] for f in factors), rel=1e-12)
+    assert actual_sigma["max"] == pytest.approx(min(f * tap["prior"]["max"] for f in factors), rel=1e-12)
+
+    base = records["model.prep.edge_multiplier.base"]
+    actual_edge = records[sch.PREPARATION_NUISANCES[1]]["prior"]
+    for case in cases:
+        factor = case.spec["bed"]["heterogeneity"]["edge_multiplier"] / registry_default(base)
+        assert actual_edge["min"] == pytest.approx(factor * base["prior"]["min"], rel=1e-12)
+        assert actual_edge["max"] == pytest.approx(factor * base["prior"]["max"], rel=1e-12)
+
+
 def test_bimodal_psd_matches_statistics():
     psd = bimodal_psd(share_below_100um=0.25, median_um=267.25)
     assert psd.share_below(100.0) == pytest.approx(0.25, abs=1e-4)

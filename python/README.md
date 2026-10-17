@@ -36,13 +36,18 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 | `puckworks-tools fixtures --check` | Regenerates the fixture in memory and fails if the committed file differs, printing the largest difference and where it is. `--tolerance ATOL` allows small absolute differences in results (default 0, exact) |
 | `puckworks-tools shot-fixtures [--check]` | Writes, or checks, `data/fixtures/shot_cases.json`: recipes with the spec and result the native core gives (below). `--tolerance ATOL` as for `fixtures` |
 | `puckworks-tools verify` | Writes `docs/validation/m0-kernel-verification.md` and `.json`. `--quick` runs small series (smoke test); `--output-dir` writes elsewhere |
-| `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out), `--prune` (fix weakly identified shared parameters and refit), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`, `--start-from FILE` (bounded warm start), `--checkpoint-dir DIR` (atomic main/prune/refit snapshots). Defaults to v3 and protects historical v1/v2 output paths. Refuses to write `data/calibration` while the solver is a placeholder |
+| `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out, refitting all selected blocks and shared parameters), `--prune` (review weak shared parameters with bounded registry-value refits; accept only within the 1% training-cost safeguard), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`, `--start-from FILE` (bounded warm start), `--checkpoint-dir DIR` (atomic main/prune/refit snapshots). Defaults to v4 and protects historical v1/v2/v3 output paths. Records optimizer termination and first-order optimality separately. Refuses to write `data/calibration` while the solver is a placeholder |
 | `puckworks-tools validate` | Writes the M1 validation report `docs/validation/m1-validation.md` (figures in `docs/validation/m1/`, numbers in `.json`): calibration fit quality and the held-out checks of PLAN §10. `--quick` (tier 0), `--jobs N`, `--calibration FILE`, `--output-dir`, `--from-json FILE` (re-render without simulating). `python/scripts/m1-pipeline.sh [JOBS]` runs the whole M1 pipeline (rebuild, calibrate, export, rebuild, validate, shot fixture, checks) |
 | `puckworks-tools community --archive ZIP --log CSV` | Imports the pinned original Gagné experiment and runs exploratory model comparisons with fixed assumptions. No download, fitting or admission to the calibration inventory. `--tier 0` is a coarse smoke run; the default is tier 1. Detailed output goes to `.local/community/gagne2021`; `--output-dir` must be outside a Git worktree or ignored |
 | `puckworks-tools export [--check]` | Forwards to `puckworks_tools.export.main` (workstream D): writes, or checks, `crates/puckmodel/generated/presets.json` and `registry.json` from `data/presets`, `data/params` and `data/calibration/current.yaml`. Run it after any change to those |
 | `puckworks-tools check-versions` | Checks that `Cargo.toml` (`[workspace.package]`), `web/package.json` (if present), `python/pyproject.toml` and `puckcore.__version__` agree. `--release` also requires a `## [<version>]` heading in `CHANGELOG.md` |
 
 `python -m puckworks_tools …` works too.
+
+Calibration can run independent leave-one-out folds concurrently with `--loo-jobs N` (default 1).
+Each fold owns its `--jobs` simulation processes; `--loo-jobs 2 --jobs 8` uses up to 16 of them.
+The [v4 pipeline](scripts/m1-pipeline.sh) starts from the recorded training-selected initialization,
+preserves earlier fits, and checks numerical completion before replacing `current.yaml`.
 
 ## Reproduce the community comparison
 
@@ -276,7 +281,7 @@ to `--tolerance`.
   dataset's observables. Documented in [docs/validation/case-builders.md](../docs/validation/case-builders.md).
 - **Calibration** (`calibrate.py`): registry ids ↔ recipe overrides, spec fields or case parameters, with
   bounds from the registry priors; per-dataset normalised residuals; `scipy.optimize.least_squares` with a
-  block-sparse finite-difference Jacobian; uncertainties and posterior/prior SD ratios from the Jacobian;
+  block-sparse finite-difference Jacobian; local marginal SD/prior ratios from the Jacobian;
   the reference permeability pooled from the fitted nuisance permeabilities. Documented in
   [docs/validation/calibration.md](../docs/validation/calibration.md).
 - **Validation** (`validate.py`): fit quality of the calibration blocks and the held-out checks V3 (Cameron),

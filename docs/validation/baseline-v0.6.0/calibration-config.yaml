@@ -1,0 +1,165 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Configuration of the M1 calibration (`puckworks-tools calibrate`; docs/validation/calibration.md).
+#
+# parameters: what is fitted. Each entry names a parameter-registry id (every calibrated parameter has
+# a registry record, which supplies units, starting value and bounds) and how it enters the cases:
+#   mode: override  passed to the builder as a recipe override (the builder maps it to spec fields;
+#                   the id must be in the registry embedded in puckcore)
+#   mode: spec      written into a spec field (`target`, a dotted ShotSpec path) after building,
+#                   converted from the registry's units to the field's SI unit
+#   mode: case      applied by the case builder itself (listed in its CASE_PARAMETERS)
+#   blocks:         residual blocks the parameter affects (only those are re-run for its Jacobian)
+#   applies_to:     spec mode only: "<dataset>" or "<dataset>:<group>" of the cases it is written into
+#   scale:          log (fit log10 of the value) or linear
+#   bounds:         optional [lower, upper] in registry units; default from the registry prior
+#   start:          optional starting value in registry units; default the registry value (or the
+#                   prior's central value). The nuisance permeabilities start near the bare κ₀ that the
+#                   data imply (peak pressures under flow control; Q_c at P_c), so that the first shots
+#                   run instead of riding the pump's pressure limit.
+#
+#   An override parameter reaches every case, so `blocks` must list every block it changes;
+#   `calibrate --dry-run` warns about an unlisted block that moves.
+#
+# fixed: parameters reviewed for the calibration and held at their registry values (`id`), or at the
+# solver's default (`field`, a spec field without a registry id), each with the reason; recorded under
+# `fit.fixed` in the calibration file.
+#
+# blocks: residual blocks, one per calibration dataset (docs/PLAN.md §12 M1: V1, V2, V4, V6), with
+# a weight and options (`case_options` are passed to the case builder). Held-out checks (V3, V4
+# transient, V5) are in `puckworks-tools validate`.
+schema: puckworks.calibration-config/1
+tier: 1
+n_classes: 16
+
+parameters:
+  # V1 kinetics shared by all coffees (the builder reads these registry ids). Each stays inside its prior;
+  # the stepwise identifiability review (docs/validation/calibration.md) fixed the others (see `fixed`).
+  - {id: model.extraction.broken_shell_thickness, mode: override, blocks: [V1], scale: linear}
+  - {id: extraction.saturation.lumped, mode: override, blocks: [V1], scale: linear}
+  - {id: model.species.caffeine.surface_fraction_scale, mode: override, blocks: [V1], scale: linear}
+  - {id: model.species.trigonelline.surface_fraction_scale, mode: override, blocks: [V1], scale: linear}
+  - {id: model.species.cqa5.surface_fraction_scale, mode: override, blocks: [V1], scale: linear}
+  # V1 nuisance: the Schmieder coffee's contents and its permeability at each grinding level
+  - {id: calibration.schmieder2023.extractable_fraction, mode: spec, target: solubles.extractable_fraction,
+     applies_to: schmieder2023, blocks: [V1], scale: linear}
+  - {id: calibration.schmieder2023.content.caffeine, mode: spec, target: "solubles.species[id=caffeine].mass_fraction",
+     applies_to: schmieder2023, blocks: [V1], scale: linear}
+  - {id: calibration.schmieder2023.content.trigonelline, mode: spec,
+     target: "solubles.species[id=trigonelline].mass_fraction", applies_to: schmieder2023, blocks: [V1], scale: linear}
+  - {id: calibration.schmieder2023.content.cqa5, mode: spec, target: "solubles.species[id=cqa5].mass_fraction",
+     applies_to: schmieder2023, blocks: [V1], scale: linear}
+  - {id: calibration.schmieder2023.permeability.gl1_4, mode: spec, target: hydraulics.permeability_m2,
+     applies_to: "schmieder2023:gl1_4", blocks: [V1], scale: log, start: 3.0e-14}
+  - {id: calibration.schmieder2023.permeability.gl1_7, mode: spec, target: hydraulics.permeability_m2,
+     applies_to: "schmieder2023:gl1_7", blocks: [V1], scale: log, start: 3.0e-14}
+  - {id: calibration.schmieder2023.permeability.gl2_0, mode: spec, target: hydraulics.permeability_m2,
+     applies_to: "schmieder2023:gl2_0", blocks: [V1], scale: log, start: 3.0e-14}
+  # Shared hydraulics and transport. Every case receives them, so each lists all the blocks it changes
+  # (`calibrate --dry-run` checks): γ through the brew-temperature viscosity (V1 pressures at three
+  # temperatures, V4 flows), P_c through the poroelastic plateau, the dispersion through the outlet curves.
+  - {id: model.hydraulics.viscosity_temperature_exponent, mode: override, blocks: [V1, V4], scale: linear}
+  - {id: hydraulics.poroelastic.critical_pressure, mode: override, blocks: [V1, V4, V6], scale: linear}
+  - {id: extraction.dispersion.axial_coefficient, mode: override, blocks: [V1, V2], scale: log}
+  # V4 nuisance: Waszkiewicz's bed permeability
+  - {id: calibration.waszkiewicz2026.permeability, mode: spec, target: hydraulics.permeability_m2,
+     applies_to: waszkiewicz2026, blocks: [V4], scale: log, start: 1.0e-14}
+  # V6 relative closure for bed density: the builder applies α in every recipe's κ₀
+  - {id: hydraulics.kozeny_carman.density_exponent, mode: override, blocks: [V6], scale: linear}
+
+# Reviewed and held at their registry values (or the solver default): not identified by the calibration
+# data, or identified but with no evidence against the registry value and no registry id to carry it.
+# Numbers are from the trial fits of 2026-10-14 (docs/validation/calibration.md, "Identifiability").
+fixed:
+  - id: model.hydraulics.intraparticle_water_fraction
+    reason: >-
+      The full intraparticle pore-water inventory behind the front (fraction 1) is held inside the
+      total particle loading. External mobile water occupies interparticle porosity only; front filling
+      transfers its dissolved solute into the particle reservoir conservatively. The fixed water-volume
+      choice and instantaneous pore filling are not fitted to shot times or independent uptake data.
+  - field: solubles.kernel_loading_cap
+    value: false
+    reason: >-
+      Disabled by the builder for total particle loading: the initial particle concentration is not an
+      equilibrium capacity. Kernel loading follows its source partition law and may exceed its initial
+      value during inward diffusion. This boundary restriction is not selected by fit quality.
+  - id: model.hydraulics.pore_air_amplitude
+    reason: >-
+      The initial effective connectivity deficit is a grade D model assumption (0.5), separate from coffee
+      CO2; it is not a measured gas volume fraction.
+      None of the calibration observables identifies a transient relative-permeability law. It is held
+      at its prior rather than fitted to the held-out V4 first-drop delay or flow rise.
+  - id: model.hydraulics.pore_air_permeability_exponent
+    reason: >-
+      The effective connectivity-to-relative-permeability exponent is a grade D closure (3), not measured for these
+      pucks. Held fixed; the V4 transient, V3 and V5 shot times do not select it.
+  - id: model.hydraulics.moisture_diffusivity
+    reason: >-
+      The pore-air relaxation time uses (D32/2)^2/(pi^2 D), capped at 600 s, with D = 2.5e-11 m^2/s from
+      the independent Mateus moisture-uptake range. Using moisture diffusion for air clearance is a
+      grade D model assumption. Neither this diffusivity nor its time scale is fitted to held-out shots.
+  - id: model.hydraulics.wetting_uptake
+    reason: >-
+      In M1.1 this is the fixed effective-loading normalization inherited from the extraction model,
+      distinct from the full intraparticle water inventory. It is not fitted to startup observations.
+  - id: extraction.diffusivity.caffeine.particle_80c
+    reason: >-
+      Species kernel diffusivities trade off with the coffee's contents (correlation −0.89 to −0.95): their
+      posterior SD was 2–12× the prior's, and free fits drifted 2–5× outside the literature priors
+      (caffeine to 8×10⁻¹¹, trigonelline to the 1×10⁻⁹ bound). The species surface-pool scales carry the
+      species' λ instead.
+  - id: model.species.trigonelline.diffusivity_80c
+    reason: Not identified by V1 (see the caffeine diffusivity).
+  - id: model.species.cqa5.diffusivity_80c
+    reason: Not identified by V1 (see the caffeine diffusivity).
+  - id: extraction.diffusivity.lumped.corrochano_80c
+    reason: >-
+      Weakly identified by V1 (posterior SD 1.15× the prior's; it trades off with the extractable fraction);
+      fixing it did not raise the cost.
+  - id: extraction.surface_rate.grudeva2026
+    reason: >-
+      Not identified by V1 (posterior SD 44× the prior's once the lumped diffusivity is fixed); the surface
+      flux is fast at any value in its range, so only the surface pool's size matters.
+  - id: model.hydraulics.swelling_pore_closure
+    reason: >-
+      Not identified by V1 (posterior SD 1.6× the prior's when added at the V1 optimum); the residuals lean
+      towards less swelling (Wald z 2.4 towards 0).
+  - id: model.hydraulics.gas_amplitude_max
+    reason: >-
+      Weakly identified by V1 (posterior SD 0.4–0.7× the prior's) with no evidence against the registry
+      value (Wald z 0.8); the CO₂ model is being re-anchored in the input models.
+  - id: hydraulics.dissolution_porosity_share
+    reason: >-
+      θ is fixed at its mechanistic default, 0 (the insoluble cell walls hold the particle envelope), not
+      chosen by fit quality: it is collinear with the bed permeability, whose fitted values move to absorb it.
+      `calibrate --sensitivity` reports the θ = 0.27 case as a structural sensitivity.
+
+blocks:
+  V1:
+    dataset: schmieder2023
+    weight: 1.0
+    # cup masses: "eq3" applies the authors' Eq. 3 to the model's fractions (like the data); "direct"
+    # uses the model's cumulative cup mass
+    cup: eq3
+    relative_floor: {lambda: 0.03, c0: 0.03, cup: 0.02}
+    pressure_floor_bar: 0.3
+    # peak pressure: the model's pour-phase maximum; a measured maximum within `exit_margin_bar` of the
+    # 2.5 bar preinfusion exit only bounds the pour phase from above
+    pressure: pour
+    exit_margin_bar: 0.5
+    # the article's preinfusion-to-pour switch (Fig. A2: 7 → 2 mL/s over about 4 s)
+    # Qualified Fig. A1b wet CDF with its unresolved head constrained by the reported D32.
+    # This input is fixed before fitting; ±1 SD D32 reconstructions are separate sensitivity runs.
+    case_options: {transition_ramp_s: 4.0, psd_source: wet_cdf, sauter_offset_sd: 0.0}
+  V2:
+    dataset: vacaguerra2024
+    weight: 1.0
+    bodenstein_floor: 1.0
+  V4:
+    dataset: waszkiewicz2026
+    weight: 1.0
+    flow_floor_g_s: 0.05
+  V6:
+    dataset: corrochano2017
+    weight: 1.0
+    log_ratio_floor: 0.1

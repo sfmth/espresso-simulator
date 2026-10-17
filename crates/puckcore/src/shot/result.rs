@@ -72,8 +72,9 @@ pub struct SpeciesTotal {
 }
 
 /// Mass-weighted statistics of local EY over all bed cells (weights: the dry
-/// solid mass of each cell). Local EY counts what has left the particles, so
-/// its mean exceeds the cup EY by what is still in the bed liquid.
+/// solid mass of each cell). Local EY counts net loss from total particle
+/// solute and can be negative after inward exchange. Its mean exceeds cup EY
+/// by solute remaining in the mobile intergranular liquid.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(default))]
 #[derive(Clone, Copy, Debug, PartialEq, Default)]
@@ -180,12 +181,11 @@ pub struct ColumnInfo {
 pub struct Snapshot {
     pub t_s: f64,
     /// Local extraction yield of the solids in each cell: the net soluble
-    /// loss of the cell's particles over their dry mass. Negative only where
-    /// particles re-absorbed more than they lost (possible with
-    /// `solubles.kernel_loading_cap = false`).
+    /// loss of the cell's particles over their dry mass. It can be negative
+    /// when front-carried solute or inward exchange exceeds release.
     pub local_ey: Vec<Vec<f64>>,
-    /// Concentration of lumped solubles in the bed liquid (intergranular
-    /// plus imbibed water), kg/m³; 0 where dry.
+    /// Concentration of lumped solubles in mobile intergranular liquid,
+    /// kg/m³; 0 where dry. Absorbed solution belongs to particle loading.
     pub liquid_conc_kg_m3: Vec<Vec<f64>>,
     /// Wetted share of each cell: 0 dry, 1 wet, in between where the wetting
     /// front is.

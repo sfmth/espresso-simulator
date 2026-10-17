@@ -4,6 +4,9 @@
 One case per experiment (15). Each case is the builder's spec for a 20 g recipe, then:
 
 - basket: IMS 58 mm, 26.5 mm deep (straight walls); dose 20 g;
+- preparation: Grande TRE distribution and a 25 kgf tamp (§2.4). The builder has no Grande TRE
+  category; its default tap mapping is an assumption. V1 calibration can replace the actual
+  inner permeability spread and edge multiplier with dataset-specific spec nuisances;
 - particle sizes: by default, a fines + boulders log-normal mixture whose D[4,3] equals the
   wet-measured value of the grinding level (273, 277, 295 µm) with a fixed fines weight of 25%.
   The explicit ``wet_cdf`` alternative uses the resolved wet CDF from Fig. A1b, with its
@@ -83,6 +86,13 @@ TRANSITION_RAMP_S = 4.0
 CUP_MASSES_G = (20.0, 40.0, 60.0)
 #: The app's representation of the article's grinder (its dial is the article's grinding level).
 GRINDER_PRESET = "mahlkoenig-e65s"
+#: Reported in §2.4; no supported input-model category represents this distributor.
+DISTRIBUTION_TOOL = "Grande TRE (Sahdia Enterprises)"
+TAMP_KGF = 25.0
+PREPARATION_NUISANCES = (
+    "calibration.schmieder2023.sigma_ln_permeability",
+    "calibration.schmieder2023.edge_multiplier",
+)
 
 
 def load(paths: RepoPaths) -> dict[str, list[dict[str, Any]]]:
@@ -259,6 +269,11 @@ def build_cases(
                    {"control": "flow", "target": flow_ml_s}]
         recipe = minimal_recipe(DOSE_G, psd.recipe_psd(n_classes), IMS_58_H26_5, profile=profile, beverage_g=stop_g,
                                 tier=tier, temperature_c=temperature)
+        # Record the reported tamp load. The builder gives it no numerical effect above 10 kgf.
+        # Grande TRE has no supported distribution category: leave that field absent rather
+        # than asserting equivalence to tap or WDT. Calibration writes actual heterogeneity
+        # through spec nuisances after the builder, without changing those global defaults.
+        recipe["prep"]["tamp_kgf"] = TAMP_KGF
         if psd_source == "wet_cdf":
             # The builder must use these same classes when deriving D32-dependent inputs such as
             # pore-air tau; otherwise its default 30-class limit rebins a 32-class refinement.
@@ -288,7 +303,11 @@ def build_cases(
             KEY, f"{KEY}/exp{exp:02d}", recipe, finalize, group=grind_group(grind),
             info={"experiment": exp, "design": design, "windows": windows, "flow_ml_s": flow_ml_s,
                   "temperature_c": temperature, "grind_level": grind, "transition_ramp_s": float(transition_ramp_s),
-                  "psd_source": psd_source, "psd": psd_info, "class_psd": class_psd_info},
+                  "psd_source": psd_source, "psd": psd_info, "class_psd": class_psd_info,
+                  "preparation": {"reported_distributor": DISTRIBUTION_TOOL, "reported_tamp_kgf": TAMP_KGF,
+                                  "source_locator": "Schmieder et al. (2023), §2.4",
+                                  "builder_distribution_fallback": "tap",
+                                  "conditional_spec_nuisances": list(PREPARATION_NUISANCES)}},
             overrides=overrides, module=module,
         ))
     return cases

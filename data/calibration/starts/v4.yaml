@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Training-selected initialization, not an application calibration.
+schema: puckworks.calibration/1
+label: v4-initialization
+purpose: Bounded starting values for the v4 main/pruning/refit workflow; not a final
+  calibration.
+selection_evidence: docs/validation/m11-transport-multistart.json
+selected_candidate: joint-prep-start
+source_sha256: f5645068d4b0246e8ad64a2ed7ecbf678611d51368be66e69a446c70fcb80ccf
+parameters:
+  model.extraction.broken_shell_thickness: 40.0
+  extraction.saturation.lumped: 349.429
+  extraction.diffusivity.lumped.corrochano_80c: 3.50293e-11
+  model.species.trigonelline.partition: 0.998953
+  model.species.cqa5.partition: 0.711075
+  model.species.caffeine.surface_fraction_scale: 0.5
+  model.species.trigonelline.surface_fraction_scale: 2.0
+  model.species.cqa5.surface_fraction_scale: 0.765645
+  model.hydraulics.viscosity_temperature_exponent: 0.29154
+  hydraulics.poroelastic.critical_pressure: 12.4149
+  extraction.dispersion.axial_coefficient: 4.63668e-06
+  model.hydraulics.intraparticle_water_fraction: 0.5
+  hydraulics.kozeny_carman.density_exponent: 0.243063
+fit:
+  nuisance:
+    calibration.schmieder2023.extractable_fraction: 34.0
+    calibration.schmieder2023.content.caffeine: 1.32305
+    calibration.schmieder2023.content.trigonelline: 0.697062
+    calibration.schmieder2023.content.cqa5: 0.914097
+    calibration.schmieder2023.permeability.gl1_4: 4.11405e-14
+    calibration.schmieder2023.permeability.gl1_7: 4.26664e-14
+    calibration.schmieder2023.permeability.gl2_0: 5.26582e-14
+    calibration.schmieder2023.sigma_ln_permeability: 0.450708
+    calibration.schmieder2023.edge_multiplier: 0.264205
+    calibration.waszkiewicz2026.permeability: 1.88556e-14
+  case_parameters: {}

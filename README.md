@@ -2,11 +2,11 @@
 
 An open-source espresso simulator that runs entirely in the browser. It models a shot from bean and grinder, through the puck and the flow, to the cup. The goal is to follow the ~55 compounds that dissolve and to end with an explainable taste estimate, giving every number a source and an uncertainty band. The status below says what exists today.
 
-**Status:** version 0.6.0 corrects the overlap between mobile liquid and total particle solute storage and recalibrates the model as v3 using the qualified wet particle-size input. The [inventory decision](docs/decisions/0012-total-particle-solute-inventory.md) records the equations, assumptions and independent checks. Optional pressure storage remains available for [community comparisons](docs/validation/community-shot-comparison.md), disabled by default. **Scientific validation remains separate from numerical verification:** see the [current report](docs/validation/m1-validation.md) and preserved [v2 evaluation](docs/validation/baseline-v0.5.1/m1-validation.md).
+**Status:** version 0.6.1 refines transport calibration as v4 using the qualified wet particle-size input and the corrected particle inventory. The [transport review](docs/research/06-transport-identification.md) records the source constraints, setup assumptions and identification limits. V1 fit quality improves to 51/60 extraction rates and 174/180 cup masses within ±10%; scientific validation remains open. See the [current report](docs/validation/m1-validation.md) and preserved [v3 evaluation](docs/validation/baseline-v0.6.0/m1-validation.md). Optional pressure storage remains available for [community comparisons](docs/validation/community-shot-comparison.md), disabled by default.
 
-The original calibration blocks, held-out split and acceptance thresholds are unchanged. The complete v3 workflow includes identifiability pruning, 15 leave-one-condition-out refits and nine sensitivity refits. The [0.5.1 particle audit](docs/validation/m11-particle-inputs.md) remains a historical fixed-v2 comparison; its results are not v3 scores.
+The original calibration blocks, held-out split, physical priors and acceptance thresholds are unchanged. The v4 workflow checks proposed parameter removals with bounded refits, refits all selected blocks in each of 15 leave-one-condition-out folds, and includes nine sensitivity refits. The [calibration record](docs/validation/calibration.md#results-of-the-bounded-transport-calibration-v4-2026-10-16) distinguishes local uncertainty, bound dependence and predictive checks. Earlier calibrations and the [0.5.1 particle audit](docs/validation/m11-particle-inputs.md) remain preserved.
 
-V3 improves dispersion and aggregate held-out shot timing, but extraction-rate agreement regresses to 25/60 fitted rates within ±10% (v2: 48/60). The startup-delay and extraction-peak targets still fail. **No complete M1 scientific exit criterion passes, so M2 remains deferred.** The [calibration results](docs/validation/calibration.md#results-of-the-inventory-corrected-calibration-v3-2026-10-16) report the improvements, failures and parameters at prior bounds together.
+All 15 v4 leave-one-condition-out fits complete: 57/60 extraction rates and 180/180 cup masses pass ±15%. First-fraction TDS now passes, but held-out shot timing worsens and the startup-delay and extraction-peak targets still fail. **No complete M1 scientific exit criterion passes, so M2 remains deferred.** The [calibration results](docs/validation/calibration.md#results-of-the-bounded-transport-calibration-v4-2026-10-16) report the improvements, failures and parameters at prior bounds together.
 
 | Part | What exists |
 |---|---|
@@ -16,7 +16,7 @@ V3 improves dispersion and aggregate held-out shot timing, but extraction-rate a
 | Shot lab (web) | A recipe editor for gear described by preset or from scratch; the shot graph, summary tiles and particle-size chart; a compound table with sources; a cross-section of the puck with the wetting front; 1D sweeps, pinned overlays and exports. |
 | Calibration and validation | 19 published datasets (Schmieder, Waszkiewicz, Cameron, Corrochano, Smrke, Vaca Guerra), including the qualified wet particle-size input selected for v3. The original calibration and held-out split remains unchanged. |
 | Community comparisons | Safe offline import of original DE1 logs and the matching measurement sheet, followed by fixed-scenario comparisons. The [community report](docs/validation/community-shot-comparison.md) separates observed scale mass from estimated inlet flow and conditional model output; these sources have not entered the numerical fit. |
-| Parameter registry | 231 sourced parameters, each with an evidence grade. Startup assumptions and experimental pressure storage are exposed in the sandbox. |
+| Parameter registry | 233 sourced parameters, each with an evidence grade. Startup assumptions and experimental pressure storage are exposed in the sandbox. |
 | CI | Rust, Python and web workflows, plus GitHub Pages deployment. |
 
 Nothing you enter leaves your browser.
@@ -56,6 +56,7 @@ Calibration source selection includes online community shot archives and control
   - [03 Grinding, PSD and data](docs/research/03-grinding-psd-and-data.md)
   - [04 Community shot data](docs/research/04-community-shot-data.md): online archives, measurement provenance and calibration admission.
   - [05 Water and particle inventory](docs/research/05-water-and-particle-inventory.md): source definitions, solute-capacity overlap, wet particle sizes and remaining model work.
+  - [06 Transport identification](docs/research/06-transport-identification.md): bounded transport and preparation fits, source capacities, numerical checks and identification limits.
 - [Contributing](CONTRIBUTING.md): setup, everyday commands and project rules.
 - [Changelog](CHANGELOG.md).
 

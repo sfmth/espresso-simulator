@@ -550,9 +550,10 @@ fn pore_air_is_separate_from_roast_gas_and_can_be_disabled() {
     ));
     assert_eq!(num(&disabled, "spec.hydraulics.pore_air.amplitude"), 0.0);
     assert!(!notes(&disabled).contains("trapped pore air reduces early permeability"));
+    // Disabling pore-air mobility preserves the calibrated water admission.
     assert_eq!(
         num(&disabled, "spec.hydraulics.intraparticle_water_fraction"),
-        1.0
+        num(&fresh, "spec.hydraulics.intraparticle_water_fraction")
     );
 }
 

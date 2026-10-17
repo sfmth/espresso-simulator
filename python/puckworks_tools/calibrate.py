@@ -44,8 +44,9 @@ import json
 import math
 from collections import OrderedDict
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
+from multiprocessing import get_context
 from pathlib import Path
 from statistics import NormalDist
 from types import ModuleType
@@ -68,8 +69,10 @@ CALIBRATION_SCHEMA = "puckworks.calibration/1"
 FAILED_RESIDUAL = 10.0
 #: A fitted value within this fraction of its bounds' span of a bound is reported as at the bound.
 AT_BOUND_FRACTION = 0.01
-#: Posterior SD at or above this fraction of the prior SD: the data hardly constrain the parameter.
+#: Local marginal SD at or above this fraction of the prior SD: review the parameter for pruning.
 WEAK_IDENTIFICATION_RATIO = 0.5
+#: Operational training-cost ceiling for registry-value pruning; not a significance threshold.
+PRUNING_COST_TOLERANCE = 0.01
 
 
 class CalibrationError(RuntimeError):
@@ -293,11 +296,12 @@ class Runner:
     """Simulates specs with a result cache (LRU) and, with jobs > 1, a process pool."""
 
     def __init__(self, simulate: Callable[[dict[str, Any]], dict[str, Any]] | None = None, jobs: int = 1,
-                 cache_size: int = 256) -> None:
+                 cache_size: int = 256, *, process_start_method: str | None = None) -> None:
         self._simulate = simulate
         self.jobs = max(1, int(jobs))
         self._cache: OrderedDict[str, dict[str, Any]] = OrderedDict()
         self.cache_size = cache_size
+        self._process_start_method = process_start_method
         self._pool: ProcessPoolExecutor | None = None
         self.simulations = 0
         self.warnings: set[str] = set()
@@ -328,7 +332,11 @@ class Runner:
         if unique:
             if self.jobs > 1 and self._simulate is None and len(unique) > 1:
                 if self._pool is None:
-                    self._pool = ProcessPoolExecutor(max_workers=self.jobs)
+                    if self._process_start_method is None:
+                        self._pool = ProcessPoolExecutor(max_workers=self.jobs)
+                    else:
+                        self._pool = ProcessPoolExecutor(
+                            max_workers=self.jobs, mp_context=get_context(self._process_start_method))
                 results = list(self._pool.map(_simulate_json, list(unique)))
             else:
                 results = [self._run_one(k, specs[i]) for k, i in unique.items()]
@@ -625,6 +633,7 @@ class Problem:
         self.fd_step = fd_step
         self.sizes = [len(b.labels) for b in blocks]
         self._cache: dict[tuple, Any] = {}
+        self.pruning_review: dict[str, Any] | None = None
 
     @property
     def labels(self) -> list[str]:
@@ -710,7 +719,7 @@ def uncertainties(problem: Problem, x: np.ndarray, jac: np.ndarray, residuals: n
         if not identified[j]:  # the pseudo-inverse drops the direction: the SD is unbounded, not zero
             entry["sd"] = math.inf
             entry["interval_68"] = [p.lower, p.upper]
-        # posterior SD over prior SD: near 1 the data add little to the prior (weakly identified)
+        # Local marginal standard error relative to prior spread; this is not a posterior SD.
         entry["prior_sd_ratio"] = ((float(sd_x[j] / p.prior_sd_x) if identified[j] else math.inf)
                                    if p.prior_sd_x else None)
         # the trust-region solver stays strictly inside the box: count 1% of the span as "at" a bound
@@ -739,6 +748,9 @@ class FitResult:
     nfev: int
     cost: float
     start_cost: float
+    status: int | None = None
+    optimality: float | None = None
+    njev: int | None = None
 
 
 def fit(problem: Problem, *, max_nfev: int | None = None, loss: str = "linear", verbose: int = 0,
@@ -756,7 +768,15 @@ def fit(problem: Problem, *, max_nfev: int | None = None, loss: str = "linear", 
                            x_scale="jac", loss=loss, max_nfev=max_nfev, verbose=verbose)
     r = problem.residuals(result.x)
     return FitResult(result.x, r, problem.jacobian(result.x), bool(result.success), str(result.message),
-                     int(result.nfev), 0.5 * float(r @ r), 0.5 * float(r0 @ r0))
+                     int(result.nfev), 0.5 * float(r @ r), 0.5 * float(r0 @ r0),
+                     status=int(result.status), optimality=float(result.optimality), njev=int(result.njev))
+
+
+def optimizer_record(result: FitResult) -> dict[str, Any]:
+    """Record termination and first-order optimality separately; xtol is not stationarity."""
+    return {"success": result.success, "message": result.message, "evaluations": result.nfev,
+            "status": result.status, "jacobian_evaluations": result.njev,
+            "optimality": _round(result.optimality) if result.optimality is not None else None}
 
 
 def apply_start_values(problem: Problem, values: Mapping[str, float]) -> dict[str, float]:
@@ -800,6 +820,7 @@ def build_problem(
     module: ModuleType | None = None,
     fd_step: float = 0.01,
     exclude_cases: Sequence[str] = (),
+    exclude_cases_by_block: Mapping[str, Sequence[str]] | None = None,
     runner: Runner | None = None,
 ) -> Problem:
     """The calibration problem of ``config`` (optionally a subset of its blocks and cases)."""
@@ -829,7 +850,9 @@ def build_problem(
         kwargs: dict[str, Any] = {"module": module, **dict(options.get("case_options") or {})}
         if key in ("schmieder2023", "waszkiewicz2026"):
             kwargs.update(tier=tier, n_classes=n_classes)
-        cases = [c for c in mod.build_cases(data, **kwargs) if c.name not in exclude_cases]
+        excluded = set(exclude_cases)
+        excluded.update((exclude_cases_by_block or {}).get(name, ()))
+        cases = [c for c in mod.build_cases(data, **kwargs) if c.name not in excluded]
         # fixed parameters at their registry values, so that a calibration embedded in puckcore (an
         # earlier current.yaml) cannot change them; a case's own overrides and the fitted values win
         for case in cases:
@@ -903,36 +926,104 @@ def prune(paths: RepoPaths, config: Mapping[str, Any], problem: Problem, result:
           verbose: int = 0,
           progress: Callable[[dict[str, Any], Problem, FitResult, dict[str, Any]], None] | None = None,
           ) -> tuple[dict[str, Any], Problem, FitResult, dict[str, Any]]:
-    """Backward elimination of weakly identified shared parameters (docs/validation/calibration.md,
-    "Identifiability"): while an override parameter inside its bounds has a posterior SD of at least
-    ``threshold`` times its prior's, fix the worst one at its registry value and refit from the current
-    values. Parameters at a bound are constrained there and kept; nuisance and case parameters are kept.
-    Returns the pruned config (with the pruned ids added to ``fixed``), the final problem and fit, and
-    the pruned parameters with their reasons."""
+    """Review weak interior shared parameters by bounded refits at their registry values.
+
+    A large local marginal SD nominates a candidate; it does not establish that the registry value
+    is interchangeable with its fitted value. Remove a candidate only when its refit succeeds, is
+    finite, has no unavailable final observations, and increases weighted squared-residual cost by
+    at most 1% of BOTH the initial pre-prune fit and the current accepted fit. This is an operational
+    safeguard, not a significance threshold. Bound-flagged, nuisance and case parameters are kept.
+    Each candidate is attempted once; a rejected local refit is retained conservatively, without
+    claiming that the coefficient is necessary or that either optimizer found a global minimum.
+
+    ``problem.pruning_review`` records every accepted/rejected trial and is serialized by
+    ``calibration_document``. ``progress`` runs after every review, with the current accepted state.
+    The return tuple remains config, problem, result, and accepted fixed parameters.
+    """
+    if not math.isfinite(result.cost) or result.cost < 0:
+        raise CalibrationError("pruning requires a finite nonnegative baseline training cost")
     records = load_registry(paths)
     config = copy.deepcopy(dict(config))
     pruned: dict[str, Any] = {}
+    attempted: set[str] = set()
+    review: dict[str, Any] = {
+        "method": "bounded registry-value refit with a training-cost safeguard",
+        "sd_ratio_threshold": threshold, "relative_cost_tolerance": PRUNING_COST_TOLERANCE,
+        "criterion": "operational tolerance, not a significance or confidence threshold",
+        "cost": "weighted squared-residual cost, 0.5 * ||r||^2",
+        "cost_references": ["initial_pre_prune", "current_accepted"],
+        "initial_cost": float(result.cost), "loss": loss,
+        "refitted_blocks": [b.name for b in problem.blocks],
+        "retry_policy": "Each candidate is attempted once; rejected local refits are retained conservatively.",
+        "attempts": [], "accepted_parameters": [], "retained_parameters": [],
+    }
+    problem.pruning_review = review
     while True:
         unc = uncertainties(problem, result.x, result.jacobian, result.residuals)["parameters"]
         candidates = []
         for p in problem.params:
             entry = unc[p.id]
             ratio = math.inf if not entry["identified"] else entry.get("prior_sd_ratio")
-            if p.mode == "override" and ratio is not None and not entry["at_bound"] and ratio >= threshold:
+            if (p.mode == "override" and p.id not in attempted and ratio is not None
+                    and not entry["at_bound"] and ratio >= threshold):
                 candidates.append((ratio, p.id))
         if not candidates:
             return config, problem, result, pruned
         ratio, worst = max(candidates)
+        attempted.add(worst)
         values = problem.values(result.x)
-        reason = (f"Pruned by the identifiability rule in the calibration run: posterior SD {ratio:.2f}× the "
-                  f"prior's (fitted value {values[worst]:.4g} before pruning).")
-        pruned[worst] = {"value": registry_default(records[worst]), "units": records[worst]["units"], "reason": reason}
-        config["parameters"] = [e for e in config["parameters"] if e["id"] != worst]
-        config["fixed"] = [*(config.get("fixed") or []), {"id": worst, "reason": reason}]
-        problem = build_problem(paths, config, blocks=[b.name for b in problem.blocks], tier=tier, fd_step=fd_step,
-                                runner=problem.runner)
-        apply_start_values(problem, values)
-        result = fit(problem, max_nfev=max_nfev, loss=loss, verbose=verbose)
+        registry_value = registry_default(records[worst])
+        reason = (f"Pruned by the identifiability rule after a bounded registry-value refit: local marginal "
+                  f"SD {ratio:.2f}× the prior's (fitted value {values[worst]:.4g}); training cost stayed within "
+                  "1% of both the initial pre-prune and current accepted fits.")
+        trial_config = copy.deepcopy(config)
+        trial_config["parameters"] = [e for e in trial_config["parameters"] if e["id"] != worst]
+        trial_config["fixed"] = [*(trial_config.get("fixed") or []), {"id": worst, "reason": reason}]
+        trial = build_problem(paths, trial_config, blocks=[b.name for b in problem.blocks], tier=tier,
+                              fd_step=fd_step, runner=problem.runner)
+        apply_start_values(trial, values)
+        trial_result = fit(trial, max_nfev=max_nfev, loss=loss, verbose=verbose)
+        finite = (math.isfinite(trial_result.cost) and trial_result.cost >= 0
+                  and bool(np.all(np.isfinite(trial_result.x)))
+                  and bool(np.all(np.isfinite(trial_result.residuals)))
+                  and bool(np.all(np.isfinite(trial_result.jacobian))))
+        failures = ([failure for ev in trial.evaluations(trial_result.x) for failure in ev.failures]
+                    if finite else None)
+        current_limit = result.cost * (1.0 + PRUNING_COST_TOLERANCE)
+        initial_limit = review["initial_cost"] * (1.0 + PRUNING_COST_TOLERANCE)
+        reasons = []
+        if not trial_result.success:
+            reasons.append("optimizer_not_converged")
+        if not finite:
+            reasons.append("nonfinite_trial")
+        elif failures:
+            reasons.append("final_predictions_unavailable")
+        if finite and trial_result.cost > current_limit:
+            reasons.append("current_cost_limit_exceeded")
+        if finite and trial_result.cost > initial_limit:
+            reasons.append("initial_cost_limit_exceeded")
+        accepted = not reasons
+        attempt = {
+            "parameter": worst, "fitted_value": values[worst], "registry_value": registry_value,
+            "marginal_uncertainty": copy.deepcopy(unc[worst]),
+            "baseline_cost": float(result.cost), "initial_cost": review["initial_cost"],
+            "current_cost_limit": float(current_limit), "initial_cost_limit": float(initial_limit),
+            "trial_cost": float(trial_result.cost),
+            "cost_increase": float(trial_result.cost - result.cost),
+            "relative_cost_increase": (float(trial_result.cost / result.cost - 1.0) if result.cost else None),
+            "optimizer": optimizer_record(trial_result), "finite": finite, "final_failures": failures,
+            "trial_fitted_values": trial.values(trial_result.x) if finite else None,
+            "accepted": accepted, "decision": "accepted" if accepted else "retained",
+            "reasons": reasons,
+        }
+        review["attempts"].append(attempt)
+        if accepted:
+            review["accepted_parameters"].append(worst)
+            pruned[worst] = {"value": registry_value, "units": records[worst]["units"], "reason": reason}
+            config, problem, result = trial_config, trial, trial_result
+            problem.pruning_review = review
+        else:
+            review["retained_parameters"].append(worst)
         if progress:
             progress(config, problem, result, pruned)
 
@@ -945,61 +1036,127 @@ LOO_TOLERANCE = 0.15
 def leave_one_out(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[str, float], *,
                   tier: int | None = None, jobs: int = 1, max_nfev: int | None = None, fd_step: float = 0.01,
                   simulate: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
-                  block: str = "V1", progress: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:
-    """Refits the V1 parameters without each experiment in turn and predicts the one left out.
+                  block: str = "V1", refit_blocks: Sequence[str] | None = None,
+                  loo_jobs: int = 1, loss: str = "linear",
+                  progress: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:
+    """Refit all selected calibration blocks while omitting one V1 condition in each fold.
 
-    Only the parameters that the config declares for V1 alone are refitted; parameters shared with other
-    blocks (for example the dispersion, fitted mainly to V2, or the critical pressure, mainly to V4) are
-    held at their full-fit values in ``start``. Returns, per experiment, the relative errors of λ and of
-    the cup masses (Eq. 3) of the left-out experiment, and how many fall within ±15% (PLAN §10, V1 "left
-    out" target)."""
+    Every fitted parameter, including shared parameters, is re-estimated from the retained residuals.
+    Other blocks retain all their cases. The supplied parameter/fixed structure is preserved: pruning
+    is not repeated within folds, so this is conditional cross-validation, not nested model selection.
+    Full-fit values in ``start`` initialize each optimizer and are recorded, not held fixed. An explicit
+    ``refit_blocks`` preserves the main fit's block selection; the default uses all configured blocks.
+    ``loo_jobs`` bounds concurrent folds, each with ``jobs`` simulation processes; the default
+    retains the serial runner and cache. Concurrent folds own their runners and mutable inputs,
+    and use spawned processes so no process forks from a fold thread. Progress callbacks run
+    only on the calling thread, and reported experiments retain their original case order.
+    A custom ``simulate`` callback must be thread-safe when ``loo_jobs`` is greater than one.
+    """
     from .cases import schmieder2023
 
-    full = build_problem(paths, config, blocks=[block], tier=tier, jobs=jobs, simulate=simulate, fd_step=fd_step)
-    v1 = full.blocks[0]
-    targets = schmieder2023.targets(v1.data)
-    own = {e["id"] for e in config["parameters"] if list(e.get("blocks", ())) == [block]}
-    held = {p.id: start.get(p.id, p.start) for p in full.params if p.id not in own}
-    if any(p.mode != "override" for p in full.params if p.id in held):
-        raise CalibrationError("leave_one_out holds shared parameters as recipe overrides; they must be override mode")
-    sub_config = {**config, "parameters": [e for e in config["parameters"] if e["id"] in own]}
+    if not isinstance(loo_jobs, int) or isinstance(loo_jobs, bool) or loo_jobs < 1:
+        raise CalibrationError("leave_one_out loo_jobs must be a positive integer")
+    selected = list(config["blocks"] if refit_blocks is None else refit_blocks)
+    if block not in selected:
+        raise CalibrationError(f"leave_one_out requires {block} among the refitted blocks")
+    if len(selected) != len(set(selected)):
+        raise CalibrationError("leave_one_out refitted blocks must not be duplicated")
+    full = build_problem(paths, config, blocks=selected, tier=tier, jobs=jobs, simulate=simulate, fd_step=fd_step)
+    v1 = next(b for b in full.blocks if b.name == block)
+    scope = {
+        "block": block, "tolerance": LOO_TOLERANCE, "refitted_blocks": selected,
+        "loo_jobs": loo_jobs, "jobs_per_fold": full.runner.jobs, "loss": loss,
+        "refitted_parameters": [p.id for p in full.params], "held": {},
+        "conditional_on_fixed_structure": True,
+        "structure_selection": "Supplied parameter/fixed structure; pruning is not repeated within folds.",
+        "warm_start": "Full-fit values supplied in start; all fitted parameters are re-estimated.",
+        "fixed": copy.deepcopy(config.get("fixed") or []),
+    }
     experiments: dict[str, Any] = {}
+    experiment_order = [f"exp{case.info['experiment']:02d}" for case in v1.cases]
+
+    def refit_case(fold_config: Mapping[str, Any], fold_start: Mapping[str, float],
+                  context: Problem, case: Case) -> tuple[str, dict[str, Any]]:
+        fold_block = next(b for b in context.blocks if b.name == block)
+        targets = schmieder2023.targets(fold_block.data)
+        excluded = {block: [case.name]}
+        sub = build_problem(paths, fold_config, blocks=selected, tier=tier, fd_step=fd_step,
+                            exclude_cases_by_block=excluded, runner=context.runner)
+        apply_start_values(sub, fold_start)
+        start_values = sub.values(sub.x0())
+        result = fit(sub, max_nfev=max_nfev, loss=loss)
+        values = sub.values(result.x)
+        prediction = DatasetBlock(fold_block.name, fold_block.module, fold_block.data, [case],
+                                  fold_block.options, fold_block.units)
+        prediction_ev = prediction.evaluate(values, context.runner, context.params)
+        obs = prediction_ev.observations[0]
+        predicted = obs is not None and required_observations_available(fold_block, case, obs)
+        exp = case.info["experiment"]
+        t = targets[exp]
+        errors: dict[str, Any] = {"lambda": {}, "cup": {}}
+        for analyte, _, _, _ in schmieder2023.ANALYTES:
+            lam = obs["lambda"][analyte] if predicted else math.nan
+            errors["lambda"][analyte] = _round(lam / t["lambda"][analyte][0] - 1.0) if predicted else None
+            errors["cup"][analyte] = {
+                m: (_round(obs["cup_eq3"][analyte][m] / t["cup"][analyte][m][0] - 1.0) if predicted else None)
+                for m in (20, 40, 60)}
+        return f"exp{exp:02d}", {
+            "errors": errors, "cost": _round(result.cost), "evaluations": result.nfev,
+            "optimizer": optimizer_record(result), "predicted": predicted,
+            "fitted_values": _rounded(values), "start_values": _rounded(start_values),
+            "refitted_blocks": list(selected), "excluded_cases": excluded,
+            "refit_cases": {b.name: len(b.cases) for b in sub.blocks},
+            "prediction_failures": prediction_ev.failures,
+            "refit_failures": [failure for ev in sub.evaluations(result.x) for failure in ev.failures]}
+
+    def isolated_fold(case_name: str) -> tuple[str, dict[str, Any]]:
+        # Rebuild instead of copying a Problem: its runner, evaluation cache, parameters, cases,
+        # loaded data and units must all belong to this fold. Only read-only modules are shared.
+        fold_config, fold_start = copy.deepcopy(dict(config)), dict(start)
+        runner = Runner(simulate, jobs, process_start_method="spawn")
+        try:
+            context = build_problem(paths, fold_config, blocks=selected, tier=tier, fd_step=fd_step,
+                                    runner=runner)
+            fold_block = next(b for b in context.blocks if b.name == block)
+            case = next(c for c in fold_block.cases if c.name == case_name)
+            return refit_case(fold_config, fold_start, context, case)
+        finally:
+            runner.close()
+
+    def record(completed: tuple[str, dict[str, Any]]) -> None:
+        key, entry = completed
+        experiments[key] = entry
+        if progress:
+            ordered = {name: experiments[name] for name in experiment_order if name in experiments}
+            progress({**copy.deepcopy(scope), "experiments": copy.deepcopy(ordered),
+                      "completed": len(experiments), "required": len(v1.cases)})
+
     try:
-        for index, case in enumerate(v1.cases):
-            sub = build_problem(paths, sub_config, blocks=[block], tier=tier, fd_step=fd_step,
-                                exclude_cases=[case.name], runner=full.runner)
-            for c in sub.blocks[0].cases:
-                c.recipe["overrides"] = {**c.recipe.get("overrides", {}), **held}
-            apply_start_values(sub, start)
-            result = fit(sub, max_nfev=max_nfev)
-            values = {**{p.id: start.get(p.id, p.start) for p in full.params}, **sub.values(result.x)}
-            obs = v1.evaluate(values, full.runner, full.params).observations[index]
-            exp = case.info["experiment"]
-            t = targets[exp]
-            errors: dict[str, Any] = {"lambda": {}, "cup": {}}
-            for analyte, _, _, _ in schmieder2023.ANALYTES:
-                lam = obs["lambda"][analyte] if obs else math.nan
-                errors["lambda"][analyte] = _round(lam / t["lambda"][analyte][0] - 1.0) if obs else None
-                errors["cup"][analyte] = {
-                    m: (_round(obs["cup_eq3"][analyte][m] / t["cup"][analyte][m][0] - 1.0) if obs else None)
-                    for m in (20, 40, 60)}
-            experiments[f"exp{exp:02d}"] = {"errors": errors, "cost": _round(result.cost), "evaluations": result.nfev,
-                                           "optimizer": {"success": result.success, "message": result.message},
-                                           "predicted": obs is not None and required_observations_available(v1, case, obs),
-                                           "refit_failures": [failure for ev in sub.evaluations(result.x) for failure in ev.failures]}
-            if progress:
-                progress({"block": block, "tolerance": LOO_TOLERANCE,
-                          "experiments": copy.deepcopy(experiments), "held": dict(held),
-                          "completed": len(experiments), "required": len(v1.cases)})
+        if loo_jobs == 1:
+            for case in v1.cases:
+                record(refit_case(config, start, full, case))
+        elif v1.cases:
+            with ThreadPoolExecutor(max_workers=min(loo_jobs, len(v1.cases)),
+                                    thread_name_prefix="puckworks-loo") as executor:
+                futures = [executor.submit(isolated_fold, case.name) for case in v1.cases]
+                try:
+                    for future in as_completed(futures):
+                        record(future.result())
+                finally:
+                    # On a failed fold or checkpoint, cancel work not yet started. Running folds
+                    # still close their own runners before the executor finishes shutting down.
+                    for future in futures:
+                        future.cancel()
     finally:
         full.runner.close()
+    experiments = {name: experiments[name] for name in experiment_order}
     lam_errors = [e for x in experiments.values() for e in x["errors"]["lambda"].values()]
     cup_errors = [e for x in experiments.values() for a in x["errors"]["cup"].values() for e in a.values()]
 
     def within(errors: list[float | None]) -> int:
         return sum(1 for e in errors if e is not None and abs(e) <= LOO_TOLERANCE)
 
-    return {"block": block, "tolerance": LOO_TOLERANCE, "experiments": experiments, "held": dict(held),
+    return {**scope, "experiments": experiments,
             "lambda_within": within(lam_errors), "lambda_total": len(lam_errors),
             "cup_within": within(cup_errors), "cup_total": len(cup_errors),
             "completed": len(experiments), "required": len(v1.cases),
@@ -1080,7 +1237,7 @@ def sensitivity(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[str,
                 progress: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:
     """Refits, under each variant, the parameters the config lists for the variant's blocks alone (the
     variant's option changes applied to each of those blocks; parameters shared with other blocks held at
-    their full-fit values in ``start``, as in ``leave_one_out``). Reports the refitted values, the reference
+    their full-fit values in ``start``). Reports the refitted values, the reference
     permeability estimates (datasets not refitted keep their full-fit estimates) and their pooled value,
     and for V1 the cost, the peak-pressure residuals and the target counts."""
     from .cases import schmieder2023
@@ -1114,7 +1271,7 @@ def sensitivity(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[str,
             entry: dict[str, Any] = {
                 "blocks": blocks, "options": copy.deepcopy(dict(variant.get("options", {}))),
                 "structural": bool(variant.get("structural", False)), "held": dict(held), "cost": result.cost,
-                "optimizer": {"success": result.success, "message": result.message, "evaluations": result.nfev},
+                "optimizer": optimizer_record(result),
                 "nuisance": {p.id: values[p.id] for p in sub.params if p.mode == "spec"},
                 "shared": {p.id: values[p.id] for p in sub.params if p.mode != "spec"},
                 "kappa_ref_by_dataset": estimates,
@@ -1369,8 +1526,7 @@ def calibration_document(problem: Problem, result: FitResult, *, label: str, con
         "config": config_path,
         "solver": solver,
         "inputs": inputs,
-        "optimizer": {"method": "scipy.optimize.least_squares (trf, x_scale=jac)", "success": result.success,
-                      "message": result.message, "evaluations": result.nfev,
+        "optimizer": {"method": "scipy.optimize.least_squares (trf, x_scale=jac)", **optimizer_record(result),
                       "simulations": problem.runner.simulations,
                       "start_cost": _round(result.start_cost), "cost": _round(result.cost)},
         "nuisance": {p.id: _round(values[p.id]) for p in problem.params if p.mode == "spec"},
@@ -1389,6 +1545,8 @@ def calibration_document(problem: Problem, result: FitResult, *, label: str, con
         "solver_warnings": sorted(problem.runner.warnings),
         "robustness": _rounded(problem.runner.robustness()),
     }
+    if problem.pruning_review is not None:
+        fit["pruning_review"] = _rounded(problem.pruning_review)
     return {
         "schema": CALIBRATION_SCHEMA,
         "label": label,
@@ -1428,7 +1586,7 @@ def write_documents(doc: Mapping[str, Any], out_dir: Path, *, label: str, curren
 
 
 def completion_issues(doc: Mapping[str, Any]) -> list[str]:
-    """Numerical completion of the declared v3 workflow, separate from scientific acceptance gates."""
+    """Numerical completion of the declared workflow, separate from scientific acceptance gates."""
     fit_doc = doc.get("fit") or {}
     issues = []
     if not (fit_doc.get("optimizer") or {}).get("success"):
@@ -1481,10 +1639,17 @@ def load_calibration(path: Path) -> dict[str, float]:
 # -- command line ------------------------------------------------------------------------------
 
 
+def _positive_int(value: str) -> int:
+    result = int(value)
+    if result < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return result
+
+
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", type=Path, help="calibration config (default: data/calibration/config.yaml)")
     parser.add_argument("--out-dir", type=Path, help="output directory (default: data/calibration)")
-    parser.add_argument("--label", default="v3", help="name of the versioned output file (default: v3)")
+    parser.add_argument("--label", default="v4", help="name of the versioned output file (default: v4)")
     parser.add_argument("--start-from", type=Path, help="warm-start values from a preserved calibration document")
     parser.add_argument("--checkpoint-dir", type=Path, help="retain main/prune and each completed refit checkpoint")
     parser.add_argument("--no-current", action="store_true", help="do not write current.yaml")
@@ -1501,9 +1666,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
                              "builder (no refit) and rewrite it and current.yaml")
     parser.add_argument("--loo", action="store_true",
                         help="also run the V1 leave-one-condition-out check (15 refits) and record it in the fit")
+    parser.add_argument("--loo-jobs", type=_positive_int, default=1,
+                        help="concurrent leave-one-out folds, each using --jobs simulation processes (default: 1)")
     parser.add_argument("--prune", action="store_true",
-                        help="after the fit, fix weakly identified shared parameters (posterior SD ≥ 0.5× the "
-                             "prior's, inside their bounds) at their registry values one at a time and refit")
+                        help="review interior shared parameters with local marginal SD ≥ 0.5× the prior's; "
+                             "fix at registry values only after successful bounded refits within both 1%% cost ceilings")
     parser.add_argument("--sensitivity", action="store_true",
                         help="also refit V1 under the sensitivity variants (transition ramp, upstream pressure loss, "
                              "whole-shot peak) and record them in the fit")
@@ -1523,8 +1690,8 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
     config_path = args.config or paths.root / "data" / "calibration" / "config.yaml"
     config = load_config(config_path)
     out_dir = args.out_dir or paths.root / "data" / "calibration"
-    if args.label in ("v1", "v2") and Path(out_dir).resolve() == (paths.root / "data/calibration").resolve():
-        raise CalibrationError("v1/v2 are preserved historical fits; choose a new label or an external output directory")
+    if args.label in ("v1", "v2", "v3") and Path(out_dir).resolve() == (paths.root / "data/calibration").resolve():
+        raise CalibrationError("v1/v2/v3 are preserved historical fits; choose a new label or an external output directory")
     fixed = fixed_parameters(config, load_registry(paths))
     if args.pool_only:
         out_dir = args.out_dir or paths.root / "data" / "calibration"
@@ -1588,13 +1755,22 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
             write_documents(snapshot, args.checkpoint_dir, label=f"{args.label}-{stage}", current=False)
             write_documents(snapshot, args.checkpoint_dir, label=f"{args.label}-latest", current=False)
 
+        def save_pruning_stage(cfg: dict[str, Any], prob: Problem, res: FitResult,
+                               fixed: dict[str, Any]) -> None:
+            review = prob.pruning_review
+            latest = review["attempts"][-1]
+            stage = (f"prune-{len(fixed):02d}" if latest["accepted"]
+                     else f"prune-retained-{len(review['attempts']):02d}")
+            save_fit_stage(stage, cfg, prob, res, fixed)
+            print(f"calibrate: pruning review {latest['parameter']}: {latest['decision']} "
+                  f"(trial cost {latest['trial_cost']:.6g}, baseline {latest['baseline_cost']:.6g})", flush=True)
+
         save_fit_stage("main", config, problem, result, {})
         if args.prune:
             config, problem, result, pruned = prune(paths, config, problem, result, tier=args.tier,
                                                     fd_step=args.fd_step, max_nfev=args.max_nfev, loss=args.loss,
                                                     verbose=args.verbose,
-                                                    progress=lambda cfg, prob, res, fixed: save_fit_stage(
-                                                        f"prune-{len(fixed):02d}", cfg, prob, res, fixed))
+                                                    progress=save_pruning_stage)
             fixed = {**fixed, **pruned}
             for pid, entry in pruned.items():
                 print(f"calibrate: pruned {pid}: {entry['reason']}")
@@ -1602,7 +1778,9 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
                                    core_version=core().__version__, fixed=fixed)
         doc["fit"]["effective_config"] = copy.deepcopy(config)
         doc["fit"]["warm_start"] = warm_start
-        doc["fit"]["run_settings"] = {"jobs": args.jobs, "tier": args.tier if args.tier is not None else config.get("tier", 1),
+        doc["fit"]["run_settings"] = {"jobs": args.jobs, "loo_jobs": getattr(args, "loo_jobs", 1),
+                                       "jobs_per_fold": max(1, int(args.jobs)),
+                                       "tier": args.tier if args.tier is not None else config.get("tier", 1),
                                        "fd_step": args.fd_step, "loss": args.loss, "max_nfev": args.max_nfev,
                                        "prune": args.prune, "loo": args.loo, "sensitivity": args.sensitivity}
         doc["fit"]["pipeline"] = {"stage": "main-prune", "completed": False,
@@ -1627,7 +1805,9 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
                 print(f"calibrate: leave-one-out {partial['completed']}/{partial['required']} refits complete", flush=True)
 
             loo = leave_one_out(paths, config, problem.values(result.x), tier=args.tier, jobs=args.jobs,
-                                max_nfev=args.max_nfev, fd_step=args.fd_step, progress=loo_progress)
+                                max_nfev=args.max_nfev, fd_step=args.fd_step,
+                                refit_blocks=[b.name for b in problem.blocks],
+                                loo_jobs=getattr(args, "loo_jobs", 1), loss=args.loss, progress=loo_progress)
             doc["fit"]["loo"] = _rounded(loo)
             checkpoint("loo-complete")
             print(f"calibrate: leave-one-out: λ within ±15% {loo['lambda_within']}/{loo['lambda_total']}, "
