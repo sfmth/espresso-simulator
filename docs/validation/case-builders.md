@@ -59,6 +59,7 @@ Data: [schmieder2023-design](../../data/datasets/schmieder2023-design/), [-fract
 |---|---|
 | dose | 20 g |
 | basket | IMS 58 mm |
+| preparation | Grande TRE (Sahdia Enterprises) distribution and levelling, then a parallel 25 kgf tamp with the CPS Tamper (§2.4) |
 | PSD | v3: qualified Fig. A1b wet CDF plus published D[3,2], preserving D[3,2] in 16 classes; historical reconstruction remains available explicitly |
 | program | flow 7 mL/s until the pressure reaches 2.5 bar, then a 4 s linear ramp to the experiment's *measured* mean flow (Table 2) |
 | pump | ideal, 8 mL/s, 12 bar |
@@ -93,6 +94,20 @@ estimated permeability spread through the fines fraction, so the fixed-time prob
 isolate particle extraction alone. The report records both hydraulic couplings.
 
 **Assumptions.**
+- The source's Grande TRE distributor has no supported input-model category. The recipe records
+  the 25 kgf tamp, which has no numerical effect in the builder, and leaves `distribution` absent.
+  The resulting fallback to `tap` is an assumption, not a measured correspondence. The conditional
+  V1 calibration uses `calibration.schmieder2023.sigma_ln_permeability` and
+  `calibration.schmieder2023.edge_multiplier` as **actual spec fields** after the builder. They
+  replace its fines-adjusted inner spread and geometry-adjusted edge multiplier; those corrections
+  are not applied again. The same two values apply across all V1 conditions. They do not calibrate
+  the app's global tapping, fines or edge coefficients from this experiment.
+- The inner-spread prior, 0.195883–0.740029, intersects the existing tap prior after the nominal
+  wet-PSD fines correction for all three grind groups. The edge prior, 0.229046–0.687138, transforms
+  the existing base prior by `((27/29)/0.87)^2`. These are grade-D conditional supports, not
+  independent measurements of this preparation. The edge area and prewetting spread stay fixed;
+  the latter is added to the inner spread in quadrature, so those two causes of variance are not
+  identified separately. See [the registry records](../../data/params/calibration.yaml).
 - The historical reconstructed PSD retains its 25% fines judgement and wet D[4,3] target. Its D[3,2]
   is about 101–103 µm, versus the paper's wet 26.9–29.2 µm; it is not a match to both measured
   moments. The new alternative incorporates the wet curve and D[3,2], but neither wet laser

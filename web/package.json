@@ -1,6 +1,6 @@
 {
   "name": "puckworks-web",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "Puckworks in the browser: an open-source espresso simulator that runs entirely client-side.",
   "license": "GPL-2.0-or-later",

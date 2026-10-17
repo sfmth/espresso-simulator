@@ -1,0 +1,2943 @@
+{
+  "schema": "puckworks.startup-sensitivity/1",
+  "calibration": "data/calibration/v4.yaml",
+  "calibration_label": "v4",
+  "calibration_sha256": "e756623a4d507327",
+  "script_sha256": "0ce9409571c46e66",
+  "inputs": {
+    "config_sha256": "7d186253a3666328",
+    "datasets_sha256": {
+      "corrochano2017-permeability": "d7de004c74522a46",
+      "corrochano2017-properties": "c2b8b9b501c7afa3",
+      "corrochano2017-psd": "baa15b1629a78ff8",
+      "schmieder2023-design": "56dd2d42e19da971",
+      "schmieder2023-fractions": "fd42d1ec451586d6",
+      "schmieder2023-kinetics": "b3858084750fd8f4",
+      "schmieder2023-psd": "5e5711d8ccc7ed42",
+      "schmieder2023-replicates": "8749648f235c5a66",
+      "vacaguerra2024-rtd": "33e194ec3c0a2e49",
+      "waszkiewicz2026-flow-pressure": "ef8c636a8bb3683a",
+      "waszkiewicz2026-psd": "d3bea166b24a1696"
+    },
+    "registry_inputs_sha256": "9cd45f5ad5edfcdf",
+    "presets_sha256": "e12cc70ded553ac1",
+    "conversion_inputs_sha256": {
+      "data/schema/units.yaml": "080e27dcd100ebd0",
+      "python/puckworks_tools/units.py": "407ecb5e1473bc7f",
+      "python/puckworks_tools/registry.py": "d5cfdd311cbc0e4d",
+      "python/puckworks_tools/yamlio.py": "92c9cf7e93fac227"
+    },
+    "calibration_sources_sha256": "a1707c737c8fabcd"
+  },
+  "solver": {
+    "puckcore_version": "0.6.1",
+    "extension_sha256": "2c8fac7be082b3f9",
+    "extension_built": "2026-10-16T21:26:19-07:00",
+    "sources_sha256": {
+      "crates/puckcore/src": "7edd86f7150f4fa1",
+      "crates/puckmodel/src": "1ca89ad808e6f2f7",
+      "crates/puckmodel/generated": "35b5946493f6e0ae",
+      "crates/puckcore-py": "563a9328b2a48052"
+    },
+    "files_sha256": {
+      "Cargo.lock": "97aad0fe9e0b7b94"
+    },
+    "python": {
+      "version": "3.14.7",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
+    }
+  },
+  "tier": 1,
+  "refitted": false,
+  "purpose": "Response to fixed-parameter closure changes; does not select priors or demonstrate experimental identification.",
+  "baseline_note": "Every variant uses the recorded current solver and keeps all other v4 fitted and fixed coefficients unchanged apart from its listed intervention. Water-admission fraction 0.5 is an absolute setting, not necessarily half the selected baseline. The combined water/disabled-air intervention does not restore an archived model. Full specs record the kernel-loading-cap choice; these runs preserve the historical 0.3.0 startup report.",
+  "v1_particle_input": {
+    "transition_ramp_s": 4.0,
+    "psd_source": "wet_cdf",
+    "sauter_offset_sd": 0.0
+  },
+  "v4_spec": {
+    "schema": "puckworks.shot-spec/1",
+    "basket": {
+      "profile_m": [
+        [
+          0.0,
+          0.029
+        ],
+        [
+          0.0265,
+          0.029
+        ]
+      ],
+      "perforated_radius_m": 0.027,
+      "open_area_fraction": 0.03,
+      "outlet": {
+        "type": "holes"
+      },
+      "extra_headspace_m3": 5e-06
+    },
+    "bed": {
+      "dose_kg": 0.0185,
+      "intergranular_porosity": 0.17793034228795757,
+      "intraparticle_porosity": 0.55,
+      "skeletal_density_kg_m3": 1352.0,
+      "size_classes": [
+        {
+          "radius_m": 3.253658466182754e-06,
+          "volume_fraction": 0.00201244
+        },
+        {
+          "radius_m": 4.064152671146102e-06,
+          "volume_fraction": 0.0012169933333333334
+        },
+        {
+          "radius_m": 5.009727157191162e-06,
+          "volume_fraction": 0.0027257699999999998
+        },
+        {
+          "radius_m": 6.7491212039624685e-06,
+          "volume_fraction": 0.0075703133333333335
+        },
+        {
+          "radius_m": 8.109050289967625e-06,
+          "volume_fraction": 0.010979513333333333
+        },
+        {
+          "radius_m": 1.0104529821943224e-05,
+          "volume_fraction": 0.05156289
+        },
+        {
+          "radius_m": 1.2273544723859932e-05,
+          "volume_fraction": 0.04272558
+        },
+        {
+          "radius_m": 1.5129480939777261e-05,
+          "volume_fraction": 0.11130519
+        },
+        {
+          "radius_m": 1.857676142982237e-05,
+          "volume_fraction": 0.06388572666666666
+        },
+        {
+          "radius_m": 2.2787073826252556e-05,
+          "volume_fraction": 0.13149511333333333
+        },
+        {
+          "radius_m": 2.988586428749823e-05,
+          "volume_fraction": 0.10971663000000001
+        },
+        {
+          "radius_m": 3.706551193020552e-05,
+          "volume_fraction": 0.042733049999999995
+        },
+        {
+          "radius_m": 4.5899951405582554e-05,
+          "volume_fraction": 0.09742392999999999
+        },
+        {
+          "radius_m": 5.6100922659580135e-05,
+          "volume_fraction": 0.08290322666666666
+        },
+        {
+          "radius_m": 6.863853594279176e-05,
+          "volume_fraction": 0.20535305999999998
+        },
+        {
+          "radius_m": 8.491218258958993e-05,
+          "volume_fraction": 0.036390573333333336
+        }
+      ],
+      "heterogeneity": {
+        "columns": 8,
+        "sigma_ln_permeability": 0.6778816549941313,
+        "edge_area_fraction": 0.25,
+        "edge_multiplier": 0.4008307871977334,
+        "prewet_nonuniformity": 0.20544170671371043
+      }
+    },
+    "solubles": {
+      "extractable_fraction": 0.28,
+      "cell_size_m": 4e-05,
+      "saturation_kg_m3": 349.852,
+      "partition_coefficient": 0.61,
+      "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+      "surface_rate_m_s": 0.001,
+      "reference_temp_c": 80.0,
+      "species": [
+        {
+          "id": "caffeine",
+          "mass_fraction": 0.012,
+          "kernel_diffusivity_m2_s": 1.9e-10,
+          "partition_coefficient": 1.0,
+          "surface_fraction_scale": 0.5
+        },
+        {
+          "id": "trigonelline",
+          "mass_fraction": 0.006999999999999999,
+          "kernel_diffusivity_m2_s": 2.8e-10,
+          "partition_coefficient": 0.999936,
+          "surface_fraction_scale": 2.0
+        },
+        {
+          "id": "cqa5",
+          "mass_fraction": 0.011399999999999999,
+          "kernel_diffusivity_m2_s": 1.55e-10,
+          "partition_coefficient": 0.61,
+          "surface_fraction_scale": 0.842542
+        },
+        {
+          "id": "acids",
+          "mass_fraction": 0.024000000000000004,
+          "kernel_diffusivity_m2_s": 2.8e-10,
+          "partition_coefficient": 0.61,
+          "surface_fraction_scale": 1.0
+        }
+      ],
+      "solute_specific_volume_m3_kg": 0.0006369426751592356,
+      "kernel_loading_cap": false
+    },
+    "hydraulics": {
+      "permeability_m2": 1.9681999999999988e-14,
+      "poroelastic_pc_pa": 1180570.0,
+      "dissolution_kozeny_carman": true,
+      "swelling": {
+        "amplitude": 0.346612342195471,
+        "tau_s": 26.0
+      },
+      "gas": {
+        "amplitude": 0.12869246241387922,
+        "tau_s": 5.0
+      },
+      "pore_air": {
+        "amplitude": 0.5,
+        "tau_s": 2.418876220410908
+      },
+      "pore_air_permeability_exponent": 3.0,
+      "fines_layer": {
+        "amplitude": 0.0,
+        "tau_s": 10.0
+      },
+      "axial_dispersion_m2_s": 4.568699999999999e-06,
+      "viscosity": {
+        "ln_relative_a1": 3.75,
+        "ln_relative_a2": 14.1,
+        "temperature_exponent": 0.278611
+      },
+      "wetting_uptake": 0.5,
+      "intraparticle_water_fraction": 0.5,
+      "dissolution_porosity_share": 0.0
+    },
+    "thermal": {
+      "water_temp_c": 93.0,
+      "initial_bed_temp_c": 73.46127484578479,
+      "heat_capacity_j_k": 152.68435,
+      "heat_loss_w_k": 0.41859999999999997,
+      "ambient_temp_c": 20.0
+    },
+    "machine": {
+      "phases": [
+        {
+          "control": {
+            "type": "pressure",
+            "target_pa": 871691.6
+          },
+          "ramp_s": 1.0,
+          "limit": null,
+          "exit": {
+            "time_s": null,
+            "beverage_mass_kg": null,
+            "pressure_pa": null
+          }
+        }
+      ],
+      "pump": {
+        "type": "ideal",
+        "max_flow_m3_s": 8e-06,
+        "max_pressure_pa": 1500000.0
+      },
+      "stop": {
+        "time_s": 130.0,
+        "beverage_mass_kg": null,
+        "drip_tau_s": 1.5,
+        "vent_headspace": false
+      },
+      "hydraulic_compliance_m3_pa": 0.0
+    },
+    "numerics": {
+      "tier": 1,
+      "depth_cells": 30,
+      "max_dt_s": 0.05,
+      "max_duration_s": 145.0,
+      "output_interval_s": 0.1,
+      "snapshot_count": 1,
+      "kernel_shells": 8
+    }
+  },
+  "generic_recipe": {
+    "schema": "puckworks.recipe/1",
+    "bean": {
+      "preset": "medium-washed-arabica"
+    },
+    "grinder": {
+      "preset": "mahlkoenig-ek43",
+      "setting": 1.7
+    },
+    "basket": {
+      "preset": "58-precision-18g"
+    },
+    "prep": {
+      "dose_g": 18.0
+    },
+    "machine": {
+      "preset": "flat-9-bar"
+    },
+    "stop": {
+      "beverage_g": 36.0
+    },
+    "numerics": {
+      "tier": 1
+    },
+    "overrides": {
+      "model.extraction.broken_shell_thickness": 40.0,
+      "extraction.saturation.lumped": 349.852,
+      "extraction.diffusivity.lumped.corrochano_80c": 3.5239999999999954e-11,
+      "model.species.trigonelline.partition": 0.999936,
+      "model.species.cqa5.partition": 0.61,
+      "model.species.caffeine.surface_fraction_scale": 0.5,
+      "model.species.trigonelline.surface_fraction_scale": 2.0,
+      "model.species.cqa5.surface_fraction_scale": 0.842542,
+      "model.hydraulics.viscosity_temperature_exponent": 0.278611,
+      "hydraulics.poroelastic.critical_pressure": 11.8057,
+      "extraction.dispersion.axial_coefficient": 4.568699999999999e-06,
+      "model.hydraulics.intraparticle_water_fraction": 0.5,
+      "hydraulics.kozeny_carman.density_exponent": 0.242921,
+      "hydraulics.permeability.reference": 1.51908e-13
+    }
+  },
+  "rows": [
+    {
+      "variant": "v4 baseline",
+      "changes": {},
+      "v4_9bar": {
+        "spec": {
+          "schema": "puckworks.shot-spec/1",
+          "basket": {
+            "profile_m": [
+              [
+                0.0,
+                0.029
+              ],
+              [
+                0.0265,
+                0.029
+              ]
+            ],
+            "perforated_radius_m": 0.027,
+            "open_area_fraction": 0.03,
+            "outlet": {
+              "type": "holes"
+            },
+            "extra_headspace_m3": 5e-06
+          },
+          "bed": {
+            "dose_kg": 0.0185,
+            "intergranular_porosity": 0.17793034228795757,
+            "intraparticle_porosity": 0.55,
+            "skeletal_density_kg_m3": 1352.0,
+            "size_classes": [
+              {
+                "radius_m": 3.253658466182754e-06,
+                "volume_fraction": 0.00201244
+              },
+              {
+                "radius_m": 4.064152671146102e-06,
+                "volume_fraction": 0.0012169933333333334
+              },
+              {
+                "radius_m": 5.009727157191162e-06,
+                "volume_fraction": 0.0027257699999999998
+              },
+              {
+                "radius_m": 6.7491212039624685e-06,
+                "volume_fraction": 0.0075703133333333335
+              },
+              {
+                "radius_m": 8.109050289967625e-06,
+                "volume_fraction": 0.010979513333333333
+              },
+              {
+                "radius_m": 1.0104529821943224e-05,
+                "volume_fraction": 0.05156289
+              },
+              {
+                "radius_m": 1.2273544723859932e-05,
+                "volume_fraction": 0.04272558
+              },
+              {
+                "radius_m": 1.5129480939777261e-05,
+                "volume_fraction": 0.11130519
+              },
+              {
+                "radius_m": 1.857676142982237e-05,
+                "volume_fraction": 0.06388572666666666
+              },
+              {
+                "radius_m": 2.2787073826252556e-05,
+                "volume_fraction": 0.13149511333333333
+              },
+              {
+                "radius_m": 2.988586428749823e-05,
+                "volume_fraction": 0.10971663000000001
+              },
+              {
+                "radius_m": 3.706551193020552e-05,
+                "volume_fraction": 0.042733049999999995
+              },
+              {
+                "radius_m": 4.5899951405582554e-05,
+                "volume_fraction": 0.09742392999999999
+              },
+              {
+                "radius_m": 5.6100922659580135e-05,
+                "volume_fraction": 0.08290322666666666
+              },
+              {
+                "radius_m": 6.863853594279176e-05,
+                "volume_fraction": 0.20535305999999998
+              },
+              {
+                "radius_m": 8.491218258958993e-05,
+                "volume_fraction": 0.036390573333333336
+              }
+            ],
+            "heterogeneity": {
+              "columns": 8,
+              "sigma_ln_permeability": 0.6778816549941313,
+              "edge_area_fraction": 0.25,
+              "edge_multiplier": 0.4008307871977334,
+              "prewet_nonuniformity": 0.20544170671371043
+            }
+          },
+          "solubles": {
+            "extractable_fraction": 0.28,
+            "cell_size_m": 4e-05,
+            "saturation_kg_m3": 349.852,
+            "partition_coefficient": 0.61,
+            "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+            "surface_rate_m_s": 0.001,
+            "reference_temp_c": 80.0,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_fraction": 0.012,
+                "kernel_diffusivity_m2_s": 1.9e-10,
+                "partition_coefficient": 1.0,
+                "surface_fraction_scale": 0.5
+              },
+              {
+                "id": "trigonelline",
+                "mass_fraction": 0.006999999999999999,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.999936,
+                "surface_fraction_scale": 2.0
+              },
+              {
+                "id": "cqa5",
+                "mass_fraction": 0.011399999999999999,
+                "kernel_diffusivity_m2_s": 1.55e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 0.842542
+              },
+              {
+                "id": "acids",
+                "mass_fraction": 0.024000000000000004,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 1.0
+              }
+            ],
+            "solute_specific_volume_m3_kg": 0.0006369426751592356,
+            "kernel_loading_cap": false
+          },
+          "hydraulics": {
+            "permeability_m2": 1.9681999999999988e-14,
+            "poroelastic_pc_pa": 1180570.0,
+            "dissolution_kozeny_carman": true,
+            "swelling": {
+              "amplitude": 0.346612342195471,
+              "tau_s": 26.0
+            },
+            "gas": {
+              "amplitude": 0.12869246241387922,
+              "tau_s": 5.0
+            },
+            "pore_air": {
+              "amplitude": 0.5,
+              "tau_s": 2.418876220410908
+            },
+            "pore_air_permeability_exponent": 3.0,
+            "fines_layer": {
+              "amplitude": 0.0,
+              "tau_s": 10.0
+            },
+            "axial_dispersion_m2_s": 4.568699999999999e-06,
+            "viscosity": {
+              "ln_relative_a1": 3.75,
+              "ln_relative_a2": 14.1,
+              "temperature_exponent": 0.278611
+            },
+            "wetting_uptake": 0.5,
+            "intraparticle_water_fraction": 0.5,
+            "dissolution_porosity_share": 0.0
+          },
+          "thermal": {
+            "water_temp_c": 93.0,
+            "initial_bed_temp_c": 73.46127484578479,
+            "heat_capacity_j_k": 152.68435,
+            "heat_loss_w_k": 0.41859999999999997,
+            "ambient_temp_c": 20.0
+          },
+          "machine": {
+            "phases": [
+              {
+                "control": {
+                  "type": "pressure",
+                  "target_pa": 871691.6
+                },
+                "ramp_s": 1.0,
+                "limit": null,
+                "exit": {
+                  "time_s": null,
+                  "beverage_mass_kg": null,
+                  "pressure_pa": null
+                }
+              }
+            ],
+            "pump": {
+              "type": "ideal",
+              "max_flow_m3_s": 8e-06,
+              "max_pressure_pa": 1500000.0
+            },
+            "stop": {
+              "time_s": 130.0,
+              "beverage_mass_kg": null,
+              "drip_tau_s": 1.5,
+              "vent_headspace": false
+            },
+            "hydraulic_compliance_m3_pa": 0.0
+          },
+          "numerics": {
+            "tier": 1,
+            "depth_cells": 30,
+            "max_dt_s": 0.05,
+            "max_duration_s": 145.0,
+            "output_interval_s": 0.1,
+            "snapshot_count": 1,
+            "kernel_shells": 8
+          }
+        },
+        "summary": {
+          "stop_reason": "time",
+          "shot_time_s": 130.0,
+          "first_drops_s": 10.462405696774512,
+          "beverage_mass_kg": 0.22127431754482724,
+          "drip_mass_kg": 0.004941165610814341,
+          "tds": 0.023403900499294264,
+          "ey": 0.2799287627496422,
+          "max_pressure_pa": 871691.6,
+          "bed_height_m": 0.014000000000000005,
+          "headspace_m3": 3.802599277086268e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022194989790309756,
+              "extracted_fraction": 0.9997743148788178
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012946861536057455,
+              "extracted_fraction": 0.9997576475720045
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00021084836887469533,
+              "extracted_fraction": 0.9997551866984132
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00044388919798268785,
+              "extracted_fraction": 0.9997504459069545
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.0001227837826623637,
+            "ey_min": 0.27949898281786145,
+            "ey_max": 0.27999999999993785,
+            "ey_mean": 0.27995827050418787
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 3.0256529259259776e-15,
+          "mass_balance_error": 2.5284096995414845e-14,
+          "steps": 2850,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 104 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 104 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.005078936080581694,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "startup": {
+          "intraparticle_water_fraction": 0.5,
+          "pore_air": {
+            "amplitude": 0.5,
+            "tau_s": 2.418876220410908
+          },
+          "pore_air_permeability_exponent": 3.0
+        },
+        "kernel_loading_cap": false,
+        "transient": {
+          "drops_model_s": 6.067898425331863,
+          "drops_data_s": 12.761996808290156,
+          "rise_model": {
+            "q2": 0.5473174023099883,
+            "q15": 1.8795601330343792,
+            "ratio_15_2": 3.4341318677271633,
+            "t90_s": 12.448258078695932,
+            "q_end": 1.856182925755648
+          },
+          "rise_data": {
+            "q2": 0.1298584666679228,
+            "q15": 0.7902525695713613,
+            "ratio_15_2": 6.0854913033296025,
+            "t90_s": 25.47525321541987,
+            "q_end": 1.824924
+          },
+          "time_to_mass_model_s": 30.128973157693167,
+          "time_to_mass_data_s": 47.69420628329427,
+          "long_time_model_g_s": 1.856182925755648,
+          "long_time_data_g_s": 1.824924
+        },
+        "first_tds_percent": 24.287312251458044
+      },
+      "generic_18_to_36g": {
+        "spec": {
+          "schema": "puckworks.shot-spec/1",
+          "basket": {
+            "profile_m": [
+              [
+                0.0,
+                0.027
+              ],
+              [
+                0.002,
+                0.0285
+              ],
+              [
+                0.005,
+                0.029
+              ],
+              [
+                0.021,
+                0.02925
+              ]
+            ],
+            "perforated_radius_m": 0.025,
+            "open_area_fraction": 0.03,
+            "outlet": {
+              "type": "holes"
+            },
+            "extra_headspace_m3": 5e-06
+          },
+          "bed": {
+            "dose_kg": 0.018,
+            "intergranular_porosity": 0.17,
+            "intraparticle_porosity": 0.55,
+            "skeletal_density_kg_m3": 1352.0,
+            "size_classes": [
+              {
+                "radius_m": 3.928847607002298e-06,
+                "volume_fraction": 0.0011790011400834599
+              },
+              {
+                "radius_m": 4.659602684099041e-06,
+                "volume_fraction": 0.0014031429739618313
+              },
+              {
+                "radius_m": 5.526276238092401e-06,
+                "volume_fraction": 0.0026758361261823406
+              },
+              {
+                "radius_m": 6.554148739745975e-06,
+                "volume_fraction": 0.0047091709468395585
+              },
+              {
+                "radius_m": 7.773202759321692e-06,
+                "volume_fraction": 0.007648174834464521
+              },
+              {
+                "radius_m": 9.218997544426835e-06,
+                "volume_fraction": 0.011463057604524051
+              },
+              {
+                "radius_m": 1.0933706266985942e-05,
+                "volume_fraction": 0.015855254638226852
+              },
+              {
+                "radius_m": 1.2967346195356878e-05,
+                "volume_fraction": 0.020238422612870836
+              },
+              {
+                "radius_m": 1.5379237675148398e-05,
+                "volume_fraction": 0.023840274844776785
+              },
+              {
+                "radius_m": 1.8239734476541807e-05,
+                "volume_fraction": 0.02591656011955737
+              },
+              {
+                "radius_m": 2.1632275981555597e-05,
+                "volume_fraction": 0.026000135876344227
+              },
+              {
+                "radius_m": 2.5655821072616314e-05,
+                "volume_fraction": 0.024072027527933304
+              },
+              {
+                "radius_m": 3.0427734717850482e-05,
+                "volume_fraction": 0.020571377483033365
+              },
+              {
+                "radius_m": 3.608721145346954e-05,
+                "volume_fraction": 0.01625357969991606
+              },
+              {
+                "radius_m": 4.279933562466071e-05,
+                "volume_fraction": 0.01203389559670845
+              },
+              {
+                "radius_m": 5.0759896820352294e-05,
+                "volume_fraction": 0.009092578879026009
+              },
+              {
+                "radius_m": 6.020110096588062e-05,
+                "volume_fraction": 0.009534574385123451
+              },
+              {
+                "radius_m": 7.139834366351659e-05,
+                "volume_fraction": 0.017300175247302374
+              },
+              {
+                "radius_m": 8.467824335609392e-05,
+                "volume_fraction": 0.03747027025640948
+              },
+              {
+                "radius_m": 0.00010042816863744444,
+                "volume_fraction": 0.0715789134494837
+              },
+              {
+                "radius_m": 0.00011910753761692375,
+                "volume_fraction": 0.11105692481311968
+              },
+              {
+                "radius_m": 0.00014126121893531644,
+                "volume_fraction": 0.1377932389776944
+              },
+              {
+                "radius_m": 0.00016753542533361947,
+                "volume_fraction": 0.1368115108556054
+              },
+              {
+                "radius_m": 0.0001986965633828288,
+                "volume_fraction": 0.10960593347942449
+              },
+              {
+                "radius_m": 0.00023565358921271676,
+                "volume_fraction": 0.07209751384829033
+              },
+              {
+                "radius_m": 0.0002794845223459707,
+                "volume_fraction": 0.040115027660249436
+              },
+              {
+                "radius_m": 0.0003314678910341005,
+                "volume_fraction": 0.019641995354913955
+              },
+              {
+                "radius_m": 0.0003931200263411589,
+                "volume_fraction": 0.00873999518332147
+              },
+              {
+                "radius_m": 0.00046623929282663037,
+                "volume_fraction": 0.00353807525756733
+              },
+              {
+                "radius_m": 0.0005529585460162477,
+                "volume_fraction": 0.0017633603270454934
+              }
+            ],
+            "heterogeneity": {
+              "columns": 8,
+              "sigma_ln_permeability": 0.3624808438869603,
+              "edge_area_fraction": 0.25,
+              "edge_multiplier": 0.3482099902944875,
+              "prewet_nonuniformity": 0.17243829607570452
+            }
+          },
+          "solubles": {
+            "extractable_fraction": 0.28,
+            "cell_size_m": 4e-05,
+            "saturation_kg_m3": 349.852,
+            "partition_coefficient": 0.61,
+            "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+            "surface_rate_m_s": 0.001,
+            "reference_temp_c": 80.0,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_fraction": 0.012,
+                "kernel_diffusivity_m2_s": 1.9e-10,
+                "partition_coefficient": 1.0,
+                "surface_fraction_scale": 0.5
+              },
+              {
+                "id": "trigonelline",
+                "mass_fraction": 0.006999999999999999,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.999936,
+                "surface_fraction_scale": 2.0
+              },
+              {
+                "id": "cqa5",
+                "mass_fraction": 0.011399999999999999,
+                "kernel_diffusivity_m2_s": 1.55e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 0.842542
+              },
+              {
+                "id": "acids",
+                "mass_fraction": 0.024000000000000004,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 1.0
+              }
+            ],
+            "solute_specific_volume_m3_kg": 0.0006369426751592356,
+            "kernel_loading_cap": false
+          },
+          "hydraulics": {
+            "permeability_m2": 6.109079057227549e-14,
+            "poroelastic_pc_pa": 1180570.0,
+            "dissolution_kozeny_carman": true,
+            "swelling": {
+              "amplitude": 0.346612342195471,
+              "tau_s": 26.0
+            },
+            "gas": {
+              "amplitude": 0.12869246241387922,
+              "tau_s": 5.0
+            },
+            "pore_air": {
+              "amplitude": 0.5,
+              "tau_s": 11.093363463670958
+            },
+            "pore_air_permeability_exponent": 3.0,
+            "fines_layer": {
+              "amplitude": 0.0,
+              "tau_s": 10.0
+            },
+            "axial_dispersion_m2_s": 4.568699999999999e-06,
+            "viscosity": {
+              "ln_relative_a1": 3.75,
+              "ln_relative_a2": 14.1,
+              "temperature_exponent": 0.278611
+            },
+            "wetting_uptake": 0.5,
+            "intraparticle_water_fraction": 0.5,
+            "dissolution_porosity_share": 0.0
+          },
+          "thermal": {
+            "water_temp_c": 93.0,
+            "initial_bed_temp_c": 73.7190082644628,
+            "heat_capacity_j_k": 151.9518,
+            "heat_loss_w_k": 0.41859999999999997,
+            "ambient_temp_c": 20.0
+          },
+          "machine": {
+            "phases": [
+              {
+                "control": {
+                  "type": "pressure",
+                  "target_pa": 900000.0
+                },
+                "ramp_s": 2.0,
+                "limit": null,
+                "exit": {
+                  "time_s": null,
+                  "beverage_mass_kg": null,
+                  "pressure_pa": null
+                }
+              }
+            ],
+            "pump": {
+              "type": "ideal",
+              "max_flow_m3_s": 8e-06,
+              "max_pressure_pa": 1200000.0
+            },
+            "stop": {
+              "time_s": null,
+              "beverage_mass_kg": 0.036,
+              "drip_tau_s": 1.5,
+              "vent_headspace": false
+            },
+            "hydraulic_compliance_m3_pa": 0.0
+          },
+          "numerics": {
+            "tier": 1,
+            "depth_cells": 30,
+            "max_dt_s": 0.05,
+            "max_duration_s": 120.0,
+            "output_interval_s": 0.1,
+            "snapshot_count": 1,
+            "kernel_shells": 8
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 21.724439329365524,
+          "first_drops_s": 7.323090496855254,
+          "beverage_mass_kg": 0.049186798788610896,
+          "drip_mass_kg": 0.013186761268580628,
+          "tds": 0.0659667667797498,
+          "ey": 0.18026078246282085,
+          "max_pressure_pa": 900000.0,
+          "bed_height_m": 0.013670582031378003,
+          "headspace_m3": 2.4623189814813164e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00016866761518235252,
+              "extracted_fraction": 0.7808685888071877
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001044696287668115,
+              "extracted_fraction": 0.8291240378318375
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0001510673517035067,
+              "extracted_fraction": 0.736195671069721
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0003353747919794314,
+              "extracted_fraction": 0.7763305369894244
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031435032878261,
+            "ey_min": 0.1117977434000234,
+            "ey_max": 0.23545820993875835,
+            "ey_mean": 0.19286925412677403
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 4.335066059768325e-15,
+          "mass_balance_error": 5.5070586538946255e-15,
+          "steps": 693,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 104 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 104 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.006135781391269883,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "startup": {
+          "intraparticle_water_fraction": 0.5,
+          "pore_air": {
+            "amplitude": 0.5,
+            "tau_s": 11.093363463670958
+          },
+          "pore_air_permeability_exponent": 3.0
+        },
+        "kernel_loading_cap": false,
+        "time_to_36g_s": 21.724431056947694
+      }
+    },
+    {
+      "variant": "Pore-air closure disabled",
+      "changes": {
+        "air_amplitude": 0.0
+      },
+      "v4_9bar": {
+        "spec": {
+          "schema": "puckworks.shot-spec/1",
+          "basket": {
+            "profile_m": [
+              [
+                0.0,
+                0.029
+              ],
+              [
+                0.0265,
+                0.029
+              ]
+            ],
+            "perforated_radius_m": 0.027,
+            "open_area_fraction": 0.03,
+            "outlet": {
+              "type": "holes"
+            },
+            "extra_headspace_m3": 5e-06
+          },
+          "bed": {
+            "dose_kg": 0.0185,
+            "intergranular_porosity": 0.17793034228795757,
+            "intraparticle_porosity": 0.55,
+            "skeletal_density_kg_m3": 1352.0,
+            "size_classes": [
+              {
+                "radius_m": 3.253658466182754e-06,
+                "volume_fraction": 0.00201244
+              },
+              {
+                "radius_m": 4.064152671146102e-06,
+                "volume_fraction": 0.0012169933333333334
+              },
+              {
+                "radius_m": 5.009727157191162e-06,
+                "volume_fraction": 0.0027257699999999998
+              },
+              {
+                "radius_m": 6.7491212039624685e-06,
+                "volume_fraction": 0.0075703133333333335
+              },
+              {
+                "radius_m": 8.109050289967625e-06,
+                "volume_fraction": 0.010979513333333333
+              },
+              {
+                "radius_m": 1.0104529821943224e-05,
+                "volume_fraction": 0.05156289
+              },
+              {
+                "radius_m": 1.2273544723859932e-05,
+                "volume_fraction": 0.04272558
+              },
+              {
+                "radius_m": 1.5129480939777261e-05,
+                "volume_fraction": 0.11130519
+              },
+              {
+                "radius_m": 1.857676142982237e-05,
+                "volume_fraction": 0.06388572666666666
+              },
+              {
+                "radius_m": 2.2787073826252556e-05,
+                "volume_fraction": 0.13149511333333333
+              },
+              {
+                "radius_m": 2.988586428749823e-05,
+                "volume_fraction": 0.10971663000000001
+              },
+              {
+                "radius_m": 3.706551193020552e-05,
+                "volume_fraction": 0.042733049999999995
+              },
+              {
+                "radius_m": 4.5899951405582554e-05,
+                "volume_fraction": 0.09742392999999999
+              },
+              {
+                "radius_m": 5.6100922659580135e-05,
+                "volume_fraction": 0.08290322666666666
+              },
+              {
+                "radius_m": 6.863853594279176e-05,
+                "volume_fraction": 0.20535305999999998
+              },
+              {
+                "radius_m": 8.491218258958993e-05,
+                "volume_fraction": 0.036390573333333336
+              }
+            ],
+            "heterogeneity": {
+              "columns": 8,
+              "sigma_ln_permeability": 0.6778816549941313,
+              "edge_area_fraction": 0.25,
+              "edge_multiplier": 0.4008307871977334,
+              "prewet_nonuniformity": 0.20544170671371043
+            }
+          },
+          "solubles": {
+            "extractable_fraction": 0.28,
+            "cell_size_m": 4e-05,
+            "saturation_kg_m3": 349.852,
+            "partition_coefficient": 0.61,
+            "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+            "surface_rate_m_s": 0.001,
+            "reference_temp_c": 80.0,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_fraction": 0.012,
+                "kernel_diffusivity_m2_s": 1.9e-10,
+                "partition_coefficient": 1.0,
+                "surface_fraction_scale": 0.5
+              },
+              {
+                "id": "trigonelline",
+                "mass_fraction": 0.006999999999999999,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.999936,
+                "surface_fraction_scale": 2.0
+              },
+              {
+                "id": "cqa5",
+                "mass_fraction": 0.011399999999999999,
+                "kernel_diffusivity_m2_s": 1.55e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 0.842542
+              },
+              {
+                "id": "acids",
+                "mass_fraction": 0.024000000000000004,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 1.0
+              }
+            ],
+            "solute_specific_volume_m3_kg": 0.0006369426751592356,
+            "kernel_loading_cap": false
+          },
+          "hydraulics": {
+            "permeability_m2": 1.9681999999999988e-14,
+            "poroelastic_pc_pa": 1180570.0,
+            "dissolution_kozeny_carman": true,
+            "swelling": {
+              "amplitude": 0.346612342195471,
+              "tau_s": 26.0
+            },
+            "gas": {
+              "amplitude": 0.12869246241387922,
+              "tau_s": 5.0
+            },
+            "pore_air": {
+              "amplitude": 0.0,
+              "tau_s": 2.418876220410908
+            },
+            "pore_air_permeability_exponent": 3.0,
+            "fines_layer": {
+              "amplitude": 0.0,
+              "tau_s": 10.0
+            },
+            "axial_dispersion_m2_s": 4.568699999999999e-06,
+            "viscosity": {
+              "ln_relative_a1": 3.75,
+              "ln_relative_a2": 14.1,
+              "temperature_exponent": 0.278611
+            },
+            "wetting_uptake": 0.5,
+            "intraparticle_water_fraction": 0.5,
+            "dissolution_porosity_share": 0.0
+          },
+          "thermal": {
+            "water_temp_c": 93.0,
+            "initial_bed_temp_c": 73.46127484578479,
+            "heat_capacity_j_k": 152.68435,
+            "heat_loss_w_k": 0.41859999999999997,
+            "ambient_temp_c": 20.0
+          },
+          "machine": {
+            "phases": [
+              {
+                "control": {
+                  "type": "pressure",
+                  "target_pa": 871691.6
+                },
+                "ramp_s": 1.0,
+                "limit": null,
+                "exit": {
+                  "time_s": null,
+                  "beverage_mass_kg": null,
+                  "pressure_pa": null
+                }
+              }
+            ],
+            "pump": {
+              "type": "ideal",
+              "max_flow_m3_s": 8e-06,
+              "max_pressure_pa": 1500000.0
+            },
+            "stop": {
+              "time_s": 130.0,
+              "beverage_mass_kg": null,
+              "drip_tau_s": 1.5,
+              "vent_headspace": false
+            },
+            "hydraulic_compliance_m3_pa": 0.0
+          },
+          "numerics": {
+            "tier": 1,
+            "depth_cells": 30,
+            "max_dt_s": 0.05,
+            "max_duration_s": 145.0,
+            "output_interval_s": 0.1,
+            "snapshot_count": 1,
+            "kernel_shells": 8
+          }
+        },
+        "summary": {
+          "stop_reason": "time",
+          "shot_time_s": 130.0,
+          "first_drops_s": 6.701132511268938,
+          "beverage_mass_kg": 0.23676920840098775,
+          "drip_mass_kg": 0.004941338949709995,
+          "tds": 0.021875267124483098,
+          "ey": 0.2799670097634603,
+          "max_pressure_pa": 871691.6,
+          "bed_height_m": 0.014000000000000005,
+          "headspace_m3": 3.802599277086268e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002219766765463754,
+              "extracted_fraction": 0.9998949393980874
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001294854864631283,
+              "extracted_fraction": 0.9998879263562033
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0002108760631955288,
+              "extracted_fraction": 0.999886501638354
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004439487287374908,
+              "extracted_fraction": 0.9998845241835377
+            }
+          ],
+          "uniformity": {
+            "ey_std": 5.696860466291095e-05,
+            "ey_min": 0.279767584760281,
+            "ey_max": 0.2799999999999743,
+            "ey_mean": 0.27998067497758256
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 2.0685114802318363e-15,
+          "mass_balance_error": 1.1252260384714433e-14,
+          "steps": 2857,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 104 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 104 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.004126299698191755,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "startup": {
+          "intraparticle_water_fraction": 0.5,
+          "pore_air": {
+            "amplitude": 0.0,
+            "tau_s": 2.418876220410908
+          },
+          "pore_air_permeability_exponent": 3.0
+        },
+        "kernel_loading_cap": false,
+        "transient": {
+          "drops_model_s": 1.8144956937015948,
+          "drops_data_s": 12.761996808290156,
+          "rise_model": {
+            "q2": 0.9451060218777063,
+            "q15": 2.0516174421006257,
+            "ratio_15_2": 2.170780203076622,
+            "t90_s": 7.00731854169485,
+            "q_end": 1.8561549277237936
+          },
+          "rise_data": {
+            "q2": 0.1298584666679228,
+            "q15": 0.7902525695713613,
+            "ratio_15_2": 6.0854913033296025,
+            "t90_s": 25.47525321541987,
+            "q_end": 1.824924
+          },
+          "time_to_mass_model_s": 22.599434386203242,
+          "time_to_mass_data_s": 47.69420628329427,
+          "long_time_model_g_s": 1.8561549277237936,
+          "long_time_data_g_s": 1.824924
+        },
+        "first_tds_percent": 22.26887894061133
+      },
+      "generic_18_to_36g": {
+        "spec": {
+          "schema": "puckworks.shot-spec/1",
+          "basket": {
+            "profile_m": [
+              [
+                0.0,
+                0.027
+              ],
+              [
+                0.002,
+                0.0285
+              ],
+              [
+                0.005,
+                0.029
+              ],
+              [
+                0.021,
+                0.02925
+              ]
+            ],
+            "perforated_radius_m": 0.025,
+            "open_area_fraction": 0.03,
+            "outlet": {
+              "type": "holes"
+            },
+            "extra_headspace_m3": 5e-06
+          },
+          "bed": {
+            "dose_kg": 0.018,
+            "intergranular_porosity": 0.17,
+            "intraparticle_porosity": 0.55,
+            "skeletal_density_kg_m3": 1352.0,
+            "size_classes": [
+              {
+                "radius_m": 3.928847607002298e-06,
+                "volume_fraction": 0.0011790011400834599
+              },
+              {
+                "radius_m": 4.659602684099041e-06,
+                "volume_fraction": 0.0014031429739618313
+              },
+              {
+                "radius_m": 5.526276238092401e-06,
+                "volume_fraction": 0.0026758361261823406
+              },
+              {
+                "radius_m": 6.554148739745975e-06,
+                "volume_fraction": 0.0047091709468395585
+              },
+              {
+                "radius_m": 7.773202759321692e-06,
+                "volume_fraction": 0.007648174834464521
+              },
+              {
+                "radius_m": 9.218997544426835e-06,
+                "volume_fraction": 0.011463057604524051
+              },
+              {
+                "radius_m": 1.0933706266985942e-05,
+                "volume_fraction": 0.015855254638226852
+              },
+              {
+                "radius_m": 1.2967346195356878e-05,
+                "volume_fraction": 0.020238422612870836
+              },
+              {
+                "radius_m": 1.5379237675148398e-05,
+                "volume_fraction": 0.023840274844776785
+              },
+              {
+                "radius_m": 1.8239734476541807e-05,
+                "volume_fraction": 0.02591656011955737
+              },
+              {
+                "radius_m": 2.1632275981555597e-05,
+                "volume_fraction": 0.026000135876344227
+              },
+              {
+                "radius_m": 2.5655821072616314e-05,
+                "volume_fraction": 0.024072027527933304
+              },
+              {
+                "radius_m": 3.0427734717850482e-05,
+                "volume_fraction": 0.020571377483033365
+              },
+              {
+                "radius_m": 3.608721145346954e-05,
+                "volume_fraction": 0.01625357969991606
+              },
+              {
+                "radius_m": 4.279933562466071e-05,
+                "volume_fraction": 0.01203389559670845
+              },
+              {
+                "radius_m": 5.0759896820352294e-05,
+                "volume_fraction": 0.009092578879026009
+              },
+              {
+                "radius_m": 6.020110096588062e-05,
+                "volume_fraction": 0.009534574385123451
+              },
+              {
+                "radius_m": 7.139834366351659e-05,
+                "volume_fraction": 0.017300175247302374
+              },
+              {
+                "radius_m": 8.467824335609392e-05,
+                "volume_fraction": 0.03747027025640948
+              },
+              {
+                "radius_m": 0.00010042816863744444,
+                "volume_fraction": 0.0715789134494837
+              },
+              {
+                "radius_m": 0.00011910753761692375,
+                "volume_fraction": 0.11105692481311968
+              },
+              {
+                "radius_m": 0.00014126121893531644,
+                "volume_fraction": 0.1377932389776944
+              },
+              {
+                "radius_m": 0.00016753542533361947,
+                "volume_fraction": 0.1368115108556054
+              },
+              {
+                "radius_m": 0.0001986965633828288,
+                "volume_fraction": 0.10960593347942449
+              },
+              {
+                "radius_m": 0.00023565358921271676,
+                "volume_fraction": 0.07209751384829033
+              },
+              {
+                "radius_m": 0.0002794845223459707,
+                "volume_fraction": 0.040115027660249436
+              },
+              {
+                "radius_m": 0.0003314678910341005,
+                "volume_fraction": 0.019641995354913955
+              },
+              {
+                "radius_m": 0.0003931200263411589,
+                "volume_fraction": 0.00873999518332147
+              },
+              {
+                "radius_m": 0.00046623929282663037,
+                "volume_fraction": 0.00353807525756733
+              },
+              {
+                "radius_m": 0.0005529585460162477,
+                "volume_fraction": 0.0017633603270454934
+              }
+            ],
+            "heterogeneity": {
+              "columns": 8,
+              "sigma_ln_permeability": 0.3624808438869603,
+              "edge_area_fraction": 0.25,
+              "edge_multiplier": 0.3482099902944875,
+              "prewet_nonuniformity": 0.17243829607570452
+            }
+          },
+          "solubles": {
+            "extractable_fraction": 0.28,
+            "cell_size_m": 4e-05,
+            "saturation_kg_m3": 349.852,
+            "partition_coefficient": 0.61,
+            "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+            "surface_rate_m_s": 0.001,
+            "reference_temp_c": 80.0,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_fraction": 0.012,
+                "kernel_diffusivity_m2_s": 1.9e-10,
+                "partition_coefficient": 1.0,
+                "surface_fraction_scale": 0.5
+              },
+              {
+                "id": "trigonelline",
+                "mass_fraction": 0.006999999999999999,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.999936,
+                "surface_fraction_scale": 2.0
+              },
+              {
+                "id": "cqa5",
+                "mass_fraction": 0.011399999999999999,
+                "kernel_diffusivity_m2_s": 1.55e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 0.842542
+              },
+              {
+                "id": "acids",
+                "mass_fraction": 0.024000000000000004,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 1.0
+              }
+            ],
+            "solute_specific_volume_m3_kg": 0.0006369426751592356,
+            "kernel_loading_cap": false
+          },
+          "hydraulics": {
+            "permeability_m2": 6.109079057227549e-14,
+            "poroelastic_pc_pa": 1180570.0,
+            "dissolution_kozeny_carman": true,
+            "swelling": {
+              "amplitude": 0.346612342195471,
+              "tau_s": 26.0
+            },
+            "gas": {
+              "amplitude": 0.12869246241387922,
+              "tau_s": 5.0
+            },
+            "pore_air": {
+              "amplitude": 0.0,
+              "tau_s": 11.093363463670958
+            },
+            "pore_air_permeability_exponent": 3.0,
+            "fines_layer": {
+              "amplitude": 0.0,
+              "tau_s": 10.0
+            },
+            "axial_dispersion_m2_s": 4.568699999999999e-06,
+            "viscosity": {
+              "ln_relative_a1": 3.75,
+              "ln_relative_a2": 14.1,
+              "temperature_exponent": 0.278611
+            },
+            "wetting_uptake": 0.5,
+            "intraparticle_water_fraction": 0.5,
+            "dissolution_porosity_share": 0.0
+          },
+          "thermal": {
+            "water_temp_c": 93.0,
+            "initial_bed_temp_c": 73.7190082644628,
+            "heat_capacity_j_k": 151.9518,
+            "heat_loss_w_k": 0.41859999999999997,
+            "ambient_temp_c": 20.0
+          },
+          "machine": {
+            "phases": [
+              {
+                "control": {
+                  "type": "pressure",
+                  "target_pa": 900000.0
+                },
+                "ramp_s": 2.0,
+                "limit": null,
+                "exit": {
+                  "time_s": null,
+                  "beverage_mass_kg": null,
+                  "pressure_pa": null
+                }
+              }
+            ],
+            "pump": {
+              "type": "ideal",
+              "max_flow_m3_s": 8e-06,
+              "max_pressure_pa": 1200000.0
+            },
+            "stop": {
+              "time_s": null,
+              "beverage_mass_kg": 0.036,
+              "drip_tau_s": 1.5,
+              "vent_headspace": false
+            },
+            "hydraulic_compliance_m3_pa": 0.0
+          },
+          "numerics": {
+            "tier": 1,
+            "depth_cells": 30,
+            "max_dt_s": 0.05,
+            "max_duration_s": 120.0,
+            "output_interval_s": 0.1,
+            "snapshot_count": 1,
+            "kernel_shells": 8
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 10.187355030057931,
+          "first_drops_s": 4.2666514548520755,
+          "beverage_mass_kg": 0.056171504991845464,
+          "drip_mass_kg": 0.02017157132299413,
+          "tds": 0.06065114721906033,
+          "ey": 0.18927034548758898,
+          "max_pressure_pa": 900000.0,
+          "bed_height_m": 0.013670582031378003,
+          "headspace_m3": 2.4623189814813164e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0001715931354214079,
+              "extracted_fraction": 0.7944126639879995
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00011269634371306848,
+              "extracted_fraction": 0.8944154262941946
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00015960810914901924,
+              "extracted_fraction": 0.7778172960478523
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0003609011147516096,
+              "extracted_fraction": 0.8354192471102073
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.012193521647010833,
+            "ey_min": 0.16442372280400355,
+            "ey_max": 0.22381926674094044,
+            "ey_mean": 0.19853663833920462
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 2.7119232904201235e-16,
+          "mass_balance_error": 4.8186763221577976e-15,
+          "steps": 463,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 104 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 104 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.012647774695852017,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "startup": {
+          "intraparticle_water_fraction": 0.5,
+          "pore_air": {
+            "amplitude": 0.0,
+            "tau_s": 11.093363463670958
+          },
+          "pore_air_permeability_exponent": 3.0
+        },
+        "kernel_loading_cap": false,
+        "time_to_36g_s": 10.187364017722047
+      }
+    },
+    {
+      "variant": "Water-admission fraction fixed at 0.5",
+      "changes": {
+        "water_fraction": 0.5
+      },
+      "v4_9bar": {
+        "spec": {
+          "schema": "puckworks.shot-spec/1",
+          "basket": {
+            "profile_m": [
+              [
+                0.0,
+                0.029
+              ],
+              [
+                0.0265,
+                0.029
+              ]
+            ],
+            "perforated_radius_m": 0.027,
+            "open_area_fraction": 0.03,
+            "outlet": {
+              "type": "holes"
+            },
+            "extra_headspace_m3": 5e-06
+          },
+          "bed": {
+            "dose_kg": 0.0185,
+            "intergranular_porosity": 0.17793034228795757,
+            "intraparticle_porosity": 0.55,
+            "skeletal_density_kg_m3": 1352.0,
+            "size_classes": [
+              {
+                "radius_m": 3.253658466182754e-06,
+                "volume_fraction": 0.00201244
+              },
+              {
+                "radius_m": 4.064152671146102e-06,
+                "volume_fraction": 0.0012169933333333334
+              },
+              {
+                "radius_m": 5.009727157191162e-06,
+                "volume_fraction": 0.0027257699999999998
+              },
+              {
+                "radius_m": 6.7491212039624685e-06,
+                "volume_fraction": 0.0075703133333333335
+              },
+              {
+                "radius_m": 8.109050289967625e-06,
+                "volume_fraction": 0.010979513333333333
+              },
+              {
+                "radius_m": 1.0104529821943224e-05,
+                "volume_fraction": 0.05156289
+              },
+              {
+                "radius_m": 1.2273544723859932e-05,
+                "volume_fraction": 0.04272558
+              },
+              {
+                "radius_m": 1.5129480939777261e-05,
+                "volume_fraction": 0.11130519
+              },
+              {
+                "radius_m": 1.857676142982237e-05,
+                "volume_fraction": 0.06388572666666666
+              },
+              {
+                "radius_m": 2.2787073826252556e-05,
+                "volume_fraction": 0.13149511333333333
+              },
+              {
+                "radius_m": 2.988586428749823e-05,
+                "volume_fraction": 0.10971663000000001
+              },
+              {
+                "radius_m": 3.706551193020552e-05,
+                "volume_fraction": 0.042733049999999995
+              },
+              {
+                "radius_m": 4.5899951405582554e-05,
+                "volume_fraction": 0.09742392999999999
+              },
+              {
+                "radius_m": 5.6100922659580135e-05,
+                "volume_fraction": 0.08290322666666666
+              },
+              {
+                "radius_m": 6.863853594279176e-05,
+                "volume_fraction": 0.20535305999999998
+              },
+              {
+                "radius_m": 8.491218258958993e-05,
+                "volume_fraction": 0.036390573333333336
+              }
+            ],
+            "heterogeneity": {
+              "columns": 8,
+              "sigma_ln_permeability": 0.6778816549941313,
+              "edge_area_fraction": 0.25,
+              "edge_multiplier": 0.4008307871977334,
+              "prewet_nonuniformity": 0.20544170671371043
+            }
+          },
+          "solubles": {
+            "extractable_fraction": 0.28,
+            "cell_size_m": 4e-05,
+            "saturation_kg_m3": 349.852,
+            "partition_coefficient": 0.61,
+            "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+            "surface_rate_m_s": 0.001,
+            "reference_temp_c": 80.0,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_fraction": 0.012,
+                "kernel_diffusivity_m2_s": 1.9e-10,
+                "partition_coefficient": 1.0,
+                "surface_fraction_scale": 0.5
+              },
+              {
+                "id": "trigonelline",
+                "mass_fraction": 0.006999999999999999,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.999936,
+                "surface_fraction_scale": 2.0
+              },
+              {
+                "id": "cqa5",
+                "mass_fraction": 0.011399999999999999,
+                "kernel_diffusivity_m2_s": 1.55e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 0.842542
+              },
+              {
+                "id": "acids",
+                "mass_fraction": 0.024000000000000004,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 1.0
+              }
+            ],
+            "solute_specific_volume_m3_kg": 0.0006369426751592356,
+            "kernel_loading_cap": false
+          },
+          "hydraulics": {
+            "permeability_m2": 1.9681999999999988e-14,
+            "poroelastic_pc_pa": 1180570.0,
+            "dissolution_kozeny_carman": true,
+            "swelling": {
+              "amplitude": 0.346612342195471,
+              "tau_s": 26.0
+            },
+            "gas": {
+              "amplitude": 0.12869246241387922,
+              "tau_s": 5.0
+            },
+            "pore_air": {
+              "amplitude": 0.5,
+              "tau_s": 2.418876220410908
+            },
+            "pore_air_permeability_exponent": 3.0,
+            "fines_layer": {
+              "amplitude": 0.0,
+              "tau_s": 10.0
+            },
+            "axial_dispersion_m2_s": 4.568699999999999e-06,
+            "viscosity": {
+              "ln_relative_a1": 3.75,
+              "ln_relative_a2": 14.1,
+              "temperature_exponent": 0.278611
+            },
+            "wetting_uptake": 0.5,
+            "intraparticle_water_fraction": 0.5,
+            "dissolution_porosity_share": 0.0
+          },
+          "thermal": {
+            "water_temp_c": 93.0,
+            "initial_bed_temp_c": 73.46127484578479,
+            "heat_capacity_j_k": 152.68435,
+            "heat_loss_w_k": 0.41859999999999997,
+            "ambient_temp_c": 20.0
+          },
+          "machine": {
+            "phases": [
+              {
+                "control": {
+                  "type": "pressure",
+                  "target_pa": 871691.6
+                },
+                "ramp_s": 1.0,
+                "limit": null,
+                "exit": {
+                  "time_s": null,
+                  "beverage_mass_kg": null,
+                  "pressure_pa": null
+                }
+              }
+            ],
+            "pump": {
+              "type": "ideal",
+              "max_flow_m3_s": 8e-06,
+              "max_pressure_pa": 1500000.0
+            },
+            "stop": {
+              "time_s": 130.0,
+              "beverage_mass_kg": null,
+              "drip_tau_s": 1.5,
+              "vent_headspace": false
+            },
+            "hydraulic_compliance_m3_pa": 0.0
+          },
+          "numerics": {
+            "tier": 1,
+            "depth_cells": 30,
+            "max_dt_s": 0.05,
+            "max_duration_s": 145.0,
+            "output_interval_s": 0.1,
+            "snapshot_count": 1,
+            "kernel_shells": 8
+          }
+        },
+        "summary": {
+          "stop_reason": "time",
+          "shot_time_s": 130.0,
+          "first_drops_s": 10.462405696774512,
+          "beverage_mass_kg": 0.22127431754482724,
+          "drip_mass_kg": 0.004941165610814341,
+          "tds": 0.023403900499294264,
+          "ey": 0.2799287627496422,
+          "max_pressure_pa": 871691.6,
+          "bed_height_m": 0.014000000000000005,
+          "headspace_m3": 3.802599277086268e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022194989790309756,
+              "extracted_fraction": 0.9997743148788178
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012946861536057455,
+              "extracted_fraction": 0.9997576475720045
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00021084836887469533,
+              "extracted_fraction": 0.9997551866984132
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00044388919798268785,
+              "extracted_fraction": 0.9997504459069545
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.0001227837826623637,
+            "ey_min": 0.27949898281786145,
+            "ey_max": 0.27999999999993785,
+            "ey_mean": 0.27995827050418787
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 3.0256529259259776e-15,
+          "mass_balance_error": 2.5284096995414845e-14,
+          "steps": 2850,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 104 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 104 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.005078936080581694,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "startup": {
+          "intraparticle_water_fraction": 0.5,
+          "pore_air": {
+            "amplitude": 0.5,
+            "tau_s": 2.418876220410908
+          },
+          "pore_air_permeability_exponent": 3.0
+        },
+        "kernel_loading_cap": false,
+        "transient": {
+          "drops_model_s": 6.067898425331863,
+          "drops_data_s": 12.761996808290156,
+          "rise_model": {
+            "q2": 0.5473174023099883,
+            "q15": 1.8795601330343792,
+            "ratio_15_2": 3.4341318677271633,
+            "t90_s": 12.448258078695932,
+            "q_end": 1.856182925755648
+          },
+          "rise_data": {
+            "q2": 0.1298584666679228,
+            "q15": 0.7902525695713613,
+            "ratio_15_2": 6.0854913033296025,
+            "t90_s": 25.47525321541987,
+            "q_end": 1.824924
+          },
+          "time_to_mass_model_s": 30.128973157693167,
+          "time_to_mass_data_s": 47.69420628329427,
+          "long_time_model_g_s": 1.856182925755648,
+          "long_time_data_g_s": 1.824924
+        },
+        "first_tds_percent": 24.287312251458044
+      },
+      "generic_18_to_36g": {
+        "spec": {
+          "schema": "puckworks.shot-spec/1",
+          "basket": {
+            "profile_m": [
+              [
+                0.0,
+                0.027
+              ],
+              [
+                0.002,
+                0.0285
+              ],
+              [
+                0.005,
+                0.029
+              ],
+              [
+                0.021,
+                0.02925
+              ]
+            ],
+            "perforated_radius_m": 0.025,
+            "open_area_fraction": 0.03,
+            "outlet": {
+              "type": "holes"
+            },
+            "extra_headspace_m3": 5e-06
+          },
+          "bed": {
+            "dose_kg": 0.018,
+            "intergranular_porosity": 0.17,
+            "intraparticle_porosity": 0.55,
+            "skeletal_density_kg_m3": 1352.0,
+            "size_classes": [
+              {
+                "radius_m": 3.928847607002298e-06,
+                "volume_fraction": 0.0011790011400834599
+              },
+              {
+                "radius_m": 4.659602684099041e-06,
+                "volume_fraction": 0.0014031429739618313
+              },
+              {
+                "radius_m": 5.526276238092401e-06,
+                "volume_fraction": 0.0026758361261823406
+              },
+              {
+                "radius_m": 6.554148739745975e-06,
+                "volume_fraction": 0.0047091709468395585
+              },
+              {
+                "radius_m": 7.773202759321692e-06,
+                "volume_fraction": 0.007648174834464521
+              },
+              {
+                "radius_m": 9.218997544426835e-06,
+                "volume_fraction": 0.011463057604524051
+              },
+              {
+                "radius_m": 1.0933706266985942e-05,
+                "volume_fraction": 0.015855254638226852
+              },
+              {
+                "radius_m": 1.2967346195356878e-05,
+                "volume_fraction": 0.020238422612870836
+              },
+              {
+                "radius_m": 1.5379237675148398e-05,
+                "volume_fraction": 0.023840274844776785
+              },
+              {
+                "radius_m": 1.8239734476541807e-05,
+                "volume_fraction": 0.02591656011955737
+              },
+              {
+                "radius_m": 2.1632275981555597e-05,
+                "volume_fraction": 0.026000135876344227
+              },
+              {
+                "radius_m": 2.5655821072616314e-05,
+                "volume_fraction": 0.024072027527933304
+              },
+              {
+                "radius_m": 3.0427734717850482e-05,
+                "volume_fraction": 0.020571377483033365
+              },
+              {
+                "radius_m": 3.608721145346954e-05,
+                "volume_fraction": 0.01625357969991606
+              },
+              {
+                "radius_m": 4.279933562466071e-05,
+                "volume_fraction": 0.01203389559670845
+              },
+              {
+                "radius_m": 5.0759896820352294e-05,
+                "volume_fraction": 0.009092578879026009
+              },
+              {
+                "radius_m": 6.020110096588062e-05,
+                "volume_fraction": 0.009534574385123451
+              },
+              {
+                "radius_m": 7.139834366351659e-05,
+                "volume_fraction": 0.017300175247302374
+              },
+              {
+                "radius_m": 8.467824335609392e-05,
+                "volume_fraction": 0.03747027025640948
+              },
+              {
+                "radius_m": 0.00010042816863744444,
+                "volume_fraction": 0.0715789134494837
+              },
+              {
+                "radius_m": 0.00011910753761692375,
+                "volume_fraction": 0.11105692481311968
+              },
+              {
+                "radius_m": 0.00014126121893531644,
+                "volume_fraction": 0.1377932389776944
+              },
+              {
+                "radius_m": 0.00016753542533361947,
+                "volume_fraction": 0.1368115108556054
+              },
+              {
+                "radius_m": 0.0001986965633828288,
+                "volume_fraction": 0.10960593347942449
+              },
+              {
+                "radius_m": 0.00023565358921271676,
+                "volume_fraction": 0.07209751384829033
+              },
+              {
+                "radius_m": 0.0002794845223459707,
+                "volume_fraction": 0.040115027660249436
+              },
+              {
+                "radius_m": 0.0003314678910341005,
+                "volume_fraction": 0.019641995354913955
+              },
+              {
+                "radius_m": 0.0003931200263411589,
+                "volume_fraction": 0.00873999518332147
+              },
+              {
+                "radius_m": 0.00046623929282663037,
+                "volume_fraction": 0.00353807525756733
+              },
+              {
+                "radius_m": 0.0005529585460162477,
+                "volume_fraction": 0.0017633603270454934
+              }
+            ],
+            "heterogeneity": {
+              "columns": 8,
+              "sigma_ln_permeability": 0.3624808438869603,
+              "edge_area_fraction": 0.25,
+              "edge_multiplier": 0.3482099902944875,
+              "prewet_nonuniformity": 0.17243829607570452
+            }
+          },
+          "solubles": {
+            "extractable_fraction": 0.28,
+            "cell_size_m": 4e-05,
+            "saturation_kg_m3": 349.852,
+            "partition_coefficient": 0.61,
+            "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+            "surface_rate_m_s": 0.001,
+            "reference_temp_c": 80.0,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_fraction": 0.012,
+                "kernel_diffusivity_m2_s": 1.9e-10,
+                "partition_coefficient": 1.0,
+                "surface_fraction_scale": 0.5
+              },
+              {
+                "id": "trigonelline",
+                "mass_fraction": 0.006999999999999999,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.999936,
+                "surface_fraction_scale": 2.0
+              },
+              {
+                "id": "cqa5",
+                "mass_fraction": 0.011399999999999999,
+                "kernel_diffusivity_m2_s": 1.55e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 0.842542
+              },
+              {
+                "id": "acids",
+                "mass_fraction": 0.024000000000000004,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 1.0
+              }
+            ],
+            "solute_specific_volume_m3_kg": 0.0006369426751592356,
+            "kernel_loading_cap": false
+          },
+          "hydraulics": {
+            "permeability_m2": 6.109079057227549e-14,
+            "poroelastic_pc_pa": 1180570.0,
+            "dissolution_kozeny_carman": true,
+            "swelling": {
+              "amplitude": 0.346612342195471,
+              "tau_s": 26.0
+            },
+            "gas": {
+              "amplitude": 0.12869246241387922,
+              "tau_s": 5.0
+            },
+            "pore_air": {
+              "amplitude": 0.5,
+              "tau_s": 11.093363463670958
+            },
+            "pore_air_permeability_exponent": 3.0,
+            "fines_layer": {
+              "amplitude": 0.0,
+              "tau_s": 10.0
+            },
+            "axial_dispersion_m2_s": 4.568699999999999e-06,
+            "viscosity": {
+              "ln_relative_a1": 3.75,
+              "ln_relative_a2": 14.1,
+              "temperature_exponent": 0.278611
+            },
+            "wetting_uptake": 0.5,
+            "intraparticle_water_fraction": 0.5,
+            "dissolution_porosity_share": 0.0
+          },
+          "thermal": {
+            "water_temp_c": 93.0,
+            "initial_bed_temp_c": 73.7190082644628,
+            "heat_capacity_j_k": 151.9518,
+            "heat_loss_w_k": 0.41859999999999997,
+            "ambient_temp_c": 20.0
+          },
+          "machine": {
+            "phases": [
+              {
+                "control": {
+                  "type": "pressure",
+                  "target_pa": 900000.0
+                },
+                "ramp_s": 2.0,
+                "limit": null,
+                "exit": {
+                  "time_s": null,
+                  "beverage_mass_kg": null,
+                  "pressure_pa": null
+                }
+              }
+            ],
+            "pump": {
+              "type": "ideal",
+              "max_flow_m3_s": 8e-06,
+              "max_pressure_pa": 1200000.0
+            },
+            "stop": {
+              "time_s": null,
+              "beverage_mass_kg": 0.036,
+              "drip_tau_s": 1.5,
+              "vent_headspace": false
+            },
+            "hydraulic_compliance_m3_pa": 0.0
+          },
+          "numerics": {
+            "tier": 1,
+            "depth_cells": 30,
+            "max_dt_s": 0.05,
+            "max_duration_s": 120.0,
+            "output_interval_s": 0.1,
+            "snapshot_count": 1,
+            "kernel_shells": 8
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 21.724439329365524,
+          "first_drops_s": 7.323090496855254,
+          "beverage_mass_kg": 0.049186798788610896,
+          "drip_mass_kg": 0.013186761268580628,
+          "tds": 0.0659667667797498,
+          "ey": 0.18026078246282085,
+          "max_pressure_pa": 900000.0,
+          "bed_height_m": 0.013670582031378003,
+          "headspace_m3": 2.4623189814813164e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00016866761518235252,
+              "extracted_fraction": 0.7808685888071877
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001044696287668115,
+              "extracted_fraction": 0.8291240378318375
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0001510673517035067,
+              "extracted_fraction": 0.736195671069721
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0003353747919794314,
+              "extracted_fraction": 0.7763305369894244
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031435032878261,
+            "ey_min": 0.1117977434000234,
+            "ey_max": 0.23545820993875835,
+            "ey_mean": 0.19286925412677403
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 4.335066059768325e-15,
+          "mass_balance_error": 5.5070586538946255e-15,
+          "steps": 693,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 104 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 104 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.006135781391269883,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "startup": {
+          "intraparticle_water_fraction": 0.5,
+          "pore_air": {
+            "amplitude": 0.5,
+            "tau_s": 11.093363463670958
+          },
+          "pore_air_permeability_exponent": 3.0
+        },
+        "kernel_loading_cap": false,
+        "time_to_36g_s": 21.724431056947694
+      }
+    },
+    {
+      "variant": "Water-admission fraction 0.5 and pore-air disabled",
+      "changes": {
+        "water_fraction": 0.5,
+        "air_amplitude": 0.0
+      },
+      "v4_9bar": {
+        "spec": {
+          "schema": "puckworks.shot-spec/1",
+          "basket": {
+            "profile_m": [
+              [
+                0.0,
+                0.029
+              ],
+              [
+                0.0265,
+                0.029
+              ]
+            ],
+            "perforated_radius_m": 0.027,
+            "open_area_fraction": 0.03,
+            "outlet": {
+              "type": "holes"
+            },
+            "extra_headspace_m3": 5e-06
+          },
+          "bed": {
+            "dose_kg": 0.0185,
+            "intergranular_porosity": 0.17793034228795757,
+            "intraparticle_porosity": 0.55,
+            "skeletal_density_kg_m3": 1352.0,
+            "size_classes": [
+              {
+                "radius_m": 3.253658466182754e-06,
+                "volume_fraction": 0.00201244
+              },
+              {
+                "radius_m": 4.064152671146102e-06,
+                "volume_fraction": 0.0012169933333333334
+              },
+              {
+                "radius_m": 5.009727157191162e-06,
+                "volume_fraction": 0.0027257699999999998
+              },
+              {
+                "radius_m": 6.7491212039624685e-06,
+                "volume_fraction": 0.0075703133333333335
+              },
+              {
+                "radius_m": 8.109050289967625e-06,
+                "volume_fraction": 0.010979513333333333
+              },
+              {
+                "radius_m": 1.0104529821943224e-05,
+                "volume_fraction": 0.05156289
+              },
+              {
+                "radius_m": 1.2273544723859932e-05,
+                "volume_fraction": 0.04272558
+              },
+              {
+                "radius_m": 1.5129480939777261e-05,
+                "volume_fraction": 0.11130519
+              },
+              {
+                "radius_m": 1.857676142982237e-05,
+                "volume_fraction": 0.06388572666666666
+              },
+              {
+                "radius_m": 2.2787073826252556e-05,
+                "volume_fraction": 0.13149511333333333
+              },
+              {
+                "radius_m": 2.988586428749823e-05,
+                "volume_fraction": 0.10971663000000001
+              },
+              {
+                "radius_m": 3.706551193020552e-05,
+                "volume_fraction": 0.042733049999999995
+              },
+              {
+                "radius_m": 4.5899951405582554e-05,
+                "volume_fraction": 0.09742392999999999
+              },
+              {
+                "radius_m": 5.6100922659580135e-05,
+                "volume_fraction": 0.08290322666666666
+              },
+              {
+                "radius_m": 6.863853594279176e-05,
+                "volume_fraction": 0.20535305999999998
+              },
+              {
+                "radius_m": 8.491218258958993e-05,
+                "volume_fraction": 0.036390573333333336
+              }
+            ],
+            "heterogeneity": {
+              "columns": 8,
+              "sigma_ln_permeability": 0.6778816549941313,
+              "edge_area_fraction": 0.25,
+              "edge_multiplier": 0.4008307871977334,
+              "prewet_nonuniformity": 0.20544170671371043
+            }
+          },
+          "solubles": {
+            "extractable_fraction": 0.28,
+            "cell_size_m": 4e-05,
+            "saturation_kg_m3": 349.852,
+            "partition_coefficient": 0.61,
+            "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+            "surface_rate_m_s": 0.001,
+            "reference_temp_c": 80.0,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_fraction": 0.012,
+                "kernel_diffusivity_m2_s": 1.9e-10,
+                "partition_coefficient": 1.0,
+                "surface_fraction_scale": 0.5
+              },
+              {
+                "id": "trigonelline",
+                "mass_fraction": 0.006999999999999999,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.999936,
+                "surface_fraction_scale": 2.0
+              },
+              {
+                "id": "cqa5",
+                "mass_fraction": 0.011399999999999999,
+                "kernel_diffusivity_m2_s": 1.55e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 0.842542
+              },
+              {
+                "id": "acids",
+                "mass_fraction": 0.024000000000000004,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 1.0
+              }
+            ],
+            "solute_specific_volume_m3_kg": 0.0006369426751592356,
+            "kernel_loading_cap": false
+          },
+          "hydraulics": {
+            "permeability_m2": 1.9681999999999988e-14,
+            "poroelastic_pc_pa": 1180570.0,
+            "dissolution_kozeny_carman": true,
+            "swelling": {
+              "amplitude": 0.346612342195471,
+              "tau_s": 26.0
+            },
+            "gas": {
+              "amplitude": 0.12869246241387922,
+              "tau_s": 5.0
+            },
+            "pore_air": {
+              "amplitude": 0.0,
+              "tau_s": 2.418876220410908
+            },
+            "pore_air_permeability_exponent": 3.0,
+            "fines_layer": {
+              "amplitude": 0.0,
+              "tau_s": 10.0
+            },
+            "axial_dispersion_m2_s": 4.568699999999999e-06,
+            "viscosity": {
+              "ln_relative_a1": 3.75,
+              "ln_relative_a2": 14.1,
+              "temperature_exponent": 0.278611
+            },
+            "wetting_uptake": 0.5,
+            "intraparticle_water_fraction": 0.5,
+            "dissolution_porosity_share": 0.0
+          },
+          "thermal": {
+            "water_temp_c": 93.0,
+            "initial_bed_temp_c": 73.46127484578479,
+            "heat_capacity_j_k": 152.68435,
+            "heat_loss_w_k": 0.41859999999999997,
+            "ambient_temp_c": 20.0
+          },
+          "machine": {
+            "phases": [
+              {
+                "control": {
+                  "type": "pressure",
+                  "target_pa": 871691.6
+                },
+                "ramp_s": 1.0,
+                "limit": null,
+                "exit": {
+                  "time_s": null,
+                  "beverage_mass_kg": null,
+                  "pressure_pa": null
+                }
+              }
+            ],
+            "pump": {
+              "type": "ideal",
+              "max_flow_m3_s": 8e-06,
+              "max_pressure_pa": 1500000.0
+            },
+            "stop": {
+              "time_s": 130.0,
+              "beverage_mass_kg": null,
+              "drip_tau_s": 1.5,
+              "vent_headspace": false
+            },
+            "hydraulic_compliance_m3_pa": 0.0
+          },
+          "numerics": {
+            "tier": 1,
+            "depth_cells": 30,
+            "max_dt_s": 0.05,
+            "max_duration_s": 145.0,
+            "output_interval_s": 0.1,
+            "snapshot_count": 1,
+            "kernel_shells": 8
+          }
+        },
+        "summary": {
+          "stop_reason": "time",
+          "shot_time_s": 130.0,
+          "first_drops_s": 6.701132511268938,
+          "beverage_mass_kg": 0.23676920840098775,
+          "drip_mass_kg": 0.004941338949709995,
+          "tds": 0.021875267124483098,
+          "ey": 0.2799670097634603,
+          "max_pressure_pa": 871691.6,
+          "bed_height_m": 0.014000000000000005,
+          "headspace_m3": 3.802599277086268e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002219766765463754,
+              "extracted_fraction": 0.9998949393980874
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001294854864631283,
+              "extracted_fraction": 0.9998879263562033
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0002108760631955288,
+              "extracted_fraction": 0.999886501638354
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004439487287374908,
+              "extracted_fraction": 0.9998845241835377
+            }
+          ],
+          "uniformity": {
+            "ey_std": 5.696860466291095e-05,
+            "ey_min": 0.279767584760281,
+            "ey_max": 0.2799999999999743,
+            "ey_mean": 0.27998067497758256
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 2.0685114802318363e-15,
+          "mass_balance_error": 1.1252260384714433e-14,
+          "steps": 2857,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 104 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 104 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.004126299698191755,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "startup": {
+          "intraparticle_water_fraction": 0.5,
+          "pore_air": {
+            "amplitude": 0.0,
+            "tau_s": 2.418876220410908
+          },
+          "pore_air_permeability_exponent": 3.0
+        },
+        "kernel_loading_cap": false,
+        "transient": {
+          "drops_model_s": 1.8144956937015948,
+          "drops_data_s": 12.761996808290156,
+          "rise_model": {
+            "q2": 0.9451060218777063,
+            "q15": 2.0516174421006257,
+            "ratio_15_2": 2.170780203076622,
+            "t90_s": 7.00731854169485,
+            "q_end": 1.8561549277237936
+          },
+          "rise_data": {
+            "q2": 0.1298584666679228,
+            "q15": 0.7902525695713613,
+            "ratio_15_2": 6.0854913033296025,
+            "t90_s": 25.47525321541987,
+            "q_end": 1.824924
+          },
+          "time_to_mass_model_s": 22.599434386203242,
+          "time_to_mass_data_s": 47.69420628329427,
+          "long_time_model_g_s": 1.8561549277237936,
+          "long_time_data_g_s": 1.824924
+        },
+        "first_tds_percent": 22.26887894061133
+      },
+      "generic_18_to_36g": {
+        "spec": {
+          "schema": "puckworks.shot-spec/1",
+          "basket": {
+            "profile_m": [
+              [
+                0.0,
+                0.027
+              ],
+              [
+                0.002,
+                0.0285
+              ],
+              [
+                0.005,
+                0.029
+              ],
+              [
+                0.021,
+                0.02925
+              ]
+            ],
+            "perforated_radius_m": 0.025,
+            "open_area_fraction": 0.03,
+            "outlet": {
+              "type": "holes"
+            },
+            "extra_headspace_m3": 5e-06
+          },
+          "bed": {
+            "dose_kg": 0.018,
+            "intergranular_porosity": 0.17,
+            "intraparticle_porosity": 0.55,
+            "skeletal_density_kg_m3": 1352.0,
+            "size_classes": [
+              {
+                "radius_m": 3.928847607002298e-06,
+                "volume_fraction": 0.0011790011400834599
+              },
+              {
+                "radius_m": 4.659602684099041e-06,
+                "volume_fraction": 0.0014031429739618313
+              },
+              {
+                "radius_m": 5.526276238092401e-06,
+                "volume_fraction": 0.0026758361261823406
+              },
+              {
+                "radius_m": 6.554148739745975e-06,
+                "volume_fraction": 0.0047091709468395585
+              },
+              {
+                "radius_m": 7.773202759321692e-06,
+                "volume_fraction": 0.007648174834464521
+              },
+              {
+                "radius_m": 9.218997544426835e-06,
+                "volume_fraction": 0.011463057604524051
+              },
+              {
+                "radius_m": 1.0933706266985942e-05,
+                "volume_fraction": 0.015855254638226852
+              },
+              {
+                "radius_m": 1.2967346195356878e-05,
+                "volume_fraction": 0.020238422612870836
+              },
+              {
+                "radius_m": 1.5379237675148398e-05,
+                "volume_fraction": 0.023840274844776785
+              },
+              {
+                "radius_m": 1.8239734476541807e-05,
+                "volume_fraction": 0.02591656011955737
+              },
+              {
+                "radius_m": 2.1632275981555597e-05,
+                "volume_fraction": 0.026000135876344227
+              },
+              {
+                "radius_m": 2.5655821072616314e-05,
+                "volume_fraction": 0.024072027527933304
+              },
+              {
+                "radius_m": 3.0427734717850482e-05,
+                "volume_fraction": 0.020571377483033365
+              },
+              {
+                "radius_m": 3.608721145346954e-05,
+                "volume_fraction": 0.01625357969991606
+              },
+              {
+                "radius_m": 4.279933562466071e-05,
+                "volume_fraction": 0.01203389559670845
+              },
+              {
+                "radius_m": 5.0759896820352294e-05,
+                "volume_fraction": 0.009092578879026009
+              },
+              {
+                "radius_m": 6.020110096588062e-05,
+                "volume_fraction": 0.009534574385123451
+              },
+              {
+                "radius_m": 7.139834366351659e-05,
+                "volume_fraction": 0.017300175247302374
+              },
+              {
+                "radius_m": 8.467824335609392e-05,
+                "volume_fraction": 0.03747027025640948
+              },
+              {
+                "radius_m": 0.00010042816863744444,
+                "volume_fraction": 0.0715789134494837
+              },
+              {
+                "radius_m": 0.00011910753761692375,
+                "volume_fraction": 0.11105692481311968
+              },
+              {
+                "radius_m": 0.00014126121893531644,
+                "volume_fraction": 0.1377932389776944
+              },
+              {
+                "radius_m": 0.00016753542533361947,
+                "volume_fraction": 0.1368115108556054
+              },
+              {
+                "radius_m": 0.0001986965633828288,
+                "volume_fraction": 0.10960593347942449
+              },
+              {
+                "radius_m": 0.00023565358921271676,
+                "volume_fraction": 0.07209751384829033
+              },
+              {
+                "radius_m": 0.0002794845223459707,
+                "volume_fraction": 0.040115027660249436
+              },
+              {
+                "radius_m": 0.0003314678910341005,
+                "volume_fraction": 0.019641995354913955
+              },
+              {
+                "radius_m": 0.0003931200263411589,
+                "volume_fraction": 0.00873999518332147
+              },
+              {
+                "radius_m": 0.00046623929282663037,
+                "volume_fraction": 0.00353807525756733
+              },
+              {
+                "radius_m": 0.0005529585460162477,
+                "volume_fraction": 0.0017633603270454934
+              }
+            ],
+            "heterogeneity": {
+              "columns": 8,
+              "sigma_ln_permeability": 0.3624808438869603,
+              "edge_area_fraction": 0.25,
+              "edge_multiplier": 0.3482099902944875,
+              "prewet_nonuniformity": 0.17243829607570452
+            }
+          },
+          "solubles": {
+            "extractable_fraction": 0.28,
+            "cell_size_m": 4e-05,
+            "saturation_kg_m3": 349.852,
+            "partition_coefficient": 0.61,
+            "kernel_diffusivity_m2_s": 3.5239999999999954e-11,
+            "surface_rate_m_s": 0.001,
+            "reference_temp_c": 80.0,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_fraction": 0.012,
+                "kernel_diffusivity_m2_s": 1.9e-10,
+                "partition_coefficient": 1.0,
+                "surface_fraction_scale": 0.5
+              },
+              {
+                "id": "trigonelline",
+                "mass_fraction": 0.006999999999999999,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.999936,
+                "surface_fraction_scale": 2.0
+              },
+              {
+                "id": "cqa5",
+                "mass_fraction": 0.011399999999999999,
+                "kernel_diffusivity_m2_s": 1.55e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 0.842542
+              },
+              {
+                "id": "acids",
+                "mass_fraction": 0.024000000000000004,
+                "kernel_diffusivity_m2_s": 2.8e-10,
+                "partition_coefficient": 0.61,
+                "surface_fraction_scale": 1.0
+              }
+            ],
+            "solute_specific_volume_m3_kg": 0.0006369426751592356,
+            "kernel_loading_cap": false
+          },
+          "hydraulics": {
+            "permeability_m2": 6.109079057227549e-14,
+            "poroelastic_pc_pa": 1180570.0,
+            "dissolution_kozeny_carman": true,
+            "swelling": {
+              "amplitude": 0.346612342195471,
+              "tau_s": 26.0
+            },
+            "gas": {
+              "amplitude": 0.12869246241387922,
+              "tau_s": 5.0
+            },
+            "pore_air": {
+              "amplitude": 0.0,
+              "tau_s": 11.093363463670958
+            },
+            "pore_air_permeability_exponent": 3.0,
+            "fines_layer": {
+              "amplitude": 0.0,
+              "tau_s": 10.0
+            },
+            "axial_dispersion_m2_s": 4.568699999999999e-06,
+            "viscosity": {
+              "ln_relative_a1": 3.75,
+              "ln_relative_a2": 14.1,
+              "temperature_exponent": 0.278611
+            },
+            "wetting_uptake": 0.5,
+            "intraparticle_water_fraction": 0.5,
+            "dissolution_porosity_share": 0.0
+          },
+          "thermal": {
+            "water_temp_c": 93.0,
+            "initial_bed_temp_c": 73.7190082644628,
+            "heat_capacity_j_k": 151.9518,
+            "heat_loss_w_k": 0.41859999999999997,
+            "ambient_temp_c": 20.0
+          },
+          "machine": {
+            "phases": [
+              {
+                "control": {
+                  "type": "pressure",
+                  "target_pa": 900000.0
+                },
+                "ramp_s": 2.0,
+                "limit": null,
+                "exit": {
+                  "time_s": null,
+                  "beverage_mass_kg": null,
+                  "pressure_pa": null
+                }
+              }
+            ],
+            "pump": {
+              "type": "ideal",
+              "max_flow_m3_s": 8e-06,
+              "max_pressure_pa": 1200000.0
+            },
+            "stop": {
+              "time_s": null,
+              "beverage_mass_kg": 0.036,
+              "drip_tau_s": 1.5,
+              "vent_headspace": false
+            },
+            "hydraulic_compliance_m3_pa": 0.0
+          },
+          "numerics": {
+            "tier": 1,
+            "depth_cells": 30,
+            "max_dt_s": 0.05,
+            "max_duration_s": 120.0,
+            "output_interval_s": 0.1,
+            "snapshot_count": 1,
+            "kernel_shells": 8
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 10.187355030057931,
+          "first_drops_s": 4.2666514548520755,
+          "beverage_mass_kg": 0.056171504991845464,
+          "drip_mass_kg": 0.02017157132299413,
+          "tds": 0.06065114721906033,
+          "ey": 0.18927034548758898,
+          "max_pressure_pa": 900000.0,
+          "bed_height_m": 0.013670582031378003,
+          "headspace_m3": 2.4623189814813164e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0001715931354214079,
+              "extracted_fraction": 0.7944126639879995
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00011269634371306848,
+              "extracted_fraction": 0.8944154262941946
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00015960810914901924,
+              "extracted_fraction": 0.7778172960478523
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0003609011147516096,
+              "extracted_fraction": 0.8354192471102073
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.012193521647010833,
+            "ey_min": 0.16442372280400355,
+            "ey_max": 0.22381926674094044,
+            "ey_mean": 0.19853663833920462
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 2.7119232904201235e-16,
+          "mass_balance_error": 4.8186763221577976e-15,
+          "steps": 463,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 104 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 104 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.012647774695852017,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "startup": {
+          "intraparticle_water_fraction": 0.5,
+          "pore_air": {
+            "amplitude": 0.0,
+            "tau_s": 11.093363463670958
+          },
+          "pore_air_permeability_exponent": 3.0
+        },
+        "kernel_loading_cap": false,
+        "time_to_36g_s": 10.187364017722047
+      }
+    }
+  ]
+}

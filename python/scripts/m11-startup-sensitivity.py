@@ -17,7 +17,22 @@ from puckworks_tools.calibrate import build_problem, calibrated_values, datasets
 from puckworks_tools.cases import waszkiewicz2026 as wz
 from puckworks_tools.identity import file_sha256, input_hashes, solver_identity
 from puckworks_tools.paths import RepoPaths, find_repo_root
-from puckworks_tools.validate import _calibration_x, _jsonable, generic_recipe, v4_transient_metrics
+from puckworks_tools.validate import _calibration_x, _jsonable, generic_recipe, shared_overrides, v4_transient_metrics
+
+
+def baseline_specs(problem, calibration):
+    """Build both baseline inputs with the recorded fixed and fitted coefficients, without simulating."""
+    calibrated = calibrated_values(calibration)
+    fixed = (calibration.get("fit") or {}).get("fixed")
+    values = problem.values(_calibration_x(problem, calibrated, fixed=fixed))
+    block = next(block for block in problem.blocks if block.name == "V4")
+    case = next(c for c in block.cases if c.info["group"] == wz.TRANSIENT_GROUP)
+    base_v4 = block.spec_for(case, values, problem.params)
+    overrides = shared_overrides(problem, {**calibrated, **values})
+    recipe = generic_recipe("mahlkoenig-ek43", 1.7, overrides, 1)
+    base_generic = puckcore.build_shot_spec(recipe)["spec"]
+    base_generic["numerics"]["snapshot_count"] = 1
+    return case, base_v4, recipe, base_generic
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -35,23 +50,17 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(label, str) or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" for c in label):
         parser.error("the calibration label must contain only letters, digits, hyphens or underscores")
     solver = solver_identity(paths)
-    # Use every fitted extraction parameter for the V4 spec, exactly as validation does.
+    # Use recorded fixed and fitted values for both specs, exactly as validation does.
     problem = build_problem(paths, config, tier=1)
     try:
         datasets = sorted({name for block in problem.blocks for name in datasets_for_block(block)})
         inputs = input_hashes(paths, str(args.config), datasets)
-        values = problem.values(_calibration_x(problem, calibrated_values(calibration)))
-        block = next(block for block in problem.blocks if block.name == "V4")
-        case = next(c for c in block.cases if c.info["group"] == wz.TRANSIENT_GROUP)
-        base_v4 = block.spec_for(case, values, problem.params)
-        recipe = generic_recipe("mahlkoenig-ek43", 1.7, calibration["parameters"], 1)
-        base_generic = puckcore.build_shot_spec(recipe)["spec"]
-        base_generic["numerics"]["snapshot_count"] = 1
+        case, base_v4, recipe, base_generic = baseline_specs(problem, calibration)
         variants = [
             (f"{label} baseline", {}),
             ("Pore-air closure disabled", {"air_amplitude": 0.0}),
-            ("Half intraparticle water inventory", {"water_fraction": 0.5}),
-            ("Half inventory and pore-air disabled", {"water_fraction": 0.5, "air_amplitude": 0.0}),
+            ("Water-admission fraction fixed at 0.5", {"water_fraction": 0.5}),
+            ("Water-admission fraction 0.5 and pore-air disabled", {"water_fraction": 0.5, "air_amplitude": 0.0}),
         ]
         rows = []
         for name, change in variants:
@@ -81,8 +90,10 @@ def main(argv: list[str] | None = None) -> int:
                   "script_sha256": file_sha256(Path(__file__)), "inputs": inputs,
                   "solver": solver, "tier": 1, "refitted": False,
                   "purpose": "Response to fixed-parameter closure changes; does not select priors or demonstrate experimental identification.",
-                  "baseline_note": f"Every variant retains the {label} fitted coefficients and the recorded current solver. "
-                  "The half-inventory/disabled-air variant does not restore an archived model. Full specs record "
+                  "baseline_note": f"Every variant uses the recorded current solver and keeps all other {label} "
+                  "fitted and fixed coefficients unchanged apart from its listed intervention. Water-admission "
+                  "fraction 0.5 is an absolute setting, not necessarily half the selected baseline. The combined "
+                  "water/disabled-air intervention does not restore an archived model. Full specs record "
                   "the kernel-loading-cap choice; these runs preserve the historical 0.3.0 startup report.",
                   "v1_particle_input": config["blocks"]["V1"].get("case_options", {}),
                   "v4_spec": base_v4, "generic_recipe": recipe, "rows": rows}

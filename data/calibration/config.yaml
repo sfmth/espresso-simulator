@@ -34,9 +34,13 @@ n_classes: 16
 
 parameters:
   # V1 kinetics shared by all coffees (the builder reads these registry ids). Each stays inside its prior;
-  # the stepwise identifiability review (docs/validation/calibration.md) fixed the others (see `fixed`).
+  # The v4 review reopens lumped diffusion and uncertain species partitioning after the inventory
+  # correction; automatic pruning tests them jointly with the existing extraction parameters.
   - {id: model.extraction.broken_shell_thickness, mode: override, blocks: [V1], scale: linear}
   - {id: extraction.saturation.lumped, mode: override, blocks: [V1], scale: linear}
+  - {id: extraction.diffusivity.lumped.corrochano_80c, mode: override, blocks: [V1, V4], scale: log}
+  - {id: model.species.trigonelline.partition, mode: override, blocks: [V1], scale: linear}
+  - {id: model.species.cqa5.partition, mode: override, blocks: [V1], scale: linear}
   - {id: model.species.caffeine.surface_fraction_scale, mode: override, blocks: [V1], scale: linear}
   - {id: model.species.trigonelline.surface_fraction_scale, mode: override, blocks: [V1], scale: linear}
   - {id: model.species.cqa5.surface_fraction_scale, mode: override, blocks: [V1], scale: linear}
@@ -55,12 +59,24 @@ parameters:
      applies_to: "schmieder2023:gl1_7", blocks: [V1], scale: log, start: 3.0e-14}
   - {id: calibration.schmieder2023.permeability.gl2_0, mode: spec, target: hydraulics.permeability_m2,
      applies_to: "schmieder2023:gl2_0", blocks: [V1], scale: log, start: 3.0e-14}
+  # The reported Grande TRE leveling tool has no calibrated preparation preset. Estimate the actual
+  # column spread and edge multiplier for this setup; these never become global tapping defaults.
+  - {id: calibration.schmieder2023.sigma_ln_permeability, mode: spec,
+     target: bed.heterogeneity.sigma_ln_permeability, applies_to: schmieder2023, blocks: [V1],
+     scale: linear, start: 0.44411746110851036}
+  - {id: calibration.schmieder2023.edge_multiplier, mode: spec,
+     target: bed.heterogeneity.edge_multiplier, applies_to: schmieder2023, blocks: [V1],
+     scale: linear, start: 0.40083078719773324}
   # Shared hydraulics and transport. Every case receives them, so each lists all the blocks it changes
   # (`calibrate --dry-run` checks): γ through the brew-temperature viscosity (V1 pressures at three
   # temperatures, V4 flows), P_c through the poroelastic plateau, the dispersion through the outlet curves.
   - {id: model.hydraulics.viscosity_temperature_exponent, mode: override, blocks: [V1, V4], scale: linear}
   - {id: hydraulics.poroelastic.critical_pressure, mode: override, blocks: [V1, V4, V6], scale: linear}
   - {id: extraction.dispersion.axial_coefficient, mode: override, blocks: [V1, V2], scale: log}
+  # Effective water admitted at the moving front, conditional on the existing instantaneous filling
+  # closure. The original 0.5–1 prior is retained; held-out startup observations never select it.
+  - {id: model.hydraulics.intraparticle_water_fraction, mode: override,
+     blocks: [V1, V2, V4, V6], scale: linear, start: 0.75}
   # V4 nuisance: Waszkiewicz's bed permeability
   - {id: calibration.waszkiewicz2026.permeability, mode: spec, target: hydraulics.permeability_m2,
      applies_to: waszkiewicz2026, blocks: [V4], scale: log, start: 1.0e-14}
@@ -71,12 +87,6 @@ parameters:
 # data, or identified but with no evidence against the registry value and no registry id to carry it.
 # Numbers are from the trial fits of 2026-10-14 (docs/validation/calibration.md, "Identifiability").
 fixed:
-  - id: model.hydraulics.intraparticle_water_fraction
-    reason: >-
-      The full intraparticle pore-water inventory behind the front (fraction 1) is held inside the
-      total particle loading. External mobile water occupies interparticle porosity only; front filling
-      transfers its dissolved solute into the particle reservoir conservatively. The fixed water-volume
-      choice and instantaneous pore filling are not fitted to shot times or independent uptake data.
   - field: solubles.kernel_loading_cap
     value: false
     reason: >-
@@ -112,10 +122,6 @@ fixed:
     reason: Not identified by V1 (see the caffeine diffusivity).
   - id: model.species.cqa5.diffusivity_80c
     reason: Not identified by V1 (see the caffeine diffusivity).
-  - id: extraction.diffusivity.lumped.corrochano_80c
-    reason: >-
-      Weakly identified by V1 (posterior SD 1.15× the prior's; it trades off with the extractable fraction);
-      fixing it did not raise the cost.
   - id: extraction.surface_rate.grudeva2026
     reason: >-
       Not identified by V1 (posterior SD 44× the prior's once the lumped diffusivity is fixed); the surface

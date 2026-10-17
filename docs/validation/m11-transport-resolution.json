@@ -1,0 +1,2650 @@
+{
+  "schema": "puckworks.v1-resolution-evidence/1",
+  "calibration_label": "v4",
+  "checkpoint": ".local/calibration-v4/checkpoints/v4-main-prune.yaml",
+  "source_artifact": ".local/calibration-v4/v1-resolution.json",
+  "source_sha256": "e1c137777164bba2ffebb5b1530543784990b8ef84186bd24dc54156d4f38adf",
+  "identity": {
+    "solver": {
+      "puckcore_version": "0.6.1",
+      "extension_sha256": "87a883cf9891322d",
+      "extension_built": "2026-10-16T19:28:44-07:00",
+      "sources_sha256": {
+        "crates/puckcore/src": "7edd86f7150f4fa1",
+        "crates/puckmodel/src": "1ca89ad808e6f2f7",
+        "crates/puckmodel/generated": "9a77c9d167c7550d",
+        "crates/puckcore-py": "563a9328b2a48052"
+      },
+      "files_sha256": {
+        "Cargo.lock": "97aad0fe9e0b7b94"
+      },
+      "python": {
+        "version": "3.14.7",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1"
+      }
+    },
+    "inputs": {
+      "config_sha256": "7d186253a3666328",
+      "datasets_sha256": {
+        "corrochano2017-permeability": "d7de004c74522a46",
+        "corrochano2017-properties": "c2b8b9b501c7afa3",
+        "corrochano2017-psd": "baa15b1629a78ff8",
+        "schmieder2023-design": "56dd2d42e19da971",
+        "schmieder2023-fractions": "fd42d1ec451586d6",
+        "schmieder2023-kinetics": "b3858084750fd8f4",
+        "schmieder2023-psd": "5e5711d8ccc7ed42",
+        "schmieder2023-replicates": "8749648f235c5a66",
+        "vacaguerra2024-rtd": "33e194ec3c0a2e49",
+        "waszkiewicz2026-flow-pressure": "ef8c636a8bb3683a",
+        "waszkiewicz2026-psd": "d3bea166b24a1696"
+      },
+      "registry_inputs_sha256": "9cd45f5ad5edfcdf",
+      "presets_sha256": "e12cc70ded553ac1",
+      "conversion_inputs_sha256": {
+        "data/schema/units.yaml": "080e27dcd100ebd0",
+        "python/puckworks_tools/units.py": "407ecb5e1473bc7f",
+        "python/puckworks_tools/registry.py": "d5cfdd311cbc0e4d",
+        "python/puckworks_tools/yamlio.py": "92c9cf7e93fac227"
+      },
+      "calibration_sources_sha256": "a1707c737c8fabcd"
+    },
+    "checkpoint_sha256": "c68aa356b26d8dcf82d55d50d34f45f0b2d868b037c4318a52e144286dbb54cb",
+    "script_sha256": "78c092b651f99aef3ed32209186683ed1589d77ec01f998e3099d42d5c3e1448",
+    "evaluation_helpers_sha256": "4f5e9768a71598587c9605bc454908190dd2e2c4932dcca6157021c545e239d6"
+  },
+  "unchanged_identity": true,
+  "protocol": {
+    "experiments": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "max_dt_s": [
+      0.05,
+      0.025
+    ],
+    "output_interval_changed": false,
+    "other_spec_fields_changed": false
+  },
+  "fitted_in_this_run": false,
+  "held_out_used": false,
+  "definitions": {
+    "relative_difference": "half_dt / nominal - 1",
+    "lambda": "characteristic beverage mass, g",
+    "c0": "extrapolated concentration: mg/g for the three compounds, g/g for TDS",
+    "cup_eq3": "integral of fitted exponential, source Eq.3",
+    "cup_direct": "direct cumulative simulated analyte mass",
+    "cup_mass_units": "mg for the three compounds, g for TDS",
+    "scores": "Original ±10% V1 criterion, fixed 60 lambda and 180 Eq.3 cup denominators"
+  },
+  "applied_parameter_values": {
+    "model.extraction.broken_shell_thickness": 40.0,
+    "extraction.saturation.lumped": 349.852,
+    "extraction.diffusivity.lumped.corrochano_80c": 3.5239999999999954e-11,
+    "model.species.trigonelline.partition": 0.999936,
+    "model.species.cqa5.partition": 0.61,
+    "model.species.caffeine.surface_fraction_scale": 0.5,
+    "model.species.trigonelline.surface_fraction_scale": 2.0,
+    "model.species.cqa5.surface_fraction_scale": 0.842542,
+    "calibration.schmieder2023.extractable_fraction": 34.0,
+    "calibration.schmieder2023.content.caffeine": 1.32311,
+    "calibration.schmieder2023.content.trigonelline": 0.697168,
+    "calibration.schmieder2023.content.cqa5": 0.928583,
+    "calibration.schmieder2023.permeability.gl1_4": 4.1702800000000084e-14,
+    "calibration.schmieder2023.permeability.gl1_7": 4.294180000000005e-14,
+    "calibration.schmieder2023.permeability.gl2_0": 5.339310000000004e-14,
+    "calibration.schmieder2023.sigma_ln_permeability": 0.457708,
+    "calibration.schmieder2023.edge_multiplier": 0.260366,
+    "model.hydraulics.viscosity_temperature_exponent": 0.278611,
+    "hydraulics.poroelastic.critical_pressure": 11.8057,
+    "extraction.dispersion.axial_coefficient": 4.568699999999999e-06,
+    "model.hydraulics.intraparticle_water_fraction": 0.5,
+    "calibration.waszkiewicz2026.permeability": 1.9681999999999988e-14,
+    "hydraulics.kozeny_carman.density_exponent": 0.242921
+  },
+  "recorded_fixed": {
+    "spec:solubles.kernel_loading_cap": {
+      "value": false,
+      "reason": "Disabled by the builder for total particle loading: the initial particle concentration is not an equilibrium capacity. Kernel loading follows its source partition law and may exceed its initial value during inward diffusion. This boundary restriction is not selected by fit quality."
+    },
+    "model.hydraulics.pore_air_amplitude": {
+      "value": 0.5,
+      "units": "1",
+      "reason": "The initial effective connectivity deficit is a grade D model assumption (0.5), separate from coffee CO2; it is not a measured gas volume fraction. None of the calibration observables identifies a transient relative-permeability law. It is held at its prior rather than fitted to the held-out V4 first-drop delay or flow rise."
+    },
+    "model.hydraulics.pore_air_permeability_exponent": {
+      "value": 3.0,
+      "units": "1",
+      "reason": "The effective connectivity-to-relative-permeability exponent is a grade D closure (3), not measured for these pucks. Held fixed; the V4 transient, V3 and V5 shot times do not select it."
+    },
+    "model.hydraulics.moisture_diffusivity": {
+      "value": 2.5e-11,
+      "units": "m^2/s",
+      "reason": "The pore-air relaxation time uses (D32/2)^2/(pi^2 D), capped at 600 s, with D = 2.5e-11 m^2/s from the independent Mateus moisture-uptake range. Using moisture diffusion for air clearance is a grade D model assumption. Neither this diffusivity nor its time scale is fitted to held-out shots."
+    },
+    "model.hydraulics.wetting_uptake": {
+      "value": 0.5,
+      "units": "1",
+      "reason": "In M1.1 this is the fixed effective-loading normalization inherited from the extraction model, distinct from the full intraparticle water inventory. It is not fitted to startup observations."
+    },
+    "extraction.diffusivity.caffeine.particle_80c": {
+      "value": 1.9e-10,
+      "units": "m^2/s",
+      "reason": "Species kernel diffusivities trade off with the coffee's contents (correlation −0.89 to −0.95): their posterior SD was 2–12× the prior's, and free fits drifted 2–5× outside the literature priors (caffeine to 8×10⁻¹¹, trigonelline to the 1×10⁻⁹ bound). The species surface-pool scales carry the species' λ instead."
+    },
+    "model.species.trigonelline.diffusivity_80c": {
+      "value": 2.8e-10,
+      "units": "m^2/s",
+      "reason": "Not identified by V1 (see the caffeine diffusivity)."
+    },
+    "model.species.cqa5.diffusivity_80c": {
+      "value": 1.55e-10,
+      "units": "m^2/s",
+      "reason": "Not identified by V1 (see the caffeine diffusivity)."
+    },
+    "extraction.surface_rate.grudeva2026": {
+      "value": 0.001,
+      "units": "m/s",
+      "reason": "Not identified by V1 (posterior SD 44× the prior's once the lumped diffusivity is fixed); the surface flux is fast at any value in its range, so only the surface pool's size matters."
+    },
+    "model.hydraulics.swelling_pore_closure": {
+      "value": 0.1,
+      "units": "1",
+      "reason": "Not identified by V1 (posterior SD 1.6× the prior's when added at the V1 optimum); the residuals lean towards less swelling (Wald z 2.4 towards 0)."
+    },
+    "model.hydraulics.gas_amplitude_max": {
+      "value": 0.5,
+      "units": "1",
+      "reason": "Weakly identified by V1 (posterior SD 0.4–0.7× the prior's) with no evidence against the registry value (Wald z 0.8); the CO₂ model is being re-anchored in the input models."
+    },
+    "hydraulics.dissolution_porosity_share": {
+      "value": 0.0,
+      "units": "1",
+      "reason": "θ is fixed at its mechanistic default, 0 (the insoluble cell walls hold the particle envelope), not chosen by fit quality: it is collinear with the bed permeability, whose fitted values move to absorb it. `calibrate --sensitivity` reports the θ = 0.27 case as a structural sensitivity."
+    },
+    "model.species.cqa5.partition": {
+      "value": 0.61,
+      "units": "1",
+      "reason": "Pruned by the identifiability rule after a bounded registry-value refit: local marginal SD 0.98× the prior's (fitted value 0.7111); training cost stayed within 1% of both the initial pre-prune and current accepted fits."
+    }
+  },
+  "recorded_fitted": {
+    "calibration.schmieder2023.extractable_fraction": 34.0,
+    "calibration.schmieder2023.content.caffeine": 1.32311,
+    "calibration.schmieder2023.content.trigonelline": 0.697168,
+    "calibration.schmieder2023.content.cqa5": 0.928583,
+    "calibration.schmieder2023.permeability.gl1_4": 4.17028e-14,
+    "calibration.schmieder2023.permeability.gl1_7": 4.29418e-14,
+    "calibration.schmieder2023.permeability.gl2_0": 5.33931e-14,
+    "calibration.schmieder2023.sigma_ln_permeability": 0.457708,
+    "calibration.schmieder2023.edge_multiplier": 0.260366,
+    "calibration.waszkiewicz2026.permeability": 1.9682e-14,
+    "model.extraction.broken_shell_thickness": 40.0,
+    "extraction.saturation.lumped": 349.852,
+    "extraction.diffusivity.lumped.corrochano_80c": 3.524e-11,
+    "model.species.trigonelline.partition": 0.999936,
+    "model.species.caffeine.surface_fraction_scale": 0.5,
+    "model.species.trigonelline.surface_fraction_scale": 2.0,
+    "model.species.cqa5.surface_fraction_scale": 0.842542,
+    "model.hydraulics.viscosity_temperature_exponent": 0.278611,
+    "hydraulics.poroelastic.critical_pressure": 11.8057,
+    "extraction.dispersion.axial_coefficient": 4.5687e-06,
+    "model.hydraulics.intraparticle_water_fraction": 0.5,
+    "hydraulics.kozeny_carman.density_exponent": 0.242921,
+    "hydraulics.permeability.reference": 1.51908e-13
+  },
+  "fit_optimizer": {
+    "method": "scipy.optimize.least_squares (trf, x_scale=jac)",
+    "success": true,
+    "message": "`xtol` termination condition is satisfied.",
+    "evaluations": 20,
+    "status": 3,
+    "jacobian_evaluations": 10,
+    "optimality": 58.9927,
+    "simulations": 14974,
+    "start_cost": 591.053,
+    "cost": 570.686
+  },
+  "variants": {
+    "nominal": {
+      "completed": 15,
+      "requested": 15,
+      "failures": [],
+      "cost": 480.25144047720636,
+      "score": {
+        "lambda_within": 51,
+        "lambda_total": 60,
+        "cup_within": 174,
+        "cup_total": 180,
+        "lambda_missing": 0,
+        "cup_missing": 0
+      },
+      "first_drops_s": {
+        "min": 7.642712017398738,
+        "max": 8.085040529528946,
+        "count": 15
+      },
+      "shot_time_s": {
+        "min": 31.473049273081944,
+        "max": 83.4336632687187,
+        "count": 15
+      },
+      "max_mass_balance_error": 2.8061703287860108e-14,
+      "max_carrier_balance_error": 6.620674397279077e-14,
+      "min_concentration_kg_m3": 0.0,
+      "cases": [
+        {
+          "experiment": 1,
+          "case": "schmieder2023/exp01",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 75.20956019204168,
+            "first_drops_s": 7.90589144170547,
+            "beverage_mass_kg": 0.06355652137337109,
+            "drip_mass_kg": 0.0015565213898878286,
+            "tds": 0.07304468280492697,
+            "ey": 0.23212329719512265,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002134173426646786,
+                "extracted_fraction": 0.8064988650402407
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011397655454662651,
+                "extracted_fraction": 0.8174253160402264
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014101658174134026,
+                "extracted_fraction": 0.7593105933521304
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00037498200044021443,
+                "extracted_fraction": 0.7812125009171133
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.051537312219617715,
+              "ey_min": 0.139941451918748,
+              "ey_max": 0.30008412031122444,
+              "ey_mean": 0.2481259931866434
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 4.144741593313261e-14,
+            "mass_balance_error": 2.8061703287860108e-14,
+            "steps": 1758,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 6.36e3 steps × 1.73e5 values = 1.10e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.002512723341348182,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 2,
+          "case": "schmieder2023/exp02",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 33.684328059288774,
+            "first_drops_s": 7.9035170806708495,
+            "beverage_mass_kg": 0.0703526351161427,
+            "drip_mass_kg": 0.004941045013694537,
+            "tds": 0.06602390076235402,
+            "ey": 0.2322477699639154,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021335595459773713,
+                "extracted_fraction": 0.8062668810519802
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011921388555966723,
+                "extracted_fraction": 0.8549867862528633
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001430148364184215,
+                "extracted_fraction": 0.7700702921463213
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00038792416585882726,
+                "extracted_fraction": 0.8081753455392233
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.03362520582519044,
+              "ey_min": 0.1553060856780059,
+              "ey_max": 0.28000485430342803,
+              "ey_mean": 0.24465701089870973
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 2.7092479878277544e-14,
+            "mass_balance_error": 1.811255394034607e-14,
+            "steps": 925,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.007500009635974024,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 3,
+          "case": "schmieder2023/exp03",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 43.85567633819865,
+            "first_drops_s": 8.059441407709393,
+            "beverage_mass_kg": 0.06513300537113074,
+            "drip_mass_kg": 0.0031330053947735206,
+            "tds": 0.07101811953322894,
+            "ey": 0.2312811780502703,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002127708371722001,
+                "extracted_fraction": 0.8040557367573371
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011666873415771557,
+                "extracted_fraction": 0.8367332849307166
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014166800479971473,
+                "extracted_fraction": 0.7628182122638187
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00038147674548834413,
+                "extracted_fraction": 0.7947432197673835
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.04148542432136241,
+              "ey_min": 0.14409068218020477,
+              "ey_max": 0.2871082862046542,
+              "ey_mean": 0.24549969607191136
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 8.356023612872057e-16,
+            "mass_balance_error": 7.0154258219650285e-15,
+            "steps": 1131,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.004680120013918951,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 4,
+          "case": "schmieder2023/exp04",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 42.619604958895735,
+            "first_drops_s": 7.660300283724507,
+            "beverage_mass_kg": 0.06750393470198854,
+            "drip_mass_kg": 0.0031972136749094937,
+            "tds": 0.06701266330361945,
+            "ey": 0.22618092239269352,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002114474748458209,
+                "extracted_fraction": 0.7990547832221844
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011688195947541028,
+                "extracted_fraction": 0.8382625097208296
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014053371765113975,
+                "extracted_fraction": 0.7567105883434208
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003805708001270369,
+                "extracted_fraction": 0.7928558335979934
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.03920147578195299,
+              "ey_min": 0.14300972793961883,
+              "ey_max": 0.28055483239858936,
+              "ey_mean": 0.2396953962836821
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 2.3373839904040857e-14,
+            "mass_balance_error": 1.479617082450806e-14,
+            "steps": 1106,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.005109640263585383,
+            "max_regime_solves": 5,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 5,
+          "case": "schmieder2023/exp05",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 43.46073353428041,
+            "first_drops_s": 7.926341400729363,
+            "beverage_mass_kg": 0.0651827135308042,
+            "drip_mass_kg": 0.0031827136135130635,
+            "tds": 0.07013701221838209,
+            "ey": 0.22858603876686565,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002108583154478714,
+                "extracted_fraction": 0.7968283644136595
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011619378188032183,
+                "extracted_fraction": 0.8333269877584873
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014039867698643015,
+                "extracted_fraction": 0.7559834553638725
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003789347533515134,
+                "extracted_fraction": 0.7894474028156527
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.04073024691711139,
+              "ey_min": 0.14304225660795084,
+              "ey_max": 0.2841953112162421,
+              "ey_mean": 0.2425759864777168
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 2.119305838757684e-14,
+            "mass_balance_error": 1.9132979514450073e-14,
+            "steps": 1123,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.005074180831285079,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 6,
+          "case": "schmieder2023/exp06",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 43.73745596731468,
+            "first_drops_s": 7.884670485410617,
+            "beverage_mass_kg": 0.06506613655392961,
+            "drip_mass_kg": 0.003066137563538726,
+            "tds": 0.07127909675513065,
+            "ey": 0.2318927721455046,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021389421146961432,
+                "extracted_fraction": 0.8083009404721236
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011693326558725426,
+                "extracted_fraction": 0.8386304706129244
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014227305623903735,
+                "extracted_fraction": 0.7660761409536754
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00038266700165409245,
+                "extracted_fraction": 0.7972229201126925
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.04218355702244506,
+              "ey_min": 0.14289039750621868,
+              "ey_max": 0.28815923930225884,
+              "ey_mean": 0.24619722587716922
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 1.190130636828316e-15,
+            "mass_balance_error": 2.2321809433525086e-14,
+            "steps": 1128,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.00468776820987731,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 7,
+          "case": "schmieder2023/exp07",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 45.45919994861865,
+            "first_drops_s": 7.903253673177895,
+            "beverage_mass_kg": 0.06857064495038218,
+            "drip_mass_kg": 0.003119501004073308,
+            "tds": 0.06828473602764683,
+            "ey": 0.23411641948411702,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021589683541679632,
+                "extracted_fraction": 0.8158688068898138
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011819066799393678,
+                "extracted_fraction": 0.8476484003420752
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014382191545279563,
+                "extracted_fraction": 0.7744160481766069
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003871145037576372,
+                "extracted_fraction": 0.8064885494950774
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.03971993891005771,
+              "ey_min": 0.15003668547902238,
+              "ey_max": 0.287529023244148,
+              "ey_mean": 0.2474375091575288
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 6.714315560449365e-15,
+            "mass_balance_error": 2.1428937056184083e-14,
+            "steps": 1163,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.004281331693176243,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 8,
+          "case": "schmieder2023/exp08",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 75.3579821443002,
+            "first_drops_s": 8.085040529528946,
+            "beverage_mass_kg": 0.06357840198344443,
+            "drip_mass_kg": 0.001578401994921319,
+            "tds": 0.07276191396343991,
+            "ey": 0.23130431075261904,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021261677753682572,
+                "extracted_fraction": 0.8034735492015996
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011380734168815427,
+                "extracted_fraction": 0.8162117429956213
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014055602097356115,
+                "extracted_fraction": 0.7568306816599116
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00037427115265988996,
+                "extracted_fraction": 0.7797315680414373
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.05067375679322646,
+              "ey_min": 0.1410658467149779,
+              "ey_max": 0.29871253954085797,
+              "ey_mean": 0.24726058226811282
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 3.893102100515122e-14,
+            "mass_balance_error": 1.1224681315144045e-14,
+            "steps": 1761,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 6.36e3 steps × 1.73e5 values = 1.10e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0030503560465216686,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 9,
+          "case": "schmieder2023/exp09",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 83.4336632687187,
+            "first_drops_s": 8.040937103649052,
+            "beverage_mass_kg": 0.06338047686824805,
+            "drip_mass_kg": 0.0013804770365811875,
+            "tds": 0.07409515302586928,
+            "ey": 0.23480930662027033,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021449579800564332,
+                "extracted_fraction": 0.8105743211284144
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011384363662877476,
+                "extracted_fraction": 0.816472045681778
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014176300058094932,
+                "extracted_fraction": 0.7633297216347343
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003754117719991998,
+                "extracted_fraction": 0.7821078583316661
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.05369766496924523,
+              "ey_min": 0.14131594758125215,
+              "ey_max": 0.3050302427335318,
+              "ey_mean": 0.2512964781906577
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 6.620674397279077e-14,
+            "mass_balance_error": 1.3520638856878055e-14,
+            "steps": 1923,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 6.77e3 steps × 1.73e5 values = 1.17e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.002117660983483927,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 10,
+          "case": "schmieder2023/exp10",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 74.28399266433185,
+            "first_drops_s": 7.681235914367149,
+            "beverage_mass_kg": 0.06354979075496367,
+            "drip_mass_kg": 0.0015497909562537451,
+            "tds": 0.07079079116871098,
+            "ey": 0.2249369983074956,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021019014672482813,
+                "extracted_fraction": 0.7943033713176837
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011300438043138033,
+                "extracted_fraction": 0.8104530072477533
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00013838799972457443,
+                "extracted_fraction": 0.7451568665621405
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00037002706831694177,
+                "extracted_fraction": 0.7708897256602952
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.05047473578751203,
+              "ey_min": 0.13515343881960135,
+              "ey_max": 0.29324411624246516,
+              "ey_mean": 0.24070701304910724
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 4.1788980407650245e-14,
+            "mass_balance_error": 1.3648192053641056e-14,
+            "steps": 1742,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 6.36e3 steps × 1.73e5 values = 1.10e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0024290373755544536,
+            "max_regime_solves": 5,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 11,
+          "case": "schmieder2023/exp11",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 82.24616289419804,
+            "first_drops_s": 7.643590030997974,
+            "beverage_mass_kg": 0.06336235789476746,
+            "drip_mass_kg": 0.001362358202592208,
+            "tds": 0.07224565502966027,
+            "ey": 0.22888275251656204,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002124499018863948,
+                "extracted_fraction": 0.802842930241608
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011313488226578792,
+                "extracted_fraction": 0.8113889497638154
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00013981531152672374,
+                "extracted_fraction": 0.7528422958783638
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003715735042943662,
+                "extracted_fraction": 0.7741114672799294
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.0536367416266401,
+              "ey_min": 0.1355934268161463,
+              "ey_max": 0.3001717926346104,
+              "ey_mean": 0.24519331389671656
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 5.225481683858094e-14,
+            "mass_balance_error": 1.0076702544277041e-14,
+            "steps": 1901,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 6.77e3 steps × 1.73e5 values = 1.17e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0021055960314878925,
+            "max_regime_solves": 5,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 12,
+          "case": "schmieder2023/exp12",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 35.74067557263283,
+            "first_drops_s": 8.082116466969334,
+            "beverage_mass_kg": 0.07302820927471088,
+            "drip_mass_kg": 0.004941812517785929,
+            "tds": 0.0642108477977475,
+            "ey": 0.2344601615340256,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021468701373767587,
+                "extracted_fraction": 0.8112969206554098
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011996403991075504,
+                "extracted_fraction": 0.8603667976065671
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001441251993752715,
+                "extracted_fraction": 0.7760490951011998
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00039089068544320834,
+                "extracted_fraction": 0.8143555946733506
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.032175022640538946,
+              "ey_min": 0.16129400122374013,
+              "ey_max": 0.28048587439171513,
+              "ey_mean": 0.2461622304448747
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 1.7587976995653767e-14,
+            "mass_balance_error": 6.377659838150025e-15,
+            "steps": 966,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.00786796668601139,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 13,
+          "case": "schmieder2023/exp13",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 37.36130289694205,
+            "first_drops_s": 8.039228383588508,
+            "beverage_mass_kg": 0.07643765843714864,
+            "drip_mass_kg": 0.00463079658631016,
+            "tds": 0.06309798276867756,
+            "ey": 0.24115310274726331,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00022120602433509692,
+                "extracted_fraction": 0.8359321006382573
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00012219407759421166,
+                "extracted_fraction": 0.8763603435198665
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014840882259877658,
+                "extracted_fraction": 0.7991144711823099
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00040084361437107334,
+                "extracted_fraction": 0.8350908632730693
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.031773299809064924,
+              "ey_min": 0.16823911808244074,
+              "ey_max": 0.28550429718149173,
+              "ey_mean": 0.25251182347507134
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 2.5786422210404486e-14,
+            "mass_balance_error": 6.122553444624024e-15,
+            "steps": 1000,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.006886749394163453,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 14,
+          "case": "schmieder2023/exp14",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 31.473049273081944,
+            "first_drops_s": 7.6800231801169465,
+            "beverage_mass_kg": 0.0678171139215948,
+            "drip_mass_kg": 0.004984333917950279,
+            "tds": 0.06503310796065531,
+            "ey": 0.22051788456215674,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00020454903285215936,
+                "extracted_fraction": 0.7729857413675331
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011639096569910251,
+                "extracted_fraction": 0.8347411649638431
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00013702730691357844,
+                "extracted_fraction": 0.737830150420471
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003747589996583819,
+                "extracted_fraction": 0.7807479159549622
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.033427644808160434,
+              "ey_min": 0.14490372439670263,
+              "ey_max": 0.2703259735838652,
+              "ey_mean": 0.23337199892915894
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 7.12556256040179e-15,
+            "mass_balance_error": 2.142893705618409e-14,
+            "steps": 883,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.007637727739809966,
+            "max_regime_solves": 5,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 15,
+          "case": "schmieder2023/exp15",
+          "max_dt_s": 0.05,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 32.39981664457364,
+            "first_drops_s": 7.642712017398738,
+            "beverage_mass_kg": 0.0672897282714735,
+            "drip_mass_kg": 0.004580654495192363,
+            "tds": 0.06654221369613939,
+            "ey": 0.22388037390977708,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00020848881258410886,
+                "extracted_fraction": 0.7878740716346669
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.0001171585218762138,
+                "extracted_fraction": 0.8402459799948778
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001392194669025325,
+                "extracted_fraction": 0.749633941729132
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003792019473778471,
+                "extracted_fraction": 0.7900040570371812
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.03547085997503472,
+              "ey_min": 0.14372691015394196,
+              "ey_max": 0.27493455691591717,
+              "ey_mean": 0.2372678911505719
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 3.970864904589295e-14,
+            "mass_balance_error": 2.0280958285317084e-14,
+            "steps": 901,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.007249518838628059,
+            "max_regime_solves": 5,
+            "rejected_steps": 0
+          }
+        }
+      ]
+    },
+    "half_dt": {
+      "completed": 15,
+      "requested": 15,
+      "failures": [],
+      "cost": 482.54769692640986,
+      "score": {
+        "lambda_within": 51,
+        "lambda_total": 60,
+        "cup_within": 174,
+        "cup_total": 180,
+        "lambda_missing": 0,
+        "cup_missing": 0
+      },
+      "first_drops_s": {
+        "min": 7.640869156576622,
+        "max": 8.083765019400111,
+        "count": 15
+      },
+      "shot_time_s": {
+        "min": 31.46765216077137,
+        "max": 83.46401670462754,
+        "count": 15
+      },
+      "max_mass_balance_error": 1.8750319924161072e-14,
+      "max_carrier_balance_error": 6.20736510562071e-14,
+      "min_concentration_kg_m3": 0.0,
+      "cases": [
+        {
+          "experiment": 1,
+          "case": "schmieder2023/exp01",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 75.19939975348254,
+            "first_drops_s": 7.906691668447084,
+            "beverage_mass_kg": 0.06355640287764407,
+            "drip_mass_kg": 0.0015564029850985636,
+            "tds": 0.0730601442035267,
+            "ey": 0.23217199796490576,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021343843451983584,
+                "extracted_fraction": 0.8065785706397648
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.0001139877630993938,
+                "extracted_fraction": 0.8175057023514691
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001410351699534198,
+                "extracted_fraction": 0.7594106824776019
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003750218327651178,
+                "extracted_fraction": 0.7812954849273286
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.05153260654927388,
+              "ey_min": 0.14000715389643664,
+              "ey_max": 0.3008042523938075,
+              "ey_mean": 0.24816793298971548
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 2.3889084280797003e-16,
+            "mass_balance_error": 1.0969574921618042e-14,
+            "steps": 3503,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.27e4 steps × 1.73e5 values = 2.20e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0013394868851782365,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 2,
+          "case": "schmieder2023/exp02",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 33.679752397762826,
+            "first_drops_s": 7.904543804118715,
+            "beverage_mass_kg": 0.07035225877159204,
+            "drip_mass_kg": 0.0049406668079030325,
+            "tds": 0.06604936600383997,
+            "ey": 0.23233610444008718,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002134261181242645,
+                "extracted_fraction": 0.8065320272852011
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011924384289551078,
+                "extracted_fraction": 0.8552016364456686
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014306949622272047,
+                "extracted_fraction": 0.7703646105018102
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00038804624340934934,
+                "extracted_fraction": 0.8084296737694776
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.03360135540761732,
+              "ey_min": 0.1555228569705136,
+              "ey_max": 0.28091984346431553,
+              "ey_mean": 0.2447319818596816
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 3.9018052729605376e-14,
+            "mass_balance_error": 1.6454362382427065e-14,
+            "steps": 1839,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0040775376864643125,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 3,
+          "case": "schmieder2023/exp03",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 43.85831143556388,
+            "first_drops_s": 8.05841406556228,
+            "beverage_mass_kg": 0.06513280202443247,
+            "drip_mass_kg": 0.003132802075041359,
+            "tds": 0.07104074916879487,
+            "ey": 0.2313541525639241,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002128275844994829,
+                "extracted_fraction": 0.8042701835050861
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011669181152715025,
+                "extracted_fraction": 0.8368987928817031
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001417097814318161,
+                "extracted_fraction": 0.7630431605565474
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00038156439411628,
+                "extracted_fraction": 0.7949258210755832
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.04147181218059615,
+              "ey_min": 0.14411292088292127,
+              "ey_max": 0.2879564229317835,
+              "ey_mean": 0.24556199557191247
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 6.20736510562071e-14,
+            "mass_balance_error": 6.071532165918825e-15,
+            "steps": 2248,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.002345975640388384,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 4,
+          "case": "schmieder2023/exp04",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 42.61316007856634,
+            "first_drops_s": 7.657709240614789,
+            "beverage_mass_kg": 0.06750369295110172,
+            "drip_mass_kg": 0.003196971773903892,
+            "tds": 0.0670317757427329,
+            "ey": 0.2262446203852275,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002114929544541104,
+                "extracted_fraction": 0.7992266495382484
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011689979219584566,
+                "extracted_fraction": 0.8383904037179393
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014056437799251164,
+                "extracted_fraction": 0.7568756804319682
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00038065143831266717,
+                "extracted_fraction": 0.7930238298180564
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.039187689775526745,
+              "ey_min": 0.14303855470578664,
+              "ey_max": 0.2814619625934728,
+              "ey_mean": 0.2397507299418011
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 4.920215875309954e-14,
+            "mass_balance_error": 1.1097128118381045e-14,
+            "steps": 2198,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.00225375600155885,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 5,
+          "case": "schmieder2023/exp05",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 43.45596883505056,
+            "first_drops_s": 7.927018355105752,
+            "beverage_mass_kg": 0.06518249058024789,
+            "drip_mass_kg": 0.00318249060578598,
+            "tds": 0.07015993885521854,
+            "ey": 0.22865997767705248,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021091058101821108,
+                "extracted_fraction": 0.7970258747126507
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011621622206046501,
+                "extracted_fraction": 0.8334879258691235
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001404396785771504,
+                "extracted_fraction": 0.7562042304088616
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003790272657087692,
+                "extracted_fraction": 0.7896401368932691
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.040718759704193495,
+              "ey_min": 0.14318509521996955,
+              "ey_max": 0.2850642148896146,
+              "ey_mean": 0.24263968739021205
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 5.926903980709351e-14,
+            "mass_balance_error": 1.862276672739807e-14,
+            "steps": 2232,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0021941581208824216,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 6,
+          "case": "schmieder2023/exp06",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 43.73121836615435,
+            "first_drops_s": 7.884835346365208,
+            "beverage_mass_kg": 0.06506590327157073,
+            "drip_mass_kg": 0.003065903299358644,
+            "tds": 0.0713047560750017,
+            "ey": 0.2319754180789503,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021395306701062848,
+                "extracted_fraction": 0.8085233541074759
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011695699767033222,
+                "extracted_fraction": 0.8388006740866779
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001423146532603708,
+                "extracted_fraction": 0.7663001221235518
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003827615227224529,
+                "extracted_fraction": 0.79741983900511
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.04216371099397358,
+              "ey_min": 0.14298304887381758,
+              "ey_max": 0.2890553138704401,
+              "ey_mean": 0.24626776841530387
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 4.7605518132851766e-14,
+            "mass_balance_error": 1.8750319924161072e-14,
+            "steps": 2243,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.002490858635112914,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 7,
+          "case": "schmieder2023/exp07",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 45.45357000114795,
+            "first_drops_s": 7.904306986376034,
+            "beverage_mass_kg": 0.06857041567673085,
+            "drip_mass_kg": 0.0031192716848023466,
+            "tds": 0.06830485666273274,
+            "ey": 0.2341846207051551,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021594046224266775,
+                "extracted_fraction": 0.8160336715868965
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011821084377776818,
+                "extracted_fraction": 0.8477930984910966
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014385877767616052,
+                "extracted_fraction": 0.7746145345982024
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00038719285716351987,
+                "extracted_fraction": 0.8066517857573329
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.039710497531624256,
+              "ey_min": 0.15003240145890365,
+              "ey_max": 0.28837693355610905,
+              "ey_mean": 0.24749558100482494
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 5.406207977823264e-14,
+            "mass_balance_error": 1.5816596398612062e-14,
+            "steps": 2312,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.002104522431228941,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 8,
+          "case": "schmieder2023/exp08",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 75.38223158023445,
+            "first_drops_s": 8.083765019400111,
+            "beverage_mass_kg": 0.0635782952003268,
+            "drip_mass_kg": 0.001578295209735875,
+            "tds": 0.07277745001977526,
+            "ey": 0.23135331006421503,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021264711525468822,
+                "extracted_fraction": 0.8035881946878499
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011381880601544503,
+                "extracted_fraction": 0.8162939636891325
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.000140577462118996,
+                "extracted_fraction": 0.7569461325427883
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00037431919870449087,
+                "extracted_fraction": 0.7798316639676892
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.050664096357930594,
+              "ey_min": 0.14117103357145036,
+              "ey_max": 0.2994521873188132,
+              "ey_mean": 0.24730261230431347
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 1.1978817384484158e-15,
+            "mass_balance_error": 1.1449174941446927e-14,
+            "steps": 3509,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.27e4 steps × 1.73e5 values = 2.20e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0014078282129980756,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 9,
+          "case": "schmieder2023/exp09",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 83.46401670462754,
+            "first_drops_s": 8.039564684675785,
+            "beverage_mass_kg": 0.06338037874986029,
+            "drip_mass_kg": 0.0013803787790136468,
+            "tds": 0.07411031921895497,
+            "ey": 0.2348570050685208,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.000214520090519609,
+                "extracted_fraction": 0.8106661219384971
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011385418442118798,
+                "extracted_fraction": 0.8165476931040149
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014178212403237356,
+                "extracted_fraction": 0.7634326927823014
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00037544983058430286,
+                "extracted_fraction": 0.7821871470506309
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.053687224293457146,
+              "ey_min": 0.14139478693166901,
+              "ey_max": 0.30565155224735546,
+              "ey_mean": 0.2513374397743535
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 2.9888399843112735e-14,
+            "mass_balance_error": 7.979727989493313e-15,
+            "steps": 3831,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.35e4 steps × 1.73e5 values = 2.34e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0012749019899028745,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 10,
+          "case": "schmieder2023/exp10",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 74.27261257338225,
+            "first_drops_s": 7.679729903293467,
+            "beverage_mass_kg": 0.06354967041864143,
+            "drip_mass_kg": 0.001549670507621212,
+            "tds": 0.0708054321818901,
+            "ey": 0.22498309395042915,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021021050516900717,
+                "extracted_fraction": 0.7943803053752415
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011301481455439809,
+                "extracted_fraction": 0.81052783944758
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00013840415128689313,
+                "extracted_fraction": 0.7452438354293215
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003700668887001827,
+                "extracted_fraction": 0.7709726847920471
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.05046608913498602,
+              "ey_min": 0.13519666064016725,
+              "ey_max": 0.29410748147556015,
+              "ey_mean": 0.2407474605449741
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 8.381771344060951e-16,
+            "mass_balance_error": 9.8879238130678e-15,
+            "steps": 3464,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.27e4 steps × 1.73e5 values = 2.20e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0010835568307732736,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 11,
+          "case": "schmieder2023/exp11",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 82.23400257497136,
+            "first_drops_s": 7.641704257128432,
+            "beverage_mass_kg": 0.06336225077827162,
+            "drip_mass_kg": 0.0013622507899683223,
+            "tds": 0.07225812936184202,
+            "ey": 0.2289218856696913,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021246614673546885,
+                "extracted_fraction": 0.8029043191248983
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011314330614479117,
+                "extracted_fraction": 0.8114493647498965
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00013982884134402658,
+                "extracted_fraction": 0.7529151478329164
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003716079458266197,
+                "extracted_fraction": 0.7741832204721242
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.053635379083553085,
+              "ey_min": 0.13557482066380294,
+              "ey_max": 0.30089979725369725,
+              "ey_mean": 0.24522720373441428
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 2.844860310864987e-14,
+            "mass_balance_error": 8.035851396069034e-15,
+            "steps": 3785,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.35e4 steps × 1.73e5 values = 2.34e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0009137515004785868,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 12,
+          "case": "schmieder2023/exp12",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 35.73561816539132,
+            "first_drops_s": 8.080872587534149,
+            "beverage_mass_kg": 0.07302785246438062,
+            "drip_mass_kg": 0.004941453616983976,
+            "tds": 0.06423601565720516,
+            "ey": 0.23455091371570108,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00021477724359313355,
+                "extracted_fraction": 0.8116378970498807
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011999788636365941,
+                "extracted_fraction": 0.8606095400510309
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001441847783648105,
+                "extracted_fraction": 0.7763699010471358
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003910311541041071,
+                "extracted_fraction": 0.8146482377168897
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.0321527650522815,
+              "ey_min": 0.1614957867049407,
+              "ey_max": 0.2813102591433079,
+              "ey_mean": 0.24623875614883634
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 3.086425960358682e-14,
+            "mass_balance_error": 4.84702147699402e-15,
+            "steps": 1921,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0037832626337085734,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 13,
+          "case": "schmieder2023/exp13",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 37.355919450840865,
+            "first_drops_s": 8.037239716402134,
+            "beverage_mass_kg": 0.07643729335163083,
+            "drip_mass_kg": 0.0046304313924614565,
+            "tds": 0.06312023544988603,
+            "ey": 0.2412369976753473,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00022127484497381602,
+                "extracted_fraction": 0.8361921721316292
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00012222363265273735,
+                "extracted_fraction": 0.8765723086310427
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00014846151989672765,
+                "extracted_fraction": 0.799398222327609
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0004009519447207011,
+                "extracted_fraction": 0.8353165515014604
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.03174337527948572,
+              "ey_min": 0.16842192215895166,
+              "ey_max": 0.28632383873124423,
+              "ey_mean": 0.25258267854496635
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 3.015717903699314e-14,
+            "mass_balance_error": 6.938893903907228e-15,
+            "steps": 1986,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.003881490487903298,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 14,
+          "case": "schmieder2023/exp14",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 31.46765216077137,
+            "first_drops_s": 7.678572870423048,
+            "beverage_mass_kg": 0.06781674671100578,
+            "drip_mass_kg": 0.004983966294418912,
+            "tds": 0.06506016517015543,
+            "ey": 0.22060843711603156,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.0002046350852756095,
+                "extracted_fraction": 0.7733109313496591
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.00011642593627311452,
+                "extracted_fraction": 0.834991969461554
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.0001370871750685472,
+                "extracted_fraction": 0.7381525133916257
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.00037490220396082515,
+                "extracted_fraction": 0.7810462582517189
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.033396621452315534,
+              "ey_min": 0.1451167719082329,
+              "ey_max": 0.271291809451447,
+              "ey_mean": 0.23344886689666403
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 3.32528460804686e-14,
+            "mass_balance_error": 1.224510688924805e-14,
+            "steps": 1751,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.004482011581386905,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        },
+        {
+          "experiment": 15,
+          "case": "schmieder2023/exp15",
+          "max_dt_s": 0.025,
+          "output_interval_s": 0.1,
+          "summary": {
+            "stop_reason": "beverage_mass",
+            "shot_time_s": 32.39418269310495,
+            "first_drops_s": 7.640869156576622,
+            "beverage_mass_kg": 0.06728937981787105,
+            "drip_mass_kg": 0.004580302443524628,
+            "tds": 0.06656976770016632,
+            "ey": 0.22397191915819675,
+            "max_pressure_pa": 1200000.0,
+            "bed_height_m": 0.014990524530079583,
+            "headspace_m3": 3.5408948293281055e-05,
+            "species": [
+              {
+                "id": "caffeine",
+                "mass_kg": 0.00020857330681377082,
+                "extracted_fraction": 0.7881933732409656
+              },
+              {
+                "id": "trigonelline",
+                "mass_kg": 0.0001171917591854734,
+                "extracted_fraction": 0.8404843537387932
+              },
+              {
+                "id": "cqa5",
+                "mass_kg": 0.00013927466352474727,
+                "extracted_fraction": 0.7499311506066085
+              },
+              {
+                "id": "acids",
+                "mass_kg": 0.0003793461494770036,
+                "extracted_fraction": 0.7903044780770907
+              }
+            ],
+            "uniformity": {
+              "ey_std": 0.035441492760955526,
+              "ey_min": 0.1438805152704389,
+              "ey_max": 0.27593267551330164,
+              "ey_mean": 0.23734616138924053
+            }
+          },
+          "diagnostics": {
+            "hydraulic_volume_balance_error": 3.9945282873369365e-14,
+            "mass_balance_error": 1.2372660086011052e-14,
+            "steps": 1789,
+            "warnings": [
+              "solubles.kernel_loading_cap is off and K·s₀ = 126 kg/m³ is below c_sat = 350 kg/m³: kernels re-absorb solute from liquid above 126 kg/m³ beyond their initial content",
+              "a large run: up to 1.01e4 steps × 1.73e5 values = 1.74e9 (expect several seconds or more)"
+            ],
+            "min_concentration_kg_m3": 0.0,
+            "tier": 1,
+            "outflow_integral_error": 0.0038041485713177386,
+            "max_regime_solves": 4,
+            "rejected_steps": 0
+          }
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "metrics": {
+      "lambda": {
+        "required": 60,
+        "available": 60,
+        "max_abs_relative_difference": 0.0038428473469112046,
+        "worst": {
+          "experiment": 2,
+          "analyte": "caffeine",
+          "metric": "lambda",
+          "cup_mass_g": null,
+          "nominal": 21.92545305368604,
+          "half_dt": 21.841196884588857,
+          "difference": -0.08425616909718414,
+          "relative_difference": -0.0038428473469112046
+        }
+      },
+      "c0": {
+        "required": 60,
+        "available": 60,
+        "max_abs_relative_difference": 0.0029355222847129436,
+        "worst": {
+          "experiment": 2,
+          "analyte": "cqa5",
+          "metric": "c0",
+          "cup_mass_g": null,
+          "nominal": 6.391484528203542,
+          "half_dt": 6.410246873468482,
+          "difference": 0.018762345264939917,
+          "relative_difference": 0.0029355222847129436
+        }
+      },
+      "cup_eq3": {
+        "required": 180,
+        "available": 180,
+        "max_abs_relative_difference": 0.001416781508509768,
+        "worst": {
+          "experiment": 2,
+          "analyte": "caffeine",
+          "metric": "cup_eq3",
+          "cup_mass_g": 20.0,
+          "nominal": 127.64154770559189,
+          "half_dt": 127.82238789009874,
+          "difference": 0.1808401845068488,
+          "relative_difference": 0.001416781508509768
+        }
+      },
+      "cup_direct": {
+        "required": 180,
+        "available": 180,
+        "max_abs_relative_difference": 0.0013246711135772582,
+        "worst": {
+          "experiment": 14,
+          "analyte": "cqa5",
+          "metric": "cup_direct",
+          "cup_mass_g": 20.0,
+          "nominal": 78.07448224950531,
+          "half_dt": 78.17790526084873,
+          "difference": 0.10342301134342335,
+          "relative_difference": 0.0013246711135772582
+        }
+      }
+    },
+    "columns": [
+      "experiment",
+      "analyte",
+      "metric",
+      "cup_mass_g",
+      "nominal",
+      "half_dt",
+      "difference",
+      "relative_difference"
+    ],
+    "rows": [
+      [1, "trigonelline", "lambda", null, 14.966957711448272, 14.943224529581714, -0.023733181866557373, -0.0015857051462371263],
+      [1, "caffeine", "lambda", null, 18.038752940343716, 17.99622280875134, -0.0425301315923754, -0.002357709079614745],
+      [1, "cqa5", "lambda", null, 18.520555983987396, 18.47879685631275, -0.04175912767464496, -0.002254744820336385],
+      [1, "tds", "lambda", null, 16.157805847542487, 16.133878380796055, -0.023927466746432202, -0.0014808611374712566],
+      [1, "trigonelline", "c0", null, 7.009662681437164, 7.018898913564729, 0.009236232127564747, 0.0013176428805945495],
+      [1, "caffeine", "c0", null, 11.369386028485307, 11.389229983147505, 0.019843954662198016, 0.0017453848969926078],
+      [1, "cqa5", "c0", null, 7.305132492036486, 7.317764185354808, 0.01263169331832259, 0.0017291532127710063],
+      [1, "tds", "c0", null, 0.2628517417352754, 0.26319869867078494, 0.00034695693550951257, 0.0013199719858008052],
+      [1, "trigonelline", "cup_eq3", 20.0, 78.48206175286184, 78.51879660490734, 0.0367348520454982, 0.00046806685789135827],
+      [1, "trigonelline", "cup_eq3", 40.0, 98.80867931323002, 98.81216819573793, 0.003488882507909352, 3.5309474148981224e-05],
+      [1, "trigonelline", "cup_eq3", 60.0, 104.15096892441242, 104.1344125940393, -0.01655633037312043, -0.0001589647273001482],
+      [1, "caffeine", "cup_eq3", 20.0, 139.9048406631375, 140.00298746195122, 0.09814679881372967, 0.0007015253964661738],
+      [1, "caffeine", "cup_eq3", 40.0, 185.24872470227248, 185.25858532973447, 0.00986062746198968, 5.3229124669318395e-05],
+      [1, "caffeine", "cup_eq3", 60.0, 200.21128667489162, 200.15293690659178, -0.05834976829984839, -0.00029144095354927124],
+      [1, "cqa5", "cup_eq3", 20.0, 91.03569854132822, 91.10268763145677, 0.06698909012855836, 0.0007358551777152389],
+      [1, "cqa5", "cup_eq3", 40.0, 121.38013993198804, 121.39506659261883, 0.014926660630791844, 0.00012297448857090387],
+      [1, "cqa5", "cup_eq3", 60.0, 131.68620086653883, 131.6583685324052, -0.027832334133620407, -0.00021135345959166774],
+      [1, "tds", "cup_eq3", 20.0, 3.076775241128569, 3.078524870061726, 0.0017496289331568882, 0.0005686567253171404],
+      [1, "tds", "cup_eq3", 40.0, 3.951297348816091, 3.951954809402588, 0.0006574605864968497, 0.00016639106816240812],
+      [1, "tds", "cup_eq3", 60.0, 4.204929691525037, 4.20480580816617, -0.00012388335886726054, -2.946145784954446e-05],
+      [1, "trigonelline", "cup_direct", 20.0, 73.33029509034783, 73.36305843389785, 0.03276334355001609, 0.00044679137741976405],
+      [1, "trigonelline", "cup_direct", 40.0, 98.44299133628525, 98.46211539791716, 0.01912406163191349, 0.00019426534456457034],
+      [1, "trigonelline", "cup_direct", 60.0, 112.18274824485496, 112.19491442899864, 0.012166184143680425, 0.00010844968886947193],
+      [1, "caffeine", "cup_direct", 20.0, 130.19704983812466, 130.266096745905, 0.06904690778034706, 0.0005303262083602434],
+      [1, "caffeine", "cup_direct", 40.0, 181.08302219682747, 181.12168576246344, 0.03866356563597151, 0.00021351292444160563],
+      [1, "caffeine", "cup_direct", 60.0, 209.67659027223843, 209.69988761293774, 0.023297340699315328, 0.00011111083344617079],
+      [1, "cqa5", "cup_direct", 20.0, 84.8154261897301, 84.8671160355074, 0.051689845777289634, 0.0006094392034494689],
+      [1, "cqa5", "cup_direct", 40.0, 118.53791170733612, 118.56971527799845, 0.031803570662333414, 0.0002682987257347502],
+      [1, "cqa5", "cup_direct", 60.0, 138.3278157645066, 138.34810881016273, 0.02029304565613188, 0.0001467025669708022],
+      [1, "tds", "cup_direct", 20.0, 2.8323217951412825, 2.8338746851348455, 0.001552889993563067, 0.0005482745626668173],
+      [1, "tds", "cup_direct", 40.0, 3.9005131422863117, 3.9017837363534498, 0.0012705940671380311, 0.0003257504899454311],
+      [1, "tds", "cup_direct", 60.0, 4.550980081718274, 4.552002948650107, 0.0010228669318328443, 0.000224757505738582],
+      [2, "trigonelline", "lambda", null, 17.179441494650582, 17.129663199817625, -0.049778294832957926, -0.002897550240411384],
+      [2, "caffeine", "lambda", null, 21.92545305368604, 21.841196884588857, -0.08425616909718414, -0.0038428473469112046],
+      [2, "cqa5", "lambda", null, 21.272511247950845, 21.193164175862652, -0.07934707208819347, -0.0037300284467277622],
+      [2, "tds", "lambda", null, 18.18555870003099, 18.144702569362146, -0.04085613066884619, -0.002246624991993018],
+      [2, "trigonelline", "c0", null, 6.336880993056197, 6.351574646342627, 0.014693653286429686, 0.002318751654406981],
+      [2, "caffeine", "c0", null, 9.344985957405278, 9.372230063770399, 0.027244106365120757, 0.002915371568165126],
+      [2, "cqa5", "c0", null, 6.391484528203542, 6.410246873468482, 0.018762345264939917, 0.0029355222847129436],
+      [2, "tds", "c0", null, 0.23252980805103576, 0.23297598872360428, 0.0004461806725685191, 0.0019188106518825965],
+      [2, "trigonelline", "cup_eq3", 20.0, 76.80806671759844, 76.87386445691943, 0.06579773932099897, 0.000856651418696952],
+      [2, "trigonelline", "cup_eq3", 40.0, 100.18367061720177, 100.19256956429156, 0.00889894708979, 8.882632304207938e-05],
+      [2, "trigonelline", "cup_eq3", 60.0, 107.48101653958543, 107.44756714889809, -0.033449390687337655, -0.00031121207971662734],
+      [2, "caffeine", "cup_eq3", 20.0, 127.64154770559189, 127.82238789009874, 0.1808401845068488, 0.001416781508509768],
+      [2, "caffeine", "cup_eq3", 40.0, 176.8828134779682, 176.9602144833791, 0.07740100541090555, 0.0004375835271330786],
+      [2, "caffeine", "cup_eq3", 60.0, 196.6604171962175, 196.62694504440637, -0.03347215181113938, -0.00017020279061918941],
+      [2, "cqa5", "cup_eq3", 20.0, 85.93457693485334, 86.05522966413389, 0.12065272928055037, 0.0014040067873031248],
+      [2, "cqa5", "cup_eq3", 40.0, 118.29678593279068, 118.35030763842195, 0.0535217056312689, 0.0004524358393107608],
+      [2, "cqa5", "cup_eq3", 60.0, 130.9360841371554, 130.9190669630763, -0.01701717407911474, -0.00012996550333133072],
+      [2, "tds", "cup_eq3", 20.0, 2.9174403650720335, 2.919909180239129, 0.002468815167095517, 0.0008462264376172257],
+      [2, "tds", "cup_eq3", 40.0, 3.8566019948235883, 3.857592985238677, 0.000990990415088877, 0.00025695947272219577],
+      [2, "tds", "cup_eq3", 60.0, 4.169292484009337, 4.169019284111525, -0.0002731998978120487, -6.552668081216684e-05],
+      [2, "trigonelline", "cup_direct", 20.0, 72.80377632105618, 72.86051634353011, 0.05674002247393162, 0.0007793554859532037],
+      [2, "trigonelline", "cup_direct", 40.0, 97.5492258567938, 97.58537791927645, 0.03615206248265679, 0.0003706032740407039],
+      [2, "trigonelline", "cup_direct", 60.0, 113.9772153456909, 114.01147898933466, 0.03426364364376866, 0.0003006183607825452],
+      [2, "caffeine", "cup_direct", 20.0, 120.14250078428418, 120.28454140888256, 0.14204062459837985, 0.0011822679207702524],
+      [2, "caffeine", "cup_direct", 40.0, 169.41025660536573, 169.50955259619096, 0.099295990825226, 0.0005861273857610261],
+      [2, "caffeine", "cup_direct", 60.0, 202.14323042311128, 202.22741252761944, 0.08418210450815877, 0.0004164478045194375],
+      [2, "cqa5", "cup_direct", 20.0, 81.23734323956744, 81.3370899800178, 0.0997467404503567, 0.0012278434581027842],
+      [2, "cqa5", "cup_direct", 40.0, 113.29834087097672, 113.37063616151153, 0.07229529053481087, 0.0006380966391832388],
+      [2, "cqa5", "cup_direct", 60.0, 135.19257724462682, 135.25579072378272, 0.06321347915590536, 0.000467580990349159],
+      [2, "tds", "cup_direct", 20.0, 2.741062920473025, 2.7430983012247907, 0.002035380751765903, 0.000742551634463906],
+      [2, "tds", "cup_direct", 40.0, 3.7307520159806717, 3.73248562438901, 0.0017336084083381387, 0.00046468068660487916],
+      [2, "tds", "cup_direct", 60.0, 4.4120141925179155, 4.413929769202935, 0.0019155766850191824, 0.00043417282933222445],
+      [3, "trigonelline", "lambda", null, 16.570497562403173, 16.532919459092387, -0.03757810331078559, -0.002267771572294075],
+      [3, "caffeine", "lambda", null, 20.483198099934622, 20.41516184249962, -0.06803625743500064, -0.003321564196326232],
+      [3, "cqa5", "lambda", null, 20.217364531224433, 20.159173807562645, -0.05819072366178801, -0.002878254659350654],
+      [3, "tds", "lambda", null, 17.566506120073736, 17.535130228609262, -0.03137589146447439, -0.001786120202276309],
+      [3, "trigonelline", "c0", null, 6.578438101341747, 6.5905427482103995, 0.012104646868652758, 0.0018400487596264004],
+      [3, "caffeine", "c0", null, 10.177894523917765, 10.20344602534728, 0.0255515014295149, 0.0025104899023535854],
+      [3, "cqa5", "c0", null, 6.807321492642682, 6.822844328039339, 0.015522835396656554, 0.0022803147190026962],
+      [3, "tds", "c0", null, 0.24549114844859815, 0.24587293639768915, 0.0003817879490909948, 0.0015552004685452925],
+      [3, "trigonelline", "cup_eq3", 20.0, 77.98632318091023, 78.03645731079953, 0.05013412988930099, 0.0006428579761736941],
+      [3, "trigonelline", "cup_eq3", 40.0, 100.83884011879537, 100.84315729217708, 0.004317173381707562, 4.281260451444169e-05],
+      [3, "trigonelline", "cup_eq3", 60.0, 107.67411646797575, 107.64604136077493, -0.02807510720082007, -0.0002607414680683151],
+      [3, "caffeine", "cup_eq3", 20.0, 133.69108148326885, 133.8421962087526, 0.15111472548375104, 0.0011303276464456058],
+      [3, "caffeine", "cup_eq3", 40.0, 182.63859218751477, 182.6864093901269, 0.047817202612122855, 0.00026181324570773157],
+      [3, "caffeine", "cup_eq3", 60.0, 201.07520450255734, 201.02434442487458, -0.050860077682756355, -0.00025294057419256166],
+      [3, "cqa5", "cup_eq3", 20.0, 88.7880459104124, 88.87983936908819, 0.09179345867579514, 0.00103384929507766],
+      [3, "cqa5", "cup_eq3", 40.0, 120.93462827502337, 120.96945708756947, 0.03482881254609538, 0.00028799701990145365],
+      [3, "cqa5", "cup_eq3", 60.0, 132.88852750283618, 132.86814806312597, -0.0203794397102115, -0.00015335740483524152],
+      [3, "tds", "cup_eq3", 20.0, 3.011687197120023, 3.013634914830785, 0.0019477177107618537, 0.0006467197896993238],
+      [3, "tds", "cup_eq3", 40.0, 3.9505190903966736, 3.95123549454197, 0.0007164041452965009, 0.00018134430663496737],
+      [3, "tds", "cup_eq3", 60.0, 4.251216990421024, 4.250927865075085, -0.00028912534593850125, -6.801001844647381e-05],
+      [3, "trigonelline", "cup_direct", 20.0, 73.61651967557245, 73.67054338771077, 0.05402371213831714, 0.0007338531130838266],
+      [3, "trigonelline", "cup_direct", 40.0, 98.70264432550783, 98.73169525336941, 0.029050927861575815, 0.0002943277564659841],
+      [3, "trigonelline", "cup_direct", 60.0, 114.00731387484099, 114.0326812722958, 0.025367397454814977, 0.0002225067549848081],
+      [3, "caffeine", "cup_direct", 20.0, 125.31216126189233, 125.4416553611412, 0.12949409924887334, 0.0010333721639215199],
+      [3, "caffeine", "cup_direct", 40.0, 175.84981280900126, 175.9285573106325, 0.0787445016312347, 0.00044779406001849154],
+      [3, "caffeine", "cup_direct", 60.0, 207.0858070431358, 207.14891032435, 0.06310328121421094, 0.00030472045436247264],
+      [3, "cqa5", "cup_direct", 20.0, 83.57651601668432, 83.6615118536456, 0.08499583696128354, 0.0010169822937380335],
+      [3, "cqa5", "cup_direct", 40.0, 116.60066573481576, 116.65586024099696, 0.055194506181194924, 0.0004733635595761676],
+      [3, "cqa5", "cup_direct", 60.0, 137.67893740086657, 137.7247677935939, 0.04583039272733913, 0.00033287875104592857],
+      [3, "tds", "cup_direct", 20.0, 2.8115051263010904, 2.8135515884230617, 0.0020464621219713486, 0.000727888454773673],
+      [3, "tds", "cup_direct", 40.0, 3.838036261767921, 3.839542499437136, 0.0015062376692149826, 0.0003924500881398174],
+      [3, "tds", "cup_direct", 60.0, 4.501139079354236, 4.502686742999483, 0.0015476636452467218, 0.00034383821916228463],
+      [4, "trigonelline", "lambda", null, 16.8553992649606, 16.841297030793545, -0.014102234167054917, -0.0008366597518915109],
+      [4, "caffeine", "lambda", null, 21.887639077164497, 21.839261173646356, -0.04837790351814064, -0.0022102842315512294],
+      [4, "cqa5", "lambda", null, 21.212797273198497, 21.167910429020303, -0.044886844178193996, -0.0021160266418472906],
+      [4, "tds", "lambda", null, 18.070710940991077, 18.069223507737966, -0.001487433253110737, -8.231182812712401e-05],
+      [4, "trigonelline", "c0", null, 6.472814868530598, 6.479684246552706, 0.006869378022107853, 0.001061265950229151],
+      [4, "caffeine", "c0", null, 9.600078777139455, 9.618504718151426, 0.018425941011971148, 0.0019193531052941193],
+      [4, "cqa5", "c0", null, 6.487475760516311, 6.499694902994728, 0.0122191424784166, 0.0018834972074630585],
+      [4, "tds", "c0", null, 0.23369999191526847, 0.233853210196675, 0.00015321828140651972, 0.0006556195408944365],
+      [4, "trigonelline", "cup_eq3", 20.0, 77.51083812414612, 77.55126188178708, 0.04042375764096562, 0.0005215239393518978],
+      [4, "trigonelline", "cup_eq3", 40.0, 100.64912764893052, 100.68183340771589, 0.032705758785368744, 0.00032494825886075773],
+      [4, "trigonelline", "cup_eq3", 60.0, 107.71251966876328, 107.73585713731, 0.023337468546728246, 0.0002166644009302665],
+      [4, "caffeine", "cup_eq3", 20.0, 129.70345778060718, 129.82933937520048, 0.12588159459329518, 0.000970533837318488],
+      [4, "caffeine", "cup_eq3", 40.0, 180.17540866088135, 180.2525325691463, 0.07712390826495152, 0.0004280490264356729],
+      [4, "caffeine", "cup_eq3", 60.0, 200.41539149629145, 200.4320753145289, 0.01668381823745335, 8.324619238520015e-05],
+      [4, "cqa5", "cup_eq3", 20.0, 86.47886881733093, 86.5587392783528, 0.07987046102186923, 0.0009235835541578918],
+      [4, "cqa5", "cup_eq3", 40.0, 119.20366354622024, 119.25206038758658, 0.04839684136634048, 0.00040600129162626786],
+      [4, "cqa5", "cup_eq3", 60.0, 131.95079096302968, 131.9614929375565, 0.010701974526824642, 8.110580049369709e-05],
+      [4, "tds", "cup_eq3", 20.0, 2.9109051958668544, 2.9123328654937617, 0.0014276696269073241, 0.0004904555562079693],
+      [4, "tds", "cup_eq3", 40.0, 3.845537283744464, 3.847457615940266, 0.0019203321958016772, 0.0004993664224552941],
+      [4, "tds", "cup_eq3", 60.0, 4.154552229828629, 4.156607282705198, 0.0020550528765692633, 0.0004946508703909114],
+      [4, "trigonelline", "cup_direct", 20.0, 72.61068235859497, 72.66178026610788, 0.051097907512911434, 0.0007037243812220151],
+      [4, "trigonelline", "cup_direct", 40.0, 97.76145971199102, 97.78011613726432, 0.018656425273292143, 0.00019083619790727369],
+      [4, "trigonelline", "cup_direct", 60.0, 113.05488717269252, 113.07503703071899, 0.02014985802647118, 0.00017823075614309403],
+      [4, "caffeine", "cup_direct", 20.0, 120.97311679937553, 121.09368811019957, 0.12057131082403316, 0.0009966785515165277],
+      [4, "caffeine", "cup_direct", 40.0, 171.66185635292842, 171.7246625870375, 0.06280623410907538, 0.0003658718101005043],
+      [4, "caffeine", "cup_direct", 60.0, 203.1788796897397, 203.23173075145465, 0.05285106171496068, 0.0002601208442318814],
+      [4, "cqa5", "cup_direct", 20.0, 80.8436049258716, 80.92463379507329, 0.08102886920168828, 0.001002291637984154],
+      [4, "cqa5", "cup_direct", 40.0, 113.68607950489337, 113.72813683955512, 0.04205733466174877, 0.0003699426952261664],
+      [4, "cqa5", "cup_direct", 60.0, 134.76864263991502, 134.8040804790306, 0.03543783911558762, 0.0002629531500906168],
+      [4, "tds", "cup_direct", 20.0, 2.6945171913260957, 2.69634941638959, 0.0018322250634943416, 0.0006799826957468724],
+      [4, "tds", "cup_direct", 40.0, 3.6998532267188464, 3.700977396591349, 0.001124169872502634, 0.00030384174820352605],
+      [4, "tds", "cup_direct", 60.0, 4.347818378853737, 4.34917884453564, 0.001360465681902845, 0.00031290766158020844],
+      [5, "trigonelline", "lambda", null, 16.24630012718652, 16.20497100849681, -0.04132911868970979, -0.0025439095896394592],
+      [5, "caffeine", "lambda", null, 20.191500597960808, 20.135898573846216, -0.055602024114591586, -0.0027537341192068743],
+      [5, "cqa5", "lambda", null, 19.856207905295737, 19.793588488605288, -0.06261941669044901, -0.003153644290446178],
+      [5, "tds", "lambda", null, 17.162865572787805, 17.13097704226857, -0.031888530519236014, -0.0018579957049711382],
+      [5, "trigonelline", "c0", null, 6.642427589281804, 6.655692811539696, 0.013265222257891729, 0.0019970443154391226],
+      [5, "caffeine", "c0", null, 10.170303768694628, 10.191688876526342, 0.021385107831713768, 0.0021027009928198392],
+      [5, "cqa5", "c0", null, 6.820774653957579, 6.837466226293259, 0.01669157233567997, 0.002447166661047051],
+      [5, "tds", "c0", null, 0.24660780322075593, 0.24699942423109553, 0.00039162101033959895, 0.0015880317055054771],
+      [5, "trigonelline", "cup_eq3", 20.0, 77.83716591689897, 77.88994415650791, 0.05277823960894068, 0.0006780596259798877],
+      [5, "trigonelline", "cup_eq3", 40.0, 100.14642512414405, 100.14572920099515, -0.0006959231488963269, -6.949056324589975e-06],
+      [5, "trigonelline", "cup_eq3", 60.0, 106.66041584093553, 106.62373547635538, -0.03668036458014967, -0.0003438985709079967],
+      [5, "caffeine", "cup_eq3", 20.0, 132.54162717012628, 132.66644521771374, 0.12481804758746762, 0.0009417271407665684],
+      [5, "caffeine", "cup_eq3", 40.0, 180.4831319845234, 180.52270090587072, 0.039568921347324704, 0.0002192388890431829],
+      [5, "caffeine", "cup_eq3", 60.0, 198.2878919666522, 198.24725497827936, -0.04063698837285301, -0.00020493933325838043],
+      [5, "cqa5", "cup_eq3", 20.0, 88.12214727193363, 88.21796489256741, 0.09581762063378108, 0.0010873273473250844],
+      [5, "cqa5", "cup_eq3", 40.0, 119.52075031084667, 119.55157218286877, 0.03082187202210207, 0.00025787883645267407],
+      [5, "cqa5", "cup_eq3", 60.0, 130.9883051915934, 130.9589809511778, -0.029324240415604663, -0.00022386914902605692],
+      [5, "tds", "cup_eq3", 20.0, 2.9846252733637484, 2.986608346534908, 0.001983073171159422, 0.0006644295311901693],
+      [5, "tds", "cup_eq3", 40.0, 3.892880697125109, 3.8935379911634467, 0.0006572940383375858, 0.00016884515336501593],
+      [5, "tds", "cup_eq3", 60.0, 4.17609930726852, 4.17573040126198, -0.00036890600653993744, -8.83374602461684e-05],
+      [5, "trigonelline", "cup_direct", 20.0, 73.43190216623574, 73.48658589364206, 0.054683727406313665, 0.0007446862438960089],
+      [5, "trigonelline", "cup_direct", 40.0, 98.40152566003908, 98.42904884654772, 0.02752318650863117, 0.00027970284326395145],
+      [5, "trigonelline", "cup_direct", 60.0, 113.52896660857775, 113.55364867757204, 0.024682068994295037, 0.00021740767780786818],
+      [5, "caffeine", "cup_direct", 20.0, 124.1592311920926, 124.27002811770078, 0.11079692560817023, 0.000892377671352973],
+      [5, "caffeine", "cup_direct", 40.0, 174.31485511970183, 174.3838082748417, 0.06895315513986588, 0.0003955667180086664],
+      [5, "caffeine", "cup_direct", 60.0, 205.1627337787474, 205.22076174664215, 0.05802796789475906, 0.0002828387340427785],
+      [5, "cqa5", "cup_direct", 20.0, 82.8984539830602, 82.98521650552325, 0.08676252246306149, 0.0010466120692769199],
+      [5, "cqa5", "cup_direct", 40.0, 115.63382978864512, 115.68847680861944, 0.05464701997432542, 0.00047258678601425075],
+      [5, "cqa5", "cup_direct", 60.0, 136.41666068045353, 136.46184560246712, 0.04518492201358981, 0.0003312272986906173],
+      [5, "tds", "cup_direct", 20.0, 2.784985304335111, 2.7869934076017393, 0.0020081032666281473, 0.0007210462703348686],
+      [5, "tds", "cup_direct", 40.0, 3.799996590420345, 3.8014712667085564, 0.0014746762882111852, 0.000388073055625604],
+      [5, "tds", "cup_direct", 60.0, 4.448782839851823, 4.450346070590722, 0.0015632307388990796, 0.0003513839167188504],
+      [6, "trigonelline", "lambda", null, 16.378366831441625, 16.345529063940486, -0.03283776750113887, -0.002004947614074659],
+      [6, "caffeine", "lambda", null, 20.41518521113849, 20.35419811433524, -0.060987096803248875, -0.002987339873359307],
+      [6, "cqa5", "lambda", null, 20.169035642747975, 20.11727495799629, -0.051760684751684494, -0.0025663440567271767],
+      [6, "tds", "lambda", null, 17.51817464776137, 17.48999768649211, -0.028176961269259948, -0.001608441623389134],
+      [6, "trigonelline", "c0", null, 6.665722518586142, 6.676974238233495, 0.011251719647352942, 0.0016879970049727966],
+      [6, "caffeine", "c0", null, 10.27749690174891, 10.301512497127055, 0.02401559537814535, 0.0023367163821823578],
+      [6, "cqa5", "c0", null, 6.857505042128139, 6.871897680301587, 0.014392638173448269, 0.00209881554370428],
+      [6, "tds", "c0", null, 0.24669596582117284, 0.24707366899948713, 0.000377703178314287, 0.001531047242937511],
+      [6, "trigonelline", "cup_eq3", 20.0, 78.52410568607525, 78.5736024086097, 0.049496722534456694, 0.0006303379338357118],
+      [6, "trigonelline", "cup_eq3", 40.0, 101.22496508599376, 101.23478465974135, 0.009819573747591903, 9.70074303237034e-05],
+      [6, "trigonelline", "cup_eq3", 60.0, 107.91942167850334, 107.9011664230207, -0.01825525548264295, -0.00016915635016123698],
+      [6, "caffeine", "cup_eq3", 20.0, 134.66704107461865, 134.81557752707263, 0.14853645245398184, 0.001102990392219949],
+      [6, "caffeine", "cup_eq3", 40.0, 183.86581642527378, 183.92426350051502, 0.05844707524124715, 0.00031787896400525817],
+      [6, "caffeine", "cup_eq3", 60.0, 202.33688800428945, 202.30747161997576, -0.029416384313691424, -0.00014538320028456564],
+      [6, "cqa5", "cup_eq3", 20.0, 89.2752871627901, 89.36372750551288, 0.08844034272279089, 0.0009906475300551776],
+      [6, "cqa5", "cup_eq3", 40.0, 121.55012698223472, 121.58945842156629, 0.039331439331576235, 0.00032358205053406586],
+      [6, "cqa5", "cup_eq3", 60.0, 133.52330426995218, 133.51395469923432, -0.009349570717859024, -7.002201427663834e-05],
+      [6, "tds", "cup_eq3", 20.0, 3.0214838090849834, 3.0236406968081577, 0.00215688772317435, 0.0007138504984500749],
+      [6, "tds", "cup_eq3", 40.0, 3.960762925773149, 3.961926959825272, 0.001164034052123064, 0.00029389137242952224],
+      [6, "tds", "cup_eq3", 60.0, 4.260660568470577, 4.260957095992365, 0.0002965275217876595, 6.959660762051456e-05],
+      [6, "trigonelline", "cup_direct", 20.0, 73.89739425730758, 73.95085123951345, 0.053456982205872805, 0.0007233946845235373],
+      [6, "trigonelline", "cup_direct", 40.0, 99.17034181767785, 99.19974274611496, 0.02940092843711284, 0.0002964689633839779],
+      [6, "trigonelline", "cup_direct", 60.0, 114.32215152280196, 114.34828485247328, 0.026133329671324645, 0.00022859375303219132],
+      [6, "caffeine", "cup_direct", 20.0, 125.94914544912403, 126.07567393464852, 0.1265284855244886, 0.0010045997936174444],
+      [6, "caffeine", "cup_direct", 40.0, 177.15658042545377, 177.2390666453966, 0.08248621994283667, 0.0004656119447821183],
+      [6, "caffeine", "cup_direct", 60.0, 208.29355265602624, 208.35916642190395, 0.06561376587771406, 0.00031500622578595205],
+      [6, "cqa5", "cup_direct", 20.0, 83.83027646876613, 83.91238917888363, 0.08211271011749943, 0.00097951138391017],
+      [6, "cqa5", "cup_direct", 40.0, 117.25178612215694, 117.30680981254034, 0.05502369038339339, 0.0004692780571040611],
+      [6, "cqa5", "cup_direct", 60.0, 138.32389185573447, 138.36962291335394, 0.045731057619462945, 0.0003306085232706035],
+      [6, "tds", "cup_direct", 20.0, 2.8091008257590655, 2.811377266079721, 0.0022764403206556594, 0.0008103804248609237],
+      [6, "tds", "cup_direct", 40.0, 3.84831328278303, 3.850086075719541, 0.001772792936511003, 0.0004606675200904409],
+      [6, "tds", "cup_direct", 60.0, 4.513111539898094, 4.514872924107244, 0.001761384209149952, 0.0003902815593141984],
+      [7, "trigonelline", "lambda", null, 16.273561588623345, 16.23884747018383, -0.03471411843951344, -0.0021331604793741743],
+      [7, "caffeine", "lambda", null, 20.29553846032444, 20.22933189418842, -0.06620656613602094, -0.003262124149376322],
+      [7, "cqa5", "lambda", null, 20.066423691925866, 20.00622933550969, -0.060194356416175765, -0.002999755080442923],
+      [7, "tds", "lambda", null, 17.30552928060582, 17.276340486182356, -0.029188794423465225, -0.001686674469770555],
+      [7, "trigonelline", "c0", null, 6.6573897699157705, 6.66900640601943, 0.011616636103659594, 0.0017449235368725002],
+      [7, "caffeine", "c0", null, 10.215239328296756, 10.239909605716907, 0.024670277420151265, 0.002415046444561808],
+      [7, "cqa5", "c0", null, 6.825411213989851, 6.8414508645907235, 0.016039650600872868, 0.00234999036658734],
+      [7, "tds", "c0", null, 0.24663155858510458, 0.24699852076527953, 0.00036696218017495674, 0.0014878962865911838],
+      [7, "trigonelline", "cup_eq3", 20.0, 78.11020146932135, 78.16017084667118, 0.049969377349825095, 0.0006397292083473172],
+      [7, "trigonelline", "cup_eq3", 40.0, 100.53436100809915, 100.54098950741063, 0.006628499311474911, 6.593267460996977e-05],
+      [7, "trigonelline", "cup_eq3", 60.0, 107.09541762951541, 107.07218355789826, -0.023234071617153518, -0.0002169473926282306],
+      [7, "caffeine", "cup_eq3", 20.0, 133.53591307562758, 133.67933408344916, 0.14342100782158695, 0.0010740257397301445],
+      [7, "caffeine", "cup_eq3", 40.0, 182.0374309339693, 182.0759835719928, 0.038552638023503505, 0.00021178412497757648],
+      [7, "caffeine", "cup_eq3", 60.0, 200.1418641750926, 200.08310272793065, -0.05876144716194176, -0.00029359897992420336],
+      [7, "cqa5", "cup_eq3", 20.0, 88.66252450426713, 88.75745843222772, 0.09493392796059652, 0.0010707334185597883],
+      [7, "cqa5", "cup_eq3", 40.0, 120.55608362378653, 120.59029920145169, 0.03421557766515093, 0.00028381460841009343],
+      [7, "cqa5", "cup_eq3", 60.0, 132.32797110043515, 132.30459378422782, -0.023377316207330523, -0.00017666194088006293],
+      [7, "tds", "cup_eq3", 20.0, 3.0000432251501397, 3.0020230132735097, 0.0019797881233700743, 0.0006599198660781624],
+      [7, "tds", "cup_eq3", 40.0, 3.9207328714487346, 3.9215552129944675, 0.0008223415457329075, 0.0002097417938675683],
+      [7, "tds", "cup_eq3", 60.0, 4.210600108741848, 4.210493316391664, -0.00010679235018429267, -2.5362738665823947e-05],
+      [7, "trigonelline", "cup_direct", 20.0, 73.67290642570154, 73.72451527596934, 0.05160885026779738, 0.0007005132927644375],
+      [7, "trigonelline", "cup_direct", 40.0, 98.80389389331667, 98.83054839666039, 0.026654503343721103, 0.00026977179029508136],
+      [7, "trigonelline", "cup_direct", 60.0, 113.9499931806914, 113.97333938894627, 0.02334620825487832, 0.00020488117290051733],
+      [7, "caffeine", "cup_direct", 20.0, 125.09216758836148, 125.21012656671401, 0.117958978352533, 0.0009429765318376138],
+      [7, "caffeine", "cup_direct", 40.0, 175.8178512455213, 175.88517110917806, 0.06731986365676335, 0.00038289549769743303],
+      [7, "caffeine", "cup_direct", 60.0, 206.83699196888543, 206.8889965509544, 0.052004582068974514, 0.0002514278590786123],
+      [7, "cqa5", "cup_direct", 20.0, 83.37915388827918, 83.46437101825599, 0.08521712997681163, 0.0010220435924666038],
+      [7, "cqa5", "cup_direct", 40.0, 116.48207999674956, 116.53518192517211, 0.05310192842254935, 0.00045588066785917647],
+      [7, "cqa5", "cup_direct", 60.0, 137.42715642727032, 137.46989005772352, 0.04273363045319911, 0.00031095477461784427],
+      [7, "tds", "cup_direct", 20.0, 2.797554932345288, 2.799526830706047, 0.001971898360758839, 0.0007048649297141107],
+      [7, "tds", "cup_direct", 40.0, 3.8252235806252153, 3.826675752908258, 0.0014521722830425077, 0.0003796306941110661],
+      [7, "tds", "cup_direct", 60.0, 4.482496936776815, 4.483980436244366, 0.0014834994675512192, 0.0003309538162490355],
+      [8, "trigonelline", "lambda", null, 14.705655954147195, 14.682025274940568, -0.023630679206627647, -0.001606910924633942],
+      [8, "caffeine", "lambda", null, 17.56032319975172, 17.507270801602886, -0.05305239814883578, -0.0030211515782115894],
+      [8, "cqa5", "lambda", null, 17.985377818408736, 17.945381053557643, -0.03999676485109305, -0.002223849020850377],
+      [8, "tds", "lambda", null, 15.610663521551006, 15.587175202523882, -0.02348831902712334, -0.0015046329705779016],
+      [8, "trigonelline", "c0", null, 7.098467389909095, 7.108039106448314, 0.009571716539219288, 0.0013484201607836255],
+      [8, "caffeine", "c0", null, 11.551139254060251, 11.577480288145356, 0.02634103408510491, 0.0022803840821021826],
+      [8, "cqa5", "c0", null, 7.44661857424158, 7.459707996202225, 0.013089421960644998, 0.0017577672107340625],
+      [8, "tds", "c0", null, 0.26949178368397897, 0.2698559088645778, 0.0003641251805988066, 0.0013511550356792856],
+      [8, "trigonelline", "cup_eq3", 20.0, 78.52513087121515, 78.56170835917474, 0.03657748795959037, 0.0004658061381594969],
+      [8, "trigonelline", "cup_eq3", 40.0, 98.44055653608335, 98.44340653178949, 0.0028499957061427494, 2.8951438374891225e-05],
+      [8, "trigonelline", "cup_eq3", 60.0, 103.55195813856336, 103.53499435315969, -0.016963785403675047, -0.00016381906927320777],
+      [8, "caffeine", "cup_eq3", 20.0, 139.9513299803999, 140.0759957673225, 0.12466578692260555, 0.0008907795798729357],
+      [8, "caffeine", "cup_eq3", 40.0, 184.1014456994072, 184.11243839996106, 0.010992700553856594, 5.9710017550784755e-05],
+      [8, "caffeine", "cup_eq3", 60.0, 198.2365920748529, 198.16261577941248, -0.07397629544041706, -0.00037317174728512814],
+      [8, "cqa5", "cup_eq3", 20.0, 91.27493507269088, 91.34228331678715, 0.06734824409626583, 0.0007378613202257966],
+      [8, "cqa5", "cup_eq3", 40.0, 120.8364662545493, 120.85253561685226, 0.016069362302971513, 0.00013298437798670015],
+      [8, "cqa5", "cup_eq3", 60.0, 130.55912821401236, 130.53430648865415, -0.02482172535820837, -0.0001901186512024422],
+      [8, "tds", "cup_eq3", 20.0, 3.0871754950981707, 3.0889075484064077, 0.0017320533082370027, 0.0005610478934505725],
+      [8, "tds", "cup_eq3", 40.0, 3.9310359612071917, 3.931633931581329, 0.0005979703741374465, 0.00015211521340385836],
+      [8, "tds", "cup_eq3", 60.0, 4.165385002517697, 4.165216634740379, -0.00016836777731743524, -4.042069993903663e-05],
+      [8, "trigonelline", "cup_direct", 20.0, 73.13924305526199, 73.17334067461697, 0.03409761935498068, 0.0004662014252625468],
+      [8, "trigonelline", "cup_direct", 40.0, 98.21073724580451, 98.22989156298831, 0.019154317183804892, 0.00019503282147104173],
+      [8, "trigonelline", "cup_direct", 60.0, 111.99501804200382, 112.0074269447182, 0.012408902714383885, 0.00011079870275776393],
+      [8, "caffeine", "cup_direct", 20.0, 129.68511416553702, 129.7758204334289, 0.09070626789187486, 0.0006994346920656813],
+      [8, "caffeine", "cup_direct", 40.0, 180.23195339446403, 180.28439991006405, 0.05244651560002467, 0.000290994546817247],
+      [8, "caffeine", "cup_direct", 60.0, 208.84069818322246, 208.8737932694077, 0.033095086185255695, 0.0001584704823971439],
+      [8, "cqa5", "cup_direct", 20.0, 84.63915588274917, 84.69307687968171, 0.05392099693254693, 0.0006370691717110244],
+      [8, "cqa5", "cup_direct", 40.0, 118.12664576013594, 118.16102958831058, 0.03438382817464003, 0.000291075971499799],
+      [8, "cqa5", "cup_direct", 60.0, 137.85430102470306, 137.87746411449137, 0.023163089788312163, 0.00016802587671294056],
+      [8, "tds", "cup_direct", 20.0, 2.8348575313781073, 2.836445022668288, 0.0015874912901807647, 0.0005599897958219469],
+      [8, "tds", "cup_direct", 40.0, 3.8934160766923482, 3.89467388495538, 0.001257808263031901, 0.0003230603249835262],
+      [8, "tds", "cup_direct", 60.0, 4.535524580684771, 4.536550947324078, 0.001026366639306886, 0.00022629502300075544],
+      [9, "trigonelline", "lambda", null, 15.101379707026474, 15.07843535511277, -0.022944351913704253, -0.0015193546787667378],
+      [9, "caffeine", "lambda", null, 17.93064119732604, 17.879425534473313, -0.051215662852726496, -0.0028563207689619174],
+      [9, "cqa5", "lambda", null, 18.66304478009269, 18.619154622052708, -0.0438901580399822, -0.00235171476879259],
+      [9, "tds", "lambda", null, 16.458836122967995, 16.432421361604103, -0.02641476136389187, -0.0016048984974721403],
+      [9, "trigonelline", "c0", null, 6.959254604877154, 6.967891811851841, 0.008637206974686507, 0.0012411109328624992],
+      [9, "caffeine", "c0", null, 11.500095742969496, 11.52385623949577, 0.023760496526273656, 0.0020661129313466198],
+      [9, "cqa5", "c0", null, 7.314334320477927, 7.327253665241428, 0.01291934476350054, 0.0017663049291212207],
+      [9, "tds", "c0", null, 0.26208097779454426, 0.2624381086381294, 0.0003571308435851295, 0.00136267365373266],
+      [9, "trigonelline", "cup_eq3", 20.0, 78.44425574196664, 78.47777919126464, 0.033523449298002106, 0.000427353781113915],
+      [9, "trigonelline", "cup_eq3", 40.0, 98.96168273979737, 98.96309628879821, 0.0014135490008442275, 1.4283801181624867e-05],
+      [9, "trigonelline", "cup_eq3", 60.0, 104.41864526985155, 104.40054966199864, -0.01809560785291353, -0.0001732986269468162],
+      [9, "caffeine", "cup_eq3", 20.0, 141.44818341840872, 141.56222773306243, 0.1140443146537109, 0.0008062621371132117],
+      [9, "caffeine", "cup_eq3", 40.0, 186.88333131095897, 186.88677355962912, 0.003442248670154413, 1.841923860190775e-05],
+      [9, "caffeine", "cup_eq3", 60.0, 201.77611691838385, 201.6959136523692, -0.08020326601464944, -0.00039748641831127696],
+      [9, "cqa5", "cup_eq3", 20.0, 91.68559967842282, 91.75400114874826, 0.06840147032544053, 0.0007460437687636379],
+      [9, "cqa5", "cup_eq3", 40.0, 122.42403984046071, 122.43707595573414, 0.013036115273436621, 0.00010648329601292694],
+      [9, "cqa5", "cup_eq3", 60.0, 132.95034621763418, 132.91791323297494, -0.03243298465923772, -0.0002439481022948886],
+      [9, "tds", "cup_eq3", 20.0, 3.105980668173494, 3.1077166379795913, 0.0017359698060972484, 0.000558911980324206],
+      [9, "tds", "cup_eq3", 40.0, 4.006022935370432, 4.006522191438645, 0.0004992560682124392, 0.0001246263629208766],
+      [9, "tds", "cup_eq3", 60.0, 4.273033699946924, 4.272645731130268, -0.0003879688166561479, -9.079470088446673e-05],
+      [9, "trigonelline", "cup_direct", 20.0, 73.37841190385132, 73.4088034354268, 0.03039153157548924, 0.00041417537920152014],
+      [9, "trigonelline", "cup_direct", 40.0, 98.45831271771043, 98.47659698978094, 0.01828427207051675, 0.00018570572220699688],
+      [9, "trigonelline", "cup_direct", 60.0, 112.14186672411854, 112.15328522006683, 0.011418495948291252, 0.00010182188224483468],
+      [9, "caffeine", "cup_direct", 20.0, 131.76738341259133, 131.84723245836648, 0.0798490457751484, 0.0006059849084589786],
+      [9, "caffeine", "cup_direct", 40.0, 182.625815357755, 182.67017358558462, 0.04435822782963328, 0.00024289133353216918],
+      [9, "caffeine", "cup_direct", 60.0, 210.9767768625362, 211.0033365117634, 0.026559649227181126, 0.0001258889704456312],
+      [9, "cqa5", "cup_direct", 20.0, 85.52678365692717, 85.5789481023447, 0.052164445417531624, 0.0006099194098865279],
+      [9, "cqa5", "cup_direct", 40.0, 119.42373364448008, 119.45622326479024, 0.032489620310158784, 0.0002720532955942101],
+      [9, "cqa5", "cup_direct", 60.0, 139.21226721519108, 139.23299152735936, 0.020724312168283632, 0.00014886843367212244],
+      [9, "tds", "cup_direct", 20.0, 2.8604290838939144, 2.8619650922308315, 0.0015360083369171385, 0.0005369852885239723],
+      [9, "tds", "cup_direct", 40.0, 3.9434776657023916, 3.944733598785428, 0.00125593308303662, 0.0003184836303142813],
+      [9, "tds", "cup_direct", 60.0, 4.607145808247859, 4.608145065564498, 0.0009992573166393015, 0.0002168929220451865],
+      [10, "trigonelline", "lambda", null, 15.563656087024, 15.538813562975959, -0.02484252404804188, -0.001596188190559844],
+      [10, "caffeine", "lambda", null, 19.434035135180114, 19.391982245076143, -0.04205289010397095, -0.0021638784643259745],
+      [10, "cqa5", "lambda", null, 19.697177311701818, 19.655834860661436, -0.041342451040382144, -0.0020989023140803864],
+      [10, "tds", "lambda", null, 17.039920067964015, 17.015678949312566, -0.02424111865144951, -0.0014226075330613375],
+      [10, "trigonelline", "c0", null, 6.760100767392927, 6.768771435086295, 0.008670667693367662, 0.001282624030575219],
+      [10, "caffeine", "c0", null, 10.604445064942635, 10.621387376743971, 0.016942311801336984, 0.001597661329525657],
+      [10, "cqa5", "c0", null, 6.865048495393109, 6.875897868067932, 0.010849372674823776, 0.001580378154954598],
+      [10, "tds", "c0", null, 0.24589315853641777, 0.2461954986281575, 0.00030234009173973897, 0.0012295587788586637],
+      [10, "trigonelline", "cup_eq3", 20.0, 77.49305482449671, 77.52554587392787, 0.0324910494311581, 0.0004192769210704661],
+      [10, "trigonelline", "cup_eq3", 40.0, 98.54694850165497, 98.54608428878718, -0.0008642128677820438, -8.76955482564945e-06],
+      [10, "trigonelline", "cup_eq3", 60.0, 104.37125779016776, 104.34923169118186, -0.02202609898590424, -0.00021103605966099614],
+      [10, "caffeine", "cup_eq3", 20.0, 135.55635008366139, 135.64771398314107, 0.09136389947968837, 0.0006739920293170609],
+      [10, "caffeine", "cup_eq3", 40.0, 182.88272818895246, 182.900183172056, 0.01745498310353355, 9.544358440183309e-05],
+      [10, "caffeine", "cup_eq3", 60.0, 199.79340965995115, 199.74681644273832, -0.046593217212830496, -0.00023320697760820241],
+      [10, "cqa5", "cup_eq3", 20.0, 88.34587261298695, 88.40553950907547, 0.059666896088515387, 0.0006753784225992376],
+      [10, "cqa5", "cup_eq3", 40.0, 119.58617595326348, 119.60068666522035, 0.014510711956873479, 0.00012134104833783077],
+      [10, "cqa5", "cup_eq3", 60.0, 130.90350530584286, 130.87754822421817, -0.025957081624682132, -0.00019829172308283294],
+      [10, "tds", "cup_eq3", 20.0, 2.969059374674384, 2.970565356915636, 0.0015059822412517576, 0.000507225370464992],
+      [10, "tds", "cup_eq3", 40.0, 3.8640498558092706, 3.864554594868514, 0.0005047390592434198, 0.00013062436512933928],
+      [10, "tds", "cup_eq3", 60.0, 4.140795451402184, 4.140528743615073, -0.0002667077871105761, -6.44097952291478e-05],
+      [10, "trigonelline", "cup_direct", 20.0, 72.31857658072354, 72.35029836523903, 0.03172178451548291, 0.0004386395033657564],
+      [10, "trigonelline", "cup_direct", 40.0, 97.31040883049066, 97.32833451726356, 0.017925686772898075, 0.00018421140131197333],
+      [10, "trigonelline", "cup_direct", 60.0, 111.18466198949736, 111.196011904382, 0.011349914884647205, 0.00010208166019975984],
+      [10, "caffeine", "cup_direct", 20.0, 126.45812757247263, 126.52691741734296, 0.06878984487032369, 0.000543973299232281],
+      [10, "caffeine", "cup_direct", 40.0, 177.27804945690806, 177.31509188505805, 0.03704242814998793, 0.0002089510137519568],
+      [10, "caffeine", "cup_direct", 60.0, 206.3589526262246, 206.3814318082992, 0.022479182074590653, 0.00010893242957732419],
+      [10, "cqa5", "cup_direct", 20.0, 82.38644964085766, 82.43509000724272, 0.04864036638505809, 0.0005903927963528677],
+      [10, "cqa5", "cup_direct", 40.0, 115.74042969529907, 115.76863489368587, 0.028205198386800134, 0.00024369356897202543],
+      [10, "cqa5", "cup_direct", 60.0, 135.6624777343352, 135.68016271674986, 0.01768498241466432, 0.00013036016081979795],
+      [10, "tds", "cup_direct", 20.0, 2.7319106115469003, 2.7333323082933174, 0.0014216967464171226, 0.0005204038303479042],
+      [10, "tds", "cup_direct", 40.0, 3.7694294567900246, 3.7705932700327702, 0.001163813242745615, 0.0003087505035144211],
+      [10, "tds", "cup_direct", 60.0, 4.4085363413334475, 4.409500777524099, 0.000964436190651341, 0.0002187656210541622],
+      [11, "trigonelline", "lambda", null, 15.135512568622076, 15.116469648098587, -0.019042920523489215, -0.001258161587666895],
+      [11, "caffeine", "lambda", null, 18.846219270631558, 18.81185193371405, -0.034367336917508595, -0.0018235666487794733],
+      [11, "cqa5", "lambda", null, 19.272863617021674, 19.238243826121238, -0.03461979090043599, -0.0017962971973640718],
+      [11, "tds", "lambda", null, 16.80923323829817, 16.794308494987007, -0.014924743311162558, -0.0008878895961272892],
+      [11, "trigonelline", "c0", null, 6.853816031457429, 6.861042745609217, 0.007226714151788549, 0.0010544073722755787],
+      [11, "caffeine", "c0", null, 10.913681108100013, 10.928299632329567, 0.014618524229554453, 0.0013394677822045065],
+      [11, "cqa5", "c0", null, 6.990905835505432, 7.000257290068116, 0.009351454562684047, 0.0013376599231518238],
+      [11, "tds", "c0", null, 0.24912207831083527, 0.24934056558302314, 0.00021848727218787278, 0.0008770289396640152],
+      [11, "trigonelline", "cup_eq3", 20.0, 77.50228503385007, 77.52803167489326, 0.02574664104318458, 0.00033220492830543513],
+      [11, "trigonelline", "cup_eq3", 40.0, 97.79308990539239, 97.79318901754796, 9.911215556712705e-05, 1.0134883319246057e-06],
+      [11, "trigonelline", "cup_eq3", 60.0, 103.20592066836497, 103.19018652446532, -0.015734143899649666, -0.00015245388828233342],
+      [11, "caffeine", "cup_eq3", 20.0, 137.48710279426965, 137.55916577659943, 0.0720629823297827, 0.0005241435804899108],
+      [11, "caffeine", "cup_eq3", 40.0, 184.03166161696535, 184.03855783525069, 0.006896218285334044, 3.747299907397306e-05],
+      [11, "caffeine", "cup_eq3", 60.0, 200.1376202064657, 200.09081518877744, -0.04680501768825707, -0.00023386416626702822],
+      [11, "cqa5", "cup_eq3", 20.0, 89.09539448722421, 89.14378276068452, 0.048388273460304276, 0.0005431063383107837],
+      [11, "cqa5", "cup_eq3", 40.0, 119.91724134806849, 119.92541588485483, 0.008174536786341946, 6.81681524228317e-05],
+      [11, "cqa5", "cup_eq3", 60.0, 130.8361414777602, 130.809725355234, -0.02641612252620007, -0.00020190233545436254],
+      [11, "tds", "cup_eq3", 20.0, 2.992331573057959, 2.9934474131481337, 0.0011158400901747356, 0.00037289988189193046],
+      [11, "tds", "cup_eq3", 40.0, 3.878802046063854, 3.879380033263921, 0.000577987200066854, 0.00014901178075166222],
+      [11, "tds", "cup_eq3", 60.0, 4.148533149747647, 4.148662599780768, 0.0001294500331212589, 3.120380829768621e-05],
+      [11, "trigonelline", "cup_direct", 20.0, 72.61410140032228, 72.64258941069492, 0.028488010372640815, 0.0003923206350180397],
+      [11, "trigonelline", "cup_direct", 40.0, 97.62160724192711, 97.63687425608555, 0.015267014158439451, 0.00015638970295372978],
+      [11, "trigonelline", "cup_direct", 60.0, 111.421525626009, 111.43069825370468, 0.009172627695676283, 8.232365913274364e-05],
+      [11, "caffeine", "cup_direct", 20.0, 128.73791011653506, 128.79878633758395, 0.06087622104888624, 0.0004728694212434714],
+      [11, "caffeine", "cup_direct", 40.0, 179.9837331914535, 180.0148590906197, 0.03112589916619868, 0.00017293729057765717],
+      [11, "caffeine", "cup_direct", 60.0, 208.8678173441202, 208.88577986982438, 0.01796252570417778, 8.599948968956994e-05],
+      [11, "cqa5", "cup_direct", 20.0, 83.3682017591029, 83.40976214100544, 0.041560381902542076, 0.000498515993215598],
+      [11, "cqa5", "cup_direct", 40.0, 117.19042640168979, 117.21410535998876, 0.02367895829897293, 0.00020205539843165532],
+      [11, "cqa5", "cup_direct", 60.0, 137.23074488455183, 137.24548873581665, 0.014743851264825025, 0.0001074383971115811],
+      [11, "tds", "cup_direct", 20.0, 2.7606823143708183, 2.7619696409944003, 0.001287326623581997, 0.00046630741135289533],
+      [11, "tds", "cup_direct", 40.0, 3.824744760184861, 3.825775323668312, 0.0010305634834506527, 0.00026944634166925496],
+      [11, "tds", "cup_direct", 60.0, 4.488402389662983, 4.489223668040098, 0.0008212783771144316, 0.00018297788518384372],
+      [12, "trigonelline", "lambda", null, 16.51388780716315, 16.471787512582555, -0.04210029458059594, -0.0025493872231792114],
+      [12, "caffeine", "lambda", null, 20.68113506711904, 20.609531457704346, -0.07160360941469435, -0.003462266900840283],
+      [12, "cqa5", "lambda", null, 20.132040818238295, 20.07129606190161, -0.06074475633668541, -0.0030173173641518947],
+      [12, "tds", "lambda", null, 17.162198014456663, 17.132588451825157, -0.029609562631506492, -0.0017252779979909372],
+      [12, "trigonelline", "c0", null, 6.482011573121115, 6.4961683437291216, 0.014156770608006575, 0.002184008844833052],
+      [12, "caffeine", "c0", null, 9.687763828201426, 9.715267044846254, 0.027503216644827688, 0.0028389644021631355],
+      [12, "cqa5", "c0", null, 6.614643861016247, 6.631551450056257, 0.01690758904001033, 0.0025560845595415937],
+      [12, "tds", "c0", null, 0.24195082069787727, 0.24234797377157838, 0.00039715307370111197, 0.001641461982049064],
+      [12, "trigonelline", "cup_eq3", 20.0, 76.52671612516714, 76.58969901320451, 0.06298288803736796, 0.0008230183029722671],
+      [12, "trigonelline", "cup_eq3", 40.0, 98.91405625791681, 98.928820461481, 0.014764203564183731, 0.00014926294727701794],
+      [12, "trigonelline", "cup_eq3", 60.0, 105.58254848140491, 105.56238410012503, -0.020164381279883514, -0.00019098214212398545],
+      [12, "caffeine", "cup_eq3", 20.0, 127.78404162566649, 127.95596604034507, 0.17192441467858544, 0.0013454294643631126],
+      [12, "caffeine", "cup_eq3", 40.0, 174.99691289057353, 175.0774380123861, 0.08052512181257043, 0.0004601516705777797],
+      [12, "caffeine", "cup_eq3", 60.0, 192.94711981676278, 192.93280258121675, -0.014317235546030815, -7.420289849169315e-05],
+      [12, "cqa5", "cup_eq3", 20.0, 86.04917218446279, 86.1525946093388, 0.10342242487601538, 0.001201899126400674],
+      [12, "cqa5", "cup_eq3", 40.0, 117.10061387688116, 117.15092757961001, 0.05031370272885738, 0.000429662160283506],
+      [12, "cqa5", "cup_eq3", 60.0, 128.59896884012437, 128.59515638307948, -0.0038124570448871964, -2.964609342726021e-05],
+      [12, "tds", "cup_eq3", 20.0, 2.9244000670549184, 2.9265274251302373, 0.0021273580753189414, 0.000727451110155819],
+      [12, "tds", "cup_eq3", 40.0, 3.8154470969333283, 3.816515209272206, 0.0010681123388778246, 0.0002799442140704045],
+      [12, "tds", "cup_eq3", 60.0, 4.093287070439328, 4.093466545688848, 0.00017947524951988925, 4.384624054742936e-05],
+      [12, "trigonelline", "cup_direct", 20.0, 72.51885973470849, 72.58444322615975, 0.06558349145126385, 0.0009043646258530824],
+      [12, "trigonelline", "cup_direct", 40.0, 97.14697420655278, 97.19021457957962, 0.04324037302683337, 0.0004451026229070898],
+      [12, "trigonelline", "cup_direct", 60.0, 113.57160635607123, 113.61123856246756, 0.03963220639633391, 0.0003489622773502621],
+      [12, "caffeine", "cup_direct", 20.0, 119.86755388601246, 120.02484170017105, 0.15728781415859316, 0.0013121800609041667],
+      [12, "caffeine", "cup_direct", 40.0, 168.53541872641054, 168.65777498317894, 0.12235625676839845, 0.000725997287057023],
+      [12, "caffeine", "cup_direct", 60.0, 201.09663259500223, 201.20439227647296, 0.1077596814707249, 0.0005358601985532285],
+      [12, "cqa5", "cup_direct", 20.0, 81.11941592574198, 81.21813291723332, 0.09871699149134372, 0.0012169341995966754],
+      [12, "cqa5", "cup_direct", 40.0, 112.88417375357847, 112.96042174797476, 0.07624799439629726, 0.0006754533595005885],
+      [12, "cqa5", "cup_direct", 60.0, 134.63968556800904, 134.7087073602263, 0.06902179221725646, 0.0005126407710034364],
+      [12, "tds", "cup_direct", 20.0, 2.7465546273173906, 2.7487697659254575, 0.00221513860806688, 0.000806515401527097],
+      [12, "tds", "cup_direct", 40.0, 3.7300727469624873, 3.731955497431452, 0.001882750468964911, 0.0005047489946403694],
+      [12, "tds", "cup_direct", 60.0, 4.408156401714772, 4.410156651021126, 0.0020002493063540072, 0.0004537609658259445],
+      [13, "trigonelline", "lambda", null, 16.916622140089537, 16.874522827808153, -0.042099312281383305, -0.002488635847792242],
+      [13, "caffeine", "lambda", null, 21.34635096493365, 21.275245002998577, -0.07110596193507135, -0.0033310593483578677],
+      [13, "cqa5", "lambda", null, 20.84502315649993, 20.77856868980795, -0.06645446669197952, -0.003188025563370833],
+      [13, "tds", "lambda", null, 17.797631273411206, 17.76789797017452, -0.02973330323668577, -0.001670632612841394],
+      [13, "trigonelline", "c0", null, 6.501227576700839, 6.514636799823238, 0.013409223122399005, 0.002062567871097931],
+      [13, "caffeine", "c0", null, 9.784039074688097, 9.809772377560842, 0.025733302872744446, 0.0026301308361817988],
+      [13, "cqa5", "c0", null, 6.645404935618419, 6.662743940360564, 0.017339004742145114, 0.0026091720384426864],
+      [13, "tds", "c0", null, 0.24217276414682698, 0.24254487914580075, 0.00037211499897377154, 0.0015365683266850283],
+      [13, "trigonelline", "cup_eq3", 20.0, 77.6388187216471, 77.69913426372344, 0.0603155420763386, 0.000776873515973886],
+      [13, "trigonelline", "cup_eq3", 40.0, 101.01916827930944, 101.03091403812414, 0.011745758814697638, 0.00011627257494550847],
+      [13, "trigonelline", "cup_eq3", 60.0, 108.18716906550901, 108.16295662061044, -0.024212444898566332, -0.00022380144621314546],
+      [13, "caffeine", "cup_eq3", 20.0, 130.57246537227655, 130.736939929557, 0.16447455728044247, 0.0012596419682473492],
+      [13, "caffeine", "cup_eq3", 40.0, 180.34208653431585, 180.41561388833793, 0.073527354022076, 0.0004077104542543619],
+      [13, "caffeine", "cup_eq3", 60.0, 199.84329616708467, 199.82032866101395, -0.02296750607072795, -0.00011492757831377265],
+      [13, "cqa5", "cup_eq3", 20.0, 87.6519874283142, 87.76100522174492, 0.10901779343072349, 0.0012437572339119018],
+      [13, "cqa5", "cup_eq3", 40.0, 120.38985273255723, 120.44146455190719, 0.051611819349957955, 0.000428705727089973],
+      [13, "cqa5", "cup_eq3", 60.0, 132.9316987328748, 132.9229592013863, -0.008739531488487273, -6.574452573615552e-05],
+      [13, "tds", "cup_eq3", 20.0, 2.9777765391307205, 2.9798364871174976, 0.002059947986777111, 0.0006917738654017569],
+      [13, "tds", "cup_eq3", 40.0, 3.923395786640242, 3.9244041008114308, 0.00100831417118874, 0.00025700037060305547],
+      [13, "tds", "cup_eq3", 60.0, 4.230778917818712, 4.230868537087556, 8.96192688442099e-05, 2.1182687770959774e-05],
+      [13, "trigonelline", "cup_direct", 20.0, 72.98957376186249, 73.04671962147773, 0.057145859615246763, 0.0007829318171070909],
+      [13, "trigonelline", "cup_direct", 40.0, 97.91607212962741, 97.95395321889289, 0.037881089265482615, 0.0003868730479235083],
+      [13, "trigonelline", "cup_direct", 60.0, 114.42887727709568, 114.4647131399704, 0.03583586287471974, 0.0003131714976800648],
+      [13, "caffeine", "cup_direct", 20.0, 121.64631330843247, 121.78235075817209, 0.13603744973961795, 0.001118303103808005],
+      [13, "caffeine", "cup_direct", 40.0, 171.49565193982468, 171.59520623385893, 0.09955429403424887, 0.0005805062280481721],
+      [13, "caffeine", "cup_direct", 60.0, 204.5668126447303, 204.65399657538157, 0.08718393065126406, 0.000426188048413767],
+      [13, "cqa5", "cup_direct", 20.0, 82.03159506001158, 82.12745842216087, 0.09586336214928792, 0.001168615118103622],
+      [13, "cqa5", "cup_direct", 40.0, 114.50610363035236, 114.57813682367367, 0.07203319332131741, 0.0006290773245927195],
+      [13, "cqa5", "cup_direct", 60.0, 136.64589470181735, 136.70992407244455, 0.06402937062719616, 0.000468578809242004],
+      [13, "tds", "cup_direct", 20.0, 2.7697797207825086, 2.771720385144317, 0.0019406643618085084, 0.0007006565710794277],
+      [13, "tds", "cup_direct", 40.0, 3.7747949828223053, 3.776477191896728, 0.0016822090744228468, 0.0004456425003418474],
+      [13, "tds", "cup_direct", 60.0, 4.468242250842897, 4.470113253402943, 0.001871002560045909, 0.00041873346497567354],
+      [14, "trigonelline", "lambda", null, 17.002082729925583, 16.960286628689925, -0.0417961012356578, -0.0024582930161898275],
+      [14, "caffeine", "lambda", null, 22.30017530242817, 22.22214602580943, -0.07802927661873937, -0.003499043194079454],
+      [14, "cqa5", "lambda", null, 21.159845157076195, 21.084824917582377, -0.07502023949381709, -0.003545405882553365],
+      [14, "tds", "lambda", null, 17.87287620448321, 17.842214251008397, -0.030661953474812265, -0.0017155578723877518],
+      [14, "trigonelline", "c0", null, 6.287315571969195, 6.299898940860225, 0.012583368891029956, 0.0020013897420911864],
+      [14, "caffeine", "c0", null, 8.977768859132977, 9.002485977100758, 0.02471711796778031, 0.002753147063107475],
+      [14, "cqa5", "c0", null, 6.221701237526754, 6.239384064988839, 0.017682827462084383, 0.002842120954865024],
+      [14, "tds", "c0", null, 0.22652790805432185, 0.2268779971053976, 0.0003500890510757526, 0.0015454566021586569],
+      [14, "trigonelline", "cup_eq3", 20.0, 75.66009858756976, 75.71238753847784, 0.05228895090807839, 0.0006911033937864186],
+      [14, "trigonelline", "cup_eq3", 40.0, 98.46059156644272, 98.46571454018353, 0.005122973740810721, 5.2030702429428644e-05],
+      [14, "trigonelline", "cup_eq3", 60.0, 105.49248274632237, 105.46274628557335, -0.02973646074902092, -0.0002818822723181791],
+      [14, "caffeine", "cup_eq3", 20.0, 122.80047897263388, 122.96200735014285, 0.1615283775089722, 0.0013153725364944968],
+      [14, "caffeine", "cup_eq3", 40.0, 171.1518899139437, 171.22927799714225, 0.07738808319854229, 0.00045216026090888484],
+      [14, "caffeine", "cup_eq3", 60.0, 190.87204999825633, 190.8532252417865, -0.018824756469825843, -9.862500282253883e-05],
+      [14, "cqa5", "cup_eq3", 20.0, 83.07937247685358, 83.18725396338961, 0.10788148653603002, 0.001298535163660297],
+      [14, "cqa5", "cup_eq3", 40.0, 114.35836494388583, 114.40547032451322, 0.047105380627385784, 0.0004119102319317669],
+      [14, "cqa5", "cup_eq3", 60.0, 126.51360314200889, 126.49636046967449, -0.017242672334404574, -0.000136291054133153],
+      [14, "tds", "cup_eq3", 20.0, 2.8079614261523544, 2.8097508037312497, 0.0017893775788953015, 0.0006372514815302655],
+      [14, "tds", "cup_eq3", 40.0, 3.6984053567664823, 3.699158460836696, 0.0007531040702137837, 0.00020362940174623034],
+      [14, "tds", "cup_eq3", 60.0, 3.9892258059680414, 3.9890823918536467, -0.0001434141143947798, -3.5950362644365796e-05],
+      [14, "trigonelline", "cup_direct", 20.0, 71.35182673219849, 71.40987304160272, 0.05804630940423294, 0.0008135224010745734],
+      [14, "trigonelline", "cup_direct", 40.0, 95.75566123154263, 95.79051799693703, 0.03485676539439453, 0.00036401780266670514],
+      [14, "trigonelline", "cup_direct", 60.0, 112.26734452840626, 112.30581972852552, 0.038475200119265196, 0.00034271052086332077],
+      [14, "caffeine", "cup_direct", 20.0, 114.8665388103395, 115.01551184294851, 0.14897303260900685, 0.0012969227953754103],
+      [14, "caffeine", "cup_direct", 40.0, 162.94846519296638, 163.05471102367542, 0.10624583070904237, 0.0006520210582114938],
+      [14, "caffeine", "cup_direct", 60.0, 195.66873691905974, 195.76693974175893, 0.0982028226991929, 0.0005018830511478445],
+      [14, "cqa5", "cup_direct", 20.0, 78.07448224950531, 78.17790526084873, 0.10342301134342335, 0.0013246711135772582],
+      [14, "cqa5", "cup_direct", 40.0, 109.24005792703079, 109.31217764738257, 0.07211972035177894, 0.0006601948197424434],
+      [14, "cqa5", "cup_direct", 60.0, 130.94303458243252, 131.0101468258114, 0.06711224337888666, 0.0005125300753332507],
+      [14, "tds", "cup_direct", 20.0, 2.622780825662176, 2.624769717956413, 0.0019888922942370435, 0.000758314333693777],
+      [14, "tds", "cup_direct", 40.0, 3.572125234100857, 3.573726966879349, 0.001601732778492071, 0.00044839771103255543],
+      [14, "tds", "cup_direct", 60.0, 4.234566192155784, 4.236505187411025, 0.001938995255240883, 0.0004578970235091795],
+      [15, "trigonelline", "lambda", null, 16.457603342841278, 16.435741904313478, -0.021861438527800203, -0.001328348853255723],
+      [15, "caffeine", "lambda", null, 21.529631121400783, 21.471478913382047, -0.05815220801873622, -0.0027010313224052895],
+      [15, "cqa5", "lambda", null, 20.603560093133, 20.555297759319146, -0.04826233381385592, -0.0023424269201874903],
+      [15, "tds", "lambda", null, 17.309871883371464, 17.305442716157046, -0.004429167214418328, -0.0002558752164233402],
+      [15, "trigonelline", "c0", null, 6.4681340484477055, 6.477563975842475, 0.009429927394769777, 0.0014579053748944304],
+      [15, "caffeine", "c0", null, 9.336398790850192, 9.358764786411118, 0.022365995560926777, 0.0023955698617807997],
+      [15, "cqa5", "c0", null, 6.420163473910885, 6.434097765405781, 0.013934291494895668, 0.0021703951233515983],
+      [15, "tds", "c0", null, 0.2338084820011241, 0.23399469200581843, 0.00018621000469432047, 0.0007964210840452068],
+      [15, "trigonelline", "cup_eq3", 20.0, 76.21887649071962, 76.27635966719517, 0.05748317647554302, 0.0007541855655999186],
+      [15, "trigonelline", "cup_eq3", 40.0, 98.42900279832979, 98.4685502154348, 0.03954741710501253, 0.0004017862213441248],
+      [15, "trigonelline", "cup_eq3", 60.0, 105.01736342467359, 105.04095809108473, 0.023594666411142384, 0.0002246739552556054],
+      [15, "caffeine", "cup_eq3", 20.0, 125.02720919738262, 125.1882983995501, 0.16108920216748857, 0.0012884331594826826],
+      [15, "caffeine", "cup_eq3", 40.0, 173.06200778075296, 173.16602187598133, 0.10401409522836502, 0.0006010221224299617],
+      [15, "caffeine", "cup_eq3", 60.0, 192.03418283424188, 192.06803820245662, 0.033855368214744885, 0.00017629865534907196],
+      [15, "cqa5", "cup_eq3", 20.0, 84.2683863068417, 84.36577136352476, 0.09738505668305208, 0.0011556535131507228],
+      [15, "cqa5", "cup_eq3", 40.0, 115.39534586883114, 115.45947594454206, 0.06413007571092066, 0.0005557423068329737],
+      [15, "cqa5", "cup_eq3", 60.0, 127.18672027540111, 127.21143785835177, 0.024717582950657402, 0.00019434090994030484],
+      [15, "tds", "cup_eq3", 20.0, 2.8375797327859487, 2.8394195727073086, 0.0018398399213599426, 0.0006483835150434825],
+      [15, "tds", "cup_eq3", 40.0, 3.7107559259756737, 3.7129279779844375, 0.002172052008763803, 0.0005853394974213444],
+      [15, "tds", "cup_eq3", 60.0, 3.9857438837698793, 3.987939221412512, 0.0021953376426324667, 0.0005507974688419015],
+      [15, "trigonelline", "cup_direct", 20.0, 71.96911771888057, 72.02668078678246, 0.05756306790189569, 0.0007998301177838396],
+      [15, "trigonelline", "cup_direct", 40.0, 96.75575892136324, 96.79098532059368, 0.03522639923043869, 0.0003640754785363409],
+      [15, "trigonelline", "cup_direct", 60.0, 113.27274422020889, 113.30950964952886, 0.03676542931997062, 0.000324574367585706],
+      [15, "caffeine", "cup_direct", 20.0, 117.2253827226291, 117.37049828249108, 0.14511555986197777, 0.0012379192670697314],
+      [15, "caffeine", "cup_direct", 40.0, 166.8152659514909, 166.92007104961996, 0.10480509812907712, 0.0006282704255589078],
+      [15, "caffeine", "cup_direct", 60.0, 200.04891366127006, 200.14455963732973, 0.09564597605967151, 0.00047811294902411205],
+      [15, "cqa5", "cup_direct", 20.0, 79.26718816420654, 79.35797730352246, 0.09078913931591615, 0.0011453558706768785],
+      [15, "cqa5", "cup_direct", 40.0, 111.31873862717569, 111.38399389085151, 0.06525526367582302, 0.0005862019681552866],
+      [15, "cqa5", "cup_direct", 60.0, 133.39856269048724, 133.4599528340372, 0.0613901435499713, 0.0004602009370402449],
+      [15, "tds", "cup_direct", 20.0, 2.6529958646475533, 2.654854418976835, 0.0018585543292815032, 0.0007005492748961561],
+      [15, "tds", "cup_direct", 40.0, 3.6287645565285565, 3.630384691275339, 0.0016201347467825755, 0.0004464700648234565],
+      [15, "tds", "cup_direct", 60.0, 4.305772927388719, 4.307727275179229, 0.001954347790509736, 0.00045389011995466966]
+    ]
+  },
+  "robustness": {
+    "simulations": 30,
+    "failed": 0,
+    "worst": {
+      "hydraulic_volume_balance_error": 6.620674397279077e-14,
+      "mass_balance_error": 2.8061703287860108e-14,
+      "max_regime_solves": 5.0,
+      "min_concentration_kg_m3": 0.0,
+      "outflow_integral_error": 0.00786796668601139,
+      "rejected_steps": 0.0,
+      "steps": 3831.0
+    }
+  },
+  "elapsed_s": 6.7270496198907495,
+  "jobs": 4,
+  "interpretation": "Local timestep sensitivity at one unchanged output interval; this does not establish an asymptotic convergence order or independent physical validity.",
+  "coefficient_precision": {
+    "saved_significant_digits": 6,
+    "fit_reported_v1_chi2": 960.468,
+    "fit_reported_v1_cost": 480.234,
+    "nominal_reevaluated_v1_cost": 480.25144047720636,
+    "note": "The nominal check re-evaluates the six-significant-digit saved coefficients from the main/prune checkpoint. Its V1 cost is 480.25144047720636, whereas the fit reports approximately 480.234 at the unrounded optimizer coefficients. This serialization difference is separate from the timestep comparison; both resolution variants use exactly the same saved coefficients."
+  }
+}

@@ -2,7 +2,7 @@
 schema: puckworks.parameters/1
 description: >-
   Setup-specific (nuisance) parameters of the M1 calibration (docs/PLAN.md §12 M1; data/calibration):
-  quantities that belong to one dataset's coffee, grinder and machine, fitted together with the shared
+  quantities that belong to one dataset's coffee, grinder, preparation and machine, fitted together with the shared
   model parameters so that those are not biased. The app does not read them; data/calibration/current.yaml
   records their fitted values under `fit.nuisance`, and the bare permeabilities are pooled into
   hydraulics.permeability.reference.
@@ -79,6 +79,74 @@ parameters:
     comment: >-
       Nuisance parameter of the M1 calibration (V1); pooled into hydraulics.permeability.reference as for
       GL 1.4. Prior as for GL 1.4; note 01 §4.3 derives an apparent 1.5×10⁻¹⁴ m² for GL 2.0 at 3.6 bar.
+    status: draft
+
+  - id: calibration.schmieder2023.sigma_ln_permeability
+    name: Conditional inner permeability spread, Schmieder 2023
+    symbol: σ_lnκ
+    description: >-
+      Standard deviation of ln(permeability multiplier) in the inner columns of the Schmieder et al.
+      (2023) bed, before the fixed prewetting spread is added in quadrature. A dataset-specific
+      nuisance parameter for Grande TRE distribution and 25 kgf tamping, not a tapping calibration.
+    units: "1"
+    prior: {distribution: uniform, min: 0.1958834072815894, max: 0.7400293465932837}
+    range: {min: 0, max: 3}
+    relation:
+      derived_from: [model.prep.sigma_ln_permeability.tap, model.prep.sigma_fines_sensitivity]
+      formula: >-
+        Prior support only: intersect sigma_dist * max(1 + 2*(Q100 - 0.2), 0.5) for
+        sigma_dist in [0.15, 0.6] over the three nominal 16-class wet-CDF inputs. The factors are
+        1.3058893818772628 (GL 1.4), 1.268907031738601 (GL 1.7), and 1.2333822443221394 (GL 2.0).
+        The fitted actual sigma is shared by all three groups; the Q100 correction is not reapplied.
+    conditions: 20 g in an IMS 58 mm basket; Grande TRE distributor and CPS Tamper at 25 kgf.
+    tag: fitted
+    evidence_grade: D
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Section 2.4 (reported preparation and PSD); Table S1 (kinetic observations)"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: grade-D preparation and fines-spread assumptions, not measured bed heterogeneity."
+    research_note_ref: ["03 §4", "03 Implications B"]
+    used_by: [H, X]
+    comment: >-
+      Written directly to bed.heterogeneity.sigma_ln_permeability in V1; it does not change the app's
+      tap, WDT or fines-sensitivity defaults. Grande TRE is not a supported distribution category,
+      so the old omitted category fell back to tap without source evidence for that mapping. The
+      prior is a conservative intersection of existing grade-D supports, not an independent
+      preparation measurement. Prewet nonuniformity and edge area stay fixed; only their combined
+      effect with this spread is observable. The fit's uncertainty is conditional on those choices.
+    status: draft
+
+  - id: calibration.schmieder2023.edge_multiplier
+    name: Conditional edge permeability multiplier, Schmieder 2023
+    description: >-
+      Actual permeability multiplier of the outer annulus in the Schmieder et al. (2023) bed,
+      after basket geometry. A dataset-specific nuisance parameter for the reported preparation
+      and basket, separate from the app's generic preparation coefficients.
+    units: "1"
+    prior: {distribution: uniform, min: 0.22904616411299045, max: 0.6871384923389713}
+    range: {min: 0.01, max: 1}
+    relation:
+      derived_from: [model.prep.edge_multiplier.base, model.basket.edge_reference_ratio, model.basket.edge_ratio_exponent]
+      formula: >-
+        Prior support only: [0.2, 0.6] * ((27/29)/0.87)^2 =
+        [0.22904616411299045, 0.6871384923389713]. The factor 1.1452308205649522 is the nominal
+        case builder's existing basket correction; the fitted multiplier already includes it.
+    conditions: 20 g in an IMS 58 mm basket; Grande TRE distributor and CPS Tamper at 25 kgf.
+    tag: fitted
+    evidence_grade: D
+    sources:
+      - citation: "Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023) Influence of flow rate, particle size, and temperature on espresso extraction kinetics. Foods 12:2871."
+        doi: "10.3390/foods12152871"
+        locator: "Sections 2.4–2.5 (preparation and basket); Table S1 (kinetic observations)"
+      - citation: "Puckworks input models (2026), docs/model/input-models.md: grade-D edge and basket assumptions, not measured radial flow."
+    research_note_ref: ["03 §4", "03 Implications B", "01 §6"]
+    used_by: [H, X]
+    comment: >-
+      Written directly to bed.heterogeneity.edge_multiplier in V1, with the existing edge area
+      fraction held fixed. The prior transforms the existing generic edge prior through the case's
+      nominal basket correction; neither source measures this bed's radial permeability. Do not
+      reapply that correction or export this conditional fit as the generic edge preparation value.
     status: draft
 
   - id: calibration.waszkiewicz2026.permeability

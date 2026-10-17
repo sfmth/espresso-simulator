@@ -2,6 +2,82 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.6.1] — 2026-10-16
+
+Reassess transport identification after the inventory correction and refit shared
+coefficients in the leave-one-condition-out check. The calibration/held-out split,
+residual weights, physical priors and scientific acceptance thresholds are preserved.
+
+- Reopen lumped diffusivity, trigonelline/5-CQA partitioning and effective water
+  admission within their existing priors. The water coefficient is conditional on
+  instantaneous front filling; it does not measure a water-exchange rate.
+- Represent Schmieder's reported Grande TRE leveling and 25 kgf tamp accurately.
+  Fit two setup-specific flow-distribution nuisances, with bounds transformed from
+  the existing preparation priors. These do not change global tapping defaults.
+  The registry contains 233 sourced records.
+- Refit every selected calibration block and shared coefficient in each V1 LOO
+  fold, retaining the other blocks' observations. Record starting/fitted values,
+  exclusions and optimizer termination/optimality for each fold. Model structure
+  and pruning remain selected on the full training data, which is now explicit.
+  Historical v1–v3 reports retain their frozen-shared-parameter interpretation.
+- Add optional concurrent LOO folds with isolated simulation pools, ordered
+  checkpoints and recorded worker counts. Serial and concurrent synthetic fits
+  agree, and native spawned-pool checks match serial results exactly.
+- Guard marginal-uncertainty pruning with a bounded registry-value refit. Accept
+  removal only when final predictions are complete and finite and training cost
+  stays within 1% of both the preceding accepted fit and the initial fit. Record
+  accepted and rejected trials. Local covariance can otherwise suggest a weak
+  direction whose compensating changes cross other parameters' bounds.
+- The v4 main/pruning run uses 14,974 simulations without a failure and retains
+  22 fitted parameters at cost 570.686 (v3: 2,496.80). Fix 5-CQA partitioning at
+  0.61; retain diffusivity and the 5-CQA surface scale after their registry-value
+  refits exceed the cost ceilings. V1 rates/cup masses within ±10% improve from
+  25/60 and 158/180 to 51/60 and 174/180. V2 and V6 fit worsen; seven coefficients
+  reach or approach prior bounds. Optimizer termination does not establish a
+  stationary or global optimum.
+- Halving the timestep across all 15 V1 conditions changes λ by at most 0.385%
+  and Eq. 3 cup masses by 0.142%, preserving those score counts. All 30 check
+  simulations complete, with soluble-mass and hydraulic-volume balance residuals
+  below 2.81×10⁻¹⁴ and 6.63×10⁻¹⁴. The
+  [numerical evidence](docs/validation/m11-transport-resolution.json) retains all
+  480 observable comparisons. This verifies local timestep sensitivity, not
+  physical accuracy.
+- Complete all 15 full-block LOO fits and nine sensitivity refits with every
+  prediction available. LOO passes 57/60 rates and 180/180 cup masses within
+  ±15%; its all-targets criterion still fails. Wet D32 ±1 SD gives 49–51/60
+  rates and 173–174/180 cups within ±10%. The θ = 0.27 structural refit is worse.
+- **Scientific validation remains open.** First-fraction TDS improves to 24.29%,
+  passing 22–28%, and Smrke EY/time correlation improves to 0.868. Held-out time
+  ratios worsen to 0.805 for Cameron and 0.776 for Smrke, with RMS errors of
+  7.06 and 22.93 s. V4 first drops and flow rise remain too early at 6.07 and
+  12.45 s; the no-overshoot check also fails. Cameron's EY peak remains at the
+  wrong grind setting. Generic pump stops are 21.05–23.24 s, below 25–35 s.
+  No complete M1 scientific exit criterion passes; M2 remains deferred.
+- All 117 final validation simulations succeed. Exported v4 reproduces 4,698
+  compared candidate prediction values exactly. Worst soluble-mass and hydraulic
+  carrier-volume residuals are 7.28×10⁻¹⁴ and 7.83×10⁻¹⁴. Four startup scenarios
+  preserve the fitted/fixed coefficients and record eight simulations; the
+  absolute water-fraction setting of 0.5 now reproduces the fitted baseline.
+- Verification passes 224 Rust tests (one existing exhaustive test ignored),
+  518 Python tests, 448 web tests and 55 browser checks. The seven native/WASM
+  shot fixtures agree exactly over 85,307 spec/result values through each API
+  path. All 4,218 sphere fixture numbers are unchanged; the independent series
+  comparison differs by at most 5.47×10⁻¹⁶. Registry, export, release-version,
+  report-freshness, formatting, lint and licence checks pass.
+- The final browser run measures 702 ms for the default tier-1 shot and 14.2 ms
+  for a warm preview, which still misses the 10 ms target. These measurements
+  describe this machine and recipe during verification.
+- Evaluate pruned parameters at their recorded fixed values, even when the
+  original configuration has a different optimizer start. Validation and startup
+  baselines share this rule without labeling fixed coefficients as fitted.
+- Preserve v3 and its validation/configuration under `baseline-v0.6.0`; the CLI
+  defaults to v4 and protects historical v1/v2/v3 output paths.
+- The [transport review](docs/research/06-transport-identification.md) separates
+  source-defined particle capacities from model assumptions and records the
+  training-only scoring, resolution and bounded-parameter diagnostics. The
+  primary-source basis includes [Pannusch 2024](https://doi.org/10.1016/j.jfoodeng.2023.111887)
+  and [Schmieder 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10418593/).
+
 ## [0.6.0] — 2026-10-16
 
 Correct total-particle solute storage and complete calibration v3 against the qualified

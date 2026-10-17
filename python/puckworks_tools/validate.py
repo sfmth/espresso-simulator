@@ -110,11 +110,24 @@ def spearman(a: Sequence[float], b: Sequence[float]) -> float:
 # -- calibration fit quality ----------------------------------------------------------------
 
 
-def _calibration_x(problem: Problem, calibrated: Mapping[str, float]) -> np.ndarray:
+def _calibration_x(problem: Problem, calibrated: Mapping[str, float], *,
+                   fixed: Mapping[str, Any] | None = None) -> np.ndarray:
+    """Fitted values override recorded fixed values; starts apply only when neither is recorded.
+
+    The validation config can still list a parameter removed by pruning. Its recorded fixed
+    value must replace the optimizer's initialization, without becoming a fitted coefficient.
+    Fixed values are not clipped to optimizer bounds: pruning uses the registry value even
+    when a configured fitting interval excludes it. Existing fitted-value handling is unchanged.
+    """
     x = problem.x0()
     for j, p in enumerate(problem.params):
         if p.id in calibrated:
             value = min(max(calibrated[p.id], p.lower), p.upper)
+            x[j] = p.to_x(value)
+        elif p.id in (fixed or {}):
+            value = fixed[p.id].get("value")
+            if not _finite(value) or isinstance(value, bool) or (p.scale == "log" and value <= 0):
+                raise ValueError(f"recorded fixed value for {p.id} is not a valid {p.scale}-scale number")
             x[j] = p.to_x(value)
     return x
 
@@ -928,7 +941,7 @@ def run_validation(
     # robustness remains as recorded; this does not imply the older fit collected the diagnostic.
     problem.runner.WORST_MAX = (*problem.runner.WORST_MAX, "hydraulic_volume_balance_error")
     try:
-        x = _calibration_x(problem, calibrated)
+        x = _calibration_x(problem, calibrated, fixed=fit_doc.get("fixed"))
         calibration, observations = fit_quality(problem, x)
         calibration["checks"].insert(2, loo_check(fit_doc.get("loo"), stale_reasons=reuse_issues))
         values = problem.values(x)
@@ -1024,11 +1037,14 @@ def run_validation(
             "parameters": parameters,
             "reference_permeability": reference,
             "calibration_blocks": fit_doc.get("blocks") or {},
+            "optimizer": fit_doc.get("optimizer"),
             "reduced_chi2": fit_doc.get("reduced_chi2"),
+            "loo": fit_doc.get("loo"),
             "sensitivity": fit_doc.get("sensitivity"),
             "nuisance": fit_doc.get("nuisance") or {},
             "fixed": fit_doc.get("fixed") or {},
             "weakly_identified": fit_doc.get("weakly_identified") or [],
+            "pruning_review": fit_doc.get("pruning_review"),
             "tier": tier_used,
             "n_classes": n_used,
             "calibration": calibration,
@@ -1131,6 +1147,25 @@ def known_biases(report: Mapping[str, Any]) -> list[str]:
     return ["## Known biases", ""] + [f"- {item}" for item in items] + [""]
 
 
+def _loo_method_text(report: Mapping[str, Any]) -> str:
+    """Describe the recorded refit scope; older JSON reports did not preserve LOO metadata."""
+    prefix = "The leave-one-condition-out check (target ±15%) is in the summary table. "
+    loo = report.get("loo") or {}
+    blocks = loo.get("refitted_blocks")
+    if blocks:
+        omitted_block = loo.get("block", "V1")
+        return (prefix + "Every fitted parameter, including shared parameters, is re-estimated against "
+                + ", ".join(blocks) + f" in each fold, omitting one {omitted_block} condition and retaining every "
+                "other selected calibration observation. This check is conditional on the full-fit model and parameter selection: "
+                "pruning is not repeated within folds, and full-fit values provide the warm starts. "
+                "It is not nested model-selection validation.")
+    historical = "loo" not in report and report.get("calibration_file") is not None
+    if loo or historical:
+        return (prefix + "The historical procedure is mildly optimistic, because parameters shared with other "
+                "blocks stay at their full-fit values in each refit.")
+    return prefix + "No leave-one-condition-out refit is recorded in this report."
+
+
 def render_markdown(report: Mapping[str, Any], figures: Sequence[str]) -> str:
     """The Markdown report."""
     lines = ["<!-- SPDX-License-Identifier: GPL-2.0-or-later -->",
@@ -1187,10 +1222,37 @@ def render_markdown(report: Mapping[str, Any], figures: Sequence[str]) -> str:
         per = fb.get("chi2_per_residual", (fb["chi2"] / fb["residuals"]) if fb.get("residuals") else None)
         lines.append(f"| {name} | {b['dataset']} | {b['cases']} | {b['residuals']} | {_fmt(b['rms'])} | "
                      f"{_fmt(fb.get('rms'))} | {_fmt(per)} | {len(b['failures'])} |")
+    optimizer = report.get("optimizer") or {}
+    if optimizer:
+        lines += ["", f"Recorded fit termination: {optimizer.get('message', 'unavailable')} "
+                  f"Status {optimizer.get('status', 'unavailable')}; first-order optimality "
+                  f"{_fmt(optimizer.get('optimality'), 4)}. A successful termination, including `xtol`, "
+                  "does not establish a stationary or global optimum."]
+    pruning = report.get("pruning_review") or {}
+    if pruning:
+        tolerance = _fmt(_pct(pruning.get("relative_cost_tolerance")), 3)
+        lines += ["", "### Registry-value pruning review", "",
+                  "A weak local marginal SD nominates a parameter for a bounded refit at its registry value. "
+                  f"Removal requires a successful, finite refit without unavailable final predictions and "
+                  f"training cost no more than {tolerance}% above both the initial pre-prune fit "
+                  f"(cost {_fmt(pruning.get('initial_cost'), 6)}) and the preceding accepted fit. "
+                  "This is an operational tolerance, not a significance or confidence threshold. "
+                  "Retained candidates can depend on bounds and coupled model assumptions; their retention "
+                  "does not establish independent identification. Rejected trials do not replace the accepted fit.", "",
+                  "| Parameter | Decision | Local SD/prior | Accepted baseline cost | Trial cost | Cost change | Trial optimality | Reason |",
+                  "|---|---|---|---|---|---|---|---|"]
+        for attempt in pruning.get("attempts") or []:
+            ratio = (attempt.get("marginal_uncertainty") or {}).get("prior_sd_ratio")
+            reasons = ", ".join(attempt.get("reasons") or []) or "within both cost limits"
+            optimality = (attempt.get("optimizer") or {}).get("optimality")
+            lines.append(f"| `{attempt['parameter']}` | {attempt['decision']} | {_fmt(ratio, 3)} | "
+                         f"{_fmt(attempt.get('baseline_cost'), 6)} | {_fmt(attempt.get('trial_cost'), 6)} | "
+                         f"{_fmt(_pct(attempt.get('relative_cost_increase')), 3)}% | {_fmt(optimality, 4)} | {reasons} |")
     lines += ["", "### Parameters", "",
-              "SD from the fit's Jacobian (scaled by the reduced chi-square); SD/prior is the posterior SD over the "
-              "registry prior's SD in the fit's coordinates (log10 for log-scaled parameters): at 0.5 or more the "
-              "data add little to the prior.", "",
+              "SD is a local marginal estimate from the fit's Jacobian, scaled by the reduced chi-square. "
+              "SD/prior divides it by the registry prior's SD in the fit's coordinates "
+              "(log10 for log-scaled parameters); 0.5 or more flags a review candidate. These estimates do not "
+              "account for truncation by parameter bounds and are not calibrated probability intervals.", "",
               "| Registry id | Value | Units | Mode | SD | SD/prior | Source |", "|---|---|---|---|---|---|---|"]
     for pid, p in report["parameters"].items():
         flags = " (at bound)" if p.get("at_bound") else ""
@@ -1284,9 +1346,7 @@ def render_markdown(report: Mapping[str, Any], figures: Sequence[str]) -> str:
         lines += ["", "### V1 Schmieder 2023", "",
                   f"λ within ±10%: {v1['lambda_within']}/{v1['lambda_total']} (largest error "
                   f"{_fmt(_pct(v1['lambda_max_error']), 3)}%); cup masses within ±10%: {v1['cup_within']}/{v1['cup_total']} "
-                  f"(largest error {_fmt(_pct(v1['cup_max_error']), 3)}%). The leave-one-condition-out check (target "
-                  "±15%) is in the summary table; it is mildly optimistic, because parameters shared with other "
-                  "blocks stay at their full-fit values in each refit."
+                  f"(largest error {_fmt(_pct(v1['cup_max_error']), 3)}%). " + _loo_method_text(report)
                   + (f" Worst λ: experiment {v1['lambda_worst']['experiment']}, {v1['lambda_worst']['analyte']}, "
                      f"{_fmt(_pct(v1['lambda_worst']['error']), 3)}%." if v1.get("lambda_worst") else "")
                   + pump_text, "",

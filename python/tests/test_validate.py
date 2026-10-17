@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 
 import pytest
@@ -120,6 +121,25 @@ def test_report_re_renders_from_its_json(report, tmp_path):
     assert report["solver"]["sources_sha256"]
 
 
+def test_report_describes_recorded_loo_scope_and_preserves_legacy_method(repo):
+    # Rendering a historical JSON needs no simulation and must not relabel its old CV procedure.
+    historical = json.loads((repo.root / "docs/validation/baseline-v0.5.1/m1-validation.json").read_text())
+    historical.pop("loo", None)
+    legacy = validate.render_markdown(historical, [])
+    assert "blocks stay at their full-fit values in each refit" in legacy
+    current = copy.deepcopy(historical)
+    current["loo"] = {"refitted_blocks": ["V1", "V2", "V4", "V6"],
+                      "conditional_on_fixed_structure": True, "held": {}}
+    rendered = validate.render_markdown(current, [])
+    assert "re-estimated against V1, V2, V4, V6 in each fold" in rendered
+    assert "pruning is not repeated within folds" in rendered
+    assert "full-fit values provide the warm starts" in rendered
+    assert "not nested model-selection validation" in rendered
+    assert "blocks stay at their full-fit values in each refit" not in rendered
+    current["loo"] = None
+    assert "No leave-one-condition-out refit is recorded" in validate.render_markdown(current, [])
+
+
 def test_v4_transient_metrics_use_a_common_clock(report):
     """First drops and time to 36 g on the data's clock; the data side reproduces the dataset."""
     v4t = report["held_out"]["v4_transient"]
@@ -128,6 +148,23 @@ def test_v4_transient_metrics_use_a_common_clock(report):
     assert v4t["drops_model_s"] > 0 and v4t["time_to_mass_model_s"] > v4t["drops_model_s"]
     rise = next(c for c in report["held_out_checks"] if c["check"] == "V4 flow rises after the first drops")
     assert ("overshoot" in rise["detail"]) and "×1.5" in rise["target"]
+
+
+def test_report_distinguishes_rejected_pruning_trial_from_accepted_fit(repo):
+    report = json.loads((repo.root / "docs/validation/baseline-v0.6.0/m1-validation.json").read_text())
+    report["pruning_review"] = {
+        "initial_cost": 100, "relative_cost_tolerance": 0.01,
+        "attempts": [{"parameter": "example.diffusivity", "decision": "retained",
+                      "marginal_uncertainty": {"prior_sd_ratio": 0.8},
+                      "baseline_cost": 100.3, "trial_cost": 120, "relative_cost_increase": 0.1964,
+                      "optimizer": {"optimality": 200},
+                      "reasons": ["current_cost_limit_exceeded", "initial_cost_limit_exceeded"]}],
+    }
+    rendered = validate.render_markdown(report, [])
+    assert "no more than 1% above both" in rendered
+    assert "Rejected trials do not replace the accepted fit" in rendered
+    assert "`example.diffusivity` | retained | 0.8 | 100.3 | 120 | 19.6% | 200" in rendered
+    assert "initial_cost_limit_exceeded" in rendered
 
 
 def test_v5_checks_compare_like_with_like(report):
@@ -177,3 +214,73 @@ def test_committed_report_check_detects_refit_on_same_solver(report, tmp_path, r
     problems = validate.check_committed(repo, tmp_path)
     assert problems == ["the report's calibrated values differ from data/calibration/current.yaml's "
                         "(re-run validate after calibrating)"]
+
+
+def test_evaluation_uses_recorded_fixed_values_before_starts_and_fitted_overrides():
+    from puckworks_tools.calibrate import Parameter, Problem, Runner
+
+    problem = Problem([
+        Parameter("water", "override", ("V1",), "linear", .5, .9, .75, "1"),
+        Parameter("diffusivity", "override", ("V1",), "log", 1e-11, 1e-10, 2e-11, "m^2/s"),
+        Parameter("unrecorded", "override", ("V1",), "linear", 0, 2, .4, "1"),
+    ], [], Runner())
+    fixed = {"water": {"value": 1.0}, "diffusivity": {"value": 1.26e-10},
+             "spec:solubles.kernel_loading_cap": {"value": False}}
+    # A fixed registry value can lie outside a custom optimizer interval; evaluation must use it exactly.
+    values = problem.values(validate._calibration_x(problem, {}, fixed=fixed))
+    assert values == pytest.approx({"water": 1.0, "diffusivity": 1.26e-10, "unrecorded": .4})
+    fitted = {"water": .6}
+    assert problem.values(validate._calibration_x(problem, fitted, fixed=fixed))["water"] == .6
+    assert fitted == {"water": .6}  # Fixed values were not added to the fitted-parameter map.
+    assert problem.values(validate._calibration_x(problem, {}))["water"] == .75
+    with pytest.raises(ValueError, match="recorded fixed value for diffusivity"):
+        validate._calibration_x(problem, {}, fixed={"diffusivity": {"value": 0}})
+
+
+def test_validation_fixed_water_reaches_specs_without_becoming_fitted(repo, tmp_path):
+    from puckworks_tools.yamlio import load_yaml
+
+    water = "model.hydraulics.intraparticle_water_fraction"
+    config = load_yaml(repo.root / "data/calibration/config.yaml")
+    assert next(p for p in config["parameters"] if p["id"] == water)["start"] == .75
+    document = {"schema": "puckworks.calibration/1", "label": "fixed-input-test", "parameters": {},
+                "fit": {"fixed": {water: {"value": 1.0, "units": "1", "reason": "pruned at registry value"}}}}
+    source = tmp_path / "fixed.yaml"
+    source.write_text(json.dumps(document))
+    simulated_specs = []
+
+    def unavailable(spec):
+        # Exercise the complete validation input/report path without running numerical shots.
+        simulated_specs.append(spec)
+        return {"error": "simulation intentionally omitted in input regression"}
+
+    with pytest.warns(RuntimeWarning, match="Mean of empty slice"):
+        result = validate.run_validation(repo, calibration_path=source, tier=0, n_classes=4, simulate=unavailable)
+    assert simulated_specs
+    assert all(spec["hydraulics"]["intraparticle_water_fraction"] == 1.0 for spec in simulated_specs)
+    assert result["parameters"][water]["value"] == 1.0
+    assert result["parameters"][water]["calibrated"] is False
+    assert result["fixed"] == document["fit"]["fixed"]
+
+
+@pytest.mark.parametrize("fitted_water,expected", [(None, 1.0), (.65, .65)])
+def test_startup_baselines_use_the_same_fixed_and_fitted_values(repo, fitted_water, expected):
+    from puckworks_tools.calibrate import build_problem, load_config
+
+    module_spec = importlib.util.spec_from_file_location(
+        "startup_sensitivity", repo.root / "python/scripts/m11-startup-sensitivity.py")
+    startup = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(startup)
+    water = "model.hydraulics.intraparticle_water_fraction"
+    document = {"parameters": {} if fitted_water is None else {water: fitted_water},
+                "fit": {"fixed": {water: {"value": 1.0, "units": "1"}}}}
+    problem = build_problem(repo, load_config(repo.root / "data/calibration/config.yaml"), tier=0)
+    try:
+        _, v4, recipe, generic = startup.baseline_specs(problem, document)
+        assert v4["hydraulics"]["intraparticle_water_fraction"] == expected
+        assert generic["hydraulics"]["intraparticle_water_fraction"] == expected
+        assert recipe["overrides"][water] == expected
+        assert not any(key.startswith("calibration.") for key in recipe["overrides"])
+        assert problem.runner.simulations == 0
+    finally:
+        problem.runner.close()

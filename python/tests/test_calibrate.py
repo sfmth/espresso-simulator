@@ -183,6 +183,26 @@ def test_synthetic_fit_recovers_known_parameters():
     assert 0.3 < cal.uncertainties(problem, result.x, result.jacobian, result.residuals)["reduced_chi2"] < 3.0
 
 
+def test_optimizer_record_retains_unfinished_fit_diagnostics():
+    problem = synthetic_problem()
+    result = cal.fit(problem, max_nfev=1)
+    record = cal.optimizer_record(result)
+    assert not record["success"]
+    assert record["status"] == 0  # the evaluation limit, not a convergence condition
+    assert record["evaluations"] == record["jacobian_evaluations"] == 1
+    assert math.isfinite(record["optimality"]) and record["optimality"] > 1
+    assert record["message"] == result.message
+
+
+@pytest.mark.parametrize("label", ["v1", "v2", "v3"])
+def test_historical_fit_outputs_are_protected(repo, label):
+    from types import SimpleNamespace
+
+    args = SimpleNamespace(config=None, out_dir=None, label=label)
+    with pytest.raises(cal.CalibrationError, match="preserved historical fits"):
+        cal.run(args, repo)
+
+
 def test_warm_start_records_actual_values_and_refuses_nonphysical_clipping():
     problem = synthetic_problem()
     assert cal.apply_start_values(problem, {"s.a": 2.0, "s.b": 15.0, "not.fitted": 90}) == {"s.a": 2.0, "s.b": 15.0}
@@ -401,7 +421,8 @@ def test_runner_keeps_a_calls_hits_when_the_cache_overflows():
 def test_leave_one_out_structure(repo, config):
     """The V1 leave-one-condition-out machinery: one refit per experiment, errors of the one left out."""
     keep = {"calibration.schmieder2023.extractable_fraction", "calibration.schmieder2023.permeability.gl1_7"}
-    sub = {**config, "parameters": [p for p in config["parameters"] if p["id"] in keep]}
+    sub = {**config, "parameters": [p for p in config["parameters"] if p["id"] in keep],
+           "blocks": {"V1": config["blocks"]["V1"]}}
     checkpoints = []
     loo = cal.leave_one_out(repo, sub, {}, tier=0, max_nfev=2, progress=checkpoints.append)
     assert len(loo["experiments"]) == 15
@@ -414,6 +435,107 @@ def test_leave_one_out_structure(repo, config):
     assert all(c["required"] == 15 and len(c["experiments"]) == c["completed"] for c in checkpoints)
     assert loo["completed"] == loo["required"] == 15
     assert loo["all_optimizers_converged"] == all(e["optimizer"]["success"] for e in loo["experiments"].values())
+    assert loo["refitted_blocks"] == ["V1"] and loo["held"] == {}
+    assert loo["conditional_on_fixed_structure"] is True
+    assert all(set(e["fitted_values"]) == keep for e in loo["experiments"].values())
+
+
+def test_case_exclusion_is_scoped_to_its_block(repo, config):
+    # Two blocks deliberately contain the same case names. Excluding a V1 condition must not
+    # silently remove another block's observation with that name.
+    scoped = {**config, "parameters": [],
+              "blocks": {"V1": config["blocks"]["V1"], "second": config["blocks"]["V1"]}}
+    full = cal.build_problem(repo, scoped, tier=0)
+    try:
+        name = full.blocks[0].cases[0].name
+        sub = cal.build_problem(repo, scoped, tier=0, exclude_cases_by_block={"V1": [name]})
+        try:
+            assert len(sub.blocks[0].cases) == 14
+            assert len(sub.blocks[1].cases) == 15
+            assert name not in {c.name for c in sub.blocks[0].cases}
+            assert name in {c.name for c in sub.blocks[1].cases}
+        finally:
+            sub.runner.close()
+    finally:
+        full.runner.close()
+
+
+@pytest.mark.parametrize("incomplete_prediction", [False, True])
+def test_leave_one_out_refits_shared_parameter_without_omitted_residual(monkeypatch, incomplete_prediction):
+    """A shared scalar has analytically known fold optima, including an independent V2 datum."""
+    from types import SimpleNamespace
+
+    from puckworks_tools.cases import schmieder2023 as sch
+
+    cases = {
+        "V1": [SimpleNamespace(name="same-name", info={"experiment": 1}, target=2.0),
+               SimpleNamespace(name="second", info={"experiment": 2}, target=8.0)],
+        "V2": [SimpleNamespace(name="same-name", info={}, target=20.0)],
+    }
+    targets = {i: {"lambda": {a: (value, 1.0) for a, *_ in sch.ANALYTES},
+                   "cup": {a: {m: (value, 1.0) for m in (20, 40, 60)} for a, *_ in sch.ANALYTES}}
+               for i, value in ((1, 2.0), (2, 8.0))}
+    monkeypatch.setattr(sch, "targets", lambda data: targets)
+
+    class SyntheticBlock:
+        def __init__(self, name, module, data, cases, options, units):
+            self.name, self.module, self.data, self.cases = name, module, data, cases
+            self.options, self.units = options, units
+            self.labels = [f"{name}/{case.name}" for case in cases]
+
+        def evaluate(self, values, runner, params):
+            value = values["shared.value"]
+            observations = []
+            for case in self.cases:
+                obs = {"lambda": {a: value for a, *_ in sch.ANALYTES},
+                       "c0": {a: value for a, *_ in sch.ANALYTES},
+                       "cup_eq3": {a: {m: value for m in (20, 40, 60)} for a, *_ in sch.ANALYTES},
+                       "pour_peak_pressure_bar": 1.0}
+                if incomplete_prediction and self.name == "V1" and case.info["experiment"] == 1:
+                    del obs["c0"]
+                observations.append(obs)
+            return cal.Evaluation(np.array([value - case.target for case in self.cases]),
+                                  self.labels, observations, [])
+
+    def build(paths, config, *, blocks=None, exclude_cases=(), exclude_cases_by_block=None, runner=None, **kwargs):
+        selected = list(config["blocks"] if blocks is None else blocks)
+        built = []
+        for name in selected:
+            excluded = set(exclude_cases) | set((exclude_cases_by_block or {}).get(name, ()))
+            retained = [case for case in cases[name] if case.name not in excluded]
+            built.append(SyntheticBlock(name, sch, {}, retained, {}, None))
+        parameter = cal.Parameter("shared.value", "override", ("V1", "V2"), "linear", 0.1, 30, 10, "1")
+        return cal.Problem([parameter], built, runner or cal.Runner(simulate=lambda spec: spec), fd_step=.01)
+
+    monkeypatch.setattr(cal, "build_problem", build)
+    monkeypatch.setattr(cal, "DatasetBlock", SyntheticBlock)
+    cfg = {"parameters": [{"id": "shared.value", "blocks": ["V1", "V2"]}],
+           "blocks": {"V1": {}, "V2": {}}, "fixed": [{"field": "example", "reason": "selected structure"}]}
+    checkpoints = []
+    loo = cal.leave_one_out(None, cfg, {"shared.value": 10}, progress=checkpoints.append)
+    assert loo["held"] == {} and loo["refitted_blocks"] == ["V1", "V2"]
+    assert loo["conditional_on_fixed_structure"] and loo["fixed"] == cfg["fixed"]
+    # The full-data mean is 10. Each omitted datum disappears from the optimum, while V2's 20
+    # remains: (8+20)/2=14 and (2+20)/2=11. Freezing the shared value or dropping V2 fails this.
+    for label, expected in (("exp01", 14.0), ("exp02", 11.0)):
+        fold = loo["experiments"][label]
+        assert fold["fitted_values"]["shared.value"] == pytest.approx(expected, abs=1e-6)
+        assert fold["start_values"] == {"shared.value": 10}
+        assert fold["refitted_blocks"] == ["V1", "V2"]
+        assert fold["refit_cases"] == {"V1": 1, "V2": 1}
+        assert fold["optimizer"]["success"] and fold["optimizer"]["optimality"] is not None
+    assert [entry["completed"] for entry in checkpoints] == [1, 2]
+    assert all(entry["refitted_blocks"] == ["V1", "V2"] for entry in checkpoints)
+    assert loo["lambda_total"] == 8 and loo["cup_total"] == 24
+    assert loo["all_predictions_available"] is (not incomplete_prediction)
+    if incomplete_prediction:
+        assert not loo["experiments"]["exp01"]["predicted"]
+        assert set(loo["experiments"]["exp01"]["errors"]["lambda"].values()) == {None}
+    # An explicitly selected V1-only fit must not silently admit V2 data during cross-validation.
+    selected = cal.leave_one_out(None, cfg, {"shared.value": 10}, refit_blocks=["V1"])
+    assert selected["refitted_blocks"] == ["V1"]
+    assert selected["experiments"]["exp01"]["fitted_values"]["shared.value"] == pytest.approx(8.0)
+    assert selected["experiments"]["exp02"]["fitted_values"]["shared.value"] == pytest.approx(2.0)
 
 
 def test_parallel_runner_matches_serial(repo):
