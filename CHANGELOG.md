@@ -2,6 +2,54 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.6.3] — 2026-10-17
+
+Correct pressure-event timing and retain phase/ramp boundaries in the reported series.
+The [pressure-event review](docs/validation/m11-pressure-events.md) separates event-location
+accuracy, output sampling and the remaining timestep sensitivity.
+
+- Localize pressure-triggered exits using the complete end state and restore transport
+  history and cached resistances on retries. An analytic infiltration case removes a
+  118 ms coarse-step delay and agrees within 1 µs at three timestep limits.
+  A separate test covers a pressure-storage transient below the time resolution.
+- Preserve phase transitions and ramp ends between regular samples. At fixed v4 values,
+  experiment 13's reported pour peak changes from 7.73185 to 9.09605 bar because its actual
+  ramp end precedes the old sampled boundary. Resampling the corrected result to the old
+  grid gives 7.69751 bar. All 12 corrected probe results reproduce exactly.
+- Preserve the 0.6.2 validation artifacts, protect v4 against accidental overwrite, and
+  update the full calibration pipeline to warm-start v5 from v4 with the original
+  training blocks, priors, residuals, pruning rule and predictive checks.
+- Refit v5 on the corrected solver: cost falls from 573.232 for re-evaluated v4 to
+  569.569 before pruning and 570.523 with 22 retained parameters. The main fit and
+  three pruning trials complete 15,438 simulations without failure. Keep 5-CQA
+  partitioning fixed at 0.61; diffusivity and the 5-CQA surface scale remain fitted.
+  Seven coefficients remain at or near bounds, and the optimizer's nonzero
+  first-order optimality prevents a stationarity or global-optimum claim.
+- Repeat all 15 V1 conditions at half the timestep. All 30 shots complete, retaining
+  51/60 rates and 174/180 cup masses within ±10%. Rates change by at most 0.390%,
+  Eq. 3 cup masses by 0.144% and pour pressures by 0.362%. The
+  [resolution record](docs/validation/m11-pressure-v5-resolution.json) retains
+  540 comparisons, including pressure and switch time.
+- Complete all 15 full-block leave-one-condition-out refits with every prediction
+  available. Recounted errors pass 58/60 rates and 180/180 cup masses within ±15%,
+  compared with v4's 57/60 and 180/180. The all-targets criterion still fails.
+- Complete all nine sensitivity refits with available final predictions. Both D32
+  variants retain 51/60 rates and 174/180 cup masses within ±10%. The alternative
+  dissolution rule worsens total cost to 641.678; whole-shot pressure more than
+  doubles pooled permeability. These conditional checks do not replace the
+  selected assumptions or constitute predictive uncertainty bands.
+- Retain the scientific failures in the 117-shot validation: V4 first drops and
+  flow rise are 6.02 and 12.32 s against 12.76 and 25.48 s measured; peak EY is
+  19.63% at the wrong setting. First-fraction TDS passes at 24.22%. Held-out time
+  ratios slightly worsen to 0.802 for Cameron and 0.771 for Smrke. No complete
+  M1 scientific gate passes, so M2 remains deferred.
+- Export v5 and reproduce all 4,698 candidate prediction values exactly after
+  rebuilding. Preserve all 67 protected historical artifacts. Pass 226 Rust tests
+  (one existing exhaustive test ignored), 519 Python tests, 448 web tests and 55
+  browser checks. All seven native/WASM shot fixtures agree exactly; the sphere
+  fixture's 4,218 numbers remain unchanged. Default browser runtime is 692 ms;
+  the warm preview remains above its 10 ms target at 13.4 ms.
+
 ## [0.6.2] — 2026-10-16
 
 Review whether the existing training observations justify fitting the pore-air closure.

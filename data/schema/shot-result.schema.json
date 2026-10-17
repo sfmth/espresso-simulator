@@ -127,7 +127,7 @@
       }
     },
     "Series": {
-      "description": "Time series at numerics.output_interval_s spacing, plus the stop and the end of the drip.",
+      "description": "Time series at numerics.output_interval_s spacing, plus phase transitions, ramp ends, the stop and the end of the drip. Use the supplied timestamps: samples need not be uniformly spaced.",
       "type": "object",
       "properties": {
         "t_s": {

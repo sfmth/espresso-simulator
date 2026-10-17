@@ -1,0 +1,3250 @@
+{
+  "schema": "puckworks.pressure-event-review/1",
+  "baseline": {
+    "solver": {
+      "puckcore_version": "0.6.2",
+      "extension_sha256": "bc1af714c46292d2",
+      "extension_built": "2026-10-16T22:59:03-07:00",
+      "sources_sha256": {
+        "crates/puckcore/src": "7edd86f7150f4fa1",
+        "crates/puckmodel/src": "1ca89ad808e6f2f7",
+        "crates/puckmodel/generated": "35b5946493f6e0ae",
+        "crates/puckcore-py": "563a9328b2a48052"
+      },
+      "files_sha256": {
+        "Cargo.lock": "4eb1448eca9fb555"
+      },
+      "python": {
+        "version": "3.14.7",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1"
+      }
+    },
+    "rows": [
+      {
+        "amplitude": 0.5,
+        "max_dt_s": 0.05,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.731849176363165,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.91662220510793,
+            "caffeine": 21.34635091964188,
+            "cqa5": 20.84502317833914,
+            "tds": 17.797631267319055
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.731849176363165,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.91662220510793,
+            "caffeine": 21.34635091964188,
+            "cqa5": 20.84502317833914,
+            "tds": 17.797631267319055
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.36130289694205,
+          "first_drops_s": 8.039228383588512,
+          "beverage_mass_kg": 0.07643765843714863,
+          "drip_mass_kg": 0.00463079658631016,
+          "tds": 0.06309798276867759,
+          "ey": 0.24115310274726337,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022120602433509684,
+              "extracted_fraction": 0.835932100638257
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012219407759421163,
+              "extracted_fraction": 0.8763603435198664
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014840882259877663,
+              "extracted_fraction": 0.7991144711823103
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004008436143710735,
+              "extracted_fraction": 0.8350908632730697
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031773299809064764,
+            "ey_min": 0.1682391180824414,
+            "ey_max": 0.2855042971814917,
+            "ey_mean": 0.25251182347507134
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 2.567715770951294e-14,
+          "mass_balance_error": 6.505213034913026e-15,
+          "steps": 1000,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.006886749394162732,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.5-dt0.05.json",
+        "result_sha256": "10f3aec6eca22fff",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.731849176363165,
+            6.80210278138257,
+            6.1674431027097
+          ]
+        }
+      },
+      {
+        "amplitude": 0.5,
+        "max_dt_s": 0.025,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.679480810989343,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.874522852824903,
+            "caffeine": 21.275244956827525,
+            "cqa5": 20.778568635227302,
+            "tds": 17.76789796052901
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.679480810989343,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.874522852824903,
+            "caffeine": 21.275244956827525,
+            "cqa5": 20.778568635227302,
+            "tds": 17.76789796052901
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.35591945084087,
+          "first_drops_s": 8.037239716402139,
+          "beverage_mass_kg": 0.07643729335163085,
+          "drip_mass_kg": 0.00463043139246147,
+          "tds": 0.06312023544988594,
+          "ey": 0.24123699767534704,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002212748449738161,
+              "extracted_fraction": 0.8361921721316296
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012222363265273738,
+              "extracted_fraction": 0.8765723086310429
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014846151989672773,
+              "extracted_fraction": 0.7993982223276096
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.000400951944720701,
+              "extracted_fraction": 0.8353165515014603
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.0317433752794856,
+            "ey_min": 0.16842192215895194,
+            "ey_max": 0.28632383873124423,
+            "ey_mean": 0.25258267854496635
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 3.048497446130828e-14,
+          "mass_balance_error": 7.28583859910259e-15,
+          "steps": 1986,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 1.01e4 steps \u00d7 1.73e5 values = 1.74e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0038814904879038415,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.5-dt0.025.json",
+        "result_sha256": "beff9a895bc5b15c",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.679480810989343,
+            6.745291466803774,
+            6.12107168674444
+          ]
+        }
+      },
+      {
+        "amplitude": 0.5,
+        "max_dt_s": 0.0125,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.629447621955966,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.852521026779947,
+            "caffeine": 21.238445320612648,
+            "cqa5": 20.74207233040676,
+            "tds": 17.75380089405453
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.629447621955966,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.852521026779947,
+            "caffeine": 21.238445320612648,
+            "cqa5": 20.74207233040676,
+            "tds": 17.75380089405453
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.35208242189142,
+          "first_drops_s": 8.034781728713833,
+          "beverage_mass_kg": 0.07643715545786792,
+          "drip_mass_kg": 0.004630293462917462,
+          "tds": 0.06313444102113362,
+          "ey": 0.2412908541538992,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002213098409815849,
+              "extracted_fraction": 0.8363244211803437
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012223733100358948,
+              "extracted_fraction": 0.8766705514566752
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014848726940039562,
+              "extracted_fraction": 0.7995368717734205
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004010103659636899,
+              "extracted_fraction": 0.8354382624243537
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03174616113015474,
+            "ey_min": 0.16845277531922404,
+            "ey_max": 0.28695215851700756,
+            "ey_mean": 0.25263000834114285
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 6.293695393008543e-14,
+          "mass_balance_error": 1.8367660333872075e-14,
+          "steps": 3960,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 2.02e4 steps \u00d7 1.73e5 values = 3.48e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0019223907426889704,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.5-dt0.0125.json",
+        "result_sha256": "fb6af9d981e76471",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.629447621955966,
+            6.705288988740147,
+            6.093045618071168
+          ]
+        }
+      },
+      {
+        "amplitude": 0.5,
+        "max_dt_s": 0.00625,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.602642945705277,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.84320770468521,
+            "caffeine": 21.221064144652,
+            "cqa5": 20.7259745867956,
+            "tds": 17.747299819152516
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.602642945705277,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.84320770468521,
+            "caffeine": 21.221064144652,
+            "cqa5": 20.7259745867956,
+            "tds": 17.747299819152516
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.34988994579288,
+          "first_drops_s": 8.033019117162517,
+          "beverage_mass_kg": 0.076437094576461,
+          "drip_mass_kg": 0.004630232620341457,
+          "tds": 0.06314399162421179,
+          "ey": 0.24132716298575688,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002213314709553615,
+              "extracted_fraction": 0.8364061603168349
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012224548823975336,
+              "extracted_fraction": 0.8767290541143122
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014850281422673268,
+              "extracted_fraction": 0.7996205736414121
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004010425155950308,
+              "extracted_fraction": 0.8355052408229807
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031753480224509724,
+            "ey_min": 0.1685018727740655,
+            "ey_max": 0.2874377811302959,
+            "ey_mean": 0.25266222824662204
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 1.222684473533635e-13,
+          "mass_balance_error": 2.0918724269132084e-14,
+          "steps": 7907,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 4.03e4 steps \u00d7 1.73e5 values = 6.97e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0009163692253966281,
+          "max_regime_solves": 3,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.5-dt0.00625.json",
+        "result_sha256": "81aa91a5a8986247",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.602642945705277,
+            6.683824614199552,
+            6.0784920390989505
+          ]
+        }
+      },
+      {
+        "amplitude": 0.509,
+        "max_dt_s": 0.05,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.98488461850826,
+            "caffeine": 21.413586570136342,
+            "cqa5": 20.917929439398005,
+            "tds": 17.867545189483806
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.98488461850826,
+            "caffeine": 21.413586570136342,
+            "cqa5": 20.917929439398005,
+            "tds": 17.867545189483806
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.41219143281204,
+          "first_drops_s": 8.082946999826,
+          "beverage_mass_kg": 0.07643790423840913,
+          "drip_mass_kg": 0.004631042412198083,
+          "tds": 0.06308528226106208,
+          "ey": 0.24110533821620367,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022116999806973906,
+              "extracted_fraction": 0.8357959582715686
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012217559875275753,
+              "extracted_fraction": 0.8762278156251975
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0001483845047633143,
+              "extracted_fraction": 0.79898353062308
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040075834946828463,
+              "extracted_fraction": 0.8349132280589262
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03180286781826499,
+            "ey_min": 0.16815932636504605,
+            "ey_max": 0.2855249636050955,
+            "ey_mean": 0.25247448459286503
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 9.943035776583957e-15,
+          "mass_balance_error": 7.28583859910259e-15,
+          "steps": 1000,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.007789453571350031,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.509-dt0.05.json",
+        "result_sha256": "1a61f2a615a6627a",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.542593660399591,
+            6.578798041963132
+          ]
+        }
+      },
+      {
+        "amplitude": 0.509,
+        "max_dt_s": 0.025,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.948348895839297,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.929046153718566,
+            "caffeine": 21.326417256481115,
+            "cqa5": 20.83216473595804,
+            "tds": 17.826115691580995
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.948348895839297,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.929046153718566,
+            "caffeine": 21.326417256481115,
+            "cqa5": 20.83216473595804,
+            "tds": 17.826115691580995
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.40783035733009,
+          "first_drops_s": 8.083951898348788,
+          "beverage_mass_kg": 0.07643754533804482,
+          "drip_mass_kg": 0.004630683409601641,
+          "tds": 0.06310829805455705,
+          "ey": 0.24119216968760251,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002212402768580347,
+              "extracted_fraction": 0.8360615400761641
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012220376463222427,
+              "extracted_fraction": 0.8764298177212971
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014843510126343043,
+              "extracted_fraction": 0.7992559699210002
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040087655076587577,
+              "extracted_fraction": 0.835159480762241
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03177384816447038,
+            "ey_min": 0.1683450958495622,
+            "ey_max": 0.2863488956319009,
+            "ey_mean": 0.2525480616465667
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 3.114046546785444e-14,
+          "mass_balance_error": 9.311383363699037e-15,
+          "steps": 1988,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 1.01e4 steps \u00d7 1.73e5 values = 1.74e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0034908180526160375,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.509-dt0.025.json",
+        "result_sha256": "70979adca103148f",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            9.948348895839297,
+            7.467353405187266,
+            6.531056532562606
+          ]
+        }
+      },
+      {
+        "amplitude": 0.509,
+        "max_dt_s": 0.0125,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.511096845670911,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.905668398337834,
+            "caffeine": 21.28899937734334,
+            "cqa5": 20.796589728598196,
+            "tds": 17.809702407983572
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.511096845670911,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.905668398337834,
+            "caffeine": 21.28899937734334,
+            "cqa5": 20.796589728598196,
+            "tds": 17.809702407983572
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.40418653880155,
+          "first_drops_s": 8.082254880084616,
+          "beverage_mass_kg": 0.07643740690995945,
+          "drip_mass_kg": 0.004630544930399716,
+          "tds": 0.06312382694579828,
+          "ey": 0.2412510822984923,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022128194232090353,
+              "extracted_fraction": 0.8362189928309193
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012221876561856952,
+              "extracted_fraction": 0.8765374028825873
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014846283238644206,
+              "extracted_fraction": 0.7994052894918496
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004009419832198201,
+              "extracted_fraction": 0.8352957983746251
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031775510748729384,
+            "ey_min": 0.16840565525612758,
+            "ey_max": 0.28697692741317643,
+            "ey_mean": 0.25259966850030835
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 6.206265217503428e-14,
+          "mass_balance_error": 2.1173830662658084e-14,
+          "steps": 3963,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 2.02e4 steps \u00d7 1.73e5 values = 3.48e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0019140006243686238,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.509-dt0.0125.json",
+        "result_sha256": "6b03ab6721dc8929",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            9.511096845670911,
+            7.413313142358292,
+            6.4930537579130245
+          ]
+        }
+      },
+      {
+        "amplitude": 0.509,
+        "max_dt_s": 0.00625,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.321955929836198,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.896232124121465,
+            "caffeine": 21.271935696881197,
+            "cqa5": 20.78191495488863,
+            "tds": 17.803148407458238
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.321955929836198,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.896232124121465,
+            "caffeine": 21.271935696881197,
+            "cqa5": 20.78191495488863,
+            "tds": 17.803148407458238
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.40185529676759,
+          "first_drops_s": 8.080122426695704,
+          "beverage_mass_kg": 0.0764373464096909,
+          "drip_mass_kg": 0.004630484413703798,
+          "tds": 0.06313267117716882,
+          "ey": 0.24128469282691803,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022129994614358578,
+              "extracted_fraction": 0.8362870288320161
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012222617113954654,
+              "extracted_fraction": 0.8765905143347553
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014847617706916178,
+              "extracted_fraction": 0.7994771445803002
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040097042970990926,
+              "extracted_fraction": 0.8353550618956441
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03178443577848215,
+            "ey_min": 0.16842187075244103,
+            "ey_max": 0.2874624072127407,
+            "ey_mean": 0.2526295469195047
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 1.218310133572134e-13,
+          "mass_balance_error": 1.7092128366242068e-14,
+          "steps": 7915,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 4.03e4 steps \u00d7 1.73e5 values = 6.97e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0009200898473533399,
+          "max_regime_solves": 3,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.509-dt0.00625.json",
+        "result_sha256": "ede56915744d4bb9",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            9.321955929836198,
+            7.376873260361078,
+            6.469580434102221
+          ]
+        }
+      },
+      {
+        "amplitude": 0.511,
+        "max_dt_s": 0.05,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.995572522817977,
+            "caffeine": 21.428962707172776,
+            "cqa5": 20.930250188550218,
+            "tds": 17.881575016419184
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.995572522817977,
+            "caffeine": 21.428962707172776,
+            "cqa5": 20.930250188550218,
+            "tds": 17.881575016419184
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.42440390430912,
+          "first_drops_s": 8.093965788929326,
+          "beverage_mass_kg": 0.07643796556016517,
+          "drip_mass_kg": 0.004631104256732618,
+          "tds": 0.06308311598364824,
+          "ey": 0.24109725234930046,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002211630177339677,
+              "extracted_fraction": 0.8357695797551514
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012217261966267808,
+              "extracted_fraction": 0.8762064499710118
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014838136972681283,
+              "extracted_fraction": 0.7989666498676631
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004007420778807517,
+              "extracted_fraction": 0.8348793289182326
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03180845264464113,
+            "ey_min": 0.16818100518004,
+            "ey_max": 0.28552956318034206,
+            "ey_mean": 0.2524686733722696
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 1.5734025331995764e-14,
+          "mass_balance_error": 6.250106641387025e-15,
+          "steps": 1000,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.007772972849124484,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.511-dt0.05.json",
+        "result_sha256": "daeb98bb1f223fcc",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.754551362470596,
+            6.713225942025669
+          ]
+        }
+      },
+      {
+        "amplitude": 0.511,
+        "max_dt_s": 0.025,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.942558526477868,
+            "caffeine": 21.34194881916512,
+            "cqa5": 20.850231443157007,
+            "tds": 17.84035965408324
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.942558526477868,
+            "caffeine": 21.34194881916512,
+            "cqa5": 20.850231443157007,
+            "tds": 17.84035965408324
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.419613756355155,
+          "first_drops_s": 8.094573221407973,
+          "beverage_mass_kg": 0.07643760069270625,
+          "drip_mass_kg": 0.004630739141733134,
+          "tds": 0.06310608316881337,
+          "ey": 0.24118387932692337,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002212396890226363,
+              "extracted_fraction": 0.8360593186607171
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012219949320711428,
+              "extracted_fraction": 0.8763991836050585
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014842880280406043,
+              "extracted_fraction": 0.7992220555624022
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004008661534460008,
+              "extracted_fraction": 0.8351378196791681
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03178158994301585,
+            "ey_min": 0.1683249506584014,
+            "ey_max": 0.2863537747378291,
+            "ey_mean": 0.2525416098482256
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 2.840882896599148e-14,
+          "mass_balance_error": 6.418476861114186e-15,
+          "steps": 1988,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 1.01e4 steps \u00d7 1.73e5 values = 1.74e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.00391955988605028,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.511-dt0.025.json",
+        "result_sha256": "6f804b22d6c626a1",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.6971411842518815,
+            6.666936561068029
+          ]
+        }
+      },
+      {
+        "amplitude": 0.511,
+        "max_dt_s": 0.0125,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.920001112448514,
+            "caffeine": 21.30222605534213,
+            "cqa5": 20.811133590517034,
+            "tds": 17.823631947709455
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.920001112448514,
+            "caffeine": 21.30222605534213,
+            "cqa5": 20.811133590517034,
+            "tds": 17.823631947709455
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.415817048554565,
+          "first_drops_s": 8.092540259071901,
+          "beverage_mass_kg": 0.07643746408953735,
+          "drip_mass_kg": 0.004630602102373801,
+          "tds": 0.06312105299353078,
+          "ey": 0.24124066107433964,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022127328968006324,
+              "extracted_fraction": 0.8361862947149641
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.000122214161343482,
+              "extracted_fraction": 0.8765043816087513
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0001484557806737052,
+              "extracted_fraction": 0.7993673192041272
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040092234226070796,
+              "extracted_fraction": 0.8352548797098082
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03178357770145573,
+            "ey_min": 0.16835494806482063,
+            "ey_max": 0.2869820840041704,
+            "ey_mean": 0.25259157640264684
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 6.239040121734314e-14,
+          "mass_balance_error": 2.3597341401155095e-14,
+          "steps": 3965,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 2.02e4 steps \u00d7 1.73e5 values = 3.48e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0019287691453746141,
+          "max_regime_solves": 4,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.511-dt0.0125.json",
+        "result_sha256": "2e9148a69ba2b221",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.62823977837521,
+            6.626529272605047
+          ]
+        }
+      },
+      {
+        "amplitude": 0.511,
+        "max_dt_s": 0.00625,
+        "reported": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.909470782221515,
+            "caffeine": 21.283562719583042,
+            "cqa5": 20.795620977159786,
+            "tds": 17.816800914953323
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.909470782221515,
+            "caffeine": 21.283562719583042,
+            "cqa5": 20.795620977159786,
+            "tds": 17.816800914953323
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.41355514688571,
+          "first_drops_s": 8.090741334533835,
+          "beverage_mass_kg": 0.0764374024287885,
+          "drip_mass_kg": 0.004630540430086871,
+          "tds": 0.06313019537211051,
+          "ey": 0.24127540745330264,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002212929985349544,
+              "extracted_fraction": 0.8362607739906522
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012222194627748667,
+              "extracted_fraction": 0.8765602141627749
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014847054530469392,
+              "extracted_fraction": 0.799446820072594
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004009538316546109,
+              "extracted_fraction": 0.8353204826137726
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03179189196572793,
+            "ey_min": 0.16839692515238736,
+            "ey_max": 0.2874679237117834,
+            "ey_mean": 0.2526223493369411
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 1.235791790588177e-13,
+          "mass_balance_error": 2.2704469023814092e-14,
+          "steps": 7918,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 4.03e4 steps \u00d7 1.73e5 values = 6.97e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0009219182170551034,
+          "max_regime_solves": 3,
+          "rejected_steps": 0
+        },
+        "result_file": "A0.511-dt0.00625.json",
+        "result_sha256": "56d92b340a6b25ef",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.59120237281823,
+            6.603581906858606
+          ]
+        }
+      }
+    ],
+    "simulations": 12,
+    "capture": "Recorded by the precursor fixed-input probe before editing the solver; summarized from its complete saved result files using the current diagnostic script."
+  },
+  "corrected": {
+    "schema": "puckworks.pressure-events/1",
+    "solver": {
+      "puckcore_version": "0.6.3",
+      "extension_sha256": "f82d8e417b560477",
+      "extension_built": "2026-10-17T07:21:33-07:00",
+      "sources_sha256": {
+        "crates/puckcore/src": "1bddbe9c4ead15de",
+        "crates/puckmodel/src": "1ca89ad808e6f2f7",
+        "crates/puckmodel/generated": "35b5946493f6e0ae",
+        "crates/puckcore-py": "563a9328b2a48052"
+      },
+      "files_sha256": {
+        "Cargo.lock": "701e3a4b68f261e6"
+      },
+      "python": {
+        "version": "3.14.7",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1"
+      }
+    },
+    "input": "docs/validation/m11-startup-identification.json",
+    "input_sha256": "ac798178f692ca43",
+    "script_sha256": "2e93dfbcf1663eee",
+    "case": "schmieder2023/exp13",
+    "baseline_spec": {
+      "schema": "puckworks.shot-spec/1",
+      "basket": {
+        "profile_m": [
+          [
+            0.0,
+            0.029
+          ],
+          [
+            0.0265,
+            0.029
+          ]
+        ],
+        "perforated_radius_m": 0.027,
+        "open_area_fraction": 0.03,
+        "outlet": {
+          "type": "holes"
+        },
+        "extra_headspace_m3": 5e-06
+      },
+      "bed": {
+        "dose_kg": 0.02,
+        "intergranular_porosity": 0.17,
+        "intraparticle_porosity": 0.55,
+        "skeletal_density_kg_m3": 1352.0,
+        "size_classes": [
+          {
+            "radius_m": 7.343561013839901e-07,
+            "volume_fraction": 0.02786377708978328
+          },
+          {
+            "radius_m": 1.7636477991009797e-06,
+            "volume_fraction": 0.005794064488953223
+          },
+          {
+            "radius_m": 2.647823905082266e-06,
+            "volume_fraction": 0.008755894212856132
+          },
+          {
+            "radius_m": 3.9996841499911065e-06,
+            "volume_fraction": 0.011526233251850905
+          },
+          {
+            "radius_m": 5.438023646982289e-06,
+            "volume_fraction": 0.019802826003844427
+          },
+          {
+            "radius_m": 8.587524963134873e-06,
+            "volume_fraction": 0.029621983091691843
+          },
+          {
+            "radius_m": 1.2481149821500544e-05,
+            "volume_fraction": 0.05602145774975095
+          },
+          {
+            "radius_m": 1.7967841623814324e-05,
+            "volume_fraction": 0.06147538884536457
+          },
+          {
+            "radius_m": 2.706356475274187e-05,
+            "volume_fraction": 0.07382771441492639
+          },
+          {
+            "radius_m": 3.7757022248058496e-05,
+            "volume_fraction": 0.05206057141760043
+          },
+          {
+            "radius_m": 5.872016304070544e-05,
+            "volume_fraction": 0.04216375176357222
+          },
+          {
+            "radius_m": 8.550318359255262e-05,
+            "volume_fraction": 0.050455326913239416
+          },
+          {
+            "radius_m": 0.0001298223207751348,
+            "volume_fraction": 0.11589343050203274
+          },
+          {
+            "radius_m": 0.00018635681781790106,
+            "volume_fraction": 0.20341997585940036
+          },
+          {
+            "radius_m": 0.0002658647410638345,
+            "volume_fraction": 0.1924564341796644
+          },
+          {
+            "radius_m": 0.00037466963341655673,
+            "volume_fraction": 0.04886117021546873
+          }
+        ],
+        "heterogeneity": {
+          "columns": 8,
+          "sigma_ln_permeability": 0.457708,
+          "edge_area_fraction": 0.25,
+          "edge_multiplier": 0.260366,
+          "prewet_nonuniformity": 0.2282312397439885
+        }
+      },
+      "solubles": {
+        "extractable_fraction": 0.34,
+        "cell_size_m": 4e-05,
+        "saturation_kg_m3": 349.852,
+        "partition_coefficient": 0.61,
+        "kernel_diffusivity_m2_s": 3.524e-11,
+        "surface_rate_m_s": 0.001,
+        "reference_temp_c": 80.0,
+        "species": [
+          {
+            "id": "caffeine",
+            "mass_fraction": 0.0132311,
+            "kernel_diffusivity_m2_s": 1.9e-10,
+            "partition_coefficient": 1.0,
+            "surface_fraction_scale": 0.5
+          },
+          {
+            "id": "trigonelline",
+            "mass_fraction": 0.00697168,
+            "kernel_diffusivity_m2_s": 2.8e-10,
+            "partition_coefficient": 0.999936,
+            "surface_fraction_scale": 2.0
+          },
+          {
+            "id": "cqa5",
+            "mass_fraction": 0.00928583,
+            "kernel_diffusivity_m2_s": 1.55e-10,
+            "partition_coefficient": 0.61,
+            "surface_fraction_scale": 0.842542
+          },
+          {
+            "id": "acids",
+            "mass_fraction": 0.024000000000000004,
+            "kernel_diffusivity_m2_s": 2.8e-10,
+            "partition_coefficient": 0.61,
+            "surface_fraction_scale": 1.0
+          }
+        ],
+        "solute_specific_volume_m3_kg": 0.0006369426751592356,
+        "kernel_loading_cap": false
+      },
+      "hydraulics": {
+        "permeability_m2": 4.17028e-14,
+        "poroelastic_pc_pa": 1180570.0,
+        "dissolution_kozeny_carman": true,
+        "swelling": {
+          "amplitude": 0.346612342195471,
+          "tau_s": 26.0
+        },
+        "gas": {
+          "amplitude": 0.12869246241387922,
+          "tau_s": 5.0
+        },
+        "pore_air": {
+          "amplitude": 0.5,
+          "tau_s": 0.8114712899351061
+        },
+        "pore_air_permeability_exponent": 3.0,
+        "fines_layer": {
+          "amplitude": 0.0,
+          "tau_s": 10.0
+        },
+        "axial_dispersion_m2_s": 4.5687e-06,
+        "viscosity": {
+          "ln_relative_a1": 3.75,
+          "ln_relative_a2": 14.1,
+          "temperature_exponent": 0.278611
+        },
+        "wetting_uptake": 0.5,
+        "intraparticle_water_fraction": 0.5,
+        "dissolution_porosity_share": 0.0
+      },
+      "thermal": {
+        "water_temp_c": 97.1,
+        "initial_bed_temp_c": 72.7027027027027,
+        "heat_capacity_j_k": 154.882,
+        "heat_loss_w_k": 0.41859999999999997,
+        "ambient_temp_c": 20.0
+      },
+      "machine": {
+        "phases": [
+          {
+            "control": {
+              "type": "flow",
+              "target_m3_s": 7e-06
+            },
+            "ramp_s": 0.0,
+            "limit": null,
+            "exit": {
+              "time_s": null,
+              "beverage_mass_kg": null,
+              "pressure_pa": 250000.0
+            }
+          },
+          {
+            "control": {
+              "type": "flow",
+              "target_m3_s": 2.7e-06
+            },
+            "ramp_s": 4.0,
+            "limit": null,
+            "exit": {
+              "time_s": null,
+              "beverage_mass_kg": null,
+              "pressure_pa": null
+            }
+          }
+        ],
+        "pump": {
+          "type": "ideal",
+          "max_flow_m3_s": 8e-06,
+          "max_pressure_pa": 1200000.0
+        },
+        "stop": {
+          "time_s": null,
+          "beverage_mass_kg": 0.07180686200000001,
+          "drip_tau_s": 1.5,
+          "vent_headspace": false
+        },
+        "hydraulic_compliance_m3_pa": 0.0
+      },
+      "numerics": {
+        "tier": 1,
+        "depth_cells": 30,
+        "max_dt_s": 0.05,
+        "max_duration_s": 240.0,
+        "output_interval_s": 0.1,
+        "snapshot_count": 1,
+        "kernel_shells": 8
+      }
+    },
+    "case_info": {
+      "experiment": 13,
+      "design": {
+        "experiment": 13,
+        "design_point": "corner",
+        "replicates": 3,
+        "flow_set_ml_s": 3.0,
+        "grind_level": 1.4,
+        "temp_set_c": 98.0,
+        "flow_measured_ml_s": 2.7,
+        "flow_rsd_percent": 2.3,
+        "temp_measured_c": 97.1,
+        "temp_rsd_percent": 0.4,
+        "pressure_bar": 7.6,
+        "pressure_rsd_percent": 9.3
+      },
+      "windows": [
+        {
+          "experiment": 13,
+          "replicate": 1,
+          "fraction": 1,
+          "fraction_mass_g": 5.6423,
+          "cumulative_mass_g": 2.82115,
+          "trigonelline_mg_g": 5.82339,
+          "caffeine_mg_g": 9.1772,
+          "cqa5_mg_g": 6.19931,
+          "tds_g_g": 0.22733,
+          "start_g": 0.0,
+          "end_g": 5.6423
+        },
+        {
+          "experiment": 13,
+          "replicate": 1,
+          "fraction": 2,
+          "fraction_mass_g": 6.9892,
+          "cumulative_mass_g": 9.1369,
+          "trigonelline_mg_g": 3.36509,
+          "caffeine_mg_g": 6.274,
+          "cqa5_mg_g": 3.96051,
+          "tds_g_g": 0.13119,
+          "start_g": 5.6423000000000005,
+          "end_g": 12.6315
+        },
+        {
+          "experiment": 13,
+          "replicate": 1,
+          "fraction": 3,
+          "fraction_mass_g": 7.2565,
+          "cumulative_mass_g": 16.25975,
+          "trigonelline_mg_g": 2.06202,
+          "caffeine_mg_g": 4.29026,
+          "cqa5_mg_g": 2.63464,
+          "tds_g_g": 0.08504,
+          "start_g": 12.6315,
+          "end_g": 19.888
+        },
+        {
+          "experiment": 13,
+          "replicate": 1,
+          "fraction": 5,
+          "fraction_mass_g": 6.7855,
+          "cumulative_mass_g": 30.03635,
+          "trigonelline_mg_g": 1.16067,
+          "caffeine_mg_g": 2.68592,
+          "cqa5_mg_g": 1.59474,
+          "tds_g_g": 0.05164,
+          "start_g": 26.6436,
+          "end_g": 33.4291
+        },
+        {
+          "experiment": 13,
+          "replicate": 1,
+          "fraction": 7,
+          "fraction_mass_g": 6.0331,
+          "cumulative_mass_g": 43.72605,
+          "trigonelline_mg_g": 0.83884,
+          "caffeine_mg_g": 2.03557,
+          "cqa5_mg_g": 1.23926,
+          "tds_g_g": 0.03797,
+          "start_g": 40.7095,
+          "end_g": 46.7426
+        },
+        {
+          "experiment": 13,
+          "replicate": 1,
+          "fraction": 10,
+          "fraction_mass_g": 6.7292,
+          "cumulative_mass_g": 62.2862,
+          "trigonelline_mg_g": 0.32071,
+          "caffeine_mg_g": 1.04532,
+          "cqa5_mg_g": 0.59269,
+          "tds_g_g": 0.01555,
+          "start_g": 58.9216,
+          "end_g": 65.6508
+        },
+        {
+          "experiment": 13,
+          "replicate": 2,
+          "fraction": 1,
+          "fraction_mass_g": 9.9282,
+          "cumulative_mass_g": 4.9641,
+          "trigonelline_mg_g": 4.73783,
+          "caffeine_mg_g": 7.932,
+          "cqa5_mg_g": 5.22797,
+          "tds_g_g": 0.18687,
+          "start_g": 0.0,
+          "end_g": 9.9282
+        },
+        {
+          "experiment": 13,
+          "replicate": 2,
+          "fraction": 2,
+          "fraction_mass_g": 6.5747,
+          "cumulative_mass_g": 13.21555,
+          "trigonelline_mg_g": 2.49239,
+          "caffeine_mg_g": 5.08438,
+          "cqa5_mg_g": 3.05448,
+          "tds_g_g": 0.10192,
+          "start_g": 9.9282,
+          "end_g": 16.5029
+        },
+        {
+          "experiment": 13,
+          "replicate": 2,
+          "fraction": 3,
+          "fraction_mass_g": 6.9453,
+          "cumulative_mass_g": 19.97555,
+          "trigonelline_mg_g": 1.77274,
+          "caffeine_mg_g": 3.76862,
+          "cqa5_mg_g": 2.27682,
+          "tds_g_g": 0.07536,
+          "start_g": 16.502899999999997,
+          "end_g": 23.4482
+        },
+        {
+          "experiment": 13,
+          "replicate": 2,
+          "fraction": 5,
+          "fraction_mass_g": 7.4514,
+          "cumulative_mass_g": 34.0126,
+          "trigonelline_mg_g": 0.98345,
+          "caffeine_mg_g": 2.33832,
+          "cqa5_mg_g": 1.35957,
+          "tds_g_g": 0.0452,
+          "start_g": 30.2869,
+          "end_g": 37.738299999999995
+        },
+        {
+          "experiment": 13,
+          "replicate": 2,
+          "fraction": 7,
+          "fraction_mass_g": 5.6609,
+          "cumulative_mass_g": 46.72345,
+          "trigonelline_mg_g": 0.75476,
+          "caffeine_mg_g": 1.92425,
+          "cqa5_mg_g": 1.14314,
+          "tds_g_g": 0.03327,
+          "start_g": 43.893,
+          "end_g": 49.5539
+        },
+        {
+          "experiment": 13,
+          "replicate": 2,
+          "fraction": 10,
+          "fraction_mass_g": 7.5188,
+          "cumulative_mass_g": 65.956,
+          "trigonelline_mg_g": 0.27598,
+          "caffeine_mg_g": 0.91574,
+          "cqa5_mg_g": 0.50908,
+          "tds_g_g": 0.01415,
+          "start_g": 62.196600000000004,
+          "end_g": 69.7154
+        },
+        {
+          "experiment": 13,
+          "replicate": 3,
+          "fraction": 1,
+          "fraction_mass_g": 6.0712,
+          "cumulative_mass_g": 3.0356,
+          "trigonelline_mg_g": 5.54876,
+          "caffeine_mg_g": 8.92196,
+          "cqa5_mg_g": 5.87556,
+          "tds_g_g": 0.21269,
+          "start_g": 0.0,
+          "end_g": 6.0712
+        },
+        {
+          "experiment": 13,
+          "replicate": 3,
+          "fraction": 2,
+          "fraction_mass_g": 6.6505,
+          "cumulative_mass_g": 9.39645,
+          "trigonelline_mg_g": 3.20218,
+          "caffeine_mg_g": 6.11403,
+          "cqa5_mg_g": 3.77945,
+          "tds_g_g": 0.12586,
+          "start_g": 6.071199999999999,
+          "end_g": 12.7217
+        },
+        {
+          "experiment": 13,
+          "replicate": 3,
+          "fraction": 3,
+          "fraction_mass_g": 6.6572,
+          "cumulative_mass_g": 16.0503,
+          "trigonelline_mg_g": 1.94034,
+          "caffeine_mg_g": 4.08608,
+          "cqa5_mg_g": 2.46585,
+          "tds_g_g": 0.0805,
+          "start_g": 12.7217,
+          "end_g": 19.3789
+        },
+        {
+          "experiment": 13,
+          "replicate": 3,
+          "fraction": 5,
+          "fraction_mass_g": 6.2568,
+          "cumulative_mass_g": 28.7873,
+          "trigonelline_mg_g": 1.17045,
+          "caffeine_mg_g": 2.7341,
+          "cqa5_mg_g": 1.60282,
+          "tds_g_g": 0.05354,
+          "start_g": 25.6589,
+          "end_g": 31.915699999999998
+        },
+        {
+          "experiment": 13,
+          "replicate": 3,
+          "fraction": 7,
+          "fraction_mass_g": 5.6267,
+          "cumulative_mass_g": 40.79305,
+          "trigonelline_mg_g": 0.90105,
+          "caffeine_mg_g": 2.12705,
+          "cqa5_mg_g": 1.29219,
+          "tds_g_g": 0.04156,
+          "start_g": 37.9797,
+          "end_g": 43.6064
+        },
+        {
+          "experiment": 13,
+          "replicate": 3,
+          "fraction": 10,
+          "fraction_mass_g": 6.1952,
+          "cumulative_mass_g": 52.6865,
+          "trigonelline_mg_g": 0.42704,
+          "caffeine_mg_g": 1.23401,
+          "cqa5_mg_g": 0.71633,
+          "tds_g_g": 0.01952,
+          "start_g": 49.5889,
+          "end_g": 55.7841
+        }
+      ],
+      "flow_ml_s": 2.7,
+      "temperature_c": 97.1,
+      "grind_level": 1.4,
+      "transition_ramp_s": 4.0,
+      "psd_source": "wet_cdf",
+      "psd": {
+        "d32_um": 28.300001085691115,
+        "d43_um": 274.04489782960195,
+        "fines_fraction_below_100um": 0.35033846752708586,
+        "reported_d32_um": 28.3,
+        "reported_d32_sd_um": 1.6,
+        "reported_d43_um": 273.0,
+        "reported_d43_sd_um": 7.6,
+        "sauter_offset_sd": 0.0,
+        "target_d32_um": 28.3,
+        "resolved_start_um": 3.0376636379567707,
+        "unresolved_head_fraction": 0.02786377708978328,
+        "unresolved_head_diameter_um": 1.4687122027679802
+      },
+      "class_psd": {
+        "d32_um": 28.30000108569111,
+        "d43_um": 270.8958060018934,
+        "fines_fraction_below_100um": 0.34674991056662213
+      },
+      "preparation": {
+        "reported_distributor": "Grande TRE (Sahdia Enterprises)",
+        "reported_tamp_kgf": 25.0,
+        "source_locator": "Schmieder et al. (2023), \u00a72.4",
+        "builder_distribution_fallback": "tap",
+        "conditional_spec_nuisances": [
+          "calibration.schmieder2023.sigma_ln_permeability",
+          "calibration.schmieder2023.edge_multiplier"
+        ]
+      }
+    },
+    "refitted": false,
+    "held_out_used": false,
+    "rows": [
+      {
+        "amplitude": 0.5,
+        "max_dt_s": 0.05,
+        "reported": {
+          "switch_s": 5.12491802068647,
+          "pour_peak_pressure_bar": 9.09605068432086,
+          "pump_limit_s": {
+            "transition": 3.9750819793135292,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.916992084010047,
+            "caffeine": 21.34945755420171,
+            "cqa5": 20.84576245527243,
+            "tds": 17.80038176375619
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.697505260928615,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.916992084010047,
+            "caffeine": 21.34945755420171,
+            "cqa5": 20.84576245527243,
+            "tds": 17.80038176375619
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.35942599262281,
+          "first_drops_s": 8.036283365860694,
+          "beverage_mass_kg": 0.07643764999234279,
+          "drip_mass_kg": 0.004630788096071883,
+          "tds": 0.06309665616347443,
+          "ey": 0.2411480059755428,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002212092499458449,
+              "extracted_fraction": 0.8359442901415789
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012219488924915034,
+              "extracted_fraction": 0.8763661646055925
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0001484096834797543,
+              "extracted_fraction": 0.799119106637502
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040084300634159057,
+              "extracted_fraction": 0.8350895965449802
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03176820159418285,
+            "ey_min": 0.16825524936578085,
+            "ey_max": 0.28537155129277875,
+            "ey_mean": 0.252506661829908
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 2.4584504686941387e-14,
+          "mass_balance_error": 6.632766231676026e-15,
+          "steps": 1008,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.006825245885846363,
+          "max_regime_solves": 4,
+          "rejected_steps": 10
+        },
+        "result_file": "A0.5-dt0.05.json",
+        "result_sha256": "beec1057a623ea76",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.12491802068647,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            9.09605068432086,
+            7.697505260928615,
+            6.786924181578491,
+            6.158041921302787
+          ]
+        }
+      },
+      {
+        "amplitude": 0.5,
+        "max_dt_s": 0.025,
+        "reported": {
+          "switch_s": 5.124597108337826,
+          "pour_peak_pressure_bar": 9.07253779778647,
+          "pump_limit_s": {
+            "transition": 3.9754028916621733,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.87448038939534,
+            "caffeine": 21.273528763086247,
+            "cqa5": 20.776901411403287,
+            "tds": 17.767905811192076
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.679549115489697,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.87448038939534,
+            "caffeine": 21.273528763086247,
+            "cqa5": 20.776901411403287,
+            "tds": 17.767905811192076
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.35594783608236,
+          "first_drops_s": 8.037305981090569,
+          "beverage_mass_kg": 0.07643729364872594,
+          "drip_mass_kg": 0.004630431689950851,
+          "tds": 0.06312056999602515,
+          "ey": 0.24123827720305674,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022127482395554982,
+              "extracted_fraction": 0.8361920927041205
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012222359674843005,
+              "extracted_fraction": 0.8765720511299289
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014846211732992646,
+              "extracted_fraction": 0.7994014392355151
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040095192694422155,
+              "extracted_fraction": 0.8353165144671281
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03174393605087771,
+            "ey_min": 0.16841912405613846,
+            "ey_max": 0.2863291294758736,
+            "ey_mean": 0.252583838209113
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 3.11405678739006e-14,
+          "mass_balance_error": 5.898059818321144e-15,
+          "steps": 1991,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 1.01e4 steps \u00d7 1.73e5 values = 1.74e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.003882847968704486,
+          "max_regime_solves": 4,
+          "rejected_steps": 10
+        },
+        "result_file": "A0.5-dt0.025.json",
+        "result_sha256": "2b325474798e1c9d",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.124597108337827,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            9.07253779778647,
+            7.679549115489697,
+            6.7452635774090455,
+            6.121147946259977
+          ]
+        }
+      },
+      {
+        "amplitude": 0.5,
+        "max_dt_s": 0.0125,
+        "reported": {
+          "switch_s": 5.125064104451596,
+          "pour_peak_pressure_bar": 8.913201183742109,
+          "pump_limit_s": {
+            "transition": 3.9749358955484038,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.852196512425397,
+            "caffeine": 21.23837856001834,
+            "cqa5": 20.741867457132166,
+            "tds": 17.75358496380716
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.629493109683824,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.852196512425397,
+            "caffeine": 21.23837856001834,
+            "cqa5": 20.741867457132166,
+            "tds": 17.75358496380716
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.352201990751794,
+          "first_drops_s": 8.03487083181002,
+          "beverage_mass_kg": 0.07643715552296741,
+          "drip_mass_kg": 0.0046302935286134245,
+          "tds": 0.06313449829629834,
+          "ey": 0.24129107325693389,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002213104072009473,
+              "extracted_fraction": 0.8363265609093246
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001222374956667371,
+              "extracted_fraction": 0.8766717323997737
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0001484877509207566,
+              "extracted_fraction": 0.7995394645430544
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004010111110324719,
+              "extracted_fraction": 0.8354398146509829
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031746207472953654,
+            "ey_min": 0.16845213948029691,
+            "ey_max": 0.2869528775391882,
+            "ey_mean": 0.2526301772263997
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 6.392034484135381e-14,
+          "mass_balance_error": 2.47453201720221e-14,
+          "steps": 3963,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 2.02e4 steps \u00d7 1.73e5 values = 3.48e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0019272651415682635,
+          "max_regime_solves": 4,
+          "rejected_steps": 5
+        },
+        "result_file": "A0.5-dt0.0125.json",
+        "result_sha256": "99282cbfc4b4ea9c",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.125064104451596,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            8.913201183742109,
+            7.629493109683824,
+            6.705674560070846,
+            6.093274615967617
+          ]
+        }
+      },
+      {
+        "amplitude": 0.5,
+        "max_dt_s": 0.00625,
+        "reported": {
+          "switch_s": 5.125289105870159,
+          "pour_peak_pressure_bar": 8.833800009758747,
+          "pump_limit_s": {
+            "transition": 3.9747108941298404,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.843282669056457,
+            "caffeine": 21.22104376016345,
+            "cqa5": 20.72600357064947,
+            "tds": 17.747299592878743
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 7.602395868082591,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.843282669056457,
+            "caffeine": 21.22104376016345,
+            "cqa5": 20.72600357064947,
+            "tds": 17.747299592878743
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.349943003099895,
+          "first_drops_s": 8.033058567633557,
+          "beverage_mass_kg": 0.07643709465618322,
+          "drip_mass_kg": 0.004630232700825174,
+          "tds": 0.06314401081517462,
+          "ey": 0.24132723658252794,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022133142423672654,
+              "extracted_fraction": 0.8364059837682677
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012224553983928275,
+              "extracted_fraction": 0.8767294241795575
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014850271798380076,
+              "extracted_fraction": 0.7996200554166981
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004010423091098084,
+              "extracted_fraction": 0.835504810645434
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03175353727386654,
+            "ey_min": 0.16850181328346228,
+            "ey_max": 0.2874380770115322,
+            "ey_mean": 0.25266229483653674
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 1.218313847283912e-13,
+          "mass_balance_error": 1.9643192301502078e-14,
+          "steps": 7911,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 4.03e4 steps \u00d7 1.73e5 values = 6.97e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0009187214116430869,
+          "max_regime_solves": 3,
+          "rejected_steps": 7
+        },
+        "result_file": "A0.5-dt0.00625.json",
+        "result_sha256": "06414d2ef291e268",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.12528910587016,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            8.833800009758747,
+            7.602395868082591,
+            6.683894364798836,
+            6.078528244929302
+          ]
+        }
+      },
+      {
+        "amplitude": 0.509,
+        "max_dt_s": 0.05,
+        "reported": {
+          "switch_s": 5.121553120686042,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.9784468793139576,
+            "pour": 0.021553120686041538
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.970468126897053,
+            "caffeine": 21.400506127605325,
+            "cqa5": 20.903422562356763,
+            "tds": 17.853862569803535
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 10.372398585525401,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.970468126897053,
+            "caffeine": 21.400506127605325,
+            "cqa5": 20.903422562356763,
+            "tds": 17.853862569803535
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.41058018999586,
+          "first_drops_s": 8.082358231927941,
+          "beverage_mass_kg": 0.07643790245980576,
+          "drip_mass_kg": 0.0046310405907037805,
+          "tds": 0.0630847511714353,
+          "ey": 0.24110330283716447,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022116654572091802,
+              "extracted_fraction": 0.8357829119306709
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001221751192719695,
+              "extracted_fraction": 0.8762243768501243
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0001483817654323189,
+              "extracted_fraction": 0.798968780563067
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004007522561112486,
+              "extracted_fraction": 0.8349005335651012
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03180411658003059,
+            "ey_min": 0.16816686047315874,
+            "ey_max": 0.28537158406793167,
+            "ey_mean": 0.25247266004482205
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 9.068921476274001e-15,
+          "mass_balance_error": 6.250106641387025e-15,
+          "steps": 1009,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.007671214974897626,
+          "max_regime_solves": 4,
+          "rejected_steps": 11
+        },
+        "result_file": "A0.509-dt0.05.json",
+        "result_sha256": "253b25a4dbf16b9b",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.121553120686041,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            10.372398585525401,
+            7.534830891976602,
+            6.569972258537341
+          ]
+        }
+      },
+      {
+        "amplitude": 0.509,
+        "max_dt_s": 0.025,
+        "reported": {
+          "switch_s": 5.121344872090133,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.9786551279098665,
+            "pour": 0.02134487209013436
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.930696431293576,
+            "caffeine": 21.32701168180519,
+            "cqa5": 20.83406791061057,
+            "tds": 17.828559293960694
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.793153228860298,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.930696431293576,
+            "caffeine": 21.32701168180519,
+            "cqa5": 20.83406791061057,
+            "tds": 17.828559293960694
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.40745181429514,
+          "first_drops_s": 8.083588927256248,
+          "beverage_mass_kg": 0.07643754658139479,
+          "drip_mass_kg": 0.0046306846462079165,
+          "tds": 0.06310850102991154,
+          "ey": 0.2411929493577932,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022123983250125462,
+              "extracted_fraction": 0.8360598608628709
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001222033725956777,
+              "extracted_fraction": 0.876427006085174
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014843432549626476,
+              "extracted_fraction": 0.7992517927652388
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040087589701498245,
+              "extracted_fraction": 0.8351581187812133
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03177361225663694,
+            "ey_min": 0.16834049444831267,
+            "ey_max": 0.28632107893257924,
+            "ey_mean": 0.2525489455838083
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 3.026634836134788e-14,
+          "mass_balance_error": 9.540979117872439e-15,
+          "steps": 1993,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 1.01e4 steps \u00d7 1.73e5 values = 1.74e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.003470189425764627,
+          "max_regime_solves": 4,
+          "rejected_steps": 7
+        },
+        "result_file": "A0.509-dt0.025.json",
+        "result_sha256": "1e9e8d5b10c02e3b",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.121344872090134,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            9.793153228860298,
+            7.458169881421093,
+            6.525628964125506
+          ]
+        }
+      },
+      {
+        "amplitude": 0.509,
+        "max_dt_s": 0.0125,
+        "reported": {
+          "switch_s": 5.1217178725112165,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.978282127488783,
+            "pour": 0.02171787251121593
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.906849231372316,
+            "caffeine": 21.28996239174983,
+            "cqa5": 20.79899368385914,
+            "tds": 17.810816601554073
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.489588897400722,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.906849231372316,
+            "caffeine": 21.28996239174983,
+            "cqa5": 20.79899368385914,
+            "tds": 17.810816601554073
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.40407926587102,
+          "first_drops_s": 8.081929882583465,
+          "beverage_mass_kg": 0.07643740669512641,
+          "drip_mass_kg": 0.004630544714532864,
+          "tds": 0.06312388991972108,
+          "ey": 0.24125132229860555,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022128167535938567,
+              "extracted_fraction": 0.8362179839899391
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012221867331246186,
+              "extracted_fraction": 0.876536740874953
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014846249211931657,
+              "extracted_fraction": 0.7994034573070827
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040094129293664183,
+              "extracted_fraction": 0.8352943602846703
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03177478131082759,
+            "ey_min": 0.1684068583905602,
+            "ey_max": 0.2869782088085,
+            "ey_mean": 0.2525999004674001
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 6.566840583110633e-14,
+          "mass_balance_error": 1.938808590797608e-14,
+          "steps": 3968,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 2.02e4 steps \u00d7 1.73e5 values = 3.48e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0019101190967666592,
+          "max_regime_solves": 4,
+          "rejected_steps": 8
+        },
+        "result_file": "A0.509-dt0.0125.json",
+        "result_sha256": "b6d2927bacbe92b8",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.121717872511216,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            9.489588897400722,
+            7.411267023460645,
+            6.491688716387247
+          ]
+        }
+      },
+      {
+        "amplitude": 0.509,
+        "max_dt_s": 0.00625,
+        "reported": {
+          "switch_s": 5.121871987734025,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.978128012265975,
+            "pour": 0.02187198773402521
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.8965573171763,
+            "caffeine": 21.272279324428528,
+            "cqa5": 20.782305558983154,
+            "tds": 17.803528918803288
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 9.319112713986367,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.0
+          },
+          "pour_capped": false,
+          "lambda": {
+            "trigonelline": 16.8965573171763,
+            "caffeine": 21.272279324428528,
+            "cqa5": 20.782305558983154,
+            "tds": 17.803528918803288
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.40186583620421,
+          "first_drops_s": 8.080103837257603,
+          "beverage_mass_kg": 0.07643734629633538,
+          "drip_mass_kg": 0.00463048430039395,
+          "tds": 0.06313272164583333,
+          "ey": 0.24128488535363551,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022129978533598282,
+              "extracted_fraction": 0.8362864211440576
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001222261326947585,
+              "extracted_fraction": 0.8765902386136375
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014847596546801087,
+              "extracted_fraction": 0.7994760052036859
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.0004009703061378539,
+              "extracted_fraction": 0.8353548044538621
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03178431097168526,
+            "ey_min": 0.16842238407965476,
+            "ey_max": 0.28746285681353106,
+            "ey_mean": 0.25262974152372075
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 1.2336073170565892e-13,
+          "mass_balance_error": 1.9132979514450076e-14,
+          "steps": 7919,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 4.03e4 steps \u00d7 1.73e5 values = 6.97e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.000921188727964951,
+          "max_regime_solves": 3,
+          "rejected_steps": 4
+        },
+        "result_file": "A0.509-dt0.00625.json",
+        "result_sha256": "e5184b435f72dde4",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.121871987734025,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            9.319112713986367,
+            7.376710303498139,
+            6.469513242351919
+          ]
+        }
+      },
+      {
+        "amplitude": 0.511,
+        "max_dt_s": 0.05,
+        "reported": {
+          "switch_s": 5.12082318655943,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.97917681344057,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.98801033124798,
+            "caffeine": 21.419983493008218,
+            "cqa5": 20.918634065065135,
+            "tds": 17.87411267097416
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.98801033124798,
+            "caffeine": 21.419983493008218,
+            "cqa5": 20.918634065065135,
+            "tds": 17.87411267097416
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.42228701252751,
+          "first_drops_s": 8.09186569926068,
+          "beverage_mass_kg": 0.07643796247425655,
+          "drip_mass_kg": 0.004631101055326867,
+          "tds": 0.06308255220136368,
+          "ey": 0.2410950878974083,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022116366415966338,
+              "extracted_fraction": 0.8357720225818842
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012217166842809873,
+              "extracted_fraction": 0.8761996278379008
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014837908023569753,
+              "extracted_fraction": 0.798954321992205
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040073734160163546,
+              "extracted_fraction": 0.8348694616700737
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031803972439383835,
+            "ey_min": 0.1681800950514701,
+            "ey_max": 0.28537054519141924,
+            "ey_mean": 0.2524668652229008
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 1.5078438582050108e-14,
+          "mass_balance_error": 5.8674470510980234e-15,
+          "steps": 1009,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.007899314788246719,
+          "max_regime_solves": 4,
+          "rejected_steps": 11
+        },
+        "result_file": "A0.511-dt0.05.json",
+        "result_sha256": "ba18600d71ed4e15",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.12082318655943,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.747791188818918,
+            6.699900391208449
+          ]
+        }
+      },
+      {
+        "amplitude": 0.511,
+        "max_dt_s": 0.025,
+        "reported": {
+          "switch_s": 5.1206318636891766,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.979368136310823,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.945164702572654,
+            "caffeine": 21.34662835189989,
+            "cqa5": 20.85217329702914,
+            "tds": 17.84540515154144
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.945164702572654,
+            "caffeine": 21.34662835189989,
+            "cqa5": 20.85217329702914,
+            "tds": 17.84540515154144
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.419016249010234,
+          "first_drops_s": 8.093481799964126,
+          "beverage_mass_kg": 0.07643760244161887,
+          "drip_mass_kg": 0.004630740863769384,
+          "tds": 0.06310606805371377,
+          "ey": 0.2411838270771759,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002212389922458129,
+              "extracted_fraction": 0.8360566855583167
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012219886211163857,
+              "extracted_fraction": 0.8763946574687778
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014842825087537962,
+              "extracted_fraction": 0.7992190836757707
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040086391772503415,
+              "extracted_fraction": 0.8351331619271544
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031781446300742755,
+            "ey_min": 0.1683180409507784,
+            "ey_max": 0.2863177906558697,
+            "ey_mean": 0.2525418260497701
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 3.0266328742404084e-14,
+          "mass_balance_error": 4.97457467375702e-15,
+          "steps": 1993,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 1.01e4 steps \u00d7 1.73e5 values = 1.74e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.003884444890407497,
+          "max_regime_solves": 4,
+          "rejected_steps": 7
+        },
+        "result_file": "A0.511-dt0.025.json",
+        "result_sha256": "96919639ed347eea",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.120631863689177,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.680292323539433,
+            6.6564616477946785
+          ]
+        }
+      },
+      {
+        "amplitude": 0.511,
+        "max_dt_s": 0.0125,
+        "reported": {
+          "switch_s": 5.120983053900492,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.9790169460995077,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.920192609116175,
+            "caffeine": 21.30132201634939,
+            "cqa5": 20.811250537295315,
+            "tds": 17.823414848125754
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.920192609116175,
+            "caffeine": 21.30132201634939,
+            "cqa5": 20.811250537295315,
+            "tds": 17.823414848125754
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.415762654587716,
+          "first_drops_s": 8.092386806473165,
+          "beverage_mass_kg": 0.07643746340662427,
+          "drip_mass_kg": 0.004630601419042965,
+          "tds": 0.06312115323338885,
+          "ey": 0.24124104202305416,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.00022127302572553503,
+              "extracted_fraction": 0.8361852972373235
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.00012221395288770386,
+              "extracted_fraction": 0.8765028865904908
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.0001484557552896443,
+              "extracted_fraction": 0.7993671825224256
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040092221024000575,
+              "extracted_fraction": 0.8352546046666786
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.031783434379406124,
+            "ey_min": 0.16835680171513362,
+            "ey_max": 0.2869835472147495,
+            "ey_mean": 0.25259191452756014
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 6.271819838891122e-14,
+          "mass_balance_error": 2.0663617875606082e-14,
+          "steps": 3970,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 2.02e4 steps \u00d7 1.73e5 values = 3.48e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0019260053549327721,
+          "max_regime_solves": 4,
+          "rejected_steps": 8
+        },
+        "result_file": "A0.511-dt0.0125.json",
+        "result_sha256": "56211e8d7d10d3f1",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.120983053900492,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.628134055358177,
+            6.626195067953713
+          ]
+        }
+      },
+      {
+        "amplitude": 0.511,
+        "max_dt_s": 0.00625,
+        "reported": {
+          "switch_s": 5.121124887135158,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.9788751128648414,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.90932123968098,
+            "caffeine": 21.28284941955804,
+            "cqa5": 20.79507916870895,
+            "tds": 17.81685844621456
+          }
+        },
+        "regular_grid_only": {
+          "switch_s": 5.2,
+          "pour_peak_pressure_bar": 12.0,
+          "pump_limit_s": {
+            "transition": 3.999999999999999,
+            "pour": 0.10000000000000142
+          },
+          "pour_capped": true,
+          "lambda": {
+            "trigonelline": 16.90932123968098,
+            "caffeine": 21.28284941955804,
+            "cqa5": 20.79507916870895,
+            "tds": 17.81685844621456
+          }
+        },
+        "summary": {
+          "stop_reason": "beverage_mass",
+          "shot_time_s": 37.413565701399726,
+          "first_drops_s": 8.090745905209738,
+          "beverage_mass_kg": 0.07643740242129055,
+          "drip_mass_kg": 0.004630540422615029,
+          "tds": 0.06313023798984546,
+          "ey": 0.24127557030908311,
+          "max_pressure_pa": 1200000.0,
+          "bed_height_m": 0.014990524530079583,
+          "headspace_m3": 3.5408948293281055e-05,
+          "species": [
+            {
+              "id": "caffeine",
+              "mass_kg": 0.0002212929186666792,
+              "extracted_fraction": 0.8362604721704137
+            },
+            {
+              "id": "trigonelline",
+              "mass_kg": 0.0001222218554884868,
+              "extracted_fraction": 0.8765595630356442
+            },
+            {
+              "id": "cqa5",
+              "mass_kg": 0.00014847035403683015,
+              "extracted_fraction": 0.7994457901815463
+            },
+            {
+              "id": "acids",
+              "mass_kg": 0.00040095371000087516,
+              "extracted_fraction": 0.8353202291684897
+            }
+          ],
+          "uniformity": {
+            "ey_std": 0.03179186867177277,
+            "ey_min": 0.16839685601662313,
+            "ey_max": 0.2874683418078692,
+            "ey_mean": 0.25262252786500056
+          }
+        },
+        "diagnostics": {
+          "hydraulic_volume_balance_error": 1.2467183444808223e-13,
+          "mass_balance_error": 2.3087128614103093e-14,
+          "steps": 7923,
+          "warnings": [
+            "solubles.kernel_loading_cap is off and K\u00b7s\u2080 = 126 kg/m\u00b3 is below c_sat = 350 kg/m\u00b3: kernels re-absorb solute from liquid above 126 kg/m\u00b3 beyond their initial content",
+            "a large run: up to 4.03e4 steps \u00d7 1.73e5 values = 6.97e9 (expect several seconds or more)"
+          ],
+          "min_concentration_kg_m3": 0.0,
+          "tier": 1,
+          "outflow_integral_error": 0.0009225945928105334,
+          "max_regime_solves": 3,
+          "rejected_steps": 8
+        },
+        "result_file": "A0.511-dt0.00625.json",
+        "result_sha256": "a0c0f065cc36c7a2",
+        "focus_series": {
+          "t_s": [
+            8.8,
+            8.9,
+            9.0,
+            9.1,
+            9.121124887135158,
+            9.200000000000001,
+            9.3,
+            9.4
+          ],
+          "pressure_bar": [
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            7.591367872960697,
+            6.60363823807
+          ]
+        }
+      }
+    ],
+    "robustness": {
+      "simulations": 12,
+      "failed": 0,
+      "worst": {
+        "mass_balance_error": 2.47453201720221e-14,
+        "max_regime_solves": 4.0,
+        "min_concentration_kg_m3": 0.0,
+        "outflow_integral_error": 0.007899314788246719,
+        "rejected_steps": 11.0,
+        "steps": 7923.0
+      }
+    }
+  },
+  "corrected_probe_reproduces_all_12_complete_results": true,
+  "diagnostic_capture_simulations": 24,
+  "additional_reproduction_simulations": 12,
+  "held_out_used": false,
+  "coefficient_selection": false
+}

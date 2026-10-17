@@ -723,6 +723,8 @@ fn a_choked_bed_stops_with_choked() {
 #[test]
 fn time_stop_and_phase_exits() {
     let mut s = ShotSpec::default();
+    // Neither the phase exit nor the ramp end lies on this output grid.
+    s.numerics.output_interval_s = 0.37;
     s.machine.phases = vec![
         Phase {
             control: Control::Flow { target_m3_s: 4e-6 },
@@ -752,6 +754,8 @@ fn time_stop_and_phase_exits() {
     assert_eq!(r.summary.shot_time_s, 25.0);
     // Pressure limited to 3 bar in the first phase, at most 6 bar after.
     let t = &r.series.t_s;
+    assert!(t.contains(&6.0), "retain the actual phase exit");
+    assert!(t.contains(&9.0), "retain the actual ramp end");
     for (i, &ti) in t.iter().enumerate() {
         let p = r.series.pressure_pa[i];
         if ti < 6.0 - 1e-9 {

@@ -46,6 +46,56 @@ fn pressure_phase(target_pa: f64) -> Phase {
 }
 
 #[test]
+fn pressure_trigger_lands_at_the_analytic_infiltration_time() {
+    // A single isothermal Darcy column under constant flow has
+    // P = μ Q² (t − t_fill) / (κ A² φ). Stop delivery at a pressure
+    // threshold while its front is still inside the bed. The delivered
+    // volume measures the switch time independently of the output grid.
+    let mut spec = inert();
+    spec.hydraulics.poroelastic_pc_pa = None;
+    spec.thermal.water_temp_c = 20.0;
+    spec.thermal.initial_bed_temp_c = 20.0;
+    let q = 2e-6;
+    let threshold = 2.5e5;
+    let flow = |target_m3_s| Phase {
+        control: Control::Flow { target_m3_s },
+        ramp_s: 0.0,
+        limit: None,
+        exit: PhaseExit::default(),
+    };
+    spec.machine.phases = vec![flow(q), flow(0.0)];
+    spec.machine.phases[0].exit.pressure_pa = Some(threshold);
+    spec.machine.stop.time_s = Some(40.0);
+    spec.machine.stop.beverage_mass_kg = None;
+    let radius = spec.basket.profile_m[0][1];
+    let area = std::f64::consts::PI * radius * radius;
+    let phi = spec.bed.intergranular_porosity
+        + (1.0 - spec.bed.intergranular_porosity) * spec.bed.intraparticle_porosity;
+    let wet_time =
+        phi * spec.hydraulics.permeability_m2 * area * area * threshold / (1.002e-3 * q * q);
+    for dt in [0.5, 0.07, 0.025] {
+        spec.numerics.max_dt_s = dt;
+        spec.numerics.output_interval_s = 0.37;
+        let result = run(&spec);
+        assert_eq!(result.summary.first_drops_s, None);
+        let expected = result.summary.headspace_m3 / q + wet_time;
+        let actual = result.series.cumulative_inlet_volume_m3.last().unwrap() / q;
+        assert!(
+            (actual - expected).abs() < 1e-6,
+            "dt={dt}: {actual} vs {expected}"
+        );
+        assert!((result.summary.max_pressure_pa - threshold).abs() < 0.01);
+        let crossing = result
+            .series
+            .pressure_pa
+            .iter()
+            .position(|&p| p >= threshold)
+            .expect("the pressure event is retained between regular outputs");
+        assert!((result.series.t_s[crossing] - expected).abs() < 1e-6);
+    }
+}
+
+#[test]
 fn the_full_dry_pore_volume_must_be_supplied_before_breakthrough() {
     let mut spec = inert();
     spec.hydraulics.permeability_m2 = 1e-10;
