@@ -1,0 +1,45 @@
+{
+  "fixtures": {
+    "numbers": 89587,
+    "version_fields": 9
+  },
+  "baseline_cases_exact": 24,
+  "release_solver": {
+    "puckcore_version": "0.6.4",
+    "extension_sha256": "77f606917e21be5f",
+    "extension_built": "2026-10-17T15:43:25-07:00",
+    "sources_sha256": {
+      "crates/puckcore/src": "1bddbe9c4ead15de",
+      "crates/puckmodel/src": "1ca89ad808e6f2f7",
+      "crates/puckmodel/generated": "56da1c161b8ba525",
+      "crates/puckcore-py": "563a9328b2a48052"
+    },
+    "files_sha256": {
+      "Cargo.lock": "1da735ee52c5964d"
+    },
+    "python": {
+      "version": "3.14.7",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
+    }
+  },
+  "calibration_reuse_issues": [
+    "core version changed",
+    "solver build inputs changed"
+  ],
+  "schema": "puckworks.mesh-release-check/1",
+  "comparison": "0.6.3 study baseline versus the metadata-only 0.6.4 build",
+  "reference_report": "docs/validation/m11-mesh-refinement.json",
+  "reference_report_sha256": "8690d54b066d7fbc76c2a173c9f41b56ebf01323a976588af9afea73faa7d636",
+  "reference_run_sha256": "7e2a5eaf6c4bfd5f0be1a8185ed0a4a268c483780e0c5d3d8a07ee316fcef124",
+  "release_run_sha256": "f9d18baa7fa374f2f3638732c3aa99dafeef05eb20101b942dc0dc24cadede17",
+  "fields_checked": [
+    "summary",
+    "observations",
+    "diagnostics",
+    "numerics",
+    "columns",
+    "size_classes",
+    "actual_bed_cells"
+  ]
+}

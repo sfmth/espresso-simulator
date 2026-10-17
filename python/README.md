@@ -4,7 +4,7 @@
 Offline Python tools for Puckworks. They check the parameter registry and the datasets, write the
 golden fixtures shared with the web tests, produce the kernel verification report, calibrate the M1
 model against the literature datasets and write the M1 validation report, export presets and registry
-for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.6.3,
+for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.6.4,
 GPL-2.0-or-later.
 
 ## Install
@@ -23,6 +23,27 @@ Python 3.10 or newer. Runtime dependencies: PyYAML, jsonschema, NumPy, SciPy (an
 figures; the report is written without them otherwise) and `sources` (Pillow, for the importers that
 digitise raster figures). All are MIT, BSD, PSF-style or HPND licensed. `validate-registry` and
 `export` work without `puckcore`; the other commands need it.
+
+## Mesh-refinement experiment
+
+The [fixed-v5 study](../docs/validation/m11-mesh-refinement.md) compares 5×/10× finer
+depth grids, separate column/shell grids and smaller timesteps without refitting.
+Run from the repository root; the plot/report step needs the `report` extra:
+
+```sh
+.venv/bin/python python/scripts/m11-mesh-refinement.py --calibration data/calibration/v5.yaml --output-dir .local/mesh-refinement
+.venv/bin/python python/scripts/m11-mesh-pressure.py --study .local/mesh-refinement/mesh-refinement.json
+.venv/bin/python python/scripts/m11-mesh-report.py --input .local/mesh-refinement/mesh-refinement.json --pressure-input .local/mesh-refinement/mesh-pressure-window.json
+```
+
+Simulations run serially, cache complete results by exact build/input identity, and
+resume on the same build. Every original baseline is checked against the shorter
+unused hard-stop budget needed for fine grids. The pressure windows verify their
+full-shot prefixes before using the shorter time interval. The published study
+records solver 0.6.3; rerunning on another build records a new identity and reports
+any mismatch with the original calibration. No parameters or defaults are exported.
+To regenerate only tables and plots, pass the committed compact JSON to
+`m11-mesh-report.py --input docs/validation/m11-mesh-refinement.json`.
 
 ## Commands
 

@@ -2,6 +2,35 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.6.4] — 2026-10-17
+
+Add a reproducible [mesh-refinement study](docs/validation/m11-mesh-refinement.md)
+on the frozen 0.6.3 solver and v5 coefficients. The solver equations, numerical
+defaults and calibration are unchanged.
+
+- Complete 240 full shots: 24 conditions at ten combinations of depth, parallel
+  columns, particle shells and timestep. Test 30 → 150 → 300 depth layers
+  (240 → 1,200 → 2,400 bed cells), 8 → 40 → 64 columns/shells separately,
+  and a joint refinement. Retain full inputs, all scored observations, diagnostics,
+  serial timings and source/build identities; verify the actual output mesh.
+- At 10× depth resolution, maximum final-cup changes are 0.170 EY percentage
+  points, 0.054 TDS points and 0.478 s of shot time. Median native runtime rises
+  9.89×. A generic 18 g → 36 g shot changes from 21.583 s / 18.031% EY to
+  21.712 s / 17.937% EY, including the modeled drip in final extraction.
+- Expose material pressure sensitivity: experiment 2's pour peak changes from
+  6.116 to 10.592 bar at 300 layers / 50 ms, then 12 bar at 25 ms and below;
+  experiment 13 changes from 7.582 to 12 bar. Sixteen additional pressure windows
+  reach 3.125 ms timesteps and 600 layers; eight reference windows exactly reproduce
+  five full-shot output channels before the shortened stop. Equal pump-capped
+  peaks do not establish pressure-trace convergence.
+- Preserve all calibration/validation artifacts. The refined grids improve some
+  cup comparisons but leave the startup and Cameron extraction-peak failures.
+  Conservation, concentration and observation-coverage checks pass for the study.
+- Verify the metadata-only 0.6.4 build against the study: all 24 baseline summaries,
+  observations and diagnostics and all 89,587 numeric fixture values are identical
+  ([release check](docs/validation/m11-mesh-release-check.json)). Saved v5 refit
+  scores retain their original 0.6.3 build identity.
+
 ## [0.6.3] — 2026-10-17
 
 Correct pressure-event timing and retain phase/ramp boundaries in the reported series.
