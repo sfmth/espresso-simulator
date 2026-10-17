@@ -2,6 +2,66 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.6.0] — 2026-10-16
+
+Correct total-particle solute storage and complete calibration v3 against the qualified
+wet particle-size inputs. Calibration and held-out accuracy use the original split
+and acceptance thresholds. The v1 and v2 fits and the 0.5.1 input audit are preserved.
+
+- Count mobile solute only in intergranular water. Particle states include internal
+  pore solution and matrix solute on Corrochano's total-envelope partition basis.
+  Couple solute carried by newly absorbed water implicitly to the particle reservoirs;
+  retain untouched dry particles and use backward Euler while a cell wets.
+- Preserve optional kernel boundary caps and surface deposition restrictions while
+  admitting the solute carried into pores. Recipe builds use uncapped kernel
+  partitioning. Independent closed-bed equilibrium, partial-wetting, carriage and
+  species tests verify conservation and the corrected physical inventory.
+- Display negative particle extraction values when a particle gains solute from
+  elsewhere in the bed. Class charts retain a zero baseline without clipping gains;
+  the liquid-concentration labels now describe mobile intergranular water.
+- Keep community comparisons usable after selecting v3: verify the selected
+  versioned calibration against the installed coefficients, and record its actual
+  label and hashes. Historical reports retain their original identities.
+- Fit v3 to the qualified wet CDF with the original calibration blocks and priors.
+  Identifiability pruning fixes the caffeine surface-fraction scale at 1 and critical
+  pressure at 12 bar, leaving 15 fitted parameters. The main/pruning run completes
+  8,669 simulations; final cost is 2,496.80 and reduced chi-square is 15.412.
+- All 15 leave-one-condition-out fits converge with every prediction available.
+  Under the unchanged ±15% gate, 29/60 extraction rates and 174/180 cup masses pass,
+  compared with v2's 54/60 and 178/180. Shared-block parameters and pruning choices
+  retain the full fit's values, as in the original method.
+- All nine sensitivity refits converge with complete predictions. Wet D32 ±1 SD
+  gives 24–25/60 passing rates and 157–158/180 cups. Whole-shot pressure and the
+  θ = 0.27 dissolution rule shift permeability substantially and fit worse; the
+  latter gives only 12/60 passing rates and 137/180 cups. These checks do not
+  establish a predictive uncertainty interval.
+- **Scientific validation remains open.** V1 extraction rates within ±10% regress
+  from 48/60 to 25/60 and cup masses from 163/180 to 158/180. V2 dispersion passes
+  all five cases. Held-out model/data shot-time ratios improve from 0.600/0.577 to
+  0.946/0.913 for Cameron/Smrke; Smrke's individual time RMS error remains 20.3 s.
+  Its EY/time rank correlation improves from 0.543 to 0.829, passing the 0.8 target.
+- V4 first drops and flow rise remain too early: 7.03 and 13.91 s against 12.76 and
+  25.48 s. First-fraction TDS is 21.83%, below 22–28%. Cameron's peak is 20.12% EY
+  at the wrong grind setting. Generic 18 → 36 g pump-stop times are 24.70–27.45 s;
+  the E65S case remains below the unchanged 25 s lower limit. No complete M1
+  scientific exit criterion passes, and M2 remains deferred.
+- All 117 final validation simulations succeed. Rebuilding with exported v3
+  reproduces all 6,034 candidate validation numbers exactly; cached refit identities
+  remain valid. Worst relative soluble mass error is 7.40×10⁻¹⁴ and hydraulic
+  carrier-volume error is 1.24×10⁻¹³. Eight fixed-v3 startup ablations preserve the
+  historical v2 artifact and expose the current closure responses without refitting.
+- Verification passes 224 Rust tests (one existing exhaustive test ignored), 478
+  Python tests, 448 web tests and 55 browser checks. Seven native/WASM shot
+  fixtures agree exactly over 89,373 output values; all 4,218 sphere fixture
+  numbers are unchanged. The independent sphere-series comparison differs by at
+  most 5.47×10⁻¹⁶. Registry, export, release-version and report-freshness checks pass.
+- The final browser run takes 803 ms for the default tier-1 shot and 18.6 ms for
+  a warm preview. Tier 0 still misses the 10 ms target; these measurements describe
+  this machine and recipe during verification, not a general performance bound.
+- Sources: [Corrochano 2017, §3.3.13](https://etheses.bham.ac.uk/id/eprint/7176/2/Roman-Corrochano17EngD.pdf),
+  [Schmieder 2023, Figure A1b and Table 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC10418593/)
+  and the [inventory audit](docs/research/05-water-and-particle-inventory.md).
+
 ## [0.5.1] — 2026-10-16
 
 Audit the measured particle input and the physical inventories behind M1.1. The solver,

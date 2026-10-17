@@ -4,30 +4,26 @@
 //! fluxes), the surface pools (saturating flux) and the kernels (spherical
 //! shells), all coupled implicitly.
 //!
-//! **Bed liquid.** A cell holds the liquid holdup ε + (φ_T − ε₀): the
-//! intergranular liquid plus the water the particles imbibed at wetting,
-//! which exchanges with it locally. Solute then travels at the speed of the
-//! wetting front, q/φ_T. The front cell holds only its wetted share w of the
-//! holdup, and a face carries flow only for the part of the step after the
-//! front crossed it, so every cell's holdup grows by exactly the water that
-//! enters it: solute always comes with its water, and the liquid obeys a
-//! discrete maximum principle (it never exceeds the largest of saturation,
-//! the kernels' equilibrium K·ε_p·u₀ and what flows in; shot-model.md §5.4).
-//! Dispersion acts in the intergranular liquid.
+//! **Inventories.** Mobile solute occupies only intergranular water, εwV.
+//! Particle states hold total solute, including their absorbed pore solution,
+//! on the envelope-volume basis used to measure K. Newly filled particle
+//! water b carries b·c′ from the mobile liquid into each local reservoir.
+//! This source is condensed implicitly with diffusion and dissolution, so
+//! every transferred gram is debited from one inventory and credited to the
+//! other. The hydraulic front and thermal capacity still include all water.
 //!
-//! **Condensation.** Particle states are local to a depth cell. With the new
-//! bed-liquid concentration c′ of the cell as a parameter, each kernel's new
-//! state is u′ = u_hom + u_s w, where u_s is its boundary value, u_hom solves
-//! the kernel step with a zero boundary value and w is the response to a unit
-//! boundary value (the same for every cell of a class). Its mass loss over
-//! the step is therefore α − β u_s. K is per particle envelope volume, so
-//! u_s = c′/(K ε_p); with the loading cap (the default) u_s = min(c′/(K ε_p),
-//! u₀), and a kernel never holds more than its initial content u₀. A surface
-//! pool's loss is piecewise linear in c′: the two regimes of the saturating
-//! flux, and a cap that keeps the pool at or below its initial content (no
-//! solute is parked in the pools). Substituting all of them leaves one
-//! tridiagonal system per column for c′, an M-matrix (column diagonally
-//! dominant, positive diagonal, non-positive off-diagonals) in every regime.
+//! **Condensation.** A kernel's wetted population starts from
+//! [u − (1−w)u₀]/w; its dry remainder stays at u₀. During filling we use
+//! backward Euler, u′_wet = u_hom + u_s w_boundary + b·c′/C_wet z,
+//! where z = (V + hK)⁻¹V1 is nonnegative (algebraically 1−w_boundary).
+//! The exact mass change supplies the liquid's source. The optional boundary
+//! cap is u_s = min(c′/(Kε_c), u₀ + βc′/ε_c), β the absorbed water per
+//! particle volume. It restricts excess loading while admitting carried
+//! aqueous solute. Recipe builds use the uncapped partition relation.
+//! Surface pools use a saturating exchange flux and a deposition ceiling
+//! equal to initial content plus cumulative front-carried solute. Every
+//! source response adds a nonnegative liquid diagonal, preserving the
+//! tridiagonal M-matrix structure in each policy regime.
 //!
 //! **Regimes.** The saturating flux makes a pool's loss concave in c′ (the
 //! smaller of two lines); the caps make the losses convex (the larger of a
@@ -117,6 +113,9 @@ pub(crate) struct KernelStep {
     pub w_be: Vec<f64>,
     /// Σ Ṽ w for backward Euler.
     pub beta_be: f64,
+    /// Response to a uniform unit source in the backward Euler RHS.
+    pub z_be: Vec<f64>,
+    pub z_mass_be: f64,
     pub lu_bdf: TridiagonalLu,
     pub w_bdf: Vec<f64>,
     pub beta_bdf: f64,
@@ -133,6 +132,8 @@ impl KernelStep {
             lu_be: lu.clone(),
             w_be: Vec::new(),
             beta_be: 0.0,
+            z_be: Vec::new(),
+            z_mass_be: 0.0,
             lu_bdf: lu,
             w_bdf: Vec::new(),
             beta_bdf: 0.0,
@@ -177,6 +178,10 @@ pub(crate) struct Scratch {
     base_rhs: Vec<f64>,
     /// Liquid holdup volume of every cell at the end of the step.
     hold: Vec<f64>,
+    /// Newly filled intraparticle water per cell, m³.
+    filling: Vec<f64>,
+    /// Its allocation to each surface pool, per (cell, class), m³.
+    pfill: Vec<f64>,
     /// Face coefficients of every interior face (`cell` = face below it).
     face_a: Vec<f64>,
     face_b: Vec<f64>,
@@ -192,10 +197,12 @@ pub(crate) struct Scratch {
     cap_loss: Vec<f64>,
     mass_band: Vec<f64>,
     /// Kernel loss coefficients of every cell, per (cell, class): loss =
-    /// ka − kd·u_s. Kept for all columns, so the back-substitution after
+    /// ka − kd·u_s − ki·c′. Kept for all columns, so the back-substitution after
     /// every column converged uses exactly what the solves used.
     kd: Vec<f64>,
     ka: Vec<f64>,
+    /// Surviving kernel front-source mass per unit liquid concentration.
+    ki: Vec<f64>,
     /// Congruent factors from the lumped pools, per (cell, class): a species
     /// pool becomes (S_s + gain·c′_s)·keep.
     keep: Vec<f64>,
@@ -204,7 +211,9 @@ pub(crate) struct Scratch {
     c: Vec<f64>,
     /// Kernel boundary value u_s per (class, cell) (0 where dry).
     cb: Vec<f64>,
-    /// Initial kernel pore concentration of the lumped solubles, per class.
+    /// Uniform kernel front source per (class, cell), in kernel units.
+    ci: Vec<f64>,
+    /// Initial concentration-equivalent kernel loading, per class.
     u0_lumped: Vec<f64>,
     /// Kernel mass loss at u_s = 0 (in units of σV), per (class, cell).
     alpha: Vec<f64>,
@@ -269,6 +278,8 @@ impl Scratch {
             base_diag: vec![0.0; n],
             base_rhs: vec![0.0; n],
             hold: vec![0.0; nt],
+            filling: vec![0.0; nt],
+            pfill: vec![0.0; nt * k],
             face_a: vec![0.0; nt],
             face_b: vec![0.0; nt],
             sat0: vec![0.0; nt * k],
@@ -281,10 +292,12 @@ impl Scratch {
             mass_band: vec![0.0; nt * k],
             kd: vec![0.0; nt * k],
             ka: vec![0.0; nt * k],
+            ki: vec![0.0; nt * k],
             keep: vec![1.0; nt * k],
             gain: vec![0.0; nt * k],
             c: vec![0.0; n],
             cb: vec![0.0; k * nt],
+            ci: vec![0.0; k * nt],
             u0_lumped: vec![model.u0; k],
             alpha: vec![0.0; k * nt],
             bdf: vec![false; k * nt],
@@ -346,6 +359,11 @@ fn prepare_kernel(
         let mass = (1.0 + 2.0 * omega) / (1.0 + omega);
         ks.beta_bdf = solve_w(&mut ks.lu_bdf, &mut ks.w_bdf, mass)?;
     }
+    // Algebraically z = 1 − w_BE. Solve directly to retain positivity
+    // when a very stiff class makes that subtraction lose precision.
+    ks.z_be.clone_from(&grid.volume);
+    ks.lu_be.solve_in_place(&mut ks.z_be);
+    ks.z_mass_be = ks.z_be.iter().zip(&grid.volume).map(|(z, v)| z * v).sum();
     Ok(())
 }
 
@@ -397,7 +415,7 @@ fn face(q: f64, g: f64) -> (f64, f64) {
 /// species, which share them). A face the wetting front crossed during the
 /// step carries flow (and dispersion) only for the share of the step after
 /// the crossing, (w₁ − edge)/(w₁ − w₀) with w the column's wetted volume, so
-/// each cell receives exactly the water its holdup gains.
+/// the face flux divergence supplies both mobile and particle-pore filling.
 fn faces(
     model: &Model,
     state: &State,
@@ -467,14 +485,14 @@ fn solve(s: &mut Scratch, n: usize) -> Result<(), ShotError> {
 }
 
 /// Liquid holdup volume of active cell `j` of column `col` (n active cells)
-/// at the end of the step, m³: (ε + φ_T − ε₀)·V times the wetted share of
+/// at the end of the step, m³: ε·V times the wetted share of
 /// the front cell (1 for the cells above it, and in a column that is through).
 pub(crate) fn holdup_volume(model: &Model, state: &State, col: usize, j: usize) -> f64 {
     let nc = model.n_cells();
     let cell = col * nc + j;
     let column = &model.columns[col];
     let vol = column.share * model.cells[j].volume;
-    (state.eps[cell] + model.imbibed) * vol * wet_share(model, state, col, j)
+    state.eps[cell] * vol * wet_share(model, state, col, j)
 }
 
 /// Wetted share of cell `j` of column `col`: 0 dry, 1 wet, in between at
@@ -511,7 +529,16 @@ fn mark_cells(model: &Model, state: &State, input: &StepInput<'_>, s: &mut Scrat
             } else {
                 0.0
             };
-            s.eligible[g] = s.active[g] && state.t_wet[g] < input.t_start && s.wet[g] == 1.0;
+            let column = &model.columns[col];
+            let old_wet = ((input.wetted_start[col] - column.cum_volume[j])
+                / (column.cum_volume[j + 1] - column.cum_volume[j]))
+                .clamp(0.0, 1.0);
+            s.filling[g] = model.imbibed
+                * column.share
+                * model.cells[j].volume
+                * (s.wet[g] - old_wet).max(0.0);
+            s.eligible[g] =
+                s.active[g] && state.t_wet[g] < input.t_start && old_wet == 1.0 && s.wet[g] == 1.0;
             if !s.active[g] {
                 s.dry.push(g);
             } else if !s.eligible[g] {
@@ -524,18 +551,18 @@ fn mark_cells(model: &Model, state: &State, input: &StepInput<'_>, s: &mut Scrat
     }
 }
 
-/// In cells the front is inside, only the wetted share w of the particles
-/// exchanged: u′ = u + w (u_full − u), a convex combination (positive, at or
-/// below u₀, and the loss the liquid saw, w·(α − β u_s)).
-fn mix_partial(model: &Model, u: &[f64], b: &mut [f64], wet: &[f64], partial: &[usize]) {
+/// Restore the untouched dry population after solving the wet population.
+/// Using u₀ here (rather than the old whole-cell average) preserves wet/dry
+/// ownership even through repeated partial-wet steps or a zero-flow dwell.
+fn mix_partial(model: &Model, u0: &[f64], b: &mut [f64], wet: &[f64], partial: &[usize]) {
     let nt = wet.len();
-    for class in &model.classes {
+    for (k, class) in model.classes.iter().enumerate() {
         let Some(grid) = &class.grid else { continue };
         for l in 0..grid.len() {
             let start = (class.offset + l) * nt;
             for &g in partial {
                 let i = start + g;
-                b[i] = u[i] + wet[g] * (b[i] - u[i]);
+                b[i] = (1.0 - wet[g]) * u0[k] + wet[g] * b[i];
             }
         }
     }
@@ -544,6 +571,8 @@ fn mix_partial(model: &Model, u: &[f64], b: &mut [f64], wet: &[f64], partial: &[
 /// Cells of the bed that need special treatment in a kernel step.
 struct Special<'a> {
     eligible: &'a [bool],
+    wet: &'a [f64],
+    partial: &'a [usize],
     /// Dry cells (both time levels keep the same values).
     dry: &'a [usize],
     /// Cells in their first wet step (backward Euler).
@@ -572,9 +601,15 @@ fn kernel_be(
     loss
 }
 
+/// Reconstructs the wetted population from its whole-cell average; the
+/// remaining dry population still has its initial concentration.
+fn wet_value(average: f64, initial: f64, wet: f64) -> f64 {
+    initial + (average - initial) / wet
+}
+
 /// Kernels of a column that became capped during this step's iteration while
-/// stepping by BDF2 are re-solved by backward Euler, which keeps them at or
-/// below u₀ (BDF2 can overshoot): every capped kernel then steps by backward
+/// stepping by BDF2 are re-solved by backward Euler, which respects the
+/// affine boundary bound (BDF2 can overshoot): capped kernels step by backward
 /// Euler. Returns whether any changed (the column must then be re-solved).
 #[allow(clippy::too_many_arguments)]
 fn recap_backward_euler(
@@ -628,13 +663,14 @@ fn recap_backward_euler(
 /// `alpha` = Σ Ṽ (u − u_hom) per (class, cell); `bdf` records the scheme.
 /// Cells wet before the step use BDF2 when their class does; a cell's first
 /// wet step, a kernel held at its loading cap (`kcap`, per (cell, class):
-/// backward Euler keeps it at or below u₀, BDF2 can overshoot), and a BDF2
+/// backward Euler respects its affine boundary bound), and a BDF2
 /// step whose right-hand side or α would turn negative use backward Euler
 /// (solved cell by cell; they are few).
 #[allow(clippy::too_many_arguments)]
 fn kernels_homogeneous(
     model: &Model,
     steps: &[KernelStep],
+    u0: &[f64],
     u: &[f64],
     b: &mut [f64],
     kcap: &[bool],
@@ -720,6 +756,23 @@ fn kernels_homogeneous(
                 *a += v * (x - y);
             }
         }
+        // Newly wetted particles start at u0; only the remaining dry
+        // population is excluded. This also preserves a partially wet
+        // population's history during a zero-flow dwell.
+        for &g in cells.partial {
+            column.clear();
+            column.extend(
+                vol.iter()
+                    .enumerate()
+                    .map(|(l, v)| v * wet_value(ub[l * nt + g], u0[k], cells.wet[g])),
+            );
+            ks.lu_be.solve_in_place(column);
+            a[g] = 0.0;
+            for (l, &x) in column.iter().enumerate() {
+                bb[l * nt + g] = x;
+                a[g] += vol[l] * (wet_value(ub[l * nt + g], u0[k], cells.wet[g]) - x);
+            }
+        }
         // A BDF2 step whose homogeneous loss is negative (its extrapolation
         // overshoots while the kernel loads) falls back to backward Euler,
         // whose α = Δτ·G·u_hom,N is never negative.
@@ -738,7 +791,7 @@ fn kernels_homogeneous(
     }
 }
 
-/// Adds the boundary responses over the whole bed, u′ = u_hom + u_s w, in
+/// Adds boundary and uniform front-source responses over the whole bed, in
 /// place in `b` (`cb` holds u_s per (class, cell), 0 in dry cells). Returns
 /// whether any new value is negative (an or-reduction, which vectorises; the
 /// exact minimum is taken only then, and at the check points).
@@ -748,6 +801,7 @@ fn kernels_update(
     b: &mut [f64],
     bdf: &[bool],
     cb: &[f64],
+    ci: &[f64],
     nt: usize,
 ) -> bool {
     let mut negative = false;
@@ -756,13 +810,15 @@ fn kernels_update(
         let ks = &steps[k];
         let flags = &bdf[k * nt..(k + 1) * nt];
         let cbk = &cb[k * nt..(k + 1) * nt];
+        let cik = &ci[k * nt..(k + 1) * nt];
         for l in 0..grid.len() {
             let we = ks.w_be[l];
             let wb = if ks.use_bdf { ks.w_bdf[l] } else { we };
             let start = (class.offset + l) * nt;
             let row = &mut b[start..start + nt];
-            for ((x, &c), &f) in row.iter_mut().zip(cbk).zip(flags) {
+            for (((x, &c), &injected), &f) in row.iter_mut().zip(cbk).zip(cik).zip(flags) {
                 *x += c * if f { wb } else { we };
+                *x += injected * ks.z_be[l];
                 negative |= *x < 0.0;
             }
         }
@@ -775,15 +831,13 @@ pub(crate) fn kernel_min(u: &[f64]) -> f64 {
     u.iter().fold(f64::INFINITY, |m, &x| fmin(m, x))
 }
 
-/// Precomputes the pool lines of a column's cells for this step. The
-/// saturating flux k b (min(S/V_p, c_sat) − c) makes a pool's loss over the
-/// step piecewise linear in c′: saturated, kb·Δt·(c_sat − c′); unsaturated,
-/// (γS − kb·Δt·c′)/(1 + γ) with γ = kb·Δt/V_p; they meet at
-/// c′* = c_sat + (V_p c_sat − S)/(kb·Δt), above which the pool stays
-/// saturated through the step. The lines differ by kb·Δt·γ/(1 + γ)·|c′ − c′*|,
-/// so the band that keeps a regime within 1e-10 of the pool's content is
-/// that much wide in c′. The cap holds the pool at its initial content S₀:
-/// loss S − S₀.
+/// Net pool loss including carried solute. For wetted pool mass S, pore
+/// normalization P, exchange coefficient kΔt and newly filled water b:
+/// L_sat = kΔt·c_sat − (kΔt+b)c′;
+/// L_uns = [γS − (kΔt+b)c′]/(1+γ), γ=kΔt/P.
+/// The cap line is S_old−ceiling_old−b c′. The untouched dry mass cancels
+/// from both sides. Its ceiling increment is committed only after all
+/// columns converge.
 fn pool_lines(model: &Model, state: &State, s: &mut Scratch, col: usize, n: usize, dt: f64) {
     let nc = model.n_cells();
     let nk = model.n_classes();
@@ -793,7 +847,10 @@ fn pool_lines(model: &Model, state: &State, s: &mut Scratch, col: usize, n: usiz
         let vol = share * model.cells[j].volume;
         for (k, class) in model.classes.iter().enumerate() {
             let i = (col * nc + j) * nk + k;
-            if !class.has_pool() || class.kb == 0.0 {
+            let w = s.wet[col * nc + j];
+            let fill = s.filling[col * nc + j] * class.fraction * class.pool_fraction;
+            s.pfill[i] = fill;
+            if !class.has_pool() {
                 s.sat0[i] = 0.0;
                 s.sat1[i] = 0.0;
                 s.uns0[i] = 0.0;
@@ -805,21 +862,11 @@ fn pool_lines(model: &Model, state: &State, s: &mut Scratch, col: usize, n: usiz
                 continue;
             }
             let idx = i;
-            let pool = state.pool[idx];
-            let pore = class.pool_pore * vol;
-            let kb_dt = class.kb * vol * dt;
-            let lines = pool_coefficients(pool, kb_dt, pore, c_sat);
+            let pool = state.pool[idx] - (1.0 - w) * state.pool0[idx];
+            let pore = class.pool_pore * vol * w;
+            let kb_dt = class.kb * vol * dt * w;
+            let lines = pool_coefficients(pool, kb_dt, pore, c_sat, fill);
             (s.sat0[i], s.sat1[i], s.uns0[i], s.uns1[i], s.switch[i]) = lines;
-            // Only the wetted share of the front cell's particles exchanges:
-            // the wetted part is a scaled copy of the cell, so every line
-            // (and the cap) scales by w and the switch point stays.
-            let w = s.wet[col * nc + j];
-            if w < 1.0 {
-                s.sat0[i] *= w;
-                s.sat1[i] *= w;
-                s.uns0[i] *= w;
-                s.uns1[i] *= w;
-            }
             // The band is also kept above the round-off of evaluating the
             // lines (terms of size k·Δt·c_sat), or a stiff pool can chatter.
             let band = fmax(
@@ -827,13 +874,13 @@ fn pool_lines(model: &Model, state: &State, s: &mut Scratch, col: usize, n: usiz
                 ROUNDOFF_BAND * kb_dt * c_sat,
             );
             let gam = kb_dt / pore;
-            s.switch_band[i] = band / (kb_dt * (gam / (1.0 + gam)));
-            s.cap_loss[i] = pool - state.pool0[idx];
+            s.switch_band[i] = if gam > 0.0 {
+                band / ((kb_dt + fill) * (gam / (1.0 + gam)))
+            } else {
+                0.0
+            };
+            s.cap_loss[i] = state.pool[idx] - state.pool_ceiling[idx];
             s.mass_band[i] = band;
-            if w < 1.0 {
-                s.cap_loss[i] *= w;
-                s.mass_band[i] *= w;
-            }
         }
     }
 }
@@ -841,14 +888,24 @@ fn pool_lines(model: &Model, state: &State, s: &mut Scratch, col: usize, n: usiz
 /// (saturated intercept, slope, unsaturated intercept, slope, switch c′) of
 /// a pool holding `pool` kg, with kb·Δt = `kb_dt` (m³) and pore volume `pore`.
 #[inline]
-fn pool_coefficients(pool: f64, kb_dt: f64, pore: f64, c_sat: f64) -> (f64, f64, f64, f64, f64) {
+fn pool_coefficients(
+    pool: f64,
+    kb_dt: f64,
+    pore: f64,
+    c_sat: f64,
+    fill: f64,
+) -> (f64, f64, f64, f64, f64) {
     let gam = kb_dt / pore;
     (
         kb_dt * c_sat,
-        -kb_dt,
+        -(kb_dt + fill),
         gam * pool / (1.0 + gam),
-        -kb_dt / (1.0 + gam),
-        c_sat + (pore * c_sat - pool) / kb_dt,
+        -(kb_dt + fill) / (1.0 + gam),
+        if kb_dt + fill > 0.0 {
+            (pore * c_sat * (1.0 + gam) - pool) / (kb_dt + fill)
+        } else {
+            f64::INFINITY
+        },
     )
 }
 
@@ -863,7 +920,7 @@ fn pool_line(s: &Scratch, i: usize, saturated: bool) -> (f64, f64) {
 }
 
 /// The kernels' loss coefficients of a column's cells for this step (after
-/// the homogeneous solves): loss = ka − kd·u_s per (cell, class).
+/// the homogeneous solves): loss = ka − kd·u_s − ki·c′ per (cell, class).
 fn kernel_coefficients(model: &Model, s: &mut Scratch, steps: &[KernelStep], col: usize, n: usize) {
     let nc = model.n_cells();
     let nt = nc * model.columns.len();
@@ -877,6 +934,7 @@ fn kernel_coefficients(model: &Model, s: &mut Scratch, steps: &[KernelStep], col
             if class.grid.is_none() {
                 s.kd[i] = 0.0;
                 s.ka[i] = 0.0;
+                s.ki[i] = 0.0;
                 continue;
             }
             let ks = &steps[k];
@@ -888,6 +946,8 @@ fn kernel_coefficients(model: &Model, s: &mut Scratch, steps: &[KernelStep], col
             };
             s.kd[i] = scale * beta;
             s.ka[i] = scale * s.alpha[k * nt + g];
+            let fill = s.filling[g] * class.fraction * (1.0 - class.pool_fraction);
+            s.ki[i] = fill * 3.0 * ks.z_mass_be;
         }
     }
 }
@@ -900,6 +960,7 @@ fn add_pools(regime: &[bool], pcap: &[bool], s: &mut Scratch, base: usize, n: us
             let (i, idx) = ((base + j) * nk + k, (base + j) * nk + k);
             if pcap[idx] {
                 r += s.cap_loss[i];
+                d += s.pfill[i];
             } else {
                 let (b0, b1) = pool_line(s, i, regime[idx]);
                 d -= b1;
@@ -912,7 +973,8 @@ fn add_pools(regime: &[bool], pcap: &[bool], s: &mut Scratch, base: usize, n: us
 }
 
 /// Adds the kernels' losses in their current caps: ka − kd·c′/K_p (linear)
-/// or ka − kd·u₀ (capped).
+/// or ka − kd·(u₀ + water_ratio·c′) (capped), less the surviving
+/// front-source gain ki·c′ in either case.
 #[allow(clippy::too_many_arguments)]
 fn add_kernels(
     kcap: &[bool],
@@ -922,13 +984,16 @@ fn add_kernels(
     nk: usize,
     k_part: f64,
     u0: &[f64],
+    water_ratio: f64,
 ) {
     for j in 0..n {
         let (mut d, mut r) = (0.0, 0.0);
         for (k, &u0k) in u0.iter().enumerate().take(nk) {
             let i = (base + j) * nk + k;
+            d += s.ki[i];
             if kcap[i] {
                 r += s.ka[i] - s.kd[i] * u0k;
+                d += s.kd[i] * water_ratio;
             } else {
                 d += s.kd[i] / k_part;
                 r += s.ka[i];
@@ -975,7 +1040,7 @@ fn update_regimes(
 }
 
 /// Re-picks the pool caps from the solution: a pool is capped when, free, it
-/// would end above its initial content. Returns whether any changed.
+/// would end above the previous ceiling plus this step's carried solute.
 fn update_pool_caps(model: &Model, pcap: &mut [bool], s: &Scratch, base: usize, n: usize) -> bool {
     let nk = model.n_classes();
     let mut changed = false;
@@ -987,7 +1052,7 @@ fn update_pool_caps(model: &Model, pcap: &mut [bool], s: &Scratch, base: usize, 
                 continue;
             }
             let free = fmin(s.sat0[i] + s.sat1[i] * c, s.uns0[i] + s.uns1[i] * c);
-            let (cap, band) = (s.cap_loss[i], s.mass_band[i]);
+            let (cap, band) = (s.cap_loss[i] - s.pfill[i] * c, s.mass_band[i]);
             let capped = if pcap[idx] {
                 free <= cap + band
             } else {
@@ -1003,7 +1068,7 @@ fn update_pool_caps(model: &Model, pcap: &mut [bool], s: &Scratch, base: usize, 
 }
 
 /// Re-picks the kernel loading caps from the solution: a kernel is capped
-/// when c′/K_p exceeds its initial content u₀. Returns whether any changed.
+/// when c′/K_p exceeds u₀ + water_ratio·c′. Returns whether any changed.
 #[allow(clippy::too_many_arguments)]
 fn update_kernel_caps(
     model: &Model,
@@ -1017,7 +1082,7 @@ fn update_kernel_caps(
     let nk = model.n_classes();
     let mut changed = false;
     for j in 0..n {
-        let ub = s.c[j] / k_part;
+        let ub = s.c[j] / k_part - model.loading_water_ratio * s.c[j];
         for (k, class) in model.classes.iter().enumerate() {
             if class.grid.is_none() {
                 continue;
@@ -1115,7 +1180,16 @@ fn lumped_iterate(
             loop {
                 assemble(s, col, nc, n, dt, q_out);
                 add_pools(&state.regime, &state.pcap, s, base, n, nk);
-                add_kernels(&state.kcap, s, base, n, nk, k_part, u0);
+                add_kernels(
+                    &state.kcap,
+                    s,
+                    base,
+                    n,
+                    nk,
+                    k_part,
+                    u0,
+                    model.loading_water_ratio,
+                );
                 solve(s, n)?;
                 solves += 1;
                 if !update_regimes(model, &mut state.regime, &state.pcap, s, base, n) {
@@ -1194,36 +1268,45 @@ fn lumped_update(
         let mut loss = 0.0;
         for (k, class) in model.classes.iter().enumerate() {
             let (i, idx) = (cell * nk + k, cell * nk + k);
-            if class.has_pool() && class.kb != 0.0 {
+            if class.has_pool() {
                 let p_loss = if state.pcap[idx] {
-                    s.cap_loss[i]
+                    s.cap_loss[i] - s.pfill[i] * c
                 } else {
                     let (b0, b1) = pool_line(s, i, state.regime[idx]);
                     b0 + b1 * c
                 };
                 let new_pool = state.pool[idx] - p_loss;
                 state.pool[idx] = new_pool;
+                state.pool_ceiling[idx] += s.pfill[i] * c;
                 loss += p_loss;
                 min_c = fmin(min_c, new_pool / (class.pool_pore * vol));
-                // Congruent factors for the species: a dissolving pool keeps
-                // its composition (keep = S′/(S′ + loss)); solute returning
-                // from the liquid brings the liquid's composition.
-                (s.keep[idx], s.gain[idx]) = if p_loss > 0.0 {
-                    if new_pool > 0.0 {
-                        (new_pool / (new_pool + p_loss), 0.0)
+                // Separate exchange from front carriage: both can occur
+                // simultaneously. Only the wetted pool participates in the
+                // congruent species map; its dry remainder stays unchanged.
+                let exchange = p_loss + s.pfill[i] * c;
+                let wet_pool = new_pool - (1.0 - s.wet[cell]) * state.pool0[idx];
+                (s.keep[idx], s.gain[idx]) = if exchange > 0.0 {
+                    if wet_pool > 0.0 {
+                        (wet_pool / (wet_pool + exchange), s.pfill[i])
                     } else {
-                        (0.0, 0.0)
+                        (0.0, s.pfill[i])
                     }
-                } else if p_loss < 0.0 && c > 0.0 {
-                    (1.0, -p_loss / c)
+                } else if exchange < 0.0 && c > 0.0 {
+                    (1.0, s.pfill[i] - exchange / c)
                 } else {
-                    (1.0, 0.0)
+                    (1.0, s.pfill[i])
                 };
             }
             if class.grid.is_some() {
-                let u_s = if state.kcap[idx] { u0[k] } else { c / k_part };
+                let u_s = if state.kcap[idx] {
+                    u0[k] + model.loading_water_ratio * c
+                } else {
+                    c / k_part
+                };
                 s.cb[k * nt + cell] = u_s;
-                let k_loss = s.ka[i] - s.kd[i] * u_s;
+                let fill = s.filling[cell] * class.fraction * (1.0 - class.pool_fraction);
+                s.ci[k * nt + cell] = 3.0 * fill * c / (class.sigma * vol * s.wet[cell]);
+                let k_loss = s.ka[i] - s.kd[i] * u_s - s.ki[i] * c;
                 if k_loss < 0.0 {
                     state.kernel_uptake[k] -= k_loss;
                 }
@@ -1275,9 +1358,10 @@ fn species_liquid(
             // The holdup of the lumped step (same porosity and front).
             let (mut d, mut r) = (s.hold[cell], st.m[cell]);
             for (k, class) in model.classes.iter().enumerate() {
-                if class.has_pool() && class.kb != 0.0 {
+                if class.has_pool() {
                     let idx = cell * nk + k;
-                    r += st.pool[idx] * (1.0 - s.keep[idx]);
+                    let dry = (1.0 - s.wet[cell]) * group.pool0[k] * share * model.cells[j].volume;
+                    r += (st.pool[idx] - dry) * (1.0 - s.keep[idx]);
                     d += s.gain[idx] * s.keep[idx];
                 }
             }
@@ -1304,6 +1388,7 @@ fn species_liquid(
             nk,
             k_part,
             &group.kernel0,
+            model.loading_water_ratio,
         );
         solve(s, n)?;
         solves += 1;
@@ -1358,14 +1443,17 @@ fn species_liquid(
         min_c = fmin(min_c, c);
         for (k, class) in model.classes.iter().enumerate() {
             let idx = cell * nk + k;
-            if class.has_pool() && class.kb != 0.0 {
-                let new_pool = (st.pool[idx] + s.gain[idx] * c) * s.keep[idx];
+            if class.has_pool() {
+                let dry = (1.0 - s.wet[cell]) * group.pool0[k] * vol;
+                let new_pool = dry + (st.pool[idx] - dry + s.gain[idx] * c) * s.keep[idx];
                 st.pool[idx] = new_pool;
                 min_c = fmin(min_c, new_pool / (class.pool_pore * vol));
             }
             if class.grid.is_some() {
+                let fill = s.filling[cell] * class.fraction * (1.0 - class.pool_fraction);
+                s.ci[k * nt + cell] = 3.0 * fill * c / (class.sigma * vol * s.wet[cell]);
                 s.cb[k * nt + cell] = if st.kcap[idx] {
-                    group.kernel0[k]
+                    group.kernel0[k] + model.loading_water_ratio * c
                 } else {
                     c / k_part
                 };
@@ -1403,15 +1491,19 @@ pub(crate) fn step(
     let nt = ncol * model.n_cells();
 
     s.cb.fill(0.0);
+    s.ci.fill(0.0);
     {
         let cells = Special {
             eligible: &s.eligible,
+            wet: &s.wet,
+            partial: &s.partial,
             dry: &s.dry,
             first: &s.first,
         };
         kernels_homogeneous(
             model,
             &s.lumped,
+            &s.u0_lumped,
             &state.u,
             &mut state.u_prev,
             &state.kcap,
@@ -1432,17 +1524,28 @@ pub(crate) fn step(
     for col in 0..ncol {
         lumped_update(model, state, s, input, col);
     }
-    let negative = kernels_update(model, &s.lumped, &mut state.u_prev, &s.bdf, &s.cb, nt);
-    mix_partial(model, &state.u, &mut state.u_prev, &s.wet, &s.partial);
+    let negative = kernels_update(
+        model,
+        &s.lumped,
+        &mut state.u_prev,
+        &s.bdf,
+        &s.cb,
+        &s.ci,
+        nt,
+    );
+    mix_partial(model, &s.u0_lumped, &mut state.u_prev, &s.wet, &s.partial);
     if negative {
         state.min_conc = fmin(state.min_conc, kernel_min(&state.u_prev));
     }
 
     for g in 0..model.groups.len() {
         s.cb.fill(0.0);
+        s.ci.fill(0.0);
         {
             let cells = Special {
                 eligible: &s.eligible,
+                wet: &s.wet,
+                partial: &s.partial,
                 dry: &s.dry,
                 first: &s.first,
             };
@@ -1450,6 +1553,7 @@ pub(crate) fn step(
             kernels_homogeneous(
                 model,
                 &s.groups[g],
+                &model.groups[g].kernel0,
                 &st.u,
                 &mut st.u_prev,
                 &st.kcap,
@@ -1466,8 +1570,22 @@ pub(crate) fn step(
             species_liquid(model, state, s, input, col, g)?;
         }
         let st = &mut state.groups[g];
-        let negative = kernels_update(model, &s.groups[g], &mut st.u_prev, &s.bdf, &s.cb, nt);
-        mix_partial(model, &st.u, &mut st.u_prev, &s.wet, &s.partial);
+        let negative = kernels_update(
+            model,
+            &s.groups[g],
+            &mut st.u_prev,
+            &s.bdf,
+            &s.cb,
+            &s.ci,
+            nt,
+        );
+        mix_partial(
+            model,
+            &model.groups[g].kernel0,
+            &mut st.u_prev,
+            &s.wet,
+            &s.partial,
+        );
         if negative {
             st.min_conc = fmin(st.min_conc, kernel_min(&st.u_prev));
         }
@@ -1526,7 +1644,7 @@ mod tests {
     #[test]
     fn pool_lines_meet_at_the_switch() {
         let (pool, kb_dt, pore, c_sat) = (3.0e-4, 2e-6, 1e-6, 245.0);
-        let (a0, a1, b0, b1, sw) = pool_coefficients(pool, kb_dt, pore, c_sat);
+        let (a0, a1, b0, b1, sw) = pool_coefficients(pool, kb_dt, pore, c_sat, 0.0);
         let (sa, sb) = (a0 + a1 * sw, b0 + b1 * sw);
         assert!((sa - sb).abs() < 1e-15 * sa.abs().max(1e-12), "{sa} {sb}");
         // At the switch the pool ends exactly at saturation.
@@ -1542,7 +1660,7 @@ mod tests {
         // by at most 1e-10 of its content. The old band, 1e-10·c_sat in c′,
         // allowed k·Δt·2.45e-8, here 8000 times more.
         let (pool, kb_dt, pore, c_sat) = (3.0e-4, 1e-2, 1e-6, 245.0);
-        let (a0, a1, b0, b1, sw) = pool_coefficients(pool, kb_dt, pore, c_sat);
+        let (a0, a1, b0, b1, sw) = pool_coefficients(pool, kb_dt, pore, c_sat, 0.0);
         let mass = SWITCH_BAND * pool.max(pore * c_sat);
         let gam = kb_dt / pore;
         let band = mass / (kb_dt * (gam / (1.0 + gam)));

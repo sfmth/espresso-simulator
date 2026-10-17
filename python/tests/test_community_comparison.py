@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -108,24 +109,122 @@ def test_reject_unverified_source_before_simulation(repo):
         c.run_comparison({"cases": [sample_case()], "sources": {"identity_verified": False}}, repo)
 
 
-@pytest.mark.parametrize("mismatch", ["embedded_value", "embedded_label", "current_file"])
-def test_calibration_identity_rejects_stale_or_different_defaults(tmp_path, mismatch):
+def calibration_fixture(tmp_path, label):
     folder = tmp_path / "data/calibration"
-    folder.mkdir(parents=True)
-    document = {"label": "v2", "parameters": {"test.coefficient": 1.25}}
-    for name in ("v2.yaml", "current.yaml"):
+    folder.mkdir(parents=True, exist_ok=True)
+    value = 1.25 if label == "v2" else 2.5
+    document = {"label": label, "parameters": {"test.coefficient": value}, "fit": {"source": "synthetic"}}
+    for name in (f"{label}.yaml", "current.yaml"):
         (folder / name).write_text(json.dumps(document))
-    registry = {"calibration": {"label": "v2", "parameters": ["test.coefficient"]},
-                "parameters": [{"id": "test.coefficient", "default": 1.25, "default_from": "calibration"}]}
-    assert c._assert_fixed_calibration(SimpleNamespace(root=tmp_path), registry)["embedded_values_verified"]
+    registry = {"calibration": {"label": label, "parameters": ["test.coefficient"]},
+                "parameters": [{"id": "test.coefficient", "default": value, "default_from": "calibration"},
+                               {"id": "test.unfitted", "default": .5, "default_from": "registry"}]}
+    return SimpleNamespace(root=tmp_path), document, registry
+
+
+@pytest.mark.parametrize("label", ["v2", "v3"])
+def test_calibration_identity_uses_selected_version_and_exact_document_hashes(tmp_path, label):
+    other = "v3" if label == "v2" else "v2"
+    calibration_fixture(tmp_path, other)
+    paths, document, registry = calibration_fixture(tmp_path, label)
+    # Equivalent YAML documents need not have identical bytes; retain both file identities.
+    current_path = tmp_path / "data/calibration/current.yaml"
+    current_path.write_text(json.dumps(document, indent=2) + "\n")
+    identity = c._assert_fixed_calibration(paths, registry)
+    assert identity["label"] == label
+    assert identity["path"] == f"data/calibration/{label}.yaml"
+    assert identity["sha256"] == hashlib.sha256((tmp_path / identity["path"]).read_bytes()).hexdigest()
+    assert identity["current_sha256"] == hashlib.sha256(current_path.read_bytes()).hexdigest()
+    assert identity["current_sha256"] != identity["sha256"]
+    assert identity["parameters"] == document["parameters"]
+    assert identity["embedded_values_verified"] is True
+
+
+@pytest.mark.parametrize("label", ["v2", "v3"])
+@pytest.mark.parametrize("mismatch", ["embedded_value", "embedded_label", "metadata_missing",
+                                      "metadata_extra", "metadata_duplicate", "embedded_missing",
+                                      "embedded_extra", "embedded_duplicate", "current_document",
+                                      "versioned_label", "missing_versioned_file"])
+def test_calibration_identity_rejects_stale_or_different_defaults(tmp_path, label, mismatch):
+    paths, document, registry = calibration_fixture(tmp_path, label)
+    folder = tmp_path / "data/calibration"
     if mismatch == "embedded_value":
-        registry["parameters"][0]["default"] = 1.25001
+        registry["parameters"][0]["default"] += .00001
     elif mismatch == "embedded_label":
-        registry["calibration"]["label"] = "v1"
+        registry["calibration"]["label"] = "v3" if label == "v2" else "v2"
+    elif mismatch == "metadata_missing":
+        registry["calibration"]["parameters"] = []
+    elif mismatch == "metadata_extra":
+        registry["calibration"]["parameters"].append("test.extra")
+    elif mismatch == "metadata_duplicate":
+        registry["calibration"]["parameters"].append("test.coefficient")
+    elif mismatch == "embedded_missing":
+        registry["parameters"][0]["default_from"] = "registry"
+    elif mismatch == "embedded_extra":
+        registry["parameters"][1]["default_from"] = "calibration"
+    elif mismatch == "embedded_duplicate":
+        registry["parameters"].append(copy.deepcopy(registry["parameters"][0]))
+    elif mismatch == "current_document":
+        document["fit"]["source"] = "different calibration record, same coefficients"
+        (folder / "current.yaml").write_text(json.dumps(document))
+    elif mismatch == "versioned_label":
+        document["label"] = "other"
+        (folder / f"{label}.yaml").write_text(json.dumps(document))
     else:
-        (folder / "current.yaml").write_text('{"label":"v3","parameters":{"test.coefficient":1.25}}')
-    with pytest.raises(ValueError, match="v2"):
-        c._assert_fixed_calibration(SimpleNamespace(root=tmp_path), registry)
+        (folder / f"{label}.yaml").unlink()
+    with pytest.raises(ValueError, match=label):
+        c._assert_fixed_calibration(paths, registry)
+
+
+@pytest.mark.parametrize("label", [None, "", "current", "../v3", "/tmp/v3"])
+def test_calibration_identity_requires_a_versioned_label(tmp_path, label):
+    paths, document, registry = calibration_fixture(tmp_path, "v3")
+    document["label"] = label
+    (tmp_path / "data/calibration/current.yaml").write_text(json.dumps(document))
+    with pytest.raises(ValueError, match="named versioned calibration"):
+        c._assert_fixed_calibration(paths, registry)
+
+
+@pytest.mark.parametrize("value", [True, "2.5", float("nan"), float("inf")])
+def test_calibration_identity_rejects_non_numeric_or_nonfinite_coefficients(tmp_path, value):
+    paths, document, registry = calibration_fixture(tmp_path, "v3")
+    document["parameters"]["test.coefficient"] = value
+    registry["parameters"][0]["default"] = value
+    for name in ("v3.yaml", "current.yaml"):
+        (tmp_path / "data/calibration" / name).write_text(json.dumps(document))
+    with pytest.raises(ValueError, match="v3"):
+        c._assert_fixed_calibration(paths, registry)
+
+
+@pytest.mark.parametrize("label", ["v2", "v3"])
+def test_comparison_metadata_and_historical_render_keep_recorded_calibration(tmp_path, monkeypatch, label):
+    puckcore = pytest.importorskip("puckcore")
+    paths, document, registry = calibration_fixture(tmp_path, label)
+    monkeypatch.setattr(puckcore, "registry", lambda: registry)
+    monkeypatch.setattr(puckcore, "simulate_shot", lambda spec: inventory_result())
+    monkeypatch.setattr(c, "solver_identity", lambda paths: {"puckcore_version": "synthetic"})
+    monkeypatch.setattr(c, "build_conditional_spec", lambda *args, **kwargs: {
+        "hydraulics": {"permeability_m2": 1e-13, "pore_air": {"tau_s": 1}},
+        "thermal": {"initial_bed_temp_c": 20}})
+    sources = {"identity_verified": True, "article_url": "https://example.test/experiment",
+               "archive": {"url": "https://example.test/archive", "sha256": "synthetic"},
+               "measurement_log": {"url": "https://example.test/log", "sha256": "synthetic"}}
+    report = c.run_comparison({"cases": [sample_case()], "sources": sources}, paths, tier=0)
+    identity = report["calibration"]
+    assert identity["label"] == label
+    assert identity["path"] == f"data/calibration/{label}.yaml"
+    assert identity["parameters"] == document["parameters"]
+    assert identity["sha256"] == hashlib.sha256((tmp_path / identity["path"]).read_bytes()).hexdigest()
+    assert identity["use"] == f"Builder's embedded {label} coefficients, unchanged; no community data fitted."
+    assert report["analysis_sha256"] == hashlib.sha256(Path(c.__file__).read_bytes()).hexdigest()
+    saved = json.loads(json.dumps(report))
+    # Re-rendering recorded v2 results after v3 selection must never relabel them as v3.
+    other = "v3" if label == "v2" else "v2"
+    calibration_fixture(tmp_path, other)
+    markdown = c.render_markdown(saved)
+    assert f"Unchanged {label} calibration (`data/calibration/{label}.yaml`)" in markdown
+    assert identity["sha256"] in markdown
+    assert f"Unchanged {other} calibration" not in markdown
 
 
 def test_zero_probe_tracking_uses_supplied_program_and_retains_incomplete_status():

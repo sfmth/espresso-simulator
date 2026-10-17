@@ -15,6 +15,7 @@ Implementation decisions for Puckworks, one short file per decision. Product dec
 | [0009](0009-shot-solver-numerics.md) | Shot solver numerics and the bare base permeability | Accepted |
 | [0010](0010-startup-water-and-pore-air.md) | Startup water inventory and an effective pore-air closure | Accepted |
 | [0011](0011-upstream-pressure-storage.md) | Optional upstream pressure storage | Accepted, experimental |
+| [0012](0012-total-particle-solute-inventory.md) | Mobile liquid and total particle solute inventories | Accepted; replaces ADR 0010 solute holdup |
 
 ## Format
 

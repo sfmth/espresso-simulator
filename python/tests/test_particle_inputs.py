@@ -11,7 +11,7 @@ import pytest
 
 from puckworks_tools import particle_inputs as audit
 from puckworks_tools import validate
-from puckworks_tools.calibrate import Runner, build_problem, calibrated_values, load_calibration_document, load_config
+from puckworks_tools.calibrate import Runner, build_problem, calibrated_values, load_calibration_document
 from puckworks_tools.cases import schmieder2023 as sch
 
 puckcore = pytest.importorskip("puckcore")
@@ -28,9 +28,9 @@ def baseline(repo):
                 for case, spec, result in zip(original["cases"], original["specs"], results)]
         targets = sch.targets(data)
         score = audit.score_v1(rows, targets)
-        config = load_config(repo.root / "data/calibration/config.yaml")
+        config, document, _ = audit.historical_inputs(repo)
         problem = build_problem(repo, config, blocks=["V1"], runner=runner)
-        document = load_calibration_document(repo.root / "data/calibration/current.yaml")
+        audit.preserve_shared_values(problem, document)
         quality, _ = validate.fit_quality(problem, validate._calibration_x(problem, calibrated_values(document)))
         # The reference evaluator used exactly the same 15 native specs, served from the cache.
         assert runner.simulations == 15
@@ -83,7 +83,7 @@ def test_v1_score_exactly_matches_existing_native_evaluator(baseline):
     assert all(row["completed"] and row["failure"] is None for row in baseline["rows"])
     for key in ("lambda_within", "lambda_total", "cup_within", "cup_total", "lambda_max_error", "cup_max_error"):
         assert score[key] == reference[key]
-    assert (score["lambda_within"], score["lambda_total"], score["cup_within"], score["cup_total"]) == (48, 60, 163, 180)
+    assert (score["lambda_total"], score["cup_total"]) == (60, 180)
     assert (score["lambda_missing"], score["cup_missing"]) == (0, 0)
     for actual, expected in zip(score["comparisons"], reference["rows"]):
         assert actual["lambda"]["relative_error"] == abs(expected["lambda_model"] / expected["lambda_data"] - 1.0)
@@ -94,17 +94,36 @@ def test_v1_score_exactly_matches_existing_native_evaluator(baseline):
                           json.loads(json.dumps(baseline["targets"]))) == score
 
 
-def test_audit_rejects_changed_or_out_of_bounds_calibration(repo, monkeypatch):
-    document = load_calibration_document(repo.root / "data/calibration/current.yaml")
+def test_historical_audit_keeps_its_original_solver_scores_and_rendering(repo):
+    _, document, archive = audit.historical_inputs(repo)
+    assert document["label"] == "v2"
+    assert archive["solver"]["puckcore_version"] == "0.5.1"
+    score = archive["scenarios"][0]["summary"]["score"]
+    assert (score["lambda_within"], score["cup_within"]) == (48, 163)
+    assert audit.render_markdown(archive) == (repo.root / "docs/validation/m11-particle-inputs.md").read_text()
+
+
+def test_audit_rejects_changed_historical_values_and_never_loads_current(repo, monkeypatch):
+    document = load_calibration_document(repo.root / "data/calibration/v2.yaml")
+    loaded = []
+
+    def load(path):
+        loaded.append(path.name)
+        assert path.name != "current.yaml"
+        return document
+
+    monkeypatch.setattr(audit, "load_calibration_document", load)
+    audit.historical_inputs(repo)
+    assert loaded == ["v2.yaml"]
     changed = copy.deepcopy(document)
     changed["label"] = "new-fit"
-    monkeypatch.setattr(audit, "load_calibration_document", lambda path: changed if path.name == "current.yaml" else document)
-    with pytest.raises(ValueError, match="equal preserved v2"):
+    monkeypatch.setattr(audit, "load_calibration_document", lambda path: changed)
+    with pytest.raises(ValueError, match="preserved v2 values"):
         audit.build_scenarios(repo, Runner())
     changed = copy.deepcopy(document)
     changed["fit"]["nuisance"]["calibration.schmieder2023.permeability.gl1_4"] = 1e3
     monkeypatch.setattr(audit, "load_calibration_document", lambda path: changed)
-    with pytest.raises(ValueError, match="refusing to clip"):
+    with pytest.raises(ValueError, match="preserved v2 values"):
         audit.build_scenarios(repo, Runner())
 
 

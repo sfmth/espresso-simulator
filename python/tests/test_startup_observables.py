@@ -111,12 +111,15 @@ def test_cached_refits_survive_export_but_not_a_changed_model_or_configuration()
         "crates/puckmodel/generated": "before-fit-export"}, "files_sha256": {"Cargo.lock": "dependencies"}}
     inputs = {"config_sha256": "config", "datasets_sha256": {"example": "data"},
               "registry_inputs_sha256": "numeric-defaults", "presets_sha256": "preset-inputs",
+              "conversion_inputs_sha256": {"data/schema/units.yaml": "unit-scales"},
               "calibration_sources_sha256": "calibration-and-cases"}
     loo = {"lambda_within": 60, "lambda_total": 60, "cup_within": 180, "cup_total": 180}
     document = {"fit": {"solver": copy.deepcopy(solver), "inputs": copy.deepcopy(inputs), "loo": loo}}
     solver["sources_sha256"]["crates/puckmodel/generated"] = "calibration-embedded"
     assert validate.calibration_reuse_issues(document, solver, inputs) == []
     assert validate.loo_check(loo)["status"] == "pass"
+    assert validate.loo_check({**loo, "all_optimizers_converged": False})["status"] == "not run"
+    assert validate.loo_check({"completed": 3, "required": 15})["status"] == "not run"
 
     solver["sources_sha256"]["crates/puckcore/src"] = "new-startup-model"
     reasons = validate.calibration_reuse_issues(document, solver, inputs)
@@ -135,3 +138,7 @@ def test_cached_refits_survive_export_but_not_a_changed_model_or_configuration()
     changed_inputs = {**inputs, "presets_sha256": "changed-pump-flow"}
     reasons = validate.calibration_reuse_issues(document, document["fit"]["solver"], changed_inputs)
     assert reasons == ["preset inputs changed or lack an identity"]
+
+    changed_inputs = {**inputs, "conversion_inputs_sha256": {"data/schema/units.yaml": "changed-scale"}}
+    reasons = validate.calibration_reuse_issues(document, document["fit"]["solver"], changed_inputs)
+    assert reasons == ["unit conversion/input loader sources changed or lack an identity"]

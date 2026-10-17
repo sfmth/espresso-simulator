@@ -232,12 +232,11 @@ pub struct SolublesSpec {
     /// Partition coefficient K = c_liquid/C_s at equilibrium, 0.01–100, with
     /// C_s the soluble mass per particle envelope volume (pore solution and
     /// matrix-bound solute together): Corrochano 2017, eq. 3.15–3.17. The
-    /// solubles live in the particles' pore liquid ε_c = ε_p·(1 − u_w), so the
-    /// kernel boundary value in pore-liquid terms is c/(K·ε_c); the
-    /// conversion is exact only if no solute stays bound to the matrix. At
-    /// equilibrium a kernel holds the liquid at K·s₀; K·s₀ above saturation
-    /// lets the liquid exceed c_sat (warned), and v̄·max(c_sat, K·s₀) must
-    /// stay below 0.9.
+    /// state is total loading C_s = ε_c u, with ε_c = ε_p·(1 − u_w)
+    /// a reference normalization. Thus the boundary is c/(K·ε_c).
+    /// Internal pore water is included in C_s, not in the mobile inventory.
+    /// The dilute-batch partition law is an extrapolation at espresso
+    /// concentrations; runtime checks reject loss of positive water content.
     pub partition_coefficient: f64,
     /// Effective diffusivity of lumped solubles in intact kernels, m²/s, at
     /// `reference_temp_c`. It scales with temperature as T/μ_water(T)
@@ -253,13 +252,12 @@ pub struct SolublesSpec {
     /// holding c kg/m³ has density ρ_w(1 − v̄c) + c. Used to turn outflow
     /// volume into beverage mass and concentration into TDS (w/w).
     pub solute_specific_volume_m3_kg: f64,
-    /// Cap kernel uptake at the initial content: the kernel boundary value is
-    /// min(c/(K·ε_c), u₀), so kernels never load above their initial pore
-    /// concentration u₀ = s₀/ε_c. This is a modelling assumption beyond the data (the
-    /// partition coefficient was measured in dilute batch extraction, and a
-    /// linear isotherm extrapolated to near-saturated espresso liquid would
-    /// load kernels to several times their content). `false` keeps the
-    /// linear partition at all concentrations.
+    /// Optional cap on excess boundary loading:
+    /// min(c/(K·ε_c), u₀ + βc/ε_c), where β = ε_p·water_fraction.
+    /// The aqueous term admits solute carried into newly filled particle
+    /// pores; total particle content may exceed its initial dry content.
+    /// This deposition restriction is a modelling assumption, not a measured
+    /// adsorption capacity. Recipe builds use `false` (linear partition).
     pub kernel_loading_cap: bool,
 }
 
@@ -363,18 +361,16 @@ pub struct HydraulicsSpec {
     pub axial_dispersion_m2_s: f64,
     /// Extract viscosity model.
     pub viscosity: Viscosity,
-    /// Mobile share u_w of the particles' pore liquid, 0–0.9: it fills from
-    /// the front, which advances at q/φ_T with φ_T = ε + (1 − ε)·ε_p·u_w, and
-    /// mixes with the intergranular liquid within its cell. The pools and
-    /// kernels hold the solubles in the rest, ε_p·(1 − u_w) of the particle
-    /// volume, so mobile and particle liquid together fill the total porosity.
+    /// Reference particle-loading normalization u_w, 0–0.9:
+    /// ε_c = ε_p·(1 − u_w). Also selects the absorbed-water fraction when
+    /// `intraparticle_water_fraction` is omitted. It is not mobile holdup.
     pub wetting_uptake: f64,
-    /// Fraction of intraparticle porosity filled by the sharp front and
-    /// included in the liquid holdup, 0–1. `None` preserves the legacy
-    /// `wetting_uptake` fraction. With `Some`, particle pool/kernel states
-    /// are effective soluble loadings (normalised by the legacy capacity),
-    /// not a second water inventory. `Some(1)` fills the full dry pore volume.
-    /// This is a single-liquid approximation, not kinetic dual-porosity flow.
+    /// Fraction of intraparticle porosity filled by the sharp front, 0–1.
+    /// `None` selects `wetting_uptake`; `Some(1)` fills all initial pores.
+    /// Its water contributes to hydraulic and thermal storage; its solute
+    /// belongs to total particle loading. Newly filled water carries local
+    /// mobile solute implicitly into the particle reservoirs. This is a
+    /// sharp-front closure, not a measured finite-rate water-exchange law.
     pub intraparticle_water_fraction: Option<f64>,
     /// Share θ of the dissolved solid volume that becomes intergranular pore
     /// space, [0, 1]: ε = ε₀ + θ·EY_local·(1 − ε₀), never decreasing. `null`

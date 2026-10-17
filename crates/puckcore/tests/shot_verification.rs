@@ -340,6 +340,8 @@ fn perfect_sink(t_end: f64, shells: usize, dt: f64) -> (f64, f64, f64) {
     s.hydraulics.permeability_m2 = 1e-10;
     s.hydraulics.poroelastic_pc_pa = None;
     s.hydraulics.dissolution_porosity_share = Some(0.0);
+    // The Crank reference has no solute source from carried pore water.
+    s.hydraulics.intraparticle_water_fraction = Some(0.0);
     s.numerics.kernel_shells = shells;
     s.numerics.depth_cells = 10;
     s.numerics.max_dt_s = dt;
@@ -402,12 +404,15 @@ fn perfect_sink_limit_matches_the_sphere_release() {
 }
 
 /// After the bed wets, the flow stops: the closed bed must reach the discrete
-/// equilibrium c = c_pool = K·ε_p·u everywhere, with the remaining solubles
-/// shared between the bed-liquid holdup (ε + imbibed water), pool pores and
-/// kernel pores; with the loading cap, kernels above it hold their initial
-/// content u₀ and the rest is shared by liquid and pools.
+/// equilibrium c = c_pool = K·ε_c·u when uncapped. The remaining solubles are
+/// shared between mobile intergranular water and total particle pools/kernels.
+/// The optional kernel boundary cap is u₀ + (β/ε_c)c, including carried water's
+/// solute rather than limiting the total kernel loading to u₀.
 fn closed_system(partition: f64, cap: bool) -> (f64, f64, bool) {
     let mut s = ShotSpec::default();
+    // Keep the analytic equilibrium below pool saturation after removing
+    // the duplicated intraparticle-water capacity from the mobile liquid.
+    s.solubles.extractable_fraction = 0.14;
     s.bed.heterogeneity.columns = 1;
     s.bed.heterogeneity.edge_area_fraction = 0.0;
     s.solubles.kernel_diffusivity_m2_s = 1e-8;
@@ -446,14 +451,14 @@ fn closed_system(partition: f64, cap: bool) -> (f64, f64, bool) {
     let (eps, eps_p) = (b.intergranular_porosity, b.intraparticle_porosity);
     let u_w = s.hydraulics.wetting_uptake;
     let delta = s.solubles.cell_size_m;
-    // The particles' pore liquid ε_c = ε_p (1 − u_w); the imbibed share is
-    // mobile, in the holdup. Together they fill the total porosity.
+    // ε_c = ε_p (1 − u_w) normalizes total particle loading; it does not
+    // partition particle water into mobile and immobile solute inventories.
     let eps_c = eps_p * (1.0 - u_w);
     let u0 = s.solubles.extractable_fraction * b.skeletal_density_kg_m3 * (1.0 - eps_p) / eps_c;
     let k_p = partition * eps_c;
-    // Per bed volume: holdup ε + (1 − ε) ε_p u_w; pools ε_c f φ; kernels
-    // ε_c (1 − f) φ, holding c/K_p (or u₀ when capped).
-    let mut liquid = eps + (1.0 - eps) * eps_p * u_w;
+    // Per bed volume: mobile holdup ε; pool/kernel loading weights ε_c f φ
+    // and ε_c (1 − f) φ. Kernel loading is c/K_p, or the affine cap below.
+    let mut liquid = eps;
     let mut kernel_pores = 0.0;
     for c in &b.size_classes {
         let f = if c.radius_m <= delta {
@@ -465,15 +470,13 @@ fn closed_system(partition: f64, cap: bool) -> (f64, f64, bool) {
         liquid += eps_c * f * phi;
         kernel_pores += eps_c * (1.0 - f) * phi;
     }
-    // Mobile, pool and kernel liquid fill the total porosity exactly.
-    let total_porosity = eps + (1.0 - eps) * eps_p;
-    assert!((liquid + kernel_pores - total_porosity).abs() < 1e-12);
     let total = s.solubles.extractable_fraction * b.dose_kg;
     let remaining = (total - r.summary.ey * b.dose_kg) / bed_volume(&s);
     let mut c_eq = remaining / (liquid + kernel_pores / k_p);
-    let capped = cap && c_eq > k_p * u0;
+    let water_ratio = eps_p * s.hydraulics.intraparticle_water_fraction.unwrap_or(u_w) / eps_c;
+    let capped = cap && c_eq / k_p > u0 + water_ratio * c_eq;
     if capped {
-        c_eq = (remaining - kernel_pores * u0) / liquid;
+        c_eq = (remaining - kernel_pores * u0) / (liquid + kernel_pores * water_ratio);
     }
     assert!(c_eq < s.solubles.saturation_kg_m3 && c_eq < u0);
     let snap = r.spatial.snapshots.last().unwrap();
@@ -491,11 +494,11 @@ fn closed_system(partition: f64, cap: bool) -> (f64, f64, bool) {
 
 #[test]
 fn closed_system_reaches_the_partition_equilibrium() {
-    // Uncapped: K = 1 keeps c_eq below K·ε_p·u₀.
+    // K = 1 leaves the affine loading cap inactive at equilibrium.
     let (_, worst, capped) = closed_system(1.0, true);
     assert!(!capped && worst < 1e-9, "{worst}");
-    // The default K = 0.61: the linear equilibrium would load the kernels
-    // above u₀; with the cap they stay at u₀, without it they load.
+    // At the default K = 0.61, the linear equilibrium exceeds the affine
+    // cap. The cap reduces kernel uptake and raises mobile concentration.
     let (c_cap, worst, capped) = closed_system(0.61, true);
     assert!(capped && worst < 1e-9, "{worst}");
     let (c_lin, worst, capped) = closed_system(0.61, false);

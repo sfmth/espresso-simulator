@@ -434,6 +434,8 @@ class DatasetBlock:
             except (ValueError, KeyError, ZeroDivisionError) as exc:
                 obs = None
                 failures.append(f"{case.name}: {exc}")
+            if obs is not None and not required_observations_available(self, case, obs):
+                failures.append(f"{case.name}: required fit observations are missing, nonfinite or invalid")
             observations.append(obs)
         r, labels = self.residual_fn(self, observations, values)
         r = np.where(np.isfinite(r), r, FAILED_RESIDUAL)
@@ -446,6 +448,29 @@ def observe(module: ModuleType, case: Case, result: Mapping[str, Any], spec: Map
     if "spec" in inspect.signature(module.observe).parameters:
         return module.observe(case, result, spec)
     return module.observe(case, result)
+
+
+def required_observations_available(block: DatasetBlock, case: Case, observation: Mapping[str, Any]) -> bool:
+    """Availability of the residual's inputs, independent of how closely they match the data."""
+    try:
+        if block.module.KEY == "schmieder2023":
+            values = [observation[kind][analyte] for kind in ("lambda", "c0")
+                      for analyte, *_ in block.module.ANALYTES]
+            cup = "cup_eq3" if block.options.get("cup", "eq3") == "eq3" else "cup_direct"
+            values += [observation[cup][analyte][mass] for analyte, *_ in block.module.ANALYTES
+                       for mass in (20, 40, 60)]
+            if not all(math.isfinite(value) and value > 0 for value in values):
+                return False
+            if case.info["experiment"] in (block.options.get("exclude_pressure_experiments") or []):
+                return True
+            pressure = "peak_pressure_bar" if block.options.get("pressure", "pour") == "max" else "pour_peak_pressure_bar"
+            return math.isfinite(observation[pressure])
+        field = {"vacaguerra2024": "bodenstein", "waszkiewicz2026": "long_time_flow_g_s",
+                 "corrochano2017": "permeability_m2"}[block.module.KEY]
+        return math.isfinite(observation[field]) and (observation[field] >= 0 if block.module.KEY == "waszkiewicz2026"
+                                                     else observation[field] > 0)
+    except (KeyError, TypeError, ValueError):
+        return False
 
 
 def _log_ratio(model: float | None, data: float, sigma: float) -> float:
@@ -577,6 +602,14 @@ BLOCK_DATASETS: dict[str, tuple[str, ...]] = {
     "waszkiewicz2026": ("waszkiewicz2026-flow-pressure", "waszkiewicz2026-psd"),
     "corrochano2017": ("corrochano2017-permeability", "corrochano2017-psd", "corrochano2017-properties"),
 }
+
+
+def datasets_for_block(block: DatasetBlock) -> tuple[str, ...]:
+    """Actual case inputs, including the opt-in measured PSD when V1 uses it."""
+    datasets = BLOCK_DATASETS[block.module.KEY]
+    if block.module.KEY == "schmieder2023" and any(c.info.get("psd_source") == "wet_cdf" for c in block.cases):
+        datasets = (*datasets, block.module.PSD_DATASET)
+    return datasets
 
 
 # -- the problem ---------------------------------------------------------------------------
@@ -726,6 +759,23 @@ def fit(problem: Problem, *, max_nfev: int | None = None, loss: str = "linear", 
                      int(result.nfev), 0.5 * float(r @ r), 0.5 * float(r0 @ r0))
 
 
+def apply_start_values(problem: Problem, values: Mapping[str, float]) -> dict[str, float]:
+    """Set and record a warm start without silently clipping a different physical value."""
+    applied = {}
+    for parameter in problem.params:
+        if parameter.id not in values:
+            continue
+        value = float(values[parameter.id])
+        if not math.isfinite(value):
+            raise CalibrationError(f"warm start {parameter.id}: value must be finite")
+        bounded = min(max(value, parameter.lower), parameter.upper)
+        if value != bounded and not math.isclose(value, bounded, rel_tol=1e-12, abs_tol=0.0):
+            raise CalibrationError(f"warm start {parameter.id}: {value:g} outside [{parameter.lower:g}, {parameter.upper:g}]")
+        parameter.start = bounded
+        applied[parameter.id] = bounded
+    return applied
+
+
 # -- configuration and building -----------------------------------------------------------
 
 
@@ -850,7 +900,9 @@ def check_blocks(problem: Problem, threshold: float = 0.02) -> list[str]:
 def prune(paths: RepoPaths, config: Mapping[str, Any], problem: Problem, result: FitResult, *,
           threshold: float = WEAK_IDENTIFICATION_RATIO, tier: int | None = None, fd_step: float = 0.01,
           max_nfev: int | None = None, loss: str = "linear",
-          verbose: int = 0) -> tuple[dict[str, Any], Problem, FitResult, dict[str, Any]]:
+          verbose: int = 0,
+          progress: Callable[[dict[str, Any], Problem, FitResult, dict[str, Any]], None] | None = None,
+          ) -> tuple[dict[str, Any], Problem, FitResult, dict[str, Any]]:
     """Backward elimination of weakly identified shared parameters (docs/validation/calibration.md,
     "Identifiability"): while an override parameter inside its bounds has a posterior SD of at least
     ``threshold`` times its prior's, fix the worst one at its registry value and refit from the current
@@ -879,8 +931,10 @@ def prune(paths: RepoPaths, config: Mapping[str, Any], problem: Problem, result:
         config["fixed"] = [*(config.get("fixed") or []), {"id": worst, "reason": reason}]
         problem = build_problem(paths, config, blocks=[b.name for b in problem.blocks], tier=tier, fd_step=fd_step,
                                 runner=problem.runner)
-        x0 = np.array([p.to_x(min(max(values.get(p.id, p.start), p.lower), p.upper)) for p in problem.params])
-        result = fit(problem, max_nfev=max_nfev, loss=loss, verbose=verbose, x0=x0)
+        apply_start_values(problem, values)
+        result = fit(problem, max_nfev=max_nfev, loss=loss, verbose=verbose)
+        if progress:
+            progress(config, problem, result, pruned)
 
 
 # -- leave one condition out (V1) ------------------------------------------------------------------
@@ -891,7 +945,7 @@ LOO_TOLERANCE = 0.15
 def leave_one_out(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[str, float], *,
                   tier: int | None = None, jobs: int = 1, max_nfev: int | None = None, fd_step: float = 0.01,
                   simulate: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
-                  block: str = "V1") -> dict[str, Any]:
+                  block: str = "V1", progress: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:
     """Refits the V1 parameters without each experiment in turn and predicts the one left out.
 
     Only the parameters that the config declares for V1 alone are refitted; parameters shared with other
@@ -916,8 +970,8 @@ def leave_one_out(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[st
                                 exclude_cases=[case.name], runner=full.runner)
             for c in sub.blocks[0].cases:
                 c.recipe["overrides"] = {**c.recipe.get("overrides", {}), **held}
-            x0 = np.array([p.to_x(min(max(start.get(p.id, p.start), p.lower), p.upper)) for p in sub.params])
-            result = fit(sub, max_nfev=max_nfev, x0=x0)
+            apply_start_values(sub, start)
+            result = fit(sub, max_nfev=max_nfev)
             values = {**{p.id: start.get(p.id, p.start) for p in full.params}, **sub.values(result.x)}
             obs = v1.evaluate(values, full.runner, full.params).observations[index]
             exp = case.info["experiment"]
@@ -929,7 +983,14 @@ def leave_one_out(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[st
                 errors["cup"][analyte] = {
                     m: (_round(obs["cup_eq3"][analyte][m] / t["cup"][analyte][m][0] - 1.0) if obs else None)
                     for m in (20, 40, 60)}
-            experiments[f"exp{exp:02d}"] = {"errors": errors, "cost": _round(result.cost), "evaluations": result.nfev}
+            experiments[f"exp{exp:02d}"] = {"errors": errors, "cost": _round(result.cost), "evaluations": result.nfev,
+                                           "optimizer": {"success": result.success, "message": result.message},
+                                           "predicted": obs is not None and required_observations_available(v1, case, obs),
+                                           "refit_failures": [failure for ev in sub.evaluations(result.x) for failure in ev.failures]}
+            if progress:
+                progress({"block": block, "tolerance": LOO_TOLERANCE,
+                          "experiments": copy.deepcopy(experiments), "held": dict(held),
+                          "completed": len(experiments), "required": len(v1.cases)})
     finally:
         full.runner.close()
     lam_errors = [e for x in experiments.values() for e in x["errors"]["lambda"].values()]
@@ -940,7 +1001,10 @@ def leave_one_out(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[st
 
     return {"block": block, "tolerance": LOO_TOLERANCE, "experiments": experiments, "held": dict(held),
             "lambda_within": within(lam_errors), "lambda_total": len(lam_errors),
-            "cup_within": within(cup_errors), "cup_total": len(cup_errors)}
+            "cup_within": within(cup_errors), "cup_total": len(cup_errors),
+            "completed": len(experiments), "required": len(v1.cases),
+            "all_optimizers_converged": all(v["optimizer"]["success"] for v in experiments.values()),
+            "all_predictions_available": all(v["predicted"] and not v["refit_failures"] for v in experiments.values())}
 
 
 # -- documents -----------------------------------------------------------------------------
@@ -957,6 +1021,10 @@ SENSITIVITY_VARIANTS: dict[str, dict[str, Any]] = {
     "pressure classification margin 1 bar": {"blocks": ["V1"], "options": {"exit_margin_bar": 1.0}},
     # "capped" is replaced by the experiments whose pour sat at the pump limit in the main fit
     "pump-capped pour pressures excluded": {"blocks": ["V1"], "options": {"exclude_pressure_experiments": "capped"}},
+    "wet PSD D32 minus 1 SD": {"blocks": ["V1"], "options": {"case_options": {
+        "psd_source": "wet_cdf", "sauter_offset_sd": -1.0}}},
+    "wet PSD D32 plus 1 SD": {"blocks": ["V1"], "options": {"case_options": {
+        "psd_source": "wet_cdf", "sauter_offset_sd": 1.0}}},
     # a structural assumption changes every shot: recalibrate every block, nothing held
     "dissolution share θ = 0.27 (old proportional rule)": {
         "blocks": ["V1", "V2", "V4", "V6"], "structural": True,
@@ -1008,7 +1076,8 @@ def sensitivity(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[str,
                 reference: Mapping[str, Any] | None, *, tier: int | None = None, jobs: int = 1,
                 max_nfev: int | None = None, fd_step: float = 0.01,
                 variants: Mapping[str, Mapping[str, Any]] | None = None,
-                module: ModuleType | None = None) -> dict[str, Any]:
+                module: ModuleType | None = None,
+                progress: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:
     """Refits, under each variant, the parameters the config lists for the variant's blocks alone (the
     variant's option changes applied to each of those blocks; parameters shared with other blocks held at
     their full-fit values in ``start``, as in ``leave_one_out``). Reports the refitted values, the reference
@@ -1035,8 +1104,8 @@ def sensitivity(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[str,
             for block in sub.blocks:
                 for c in block.cases:
                     c.recipe["overrides"] = {**c.recipe.get("overrides", {}), **held}
-            x0 = np.array([p.to_x(min(max(start.get(p.id, p.start), p.lower), p.upper)) for p in sub.params])
-            result = fit(sub, max_nfev=max_nfev, x0=x0)
+            apply_start_values(sub, start)
+            result = fit(sub, max_nfev=max_nfev)
             unc = uncertainties(sub, result.x, result.jacobian, result.residuals)
             ref = reference_permeability(sub, result.x, unc, module) or {}
             values = sub.values(result.x)
@@ -1051,6 +1120,7 @@ def sensitivity(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[str,
                 "kappa_ref_by_dataset": estimates,
                 "schmieder_kappa_ref_m2": estimates.get("schmieder2023"),
                 "pooled_kappa_ref_m2": pooled,
+                "failures": [failure for ev in sub.evaluations(result.x) for failure in ev.failures],
             }
             names = [b.name for b in sub.blocks]
             if "V1" in names:
@@ -1080,9 +1150,14 @@ def sensitivity(paths: RepoPaths, config: Mapping[str, Any], start: Mapping[str,
                               "lambda_within": within["lambda"], "cup_within": within["cup"],
                               "pump": pump_summary(v1, ev.observations)})
             out[name] = entry
+            if progress:
+                progress({"reference_datasets": datasets, "variants": copy.deepcopy(out),
+                          "completed": len(out), "required": len(variants)})
     finally:
         runner.close()
-    return {"reference_datasets": datasets, "variants": out}
+    return {"reference_datasets": datasets, "variants": out, "completed": len(out), "required": len(variants),
+            "all_optimizers_converged": all(v["optimizer"]["success"] for v in out.values()),
+            "all_predictions_available": all(not v["failures"] for v in out.values())}
 
 
 def _round(value: float) -> float:
@@ -1255,7 +1330,7 @@ def calibration_document(problem: Problem, result: FitResult, *, label: str, con
         rr = ev.residuals
         blocks[block.name] = {
             "dataset": block.module.KEY,
-            "datasets": list(BLOCK_DATASETS[block.module.KEY]),
+            "datasets": list(datasets_for_block(block)),
             "cases": len(block.cases),
             "residuals": int(rr.size),
             "rms": _round(float(np.sqrt(np.mean(rr**2)))) if rr.size else 0.0,
@@ -1286,11 +1361,11 @@ def calibration_document(problem: Problem, result: FitResult, *, label: str, con
         from .identity import input_hashes
 
         inputs = input_hashes(RepoPaths(find_repo_root()), config_path,
-                              sorted({d for b in problem.blocks for d in BLOCK_DATASETS[b.module.KEY]}))
+                              sorted({d for b in problem.blocks for d in datasets_for_block(b)}))
     except Exception:  # noqa: BLE001 - informative only
         inputs = None
     fit: dict[str, Any] = {
-        "datasets": sorted({d for b in problem.blocks for d in BLOCK_DATASETS[b.module.KEY]}),
+        "datasets": sorted({d for b in problem.blocks for d in datasets_for_block(b)}),
         "config": config_path,
         "solver": solver,
         "inputs": inputs,
@@ -1335,6 +1410,8 @@ def dump_document(doc: Mapping[str, Any]) -> str:
 
 
 def write_documents(doc: Mapping[str, Any], out_dir: Path, *, label: str, current: bool = True) -> list[Path]:
+    import tempfile
+
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     text = dump_document(doc)
@@ -1342,8 +1419,38 @@ def write_documents(doc: Mapping[str, Any], out_dir: Path, *, label: str, curren
     if current:
         written.append(out_dir / "current.yaml")
     for path in written:
-        path.write_text(text, encoding="utf-8")
+        # Each checkpoint survives interruption as either the previous complete file or the new one.
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=out_dir, delete=False) as stream:
+            stream.write(text)
+            temporary = Path(stream.name)
+        temporary.replace(path)
     return written
+
+
+def completion_issues(doc: Mapping[str, Any]) -> list[str]:
+    """Numerical completion of the declared v3 workflow, separate from scientific acceptance gates."""
+    fit_doc = doc.get("fit") or {}
+    issues = []
+    if not (fit_doc.get("optimizer") or {}).get("success"):
+        issues.append("main/pruned optimizer did not converge")
+    if any(block.get("failures") for block in (fit_doc.get("blocks") or {}).values()):
+        issues.append("main/pruned fit has unavailable final predictions")
+    loo = fit_doc.get("loo") or {}
+    experiments = loo.get("experiments") or {}
+    if set(experiments) != {f"exp{number:02d}" for number in range(1, 16)}:
+        issues.append("leave-one-out does not contain all 15 experiments")
+    if any(not (row.get("optimizer") or {}).get("success") for row in experiments.values()):
+        issues.append("one or more leave-one-out optimizers did not converge")
+    if any(row.get("predicted") is False or row.get("refit_failures") for row in experiments.values()):
+        issues.append("leave-one-out has unavailable refit or left-out predictions")
+    variants = (fit_doc.get("sensitivity") or {}).get("variants") or {}
+    if set(variants) != set(SENSITIVITY_VARIANTS):
+        issues.append("sensitivity does not contain all nine declared variants")
+    if any(not (row.get("optimizer") or {}).get("success") for row in variants.values()):
+        issues.append("one or more sensitivity optimizers did not converge")
+    if any(row.get("failures") for row in variants.values()):
+        issues.append("sensitivity has unavailable final predictions")
+    return issues
 
 
 def load_calibration_document(path: Path) -> dict[str, Any]:
@@ -1377,7 +1484,9 @@ def load_calibration(path: Path) -> dict[str, float]:
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", type=Path, help="calibration config (default: data/calibration/config.yaml)")
     parser.add_argument("--out-dir", type=Path, help="output directory (default: data/calibration)")
-    parser.add_argument("--label", default="v2", help="name of the versioned output file (default: v2; M1.1)")
+    parser.add_argument("--label", default="v3", help="name of the versioned output file (default: v3)")
+    parser.add_argument("--start-from", type=Path, help="warm-start values from a preserved calibration document")
+    parser.add_argument("--checkpoint-dir", type=Path, help="retain main/prune and each completed refit checkpoint")
     parser.add_argument("--no-current", action="store_true", help="do not write current.yaml")
     parser.add_argument("--blocks", help="comma-separated subset of blocks, e.g. V1,V4")
     parser.add_argument("--tier", type=int, help="override the config's numerics tier")
@@ -1413,6 +1522,9 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
 
     config_path = args.config or paths.root / "data" / "calibration" / "config.yaml"
     config = load_config(config_path)
+    out_dir = args.out_dir or paths.root / "data" / "calibration"
+    if args.label in ("v1", "v2") and Path(out_dir).resolve() == (paths.root / "data/calibration").resolve():
+        raise CalibrationError("v1/v2 are preserved historical fits; choose a new label or an external output directory")
     fixed = fixed_parameters(config, load_registry(paths))
     if args.pool_only:
         out_dir = args.out_dir or paths.root / "data" / "calibration"
@@ -1433,6 +1545,21 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
     blocks = args.blocks.split(",") if args.blocks else None
     problem = build_problem(paths, config, blocks=blocks, tier=args.tier, jobs=args.jobs, fd_step=args.fd_step)
     try:
+        from .identity import input_hashes, solver_identity
+
+        datasets = sorted({name for block in problem.blocks for name in datasets_for_block(block)})
+        inputs_before = input_hashes(paths, str(config_path), datasets)
+        solver_before = solver_identity(paths)
+        warm_start = None
+        if args.start_from:
+            from .identity import file_sha256
+
+            starting_document = load_calibration_document(args.start_from)
+            if not starting_document:
+                raise CalibrationError(f"warm-start calibration {args.start_from} does not exist")
+            starts = apply_start_values(problem, calibrated_values(starting_document))
+            warm_start = {"path": paths.relative(args.start_from), "sha256": file_sha256(args.start_from),
+                          "label": starting_document.get("label"), "values": starts}
         for message in check_overrides(problem):
             print(f"calibrate: warning: {message}")
         print(f"calibrate: {len(problem.params)} parameters, {len(problem.labels)} residuals in blocks "
@@ -1448,35 +1575,91 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
             print(f"calibrate: dry run, cost {0.5 * float(r @ r):.4g}; nothing written")
             return 0
         result = fit(problem, max_nfev=args.max_nfev, loss=args.loss, verbose=args.verbose)
+
+        def save_fit_stage(stage: str, stage_config: Mapping[str, Any], stage_problem: Problem,
+                           stage_result: FitResult, pruned_fixed: Mapping[str, Any]) -> None:
+            if not args.checkpoint_dir:
+                return
+            snapshot = calibration_document(stage_problem, stage_result, label=args.label,
+                                            config_path=paths.relative(config_path), core_version=core().__version__,
+                                            fixed={**fixed, **pruned_fixed})
+            snapshot["fit"].update(effective_config=copy.deepcopy(stage_config), warm_start=warm_start,
+                                   pipeline={"stage": stage, "completed": False})
+            write_documents(snapshot, args.checkpoint_dir, label=f"{args.label}-{stage}", current=False)
+            write_documents(snapshot, args.checkpoint_dir, label=f"{args.label}-latest", current=False)
+
+        save_fit_stage("main", config, problem, result, {})
         if args.prune:
             config, problem, result, pruned = prune(paths, config, problem, result, tier=args.tier,
                                                     fd_step=args.fd_step, max_nfev=args.max_nfev, loss=args.loss,
-                                                    verbose=args.verbose)
+                                                    verbose=args.verbose,
+                                                    progress=lambda cfg, prob, res, fixed: save_fit_stage(
+                                                        f"prune-{len(fixed):02d}", cfg, prob, res, fixed))
             fixed = {**fixed, **pruned}
             for pid, entry in pruned.items():
                 print(f"calibrate: pruned {pid}: {entry['reason']}")
         doc = calibration_document(problem, result, label=args.label, config_path=paths.relative(config_path),
                                    core_version=core().__version__, fixed=fixed)
+        doc["fit"]["effective_config"] = copy.deepcopy(config)
+        doc["fit"]["warm_start"] = warm_start
+        doc["fit"]["run_settings"] = {"jobs": args.jobs, "tier": args.tier if args.tier is not None else config.get("tier", 1),
+                                       "fd_step": args.fd_step, "loss": args.loss, "max_nfev": args.max_nfev,
+                                       "prune": args.prune, "loo": args.loo, "sensitivity": args.sensitivity}
+        doc["fit"]["pipeline"] = {"stage": "main-prune", "completed": False,
+                                   "required_loo": 15 if args.loo else 0,
+                                   "required_sensitivity": len(SENSITIVITY_VARIANTS) if args.sensitivity else 0}
+
+        def checkpoint(stage: str) -> None:
+            doc["fit"]["pipeline"]["stage"] = stage
+            if args.checkpoint_dir:
+                write_documents(doc, args.checkpoint_dir, label=f"{args.label}-{stage}", current=False)
+                write_documents(doc, args.checkpoint_dir, label=f"{args.label}-latest", current=False)
+
+        checkpoint("main-prune")
         reference = doc["fit"].get("reference_permeability")
         if reference:
             print(f"calibrate: {REFERENCE_PERMEABILITY_ID} = {reference['value_m2']:.4g} m² (pooled from "
                   f"{len(reference['estimates'])} estimates, log-SD {reference['log_sd']}, max/min {reference['max_over_min']})")
         if args.loo and any(b.name == "V1" for b in problem.blocks):
+            def loo_progress(partial: dict[str, Any]) -> None:
+                doc["fit"]["loo"] = _rounded(partial)
+                checkpoint(f"loo-{partial['completed']:02d}")
+                print(f"calibrate: leave-one-out {partial['completed']}/{partial['required']} refits complete", flush=True)
+
             loo = leave_one_out(paths, config, problem.values(result.x), tier=args.tier, jobs=args.jobs,
-                                max_nfev=args.max_nfev, fd_step=args.fd_step)
+                                max_nfev=args.max_nfev, fd_step=args.fd_step, progress=loo_progress)
             doc["fit"]["loo"] = _rounded(loo)
+            checkpoint("loo-complete")
             print(f"calibrate: leave-one-out: λ within ±15% {loo['lambda_within']}/{loo['lambda_total']}, "
                   f"cup masses {loo['cup_within']}/{loo['cup_total']}")
         if args.sensitivity and any(b.name == "V1" for b in problem.blocks):
             capped = (doc["fit"]["blocks"].get("V1", {}).get("pump_limited") or {}).get("pour_capped", [])
+
+            def sensitivity_progress(partial: dict[str, Any]) -> None:
+                doc["fit"]["sensitivity"] = _rounded(partial)
+                checkpoint(f"sensitivity-{partial['completed']:02d}")
+                print(f"calibrate: sensitivity {partial['completed']}/{partial['required']} refits complete", flush=True)
+
             sens = sensitivity(paths, config, problem.values(result.x), doc["fit"].get("reference_permeability"),
                                tier=args.tier, jobs=args.jobs, max_nfev=args.max_nfev, fd_step=args.fd_step,
-                               variants=resolve_variants(SENSITIVITY_VARIANTS, capped))
+                               variants=resolve_variants(SENSITIVITY_VARIANTS, capped), progress=sensitivity_progress)
             doc["fit"]["sensitivity"] = _rounded(sens)
             for name, v in sens["variants"].items():
                 print(f"calibrate: sensitivity {name}: cost {v['cost']:.4g} ({'+'.join(v['blocks'])}), κ_ref by dataset "
                       + ", ".join(f"{d} {k:.3g}" for d, k in v["kappa_ref_by_dataset"].items())
                       + f", pooled {v['pooled_kappa_ref_m2']:.3g} m²")
+        doc["fit"]["pipeline"]["completed"] = (
+            bool(result.success)
+            and not any(block["failures"] for block in doc["fit"]["blocks"].values())
+            and (not args.loo or doc["fit"].get("loo", {}).get("all_optimizers_converged", False))
+            and (not args.loo or doc["fit"].get("loo", {}).get("all_predictions_available", False))
+            and (not args.sensitivity or doc["fit"].get("sensitivity", {}).get("all_optimizers_converged", False))
+            and (not args.sensitivity or doc["fit"].get("sensitivity", {}).get("all_predictions_available", False)))
+        if inputs_before != input_hashes(paths, str(config_path), datasets) or solver_before != solver_identity(paths):
+            doc["fit"]["pipeline"].update(completed=False, source_changed_during_run=True)
+            checkpoint("invalid-source-change")
+            raise CalibrationError("calibration inputs or solver changed during the run; checkpoint retained, refit on final sources")
+        checkpoint("complete" if doc["fit"]["pipeline"]["completed"] else "incomplete")
         out_dir = args.out_dir or paths.root / "data" / "calibration"
         if refuse_placeholder(problem.runner, out_dir, paths, args.allow_placeholder):
             print("calibrate: the solver reports itself as a placeholder; not writing data/calibration "
@@ -1510,6 +1693,18 @@ def _rerun_sensitivity(args: argparse.Namespace, paths: RepoPaths, config: Mappi
     if not doc:
         raise CalibrationError(f"{paths.relative(source)} does not exist; run the calibration first")
     fit_doc = doc.get("fit") or {}
+    from .identity import input_hashes, solver_identity
+    from .validate import calibration_reuse_issues
+
+    config_path = args.config or paths.root / "data/calibration/config.yaml"
+    datasets = fit_doc.get("datasets") or []
+    inputs_before, solver_before = input_hashes(paths, str(config_path), datasets), solver_identity(paths)
+    issues = calibration_reuse_issues(doc, solver_before, inputs_before)
+    if issues:
+        raise CalibrationError("cannot merge sensitivity refits into a historical main fit: " + "; ".join(issues))
+    recorded_tier = (fit_doc.get("run_settings") or {}).get("tier", config.get("tier", 1))
+    if args.tier is not None and args.tier != recorded_tier:
+        raise CalibrationError("sensitivity repair must retain the main fit's numerics tier")
     fixed_ids = set(fit_doc.get("fixed") or {})
     config = copy.deepcopy(dict(config))
     pruned = [e for e in config["parameters"] if e["id"] in fixed_ids]
@@ -1523,11 +1718,22 @@ def _rerun_sensitivity(args: argparse.Namespace, paths: RepoPaths, config: Mappi
         raise CalibrationError(f"no sensitivity variant matches {args.variant}")
     sens = sensitivity(paths, config, calibrated_values(doc), fit_doc.get("reference_permeability"),
                        tier=args.tier, jobs=args.jobs, max_nfev=args.max_nfev, fd_step=args.fd_step, variants=variants)
+    if inputs_before != input_hashes(paths, str(config_path), datasets) or solver_before != solver_identity(paths):
+        raise CalibrationError("inputs or solver changed during the sensitivity rerun; existing fit left untouched")
+    for variant in sens["variants"].values():
+        variant["rerun_identity"] = {"solver": solver_before, "inputs": inputs_before,
+                                     "jobs": args.jobs, "tier": recorded_tier, "fd_step": args.fd_step}
     merged = dict(fit_doc.get("sensitivity") or {})
     merged["reference_datasets"] = sens["reference_datasets"]
     merged["variants"] = {**(merged.get("variants") or {}), **_rounded(sens)["variants"]}
+    merged.update(completed=len(merged["variants"]), required=len(SENSITIVITY_VARIANTS),
+                  all_optimizers_converged=all(v["optimizer"]["success"] for v in merged["variants"].values()),
+                  all_predictions_available=all(not v.get("failures") for v in merged["variants"].values()))
     doc = copy.deepcopy(doc)
     doc["fit"]["sensitivity"] = merged
+    issues = completion_issues(doc)
+    doc["fit"].setdefault("pipeline", {}).update(stage="complete" if not issues else "incomplete",
+                                               completed=not issues, completion_issues=issues)
     for name, v in sens["variants"].items():
         print(f"calibrate: sensitivity {name}: cost {v['cost']:.4g} ({'+'.join(v['blocks'])}), κ_ref by dataset "
               + ", ".join(f"{d} {k:.3g}" for d, k in v["kappa_ref_by_dataset"].items())

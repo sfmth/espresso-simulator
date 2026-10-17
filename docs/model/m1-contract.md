@@ -168,7 +168,7 @@ Recorded here by the lead as workstreams report them (rule 3).
 | `hydraulics.dissolution_porosity_share` | θ, the share of dissolved solid volume that becomes intergranular porosity, in [0, 1]. Absent or `null` means θ = 0, bit-identical to an explicit 0 (second round; the proportional rule is removed) |
 | `thermal.ambient_temp_c` | ambient temperature for heat loss |
 | `numerics.kernel_shells` | equal-volume shells per kernel (2–64) |
-| `solubles.kernel_loading_cap` | second round, default `true`: caps kernel re-uptake at the initial pore content u₀ |
+| `solubles.kernel_loading_cap` | raw default `true`, recipe `false`; 0.6.0 optional boundary cap is u₀+βc/ε_c so carried pore solute is admitted |
 | `machine.stop.vent_headspace` | second round, default `false`: a 3-way valve vents the group at the stop, so there is no drip |
 | `machine.hydraulic_compliance_m3_pa` | 0.5.0: optional constant upstream pressure storage C, 0–1e-10 m³/Pa; default 0 preserves algebraic hydraulics. Registry override `model.machine.hydraulic_compliance` is in mL/bar. See ADR 0011 |
 
@@ -193,15 +193,15 @@ Recorded here by the lead as workstreams report them (rule 3).
 **Solver semantics** (second round, after the independent review):
 - Every spec number is bounded (`docs/model/shot-model.md` §2.1, mirrored in the schema), and the model size is capped.
 - Mass balance above 1e-9 warns, and above 1e-6 fails with `Numerical`. Negative concentrations warn or fail likewise.
-- Partition coefficients are Corrochano's K, per swollen-particle envelope volume. The kernel boundary value is c/(K·ε_p).
-- `spatial.snapshots[].liquid_conc_kg_m3` is per liquid holdup. Local EY is never negative while the loading cap is on.
+- Partition coefficients are Corrochano's K, per swollen-particle envelope volume. The kernel boundary value is c/(K·ε_c), with ε_c a reference loading normalization.
+- `spatial.snapshots[].liquid_conc_kg_m3` is per mobile intergranular water volume. Local EY may be negative when particles receive solute carried from other cells, including with the optional boundary cap.
 - With default zero compliance, drip drains only headspace water. With nonzero compliance, it drains only charged storage; `drip_tau_s` then sets an 8τ observation window rather than prescribing pressure decay. A vent discharges both stores. Lowered program pressure caps throttle incoming water without venting stored pressure.
 - Tier 0 reports 4 columns (3 strata plus the edge), 2 without spread, or 1 without spread or edge.
 - **Third round** (after a verification review):
   - A step whose pool regimes do not converge is rejected and retried at Δt/2, never accepted; after 12 halvings the run fails with `Numerical`.
-  - Pools and kernels hold the pore liquid ε_p(1 − u_w), and the mobile holdup is ε + (1−ε₀)·ε_p·u_w, so liquid volume always equals total porosity.
-  - `hydraulics.wetting_uptake` (u_w ≤ 0.9) is the mobile share of the particles' pore liquid; it mostly sets the wetting time.
-  - **M1.1 (0.3.0), additive fields:** `hydraulics.intraparticle_water_fraction` (null/omitted for legacy capacity, otherwise 0–1) sets the water inventory independently of `wetting_uptake`, which remains the effective particle loading normalization. Recipe builds use 1 and count this pore water once in the continuum holdup. `hydraulics.pore_air` (`amplitude`, `tau_s`, off when omitted) and `hydraulics.pore_air_permeability_exponent` (default 1) describe a separate local wetting-mobility relaxation. These are estimated closures, not a fixed first-drop delay; see [input-models.md §6.1](input-models.md#61-m11-startup-assumptions).
+  - **0.6.0 inventory correction:** pools and kernels hold total particle solute; mobile holdup is ε. Newly filled particle water carries solute implicitly between these disjoint inventories ([ADR 0012](../decisions/0012-total-particle-solute-inventory.md)).
+  - `hydraulics.wetting_uptake` (u_w ≤ 0.9) sets the reference loading normalization and, when no explicit water fraction is supplied, the startup pore-water fraction.
+  - **M1.1 (0.3.0), additive fields:** `hydraulics.intraparticle_water_fraction` (null/omitted for legacy capacity, otherwise 0–1) sets the water inventory independently of `wetting_uptake`, which remains the effective particle loading normalization. Recipe builds use 1; hydraulic and thermal storage include that water while its solute belongs to the particle states. `hydraulics.pore_air` (`amplitude`, `tau_s`, off when omitted) and `hydraulics.pore_air_permeability_exponent` (default 1) describe a separate local wetting-mobility relaxation. These are estimated closures, not a fixed first-drop delay; see [input-models.md §6.1](input-models.md#61-m11-startup-assumptions).
   - Validation rejects v̄·max(c_sat, K·s₀) ≥ 0.9, with s₀ = E_max·ρ_s·(1−ε_p), and warns when K·s₀ > c_sat.
   - Total work is bounded: steps × model values ≤ 1e10.
   - Mass stops land within 0.2 mg.

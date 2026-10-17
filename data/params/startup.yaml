@@ -8,9 +8,9 @@ parameters:
   - id: model.hydraulics.intraparticle_water_fraction
     name: Particle pore-water capacity during infiltration
     description: >-
-      Fraction of intraparticle pore volume supplied by the wetting front and counted in the
-      continuum liquid holdup. Particle extraction states represent effective soluble loading,
-      not a second water inventory, in this approximation.
+      Fraction of intraparticle pore volume supplied by the wetting front. It contributes to
+      hydraulic and thermal storage; its solute belongs to total particle loading. Newly filled
+      pore water carries mobile solute into the particle reservoirs (0.6.0 inventory correction).
     units: "1"
     value: 1
     prior: {distribution: uniform, min: 0.5, max: 1}
@@ -18,7 +18,7 @@ parameters:
     tag: estimated
     evidence_grade: D
     sources:
-      - citation: "Puckworks M1.1 (2026), docs/model/shot-model.md: effective single-liquid pore-water inventory; full accessible pore capacity is an assumption."
+      - citation: "Puckworks M1.1 (2026), docs/model/shot-model.md: total-particle solute inventory with conservative front carriage (ADR 0012); full accessible pore capacity is an assumption."
       - citation: "Grudeva Y., Moroney K.M., Foster J.M. (2026) A multiscale model for espresso brewing: asymptotic analysis and numerical simulation. Eur. J. Appl. Math. 37:496–519."
         doi: "10.1017/S095679252500018X"
     research_note_ref: ["01 §3.5", "01 §4.8"]
@@ -28,7 +28,7 @@ parameters:
       moisture penetration into intact particles is slow. The retained pool/kernel normalization
       wetting_uptake remains an effective loading scale and is not another liquid volume.
       No V3, V4 transient or V5 observations set this value. A raw ShotSpec without this field
-      keeps the legacy wetting_uptake-based water inventory for reproducibility.
+      selects the wetting_uptake-based water fraction; all specs use the corrected solute equations.
     status: draft
 
   - id: model.hydraulics.pore_air_amplitude

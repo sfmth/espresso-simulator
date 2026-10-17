@@ -427,6 +427,7 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
             surface_rate_m_s: k_surface.v,
             reference_temp_c: 80.0,
             solute_specific_volume_m3_kg: 1.0 / solute_density.v,
+            kernel_loading_cap: false,
             species: bean
                 .species
                 .iter()
@@ -579,7 +580,7 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
         ),
         (
             "solubles.kernel_loading_cap",
-            "model:solver default (kernel re-uptake capped at the initial content; shot-model.md §5.3)".into(),
+            "model:total-particle partition without a boundary-loading cap (Corrochano 2017; shot-model.md §5.3)".into(),
         ),
         ("hydraulics.permeability_m2", kappa_src),
         ("hydraulics.poroelastic_pc_pa", pc.src.clone()),

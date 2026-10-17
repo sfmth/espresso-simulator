@@ -36,7 +36,7 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 | `puckworks-tools fixtures --check` | Regenerates the fixture in memory and fails if the committed file differs, printing the largest difference and where it is. `--tolerance ATOL` allows small absolute differences in results (default 0, exact) |
 | `puckworks-tools shot-fixtures [--check]` | Writes, or checks, `data/fixtures/shot_cases.json`: recipes with the spec and result the native core gives (below). `--tolerance ATOL` as for `fixtures` |
 | `puckworks-tools verify` | Writes `docs/validation/m0-kernel-verification.md` and `.json`. `--quick` runs small series (smoke test); `--output-dir` writes elsewhere |
-| `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out), `--prune` (fix weakly identified shared parameters and refit), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`. Refuses to write `data/calibration` while the solver is a placeholder |
+| `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out), `--prune` (fix weakly identified shared parameters and refit), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`, `--start-from FILE` (bounded warm start), `--checkpoint-dir DIR` (atomic main/prune/refit snapshots). Defaults to v3 and protects historical v1/v2 output paths. Refuses to write `data/calibration` while the solver is a placeholder |
 | `puckworks-tools validate` | Writes the M1 validation report `docs/validation/m1-validation.md` (figures in `docs/validation/m1/`, numbers in `.json`): calibration fit quality and the held-out checks of PLAN §10. `--quick` (tier 0), `--jobs N`, `--calibration FILE`, `--output-dir`, `--from-json FILE` (re-render without simulating). `python/scripts/m1-pipeline.sh [JOBS]` runs the whole M1 pipeline (rebuild, calibrate, export, rebuild, validate, shot fixture, checks) |
 | `puckworks-tools community --archive ZIP --log CSV` | Imports the pinned original Gagné experiment and runs exploratory model comparisons with fixed assumptions. No download, fitting or admission to the calibration inventory. `--tier 0` is a coarse smoke run; the default is tier 1. Detailed output goes to `.local/community/gagne2021`; `--output-dir` must be outside a Git worktree or ignored |
 | `puckworks-tools export [--check]` | Forwards to `puckworks_tools.export.main` (workstream D): writes, or checks, `crates/puckmodel/generated/presets.json` and `registry.json` from `data/presets`, `data/params` and `data/calibration/current.yaml`. Run it after any change to those |
@@ -61,6 +61,16 @@ The command reads local files only. Source checksums must match the inspected do
 spreadsheet needs a new provenance review, not silent reuse of the old experiment identity. The parser
 does not execute Tcl or export account/device fields. It preserves measurement noise, separates
 observed and target channels, and reports an unreached mass threshold as missing.
+
+The command uses the calibration selected by `data/calibration/current.yaml`. That document must match
+`data/calibration/<label>.yaml`, and the installed extension must embed the same calibration label,
+parameter keys and values. After changing the selection, run `puckworks-tools export` and rebuild the
+native extension before comparing shots. The report records the selected label, coefficient values,
+both calibration-file hashes and the current solver identity; it does not refit them to these shots.
+Choose a fresh `--output-dir` when changing the calibration or core version to preserve earlier reports.
+Saved reports keep their recorded calibration identity when rendered again. The published comparison
+uses v2 with core 0.5.0; running the current model produces a new comparison, not a reproduction of those
+historical numerical results.
 
 The [comparison report](../docs/validation/community-shot-comparison.md) records the assumptions and
 observations used. Pressure-driven comparisons condition on the measured pressure and therefore cannot
@@ -275,8 +285,9 @@ to `--tolerance`.
 
 ### Particle-size input audit (0.5.1)
 
-The default Schmieder calibration reconstructs the wet volume mean with an assumed 25% fines
-mode; it does not reproduce the published surface-area mean. The explicit `wet_cdf` case input
+The historical v1/v2 Schmieder input reconstructed the wet volume mean with an assumed 25% fines
+mode; it did not reproduce the published surface-area mean. Calibration v3 explicitly selects the
+qualified wet CDF after correcting the mobile/particle solute inventories. The explicit `wet_cdf` case input
 combines the resolved wet cumulative curve with a D[3,2]-constrained unresolved head. The
 [report](../docs/validation/m11-particle-inputs.md) compares fixed input scenarios with the v2
 coefficients unchanged, including source-moment, pore-air-time and numerical sensitivities:
@@ -284,6 +295,10 @@ coefficients unchanged, including source-moment, pore-air-time and numerical sen
 ```bash
 .venv/bin/python -m puckworks_tools.particle_inputs --jobs 3 --output-dir .local/particle-inputs
 ```
+
+Reproducing the published 0.5.1 audit requires its original source/build (`7b1d3a0`). On a newer
+engine this command evaluates fixed v2 coefficients on that engine and records its identity; it
+is not a reproduction of the historical numbers. The committed audit is preserved.
 
 The PSD affects both the derived pore-air timescale and preparation heterogeneity. The
 fixed-air-time probe isolates the former; the 32-class refinement holds every non-class field

@@ -1,6 +1,8 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # 05 — Water and particle inventory
 
+**Version note:** this is the preserved 0.5.1 source audit. Its “current model” and proposed correction refer to that release. Version 0.6.0 implements separate mobile and total-particle solute inventories with conservative front carriage; [ADR 0012](../decisions/0012-total-particle-solute-inventory.md) records the selected closure and its remaining assumptions. The fixed-v2 audit outputs remain historical.
+
 *Primary-source audit, 2026-10-16. This note identifies model and input constraints; it introduces no fitted coefficient or new transport law.*
 
 **Resolve reservoir ownership and preserve measured particle-size information before adding water-exchange kinetics.** The current full-water concentration and the published particle partition coefficient use overlapping solute inventories. Wetting measurements support several water environments and concurrent headspace/puck filling, but the sources reviewed here do not independently determine an espresso mobile/immobile exchange rate. Conservation of numerical state variables alone cannot establish that their physical inventories are disjoint.

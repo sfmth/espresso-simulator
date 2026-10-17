@@ -76,14 +76,16 @@ fn base_permeability_scales_the_reference_once() {
             "{prov}"
         );
     }
-    // At the reference porosity α has no effect: κ₀ is bit-identical for any α.
+    // At the reference porosity α has no effect beyond floating-point round-off.
     let k = |a: f64| {
         let mut r = generic_recipe();
         r["overrides"] = json!({"hydraulics.kozeny_carman.density_exponent": a});
         num(&build_ok(&r), "spec.hydraulics.permeability_m2")
     };
-    assert_eq!(k(0.327), k(1.0));
-    assert_eq!(k(0.0), k(1.0));
+    let reference = k(1.0);
+    for alpha in [0.327, 0.0] {
+        assert!((k(alpha) / reference - 1.0).abs() <= 4.0 * f64::EPSILON);
+    }
 }
 
 #[test]
@@ -525,7 +527,7 @@ fn new_solver_fields_are_set_with_provenance() {
         num(&build_ok(&r), "spec.hydraulics.dissolution_porosity_share"),
         0.5
     );
-    assert_eq!(b["spec"]["solubles"]["kernel_loading_cap"], true);
+    assert_eq!(b["spec"]["solubles"]["kernel_loading_cap"], false);
     let prov = &b["derived"]["provenance"];
     assert_eq!(
         prov["thermal.ambient_temp_c"],

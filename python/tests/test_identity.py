@@ -55,3 +55,19 @@ def test_input_identity_tracks_machine_preset_edits(tmp_path, monkeypatch):
     after = identity.input_hashes(paths, None, [])
     assert before["registry_inputs_sha256"] == after["registry_inputs_sha256"]
     assert before["presets_sha256"] != after["presets_sha256"]
+
+
+def test_input_identity_tracks_unit_conversions(tmp_path, monkeypatch):
+    from puckworks_tools import identity
+    from puckworks_tools.paths import RepoPaths
+
+    monkeypatch.setattr(identity, "registry_inputs_sha256", lambda paths: "same-registry")
+    folder = tmp_path / "data/schema"
+    folder.mkdir(parents=True)
+    units = folder / "units.yaml"
+    units.write_text("percent: {scale: 0.01}\n")
+    before = identity.input_hashes(RepoPaths(tmp_path), None, [])
+    units.write_text("percent: {scale: 1.0}\n")
+    after = identity.input_hashes(RepoPaths(tmp_path), None, [])
+    assert before["conversion_inputs_sha256"] != after["conversion_inputs_sha256"]
+    assert before["registry_inputs_sha256"] == after["registry_inputs_sha256"]

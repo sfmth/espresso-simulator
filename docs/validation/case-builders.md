@@ -59,7 +59,7 @@ Data: [schmieder2023-design](../../data/datasets/schmieder2023-design/), [-fract
 |---|---|
 | dose | 20 g |
 | basket | IMS 58 mm |
-| PSD | fines + boulders mixture, D[4,3] equal to the wet value for the grinding level (273, 277, 295 µm), fines weight fixed at 25% |
+| PSD | v3: qualified Fig. A1b wet CDF plus published D[3,2], preserving D[3,2] in 16 classes; historical reconstruction remains available explicitly |
 | program | flow 7 mL/s until the pressure reaches 2.5 bar, then a 4 s linear ramp to the experiment's *measured* mean flow (Table 2) |
 | pump | ideal, 8 mL/s, 12 bar |
 | temperature | the measured brew temperature (Table 2) |
@@ -75,7 +75,7 @@ Data: [schmieder2023-design](../../data/datasets/schmieder2023-design/), [-fract
   with Eq. 3, so model and data are processed identically.
 - The peak inlet pressure over the whole shot, and over the pour phase (from the end of the transition ramp).
 
-**Exploratory wet PSD (0.5.1).** `build_cases(..., psd_source="wet_cdf")` uses
+**Qualified wet PSD (audited in 0.5.1; selected for v3).** `build_cases(..., psd_source="wet_cdf")` uses
 [schmieder2023-psd](../../data/datasets/schmieder2023-psd/) from Fig. A1(b). Its resolved cumulative
 curve starts near 3.04 µm. Volume density is assumed constant in diameter between retained points;
 the unresolved head's mass comes from the first cumulative value and its effective diameter from
@@ -83,7 +83,9 @@ the reported D[3,2]. That head is a reconstruction, not measured individual part
 `sauter_offset_sd=-1` or `1` changes only the source D[3,2] constraint by its reported SD.
 The source D[4,3] is an independent cross-check, not a fitting target. Case metadata records both
 source-distribution and discretised-class moments. The class reduction preserves D[3,2] but can
-change D[4,3]. These options do not alter the existing calibration configuration or app presets.
+change D[4,3]. The v3 calibration config explicitly selects this input; app grinder presets retain their separate empirical mapping.
+The dataset sidecar retains its original 0.5.1 note about the historical default; the active calibration
+config, not that historical note, determines which PSD these cases use.
 The [fixed-parameter audit](m11-particle-inputs.md) includes a size-class refinement that replaces
 only the nominal wet case's particle classes, retaining all other final spec fields. A separate
 probe retains the original pore-air relaxation time. Changing the PSD also changes the builder's
@@ -91,7 +93,7 @@ estimated permeability spread through the fines fraction, so the fixed-time prob
 isolate particle extraction alone. The report records both hydraulic couplings.
 
 **Assumptions.**
-- The default reconstructed PSD retains its 25% fines judgement and wet D[4,3] target. Its D[3,2]
+- The historical reconstructed PSD retains its 25% fines judgement and wet D[4,3] target. Its D[3,2]
   is about 101–103 µm, versus the paper's wet 26.9–29.2 µm; it is not a match to both measured
   moments. The new alternative incorporates the wet curve and D[3,2], but neither wet laser
   diffraction nor its tiny-particle tail establishes dry puck geometry, intact-cell diffusion
@@ -106,7 +108,8 @@ isolate particle extraction alone. The report records both hydraulic couplings.
   2.5 bar exit). M1.1 revises the startup hydraulics while retaining the idealised DE1 control. The
   calibration continues to compare the pour-phase maximum and flags pump-capped pours (calibration.md,
   "V1 peak pressure"); the current report gives the remaining saturation and the ramp sensitivities.
-- Each case runs at its experiment's mean measured flow (Table 2). For experiment 15 the replicates differ
+- Each case targets its experiment's mean measured flow (Table 2); pressure capping can lower the actual
+  simulated delivery, which is flagged in the report. For experiment 15 the replicates differ
   (2.47, 2.85 and 3.01 mL/s; RSD 8%, the largest of the design), so its single mean-flow shot represents
   them less well than elsewhere.
 - The coffee's extractable solids and its contents of caffeine, trigonelline and 5-CQA belong to this bean.

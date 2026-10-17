@@ -67,6 +67,9 @@ def input_hashes(paths: RepoPaths, config_path: str | None, datasets: list[str])
             "datasets_sha256": {name: tree_sha256(paths.datasets_dir / name) for name in datasets},
             "registry_inputs_sha256": registry_inputs_sha256(paths),
             "presets_sha256": tree_sha256(paths.root / "data" / "presets"),
+            "conversion_inputs_sha256": {name: file_sha256(paths.root / name) for name in (
+                "data/schema/units.yaml", "python/puckworks_tools/units.py",
+                "python/puckworks_tools/registry.py", "python/puckworks_tools/yamlio.py")},
             "calibration_sources_sha256": calibration_sources_sha256(paths)}
 
 

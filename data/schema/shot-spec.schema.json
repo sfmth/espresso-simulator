@@ -295,7 +295,7 @@
           "maximum": 0.002
         },
         "kernel_loading_cap": {
-          "description": "Cap kernel uptake at the initial content (default true): the kernel boundary value is min(c/(K·ε_c), u₀) with ε_c = ε_p(1 − u_w), so kernels never load above their initial pore concentration u₀ = s₀/ε_c. A modelling assumption beyond the data (K was measured in dilute batch extraction). false keeps the linear partition at all concentrations; the solver then warns when K·s₀ < c_sat.",
+          "description": "Optional excess-loading cap: min(c/(K·ε_c), u₀ + βc/ε_c), with ε_c = ε_p(1 − u_w) and β = ε_p·water_fraction. It admits pore-carried aqueous solute; total loading can exceed initial dry content. Raw default true, recipe builds false. This restriction is a modelling assumption beyond the dilute-batch K measurement; false keeps the linear partition.",
           "type": "boolean"
         }
       }
@@ -404,13 +404,13 @@
           "$ref": "#/$defs/Viscosity"
         },
         "wetting_uptake": {
-          "description": "Legacy mobile intraparticle-water share and particle loading-capacity normalization, 0–0.9. With intraparticle_water_fraction null this sets front water uptake and holdup. With an explicit water fraction it only retains the effective particle loading capacity ε_p(1 − u_w); it is not a second physical water inventory.",
+          "description": "Particle loading normalization, 0–0.9: ε_c = ε_p(1 − u_w). When intraparticle_water_fraction is null it also selects front pore-water uptake. Mobile solute occupies only intergranular water; absorbed-water solute belongs to total particle loading.",
           "type": "number",
           "minimum": 0,
           "maximum": 0.9
         },
         "intraparticle_water_fraction": {
-          "description": "Fraction of intraparticle pores filled by the front and counted in liquid holdup. null preserves legacy wetting_uptake; 1 fills all initial pores. When set, particle states are effective soluble loadings rather than a second physical water inventory. This is an effective single-liquid approximation, not kinetic dual-porosity flow.",
+          "description": "Fraction of intraparticle pores filled by the front, contributing to hydraulic and thermal storage. null selects wetting_uptake; 1 fills all initial pores. Its solute belongs to total particle loading, with implicit carriage from mobile liquid as the front advances. This sharp-front closure does not resolve finite-rate internal-water exchange.",
           "type": ["number", "null"],
           "minimum": 0,
           "maximum": 1

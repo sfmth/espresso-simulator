@@ -53,7 +53,7 @@ pub(crate) struct SpeciesState {
     pub pool: Vec<f64>,
     pub u: Vec<f64>,
     pub u_prev: Vec<f64>,
-    /// Kernel boundary value held at the initial content, per (cell, class).
+    /// Kernel boundary at its affine excess-loading cap, per (cell, class).
     pub kcap: Vec<bool>,
     pub cup: f64,
     pub initial: f64,
@@ -88,13 +88,16 @@ pub(crate) struct State {
     /// Dry solid mass of each cell, kg.
     pub dry: Vec<f64>,
     pub pool: Vec<f64>,
-    /// Initial pool content per (cell, class), kg: the pool cap.
+    /// Initial pool content per (cell, class), kg, including the dry share.
     pub pool0: Vec<f64>,
+    /// Deposition ceiling: initial pool content plus cumulative solute
+    /// carried into its pore water by the advancing front, kg.
+    pub pool_ceiling: Vec<f64>,
     /// Pool regime (saturated) per (cell, class).
     pub regime: Vec<bool>,
-    /// Pool held at its initial content, per (cell, class).
+    /// Pool at its initial-plus-carried-solute ceiling, per (cell, class).
     pub pcap: Vec<bool>,
-    /// Kernel boundary value held at u₀ (loading cap), per (cell, class).
+    /// Kernel boundary at its affine excess-loading cap, per (cell, class).
     pub kcap: Vec<bool>,
     pub u: Vec<f64>,
     pub u_prev: Vec<f64>,
@@ -191,6 +194,7 @@ impl State {
             particle,
             dry,
             pool0: pool.clone(),
+            pool_ceiling: pool.clone(),
             pool,
             regime: vec![true; cells * nk],
             pcap: vec![false; cells * nk],
@@ -1766,8 +1770,8 @@ impl<'a> Sim<'a> {
                 ),
             });
         }
-        // The liquid never reaches the water-content limit: validation bounds
-        // v̄·max(c_sat, K·s₀) below 0.9 and the liquid stays below that.
+        // Check the realized maximum as well as the initial equilibria:
+        // carried pore solute can increase total particle loading.
         if m.liquid.specific_volume * self.state.max_conc >= 0.95 {
             return Err(ShotError::Numerical {
                 reason: format!(
@@ -1960,7 +1964,9 @@ mod tests {
     fn the_loading_cap_bounds_reuptake() {
         // With the cap, kernels take back at most what they lost; without
         // it, near-saturated liquid loads them (K·ε_p·u₀ < c_sat here).
-        let spec = ShotSpec::default();
+        let mut spec = ShotSpec::default();
+        // Isolate exchange from solute carried in by particle-pore filling.
+        spec.hydraulics.intraparticle_water_fraction = Some(0.0);
         let (capped, up_cap, content) = run_with_uptake(&spec);
         let mut lin = spec.clone();
         lin.solubles.kernel_loading_cap = false;

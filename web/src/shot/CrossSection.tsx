@@ -106,9 +106,8 @@ export function CrossSection({ outcome }: { outcome: ShotOutcome }) {
   }
 
   const [lo, hi] = range ?? [0, 1];
-  // The solver keeps local EY at or above zero. Should a result still carry
-  // negatives (an older core), fall back to a diverging scale centred on zero,
-  // symmetric so small negatives look small.
+  // Particles can gain solubles from the liquid. A diverging scale distinguishes
+  // that net gain from extraction, symmetric so small negatives look small.
   const diverging = field === 'local_ey' && lo < -NEGATIVE_TOLERANCE;
   const magnitude = Math.max(Math.abs(lo), Math.abs(hi)) || 1;
   const colorOf = (v: number | null) => {
@@ -390,13 +389,13 @@ export function CrossSection({ outcome }: { outcome: ShotOutcome }) {
             ? 'Columns that share an annulus are drawn side by side inside it; that order is a drawing choice. '
             : ''}
           {hasNegative
-            ? 'Values below 0 mean the particles there took solubles back up from the liquid. '
+            ? 'Values below 0 mean the particles there gained more solubles than they released, including solubles carried by absorbed water. '
             : ''}
           {partlyDry
             ? 'Hatched cells are not yet (fully) wetted, the denser the drier; the dashed line marks the wetting front in each column. '
             : ''}
           {field === 'liquid_conc_kg_m3'
-            ? 'The concentration is per volume of liquid (between and inside the particles); it is 0 where the bed is dry. '
+            ? 'The concentration is per volume of mobile water between the particles; it is 0 where the bed is dry. '
             : ''}
         </figcaption>
       </figure>

@@ -121,11 +121,11 @@ export const GLOSSARY: Record<string, Term> = {
   },
   outflow: {
     title: 'Outflow check',
-    text: 'A second, independent conservation check: the solubles in the cup compared with the outlet flow times the outlet concentration, summed over the shot. It is first-order in the time step, so about 0.001 is expected; values near 1 would mean the flow and the transport disagree.',
+    text: 'Compares the cup solubles with a separate time sum of outlet flow times outlet concentration. The sums use different time approximations, so the discrepancy depends on the shot and time step and should shrink with smaller steps. It checks outlet accounting; mass-balance error checks the whole bed and cup.',
   },
   'liquid-conc': {
     title: 'Solubles in the bed liquid',
-    text: 'The concentration of dissolved coffee in the water held in the bed, between and inside the particles, per volume of that water. It is 0 where the water has not arrived yet.',
+    text: 'The concentration of dissolved coffee in the mobile water between the particles, per volume of that water. Solubles inside particles are counted with the particles. It is 0 where the water has not arrived yet.',
   },
   wetting: {
     title: 'Wetting front',
@@ -137,7 +137,7 @@ export const GLOSSARY: Record<string, Term> = {
   },
   'local-ey': {
     title: 'Local extraction yield',
-    text: 'The share of the coffee in one cell of the bed that has left its particles. It is never negative in the standard model; with the kernel loading cap switched off, particles can take solubles back up from the liquid and the value can dip below zero.',
+    text: 'The net solubles lost by the particles in one cell, as a share of their dry coffee mass. A negative value means the particles gained more solubles than they released, including solubles carried by absorbed water. This is separate from extraction yield measured in the cup.',
   },
   provenance: {
     title: 'Provenance',

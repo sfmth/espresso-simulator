@@ -20,15 +20,16 @@ from typing import Any
 import numpy as np
 
 from . import __version__
-from .calibrate import Runner, build_problem, calibrated_values, load_calibration_document, load_config
+from .calibrate import Runner, build_problem, calibrated_values, load_calibration_document
 from .cases import schmieder2023 as sch
-from .cases.common import Case, bimodal_psd, core
+from .cases.common import Case, bimodal_psd
 from .identity import file_sha256, input_hashes, solver_identity, tree_sha256
 from .paths import RepoPaths, find_repo_root
 from .validate import V1_FIT_TOLERANCE, _calibration_x
 from .yamlio import load_yaml
 
 REPORT_NAME = "m11-particle-inputs"
+HISTORICAL_REPORT = "docs/validation/m11-particle-inputs.json"
 EXPERIMENTS = tuple(range(1, 16))
 SCENARIOS = (
     {"id": "original16", "label": "Original, 16 classes", "psd_source": "reconstructed", "n_classes": 16},
@@ -168,18 +169,29 @@ def score_v1(rows: Sequence[Mapping[str, Any]], targets: Mapping[Any, Any]) -> d
                            for a, _, _, _ in sch.ANALYTES}}
 
 
+def historical_inputs(paths: RepoPaths) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """The archived audit config and v2 values, independent of the currently deployed calibration.
+
+    Replaying these inputs on a newer solver is a new experiment; the archived 0.5.1 results and
+    their source identities remain untouched. Unfitted registry inputs come from the running tree.
+    """
+    archive = json.loads((paths.root / HISTORICAL_REPORT).read_text(encoding="utf-8"))
+    document = load_calibration_document(paths.root / "data/calibration/v2.yaml")
+    if document.get("label") != "v2" or calibrated_values(document) != archive["calibration"]["all_preserved_values"]:
+        raise ValueError("particle-input audit requires the preserved v2 values recorded in the historical report")
+    return copy.deepcopy(archive["calibration"]["config"]), document, archive
+
+
+def preserve_shared_values(problem: Any, document: Mapping[str, Any]) -> None:
+    """Make every historical shared value explicit, including values absent from the V1 fit vector."""
+    for block in problem.blocks:
+        for case in block.cases:
+            case.recipe["overrides"] = {**case.recipe.get("overrides", {}), **document["parameters"]}
+
+
 def build_scenarios(paths: RepoPaths, runner: Runner) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
-    """Build all 91 specs through the existing calibration mapping, without evaluating an optimizer."""
-    config = load_config(paths.root / "data/calibration/config.yaml")
-    document = load_calibration_document(paths.root / "data/calibration/current.yaml")
-    preserved = load_calibration_document(paths.root / "data/calibration/v2.yaml")
-    if document.get("label") != "v2" or document != preserved:
-        raise ValueError("particle-input audit requires current.yaml to equal preserved v2.yaml")
-    embedded = core().registry()
-    defaults = {p["id"]: p.get("default") for p in embedded["parameters"]}
-    if (embedded.get("calibration", {}).get("label") != "v2"
-            or any(defaults.get(key) != value for key, value in document["parameters"].items())):
-        raise ValueError("installed solver does not embed the preserved v2 shared defaults; rebuild it")
+    """Build all 91 specs using preserved v2 inputs and the installed solver, without fitting."""
+    config, document, archive = historical_inputs(paths)
     calibrated = calibrated_values(document)
     scenarios, original_specs = [], {}
     fixed_values = None
@@ -189,6 +201,7 @@ def build_scenarios(paths: RepoPaths, runner: Runner) -> tuple[list[dict[str, An
         options = variant["blocks"]["V1"].setdefault("case_options", {})
         options.update(psd_source=definition["psd_source"], sauter_offset_sd=definition.get("sauter_offset_sd", 0.0))
         problem = build_problem(paths, variant, blocks=["V1"], runner=runner)
+        preserve_shared_values(problem, document)
         if any(p.id in calibrated and not p.lower <= calibrated[p.id] <= p.upper for p in problem.params):
             raise ValueError("preserved calibration lies outside the current bounds; refusing to clip it")
         values = problem.values(_calibration_x(problem, calibrated))
@@ -227,7 +240,8 @@ def build_scenarios(paths: RepoPaths, runner: Runner) -> tuple[list[dict[str, An
                       "case_options": nominal["case_options"], "cases": [nominal["cases"][centre_index]],
                       "specs": [refined_spec]})
     calibration = {"label": "v2", "all_preserved_values": calibrated, "applied_v1_values": fixed_values,
-                   "config": config, "fitted_in_this_run": False, "embedded_shared_defaults_verified": True}
+                   "config": config, "fitted_in_this_run": False, "shared_values_applied_as_overrides": True,
+                   "historical_report": HISTORICAL_REPORT, "historical_solver": archive["solver"]}
     return scenarios, calibration, block.data
 
 
@@ -315,13 +329,14 @@ def refinement_comparison(nominal: Mapping[str, Any], refined: Mapping[str, Any]
 
 
 def audit_hashes(paths: RepoPaths) -> dict[str, Any]:
-    files = ("data/calibration/current.yaml", "data/calibration/v2.yaml",
+    files = ("data/calibration/v2.yaml", HISTORICAL_REPORT,
              "data/schema/units.yaml",
              "python/puckworks_tools/particle_inputs.py", "python/puckworks_tools/sources/schmieder2023_psd.py",
              "python/puckworks_tools/validate.py", "python/puckworks_tools/identity.py",
              "python/puckworks_tools/units.py", "python/puckworks_tools/registry.py", "python/puckworks_tools/yamlio.py",
              "python/puckworks_tools/paths.py")
-    return {**input_hashes(paths, "data/calibration/config.yaml", [*sch.DATASETS, sch.PSD_DATASET]),
+    return {**input_hashes(paths, HISTORICAL_REPORT, [*sch.DATASETS, sch.PSD_DATASET]),
+            "config_source": f"{HISTORICAL_REPORT}:calibration.config",
             "registry_tree_sha256": tree_sha256(paths.params_dir),
             "files_sha256": {name: file_sha256(paths.root / name) for name in files}}
 
@@ -382,6 +397,10 @@ def run_audit(paths: RepoPaths, *, jobs: int = 3, progress: Callable[[str], None
                         "targets": targets, "psds": psds, "scenarios": report_scenarios,
                         "refinement": refinement_comparison(centre, report_scenarios[-1]["rows"][0]),
                         "baseline_reference": {"lambda_within": 48, "cup_within": 163,
+                                               "historical_core_version": calibration["historical_solver"]["puckcore_version"],
+                                               "same_physical_model": all(
+                                                   solver["sources_sha256"][name] == calibration["historical_solver"]["sources_sha256"][name]
+                                                   for name in ("crates/puckcore/src", "crates/puckmodel/src")),
                                                "reproduced": baseline_score["lambda_within"] == 48
                                                and baseline_score["cup_within"] == 163},
                         "robustness": robustness})
@@ -401,6 +420,13 @@ def render_markdown(report: Mapping[str, Any]) -> str:
              f"Source: [{report['source']['citation']}]({report['source']['url']}) "
              f"({report['source']['licence']}).", ""]
     lines.extend(paragraph + "\n" for paragraph in report["source_basis"])
+    reference = report["baseline_reference"]
+    if "same_physical_model" in reference and not reference["same_physical_model"]:
+        lines += [f"This is a replay of preserved v2 fit values on a changed solver, not a reproduction "
+                  f"of the archived puckcore {reference['historical_core_version']} calculation. The "
+                  "archived configuration and every shared fitted value are applied explicitly; current "
+                  "unfitted registry assumptions and solver physics are recorded in this run's identity. "
+                  "Historical score counts are reference values only.", ""]
     lines += ["## Particle inputs", "", "Original and reconstructed wet distributions before size-class reduction. "
               "Diameters are in µm. Head diameters are derived; the head share is a volume fraction.", "",
               "| GL | Original D32 | Wet D32 | Original D43 | Wet D43 | Reported wet D43 ± SD | Head share | Head diameter |",
@@ -434,8 +460,10 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                      f"{_fmt(first['min'])}–{_fmt(first['max'])} | {_fmt(time['min'])}–{_fmt(time['max'])} | "
                      f"{_fmt(summary['max_mass_balance_error'], 3)} | {_fmt(summary['max_carrier_balance_error'], 3)} |")
     reproduced = report["baseline_reference"]["reproduced"]
-    lines += ["", "The original-input reference of λ 48/60 and cups 163/180 "
-              + ("was reproduced." if reproduced else "was NOT reproduced; this discrepancy requires review."), "",
+    comparison = ("was reproduced." if reproduced else "was NOT reproduced; this discrepancy requires review.")
+    if reference.get("same_physical_model") is False:
+        comparison = "is historical; score equality is not required after a model change."
+    lines += ["", "The original-input reference of λ 48/60 and cups 163/180 " + comparison, "",
               "## Experiment 7 timestep check", ""]
     refined = report["refinement"]
     lines += [f"Wet, 16 classes: max dt {_fmt(refined['nominal_max_dt_s'])} → "
