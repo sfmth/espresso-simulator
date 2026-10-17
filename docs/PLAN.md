@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.5.0 · Last updated 2026-10-16 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup, community comparisons and optional pressure storage added. Scientific validation exit criteria remain open (see §12 and §15).*
+*Version 0.5.1 · Last updated 2026-10-16 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup, community comparisons, optional pressure storage and a particle-input audit added. Scientific validation exit criteria remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -11,13 +11,15 @@ Puckworks is an open-source espresso simulator that runs entirely in the browser
 
 Every number carries its provenance and an uncertainty band.
 
-This plan consolidates the planning Q&A of 2026-10-13 and three research notes. The notes hold the equations, parameter tables and full references.
+This plan consolidates the planning Q&A of 2026-10-13 and the research notes. The notes hold the equations, parameter tables and full references.
 
 | Note | Covers |
 |---|---|
 | [01 Extraction and flow physics](research/01-extraction-and-flow-physics.md) | multiscale extraction models; permeability, compaction, swelling, channeling; parameter table; validation datasets; browser numerics |
 | [02 Chemistry and sensory](research/02-chemistry-and-sensory.md) | roasted-coffee composition; key odorants; per-compound extraction kinetics; bean properties → composition; water; taste modelling |
 | [03 Grinding, PSD and data](research/03-grinding-psd-and-data.md) | PSDs; grinder and bean effects; puck-prep evidence; public datasets and their licences; prior ML work |
+| [04 Community shot data](research/04-community-shot-data.md) | online archives; measurement provenance, clocks and calibration admission |
+| [05 Water and particle inventory](research/05-water-and-particle-inventory.md) | source-defined solute capacities; wetting evidence; wet PSD reconstruction and its limits |
 
 ---
 
@@ -628,14 +630,16 @@ Size M. **Selected by the owner on 2026-10-15, before M2; implementation in 0.3.
 - **Data direction:** use online research and community measurements (D15), with the [source audit](research/04-community-shot-data.md) as the intake record. The owner's equipment is not required for calibration. Candidate discovery does not change the existing training/held-out split or make a source calibration-ready.
 - **Community comparison tooling (0.4.0):** the [online-shot investigation](validation/community-shot-comparison.md) uses original DE1 logs and their matching measurement sheet for reproducible exploratory comparisons. It distinguishes measured, estimated and target channels, and exact pump-off from the recorded bloom-flow floor. Fixed scenarios expose missing mechanisms and input uncertainty without fitting community observations or changing the existing scientific gates.
 - **Pressure-storage investigation (0.5.0):** an opt-in constant compliance stores pump-supplied water and releases it during a pause, with pressure and cumulative-volume diagnostics ([ADR 0011](decisions/0011-upstream-pressure-storage.md)). All 170 fixed 0/0.5/2 mL/bar community scenarios and approximation runs complete without fitting a value. Default flow-command scenarios still produce 1.45–1.51 g during bloom against 3.02–5.85 g observed. At 2 mL/bar they produce 5.52–6.08 g, but end-bloom pressure is only 0.0174–0.0177 bar against 0.72–1.08 bar observed. Storage enables the missing response without establishing a calibrated explanation. The original 117 validation predictions and failures remain unchanged.
-- **Next evidence and physics work:** constrain pressure/storage and uptake separately, with qualified inlet delivery, PSD and clock metadata from online sources. Resolve mobile/immobile water exchange and simultaneous filling only with stated assumptions and independent evidence. A constant compliance does not identify a unique physical mechanism, and matching bloom gain alone cannot establish calibration.
+- **Particle-input and inventory audit (0.5.1):** the [fixed-fit comparison](validation/m11-particle-inputs.md) uses Schmieder's readable wet CDF and published D32 to constrain the unresolved finest particles. Its unfitted D43 agrees with the source, whereas the historical reconstructed input has D32 near 101 µm against the published 27–29 µm. D32 ± SD, particle-class refinement and a fixed pore-air timescale expose separate sensitivities; no scenario is promoted or fitted. The [partition-source review](research/05-water-and-particle-inventory.md) identifies overlap between full-water solute storage and the total particle loading defined by the published partition coefficient. Numerical conservation does not resolve this physical inconsistency.
+- **Audit outcome:** all 91 simulations complete. Nominal wet-PSD rates within ±10% fall from 48/60 to 19/60 at fixed v2 values; keeping the original air timescale gives 32/60. Pure particle-class refinement gives 20/60 and changes individual rates by at most 0.438%. Preparation heterogeneity also follows the PSD, and is reported separately. Default predictions and the original 117-case validation remain unchanged; this input audit does not close a scientific gate.
+- **Next evidence and physics work:** give mobile liquid and total particle solute distinct inventories, with conservative transport into newly wetted particle pores. Check equilibrium capacity, front transfer, loading caps and species accounting together; changing the partition coefficient alone omits transient terms. Qualify inlet delivery, PSD and clock metadata to constrain pressure/storage, uptake and simultaneous filling separately. A constant compliance or the wet PSD does not identify a unique mechanism or a particle-water exchange rate.
 - **Outcome:** startup improves, but the scientific gates remain open. V4 first drops move from 1.8 to 6.8 s (12.8 s measured), and the flow rise from 6.7 to 12.1 s (25.5 s measured). V1 extraction rates within ±10% regress from 57/60 to 48/60. Generic 18 → 36 g pump-stop times remain short at 15.6–17.0 s. The [M1.1 investigation](validation/m11-startup.md) documents the remaining failures and ablations; M2 stays deferred.
-- Count accessible particle pore water in the infiltration budget and continuum holdup, with particle extraction states represented as effective soluble loading. This is an explicit single-liquid approximation.
+- The current implementation counts accessible particle pore water in the infiltration budget and continuum holdup, with particle extraction states represented as effective soluble loading. This single-liquid approximation has the solute-capacity overlap identified above; the audit does not change its equations.
 - Add a local pore-air mobility relaxation, separate from roast-dependent CO₂. Its amplitude, power and moisture-diffusion mapping remain grade-D estimates, fixed before held-out evaluation.
 - Conserve headspace fill through ramps and phase changes, respect pump-off phases, and bound drip by retained water. Report a hydraulic carrier-volume balance separately from soluble mass balance.
 - Preserve the original calibration and validation. Refit only the original calibration blocks; V3, the V4 transient and V5 retain their held-out status and strict scoring targets.
 - Verify analytical filling times, timestep convergence, conservation and cross-platform agreement. Report experimental improvements and failures separately from numerical verification.
-- Version 0.5.0 verification passes 219 Rust, 406 Python and 445 web tests, plus 55 browser checks; seven native/WASM shot fixtures agree exactly. The 0.3.0 browser measurement took 584 ms; its warm preview took 12.5 ms and missed the 10 ms target. Those timings describe that build, machine and recipe, not a guarantee across hardware and inputs.
+- Version 0.5.1 verification passes 219 Rust, 440 Python and 445 web tests, plus 55 browser checks; seven native/WASM shot fixtures agree exactly. The 0.3.0 browser measurement took 584 ms; its warm preview took 12.5 ms and missed the 10 ms target. Those timings describe that build, machine and recipe, not a guarantee across hardware and inputs.
 - Full two-phase flow, finite-rate mobile/immobile water exchange and simultaneous compressible headspace dynamics remain research gaps ([ADR 0010](decisions/0010-startup-water-and-pore-air.md)). Passing all M1 validation gates is still required before calling the core validated.
 
 ### M2: Chemistry, beans and water
@@ -752,7 +756,8 @@ These are optional experiments for the future local personalization feature (V9/
 2. **M1.1 research gaps:**
    - pressure/storage and drainage during bloom, motivated by the [community comparisons](validation/community-shot-comparison.md); examine this response before tuning startup coefficients against these logs;
    - quantitative startup accuracy: M1.1 adds water capacity, an estimated pore-air mobility closure and conservative filling; separate immobile-water uptake, gas pressure and simultaneous headspace/puck filling remain unresolved;
-   - permeability against particle size: the calibration datasets give different reference permeabilities (current spread in the validation report), and both the D32² scaling and the PSD measurement basis are untested;
+   - consistent solute storage: the full-water holdup overlaps the partition source's total particle inventory; resolve reservoir ownership, front transfer and equilibrium together ([source audit](research/05-water-and-particle-inventory.md));
+   - permeability against particle size: the calibration datasets give different reference permeabilities (current spread in the validation report). The wet-PSD audit preserves published moments, but D32² permeability scaling and using wet debris sizes for intact-cell diffusion or pore-air relaxation remain unvalidated;
    - the slow flow rise seen in measured shots;
    - first-fraction TDS against the 25 ± 3% target (current values in the validation report).
 

@@ -80,3 +80,37 @@ def test_number_formatting():
     assert common.fmt(21.33349, 3) == "21.333" and common.fmt(24.0, 2) == "24" and common.fmt(-0.0001, 2) == "0"
     with pytest.raises(ValueError):
         common.fmt(float("nan"))
+
+
+def test_occluded_errorbar_uses_both_visible_ends():
+    from puckworks_tools.sources.schmieder2023_psd import visible_span_midpoint
+
+    # A different curve hides the middle of the bar. The longest connected
+    # portion is not its centre; both independently visible caps still constrain it.
+    mask = np.zeros((1260, 1710), dtype=bool)
+    mask[750:770, 1139:1142] = True
+    mask[810:830, 1139:1142] = True
+    assert visible_span_midpoint(mask, 1140, 790, 95) == 789.5
+    with pytest.raises(ValueError, match="no resolved Q3"):
+        visible_span_midpoint(mask, 600, 900, 20)
+
+
+def test_cdf_projection_is_a_least_squares_correction():
+    from puckworks_tools.sources.schmieder2023_psd import monotone_cdf
+
+    # Projection pools a reversal at its mean rather than increasing every
+    # following value to the previous maximum (which biases particle moments).
+    original = [0.0, 0.2, 0.18, 0.4, 1.0]
+    corrected = monotone_cdf(original)
+    assert corrected == pytest.approx([0.0, 0.19, 0.19, 0.4, 1.0])
+    assert corrected.sum() == pytest.approx(sum(original))
+    assert monotone_cdf(corrected) == pytest.approx(corrected)
+
+
+def test_schmieder_psd_rejects_an_unpinned_source(tmp_path):
+    from puckworks_tools.sources.schmieder2023_psd import import_source
+
+    (tmp_path / "schmieder2023.pdf").write_bytes(b"a different PDF edition")
+    with pytest.raises(ValueError, match="differs from the edition"):
+        import_source(tmp_path, tmp_path / "out")
+    assert not (tmp_path / "out").exists()

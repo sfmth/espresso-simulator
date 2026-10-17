@@ -327,6 +327,15 @@ The timescale uses the recipe's PSD Sauter diameter in metres, even when the sol
 the PSD for a preview. Thus both tiers receive the same physical τ. The 600 s cap produces a build
 note. All four new inputs have registry records, provenance and sandbox overrides.
 
+The [0.5.1 particle-input audit](../validation/m11-particle-inputs.md) exposes the sensitivity of
+this timescale to wet-dispersion fines. Its fixed-τ scenario isolates that effect; the measured wet
+D32 is not independent evidence for a moisture-transport radius. The
+[source audit](../research/05-water-and-particle-inventory.md) also identifies overlapping solute
+capacities when full particle pore water is held at the continuum concentration while particle
+loading uses Corrochano's total-inventory partition coefficient. The current builder retains
+that approximation and the v2 fit. Correcting it requires consistent storage and front transfer,
+not only a different coefficient; see [shot-model §5.1](shot-model.md#51-inventories).
+
 These defaults were fixed before testing the held-out transients. The moisture coefficient was
 inferred from swelling in [Mateus et al. (2007)](https://doi.org/10.1021/jf062841g); the mapping from
 that coefficient and a Sauter radius to a mobility timescale, the amplitude and the cubic power are

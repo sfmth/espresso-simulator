@@ -257,7 +257,7 @@ to `--tolerance`.
 
 ## Calibration and validation (M1)
 
-- **Datasets** (`data/datasets/`): 18 folders from Schmieder 2023, Waszkiewicz 2026, Cameron 2020, Vaca
+- **Datasets** (`data/datasets/`): 19 folders from Schmieder 2023, Waszkiewicz 2026, Cameron 2020, Vaca
   Guerra 2024, Corrochano 2017 and Smrke 2024 (licences and gaps in
   [data/datasets/README.md](../data/datasets/README.md)). `sources/` regenerates their CSV files from the
   downloads (xlsx tables, the authors' Zenodo archive, PDF vector graphics, raster figures).
@@ -272,6 +272,37 @@ to `--tolerance`.
 - **Validation** (`validate.py`): fit quality of the calibration blocks and the held-out checks V3 (Cameron),
   V4 transient (Waszkiewicz) and V5 (Smrke), with pass or fail against PLAN §10; tier 0 against tier 1 on
   the held-out cases; generic app shots; the validation part of the M1 exit criteria.
+
+### Particle-size input audit (0.5.1)
+
+The default Schmieder calibration reconstructs the wet volume mean with an assumed 25% fines
+mode; it does not reproduce the published surface-area mean. The explicit `wet_cdf` case input
+combines the resolved wet cumulative curve with a D[3,2]-constrained unresolved head. The
+[report](../docs/validation/m11-particle-inputs.md) compares fixed input scenarios with the v2
+coefficients unchanged, including source-moment, pore-air-time and numerical sensitivities:
+
+```bash
+.venv/bin/python -m puckworks_tools.particle_inputs --jobs 3 --output-dir .local/particle-inputs
+```
+
+The PSD affects both the derived pore-air timescale and preparation heterogeneity. The
+fixed-air-time probe isolates the former; the 32-class refinement holds every non-class field
+at its nominal wet value. The JSON retains final specs, observations, failures and input hashes.
+
+To regenerate the new dataset, download the [published article PDF](https://www.mdpi.com/2304-8158/12/15/2871/pdf)
+as `schmieder2023.pdf` into a local directory. The importer checks the edition's hash and requires
+`pdftoppm` and the `sources` extra; `--review-dir` additionally uses matplotlib:
+
+```bash
+.venv/bin/python -m puckworks_tools.sources.schmieder2023_psd .local/sources \
+  --out .local/imported-datasets --review-dir .local/particle-inputs/source-review
+```
+
+The [sidecar](../data/datasets/schmieder2023-psd/dataset.yaml) records source attribution,
+digitisation, omitted/occluded points, monotonic correction, and support assumptions. D[3,2]
+matching is imposed by the reconstruction; D[4,3] remains an unfitted check. The ±1 SD probes
+are source-moment sensitivities, not a complete uncertainty interval or a calibrated improvement.
+Wet particle sizes do not independently identify dry pore geometry or a water-exchange time.
 
 ## Verification report
 

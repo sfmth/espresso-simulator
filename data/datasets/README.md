@@ -27,6 +27,7 @@ to the accepted inventory or change the fitting/held-out split below.
 | [`schmieder2023-fractions/`](schmieder2023-fractions/) | trigonelline, caffeine, 5-CQA and TDS in the 6 analysed fractions of all 48 shots (Table S1) | CC BY 4.0 | V1 |
 | [`schmieder2023-kinetics/`](schmieder2023-kinetics/) | c₀ and λ of the exponential kinetics, all experiments and analytes (Table A1) | CC BY 4.0 | V1 |
 | [`schmieder2023-replicates/`](schmieder2023-replicates/) | per shot: measured flow, temperature, peak pressure, cup masses at 20/40/60 g (Table S3) | CC BY 4.0 | V1 |
+| [`schmieder2023-psd/`](schmieder2023-psd/) | resolved wet cumulative size curves (Fig. A1b) and reported D[3,2]/D[4,3]; the unresolved head is reconstructed using D[3,2] | CC BY 4.0 | exploratory V1 input audit; default calibration unchanged |
 | [`waszkiewicz2026-flow-transient/`](waszkiewicz2026-flow-transient/) | pump and basket pressure, cup mass and flow versus time at 11 pressures (authors' archive) | CC BY 4.0 | V4 transient (held out) |
 | [`waszkiewicz2026-flow-pressure/`](waszkiewicz2026-flow-pressure/) | long-time flow versus basket pressure, 11 pressures | CC BY 4.0 | V4 Q(P) |
 | [`waszkiewicz2026-tds/`](waszkiewicz2026-tds/) | TDS of 5 s fractions, three replicates | CC BY 4.0 | V4 TDS (held out) |
@@ -49,11 +50,11 @@ records the SHA-256 of its source files.
 
 | Wanted | Why not |
 |---|---|
-| Schmieder 2023 time-resolved pressure, flow and temperature logs | not in the supplement as tables (only inside the authors' OriginPro project, a proprietary binary format); Tables 2 and S3 give each shot's peak pressure, mean flow and temperature |
+| Schmieder 2023 time-resolved pressure, flow and temperature logs | not obtained as tables; the opaque OriginPro project has not been decoded and its raw-log contents are unverified. Tables 2 and S3 give each shot's peak pressure, mean flow and temperature |
 | Vaca Guerra 2024 outlet-concentration curves (TDS, caffeine, trigonelline, 5-CQA, three PSDs) | the article is CC BY-NC-ND (no non-commercial material is bundled, PLAN §11) and the curves come from an earlier paper that is not open access (Vaca Guerra 2023, J. Food Eng. 340:111301); only cited scalars are kept. Needs the authors' permission |
 | Smrke 2024 raw data | "available from the corresponding author on reasonable request"; the published figures were digitised instead |
 | Corrochano 2017 full particle-size distributions | given only as figures; the tabulated summary parameters are used |
-| Schmieder 2023 particle-size distributions (Fig. A1) | not digitised in this version; the case builder reconstructs a PSD from the reported D[4,3] |
+| Schmieder 2023 raw PSDs and dry distribution (Fig. A1a) | raw instrument tables not located; dry panel not digitised. The wet panel's resolved cumulative curve and reported moments are now available as an explicit exploratory input, with an unresolved finest-particle head |
 
 ## Licensing rules
 

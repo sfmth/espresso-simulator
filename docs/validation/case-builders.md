@@ -75,11 +75,27 @@ Data: [schmieder2023-design](../../data/datasets/schmieder2023-design/), [-fract
   with Eq. 3, so model and data are processed identically.
 - The peak inlet pressure over the whole shot, and over the pour phase (from the end of the transition ramp).
 
+**Exploratory wet PSD (0.5.1).** `build_cases(..., psd_source="wet_cdf")` uses
+[schmieder2023-psd](../../data/datasets/schmieder2023-psd/) from Fig. A1(b). Its resolved cumulative
+curve starts near 3.04 µm. Volume density is assumed constant in diameter between retained points;
+the unresolved head's mass comes from the first cumulative value and its effective diameter from
+the reported D[3,2]. That head is a reconstruction, not measured individual particle sizes.
+`sauter_offset_sd=-1` or `1` changes only the source D[3,2] constraint by its reported SD.
+The source D[4,3] is an independent cross-check, not a fitting target. Case metadata records both
+source-distribution and discretised-class moments. The class reduction preserves D[3,2] but can
+change D[4,3]. These options do not alter the existing calibration configuration or app presets.
+The [fixed-parameter audit](m11-particle-inputs.md) includes a size-class refinement that replaces
+only the nominal wet case's particle classes, retaining all other final spec fields. A separate
+probe retains the original pore-air relaxation time. Changing the PSD also changes the builder's
+estimated permeability spread through the fines fraction, so the fixed-time probe does not
+isolate particle extraction alone. The report records both hydraulic couplings.
+
 **Assumptions.**
-- The article reports only D[4,3] and D[3,2] of its PSDs (wet). Its Fig. A1(a) shows the dry distributions
-  but was not digitised (future work: it would replace the fines-weight judgement), so the fines weight is a
-  judgement inside the 15–36% dry range of `psd.fines_fraction.dry`. The wet D[3,2] of about 27 µm reflects
-  1–10 µm debris that a 40 µm fines mode cannot represent.
+- The default reconstructed PSD retains its 25% fines judgement and wet D[4,3] target. Its D[3,2]
+  is about 101–103 µm, versus the paper's wet 26.9–29.2 µm; it is not a match to both measured
+  moments. The new alternative incorporates the wet curve and D[3,2], but neither wet laser
+  diffraction nor its tiny-particle tail establishes dry puck geometry, intact-cell diffusion
+  lengths or a moisture/gas-relaxation radius. Fig. A1(a)'s dry curve has not been imported.
 - The DE1 measures pressure between boiler and portafilter. Table 2's pressure is the mean of the per-shot
   *maxima*; this was checked against Table S3. So the model's peak inlet pressure is the comparable quantity.
   It is fitted with one permeability per grinding level, the V1 nuisance parameters.
