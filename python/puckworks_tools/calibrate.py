@@ -1649,7 +1649,7 @@ def _positive_int(value: str) -> int:
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", type=Path, help="calibration config (default: data/calibration/config.yaml)")
     parser.add_argument("--out-dir", type=Path, help="output directory (default: data/calibration)")
-    parser.add_argument("--label", default="v4", help="name of the versioned output file (default: v4)")
+    parser.add_argument("--label", default="v5", help="name of the versioned output file (default: v5)")
     parser.add_argument("--start-from", type=Path, help="warm-start values from a preserved calibration document")
     parser.add_argument("--checkpoint-dir", type=Path, help="retain main/prune and each completed refit checkpoint")
     parser.add_argument("--no-current", action="store_true", help="do not write current.yaml")
@@ -1690,8 +1690,8 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
     config_path = args.config or paths.root / "data" / "calibration" / "config.yaml"
     config = load_config(config_path)
     out_dir = args.out_dir or paths.root / "data" / "calibration"
-    if args.label in ("v1", "v2", "v3") and Path(out_dir).resolve() == (paths.root / "data/calibration").resolve():
-        raise CalibrationError("v1/v2/v3 are preserved historical fits; choose a new label or an external output directory")
+    if args.label in ("v1", "v2", "v3", "v4") and Path(out_dir).resolve() == (paths.root / "data/calibration").resolve():
+        raise CalibrationError("v1/v2/v3/v4 are preserved historical fits; choose a new label or an external output directory")
     fixed = fixed_parameters(config, load_registry(paths))
     if args.pool_only:
         out_dir = args.out_dir or paths.root / "data" / "calibration"

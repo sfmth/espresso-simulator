@@ -190,6 +190,10 @@ Recorded here by the lead as workstreams report them (rule 3).
 | `diagnostics.max_regime_solves`, `diagnostics.rejected_steps` | third round: the most policy-iteration solves in one step, and how many steps were rejected and retried at Δt/2 |
 | `diagnostics.hydraulic_volume_balance_error` | relative hydraulic carrier-volume residual, including retained pore/headspace/charged water and vented water; separate from soluble mass conservation and not an exact solvent-mass balance with dissolution |
 
+Since 0.6.3, the time series also retains phase transitions and ramp ends between regular output
+times. Phase transitions report the operating point immediately before the control changes.
+Consumers must use the supplied timestamps rather than assume uniformly spaced samples.
+
 **Solver semantics** (second round, after the independent review):
 - Every spec number is bounded (`docs/model/shot-model.md` §2.1, mirrored in the schema), and the model size is capped.
 - Mass balance above 1e-9 warns, and above 1e-6 fails with `Numerical`. Negative concentrations warn or fail likewise.

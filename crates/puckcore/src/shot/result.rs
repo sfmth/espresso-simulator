@@ -86,8 +86,9 @@ pub struct Uniformity {
     pub ey_mean: f64,
 }
 
-/// Time series at `numerics.output_interval_s` spacing (plus the stop and the
-/// end of the drip).
+/// Time series at `numerics.output_interval_s` spacing, plus phase changes,
+/// ramp ends, the stop and the end of the drip. Phase changes retain the
+/// operating point immediately before the program switches.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(default))]
 #[derive(Clone, Debug, PartialEq, Default)]

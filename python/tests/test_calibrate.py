@@ -194,7 +194,7 @@ def test_optimizer_record_retains_unfinished_fit_diagnostics():
     assert record["message"] == result.message
 
 
-@pytest.mark.parametrize("label", ["v1", "v2", "v3"])
+@pytest.mark.parametrize("label", ["v1", "v2", "v3", "v4"])
 def test_historical_fit_outputs_are_protected(repo, label):
     from types import SimpleNamespace
 

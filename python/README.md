@@ -4,7 +4,7 @@
 Offline Python tools for Puckworks. They check the parameter registry and the datasets, write the
 golden fixtures shared with the web tests, produce the kernel verification report, calibrate the M1
 model against the literature datasets and write the M1 validation report, export presets and registry
-for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.6.2,
+for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.6.3,
 GPL-2.0-or-later.
 
 ## Install
@@ -36,7 +36,7 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 | `puckworks-tools fixtures --check` | Regenerates the fixture in memory and fails if the committed file differs, printing the largest difference and where it is. `--tolerance ATOL` allows small absolute differences in results (default 0, exact) |
 | `puckworks-tools shot-fixtures [--check]` | Writes, or checks, `data/fixtures/shot_cases.json`: recipes with the spec and result the native core gives (below). `--tolerance ATOL` as for `fixtures` |
 | `puckworks-tools verify` | Writes `docs/validation/m0-kernel-verification.md` and `.json`. `--quick` runs small series (smoke test); `--output-dir` writes elsewhere |
-| `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out, refitting all selected blocks and shared parameters), `--prune` (review weak shared parameters with bounded registry-value refits; accept only within the 1% training-cost safeguard), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`, `--start-from FILE` (bounded warm start), `--checkpoint-dir DIR` (atomic main/prune/refit snapshots). Defaults to v4 and protects historical v1/v2/v3 output paths. Records optimizer termination and first-order optimality separately. Refuses to write `data/calibration` while the solver is a placeholder |
+| `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out, refitting all selected blocks and shared parameters), `--prune` (review weak shared parameters with bounded registry-value refits; accept only within the 1% training-cost safeguard), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`, `--start-from FILE` (bounded warm start), `--checkpoint-dir DIR` (atomic main/prune/refit snapshots). Defaults to v5 and protects historical v1/v2/v3/v4 output paths. Records optimizer termination and first-order optimality separately. Refuses to write `data/calibration` while the solver is a placeholder |
 | `puckworks-tools validate` | Writes the M1 validation report `docs/validation/m1-validation.md` (figures in `docs/validation/m1/`, numbers in `.json`): calibration fit quality and the held-out checks of PLAN §10. `--quick` (tier 0), `--jobs N`, `--calibration FILE`, `--output-dir`, `--from-json FILE` (re-render without simulating). `python/scripts/m1-pipeline.sh [JOBS]` runs the whole M1 pipeline (rebuild, calibrate, export, rebuild, validate, shot fixture, checks) |
 | `puckworks-tools community --archive ZIP --log CSV` | Imports the pinned original Gagné experiment and runs exploratory model comparisons with fixed assumptions. No download, fitting or admission to the calibration inventory. `--tier 0` is a coarse smoke run; the default is tier 1. Detailed output goes to `.local/community/gagne2021`; `--output-dir` must be outside a Git worktree or ignored |
 | `puckworks-tools export [--check]` | Forwards to `puckworks_tools.export.main` (workstream D): writes, or checks, `crates/puckmodel/generated/presets.json` and `registry.json` from `data/presets`, `data/params` and `data/calibration/current.yaml`. Run it after any change to those |
@@ -46,7 +46,7 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 
 Calibration can run independent leave-one-out folds concurrently with `--loo-jobs N` (default 1).
 Each fold owns its `--jobs` simulation processes; `--loo-jobs 2 --jobs 8` uses up to 16 of them.
-The [v4 pipeline](scripts/m1-pipeline.sh) starts from the recorded training-selected initialization,
+The [v5 pipeline](scripts/m1-pipeline.sh) starts from preserved v4 values,
 preserves earlier fits, and checks numerical completion before replacing `current.yaml`.
 
 ## Reproduce the community comparison
@@ -351,3 +351,22 @@ Wet particle sizes do not independently identify dry pore geometry or a water-ex
 
 It writes the Markdown report and a JSON file with the raw numbers to `docs/validation/`, and flags a
 solver that ignores `grid` or `scheme`. Regenerate it for every release (PLAN §16).
+
+## Pressure-event resolution
+
+The fixed-input probe in the [pressure-event review](../docs/validation/m11-pressure-events.md)
+compares the preserved v4 input across solver builds, retaining actual phase and ramp boundaries
+alongside the regular output grid. These diagnostic commands fit no coefficients or defaults:
+
+```bash
+.venv/bin/python python/scripts/m11-pressure-events.py --output-dir .local/pressure-events --jobs 6
+.venv/bin/python python/scripts/m11-pressure-events-plot.py
+.venv/bin/python python/scripts/m11-v1-resolution.py \
+  --calibration data/calibration/v5.yaml --jobs 4 \
+  --output .local/pressure-events/v1-resolution.json
+```
+
+The V1 resolution check repeats all 15 conditions at 0.05 and 0.025 s, including pressure,
+switch-time and extraction comparisons. It accepts a completed calibration or a stable
+`main-prune` checkpoint, verifies source/input identity, and keeps full specs and observations
+in its output JSON. The separate v5 calibration uses the complete pipeline described above.

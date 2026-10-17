@@ -306,7 +306,7 @@ fn pressure_exit_crosses_its_threshold_and_then_discharge_continues() {
     for dt in [0.1, 0.05, 0.025] {
         let mut s = spec();
         s.numerics.max_dt_s = dt;
-        s.numerics.output_interval_s = dt;
+        s.numerics.output_interval_s = 0.13;
         let threshold = 1e5;
         s.machine.phases = vec![phase(3e-6, 30.0), phase(0.0, 30.0)];
         s.machine.phases[0].exit = PhaseExit {
@@ -315,13 +315,9 @@ fn pressure_exit_crosses_its_threshold_and_then_discharge_continues() {
         };
         s.machine.stop.time_s = Some(20.0);
         let r = run(&s);
-        // Events are observed at accepted-step endpoints. No single step
-        // can raise P by more than Q_max Δt/C; the crossing must fire then.
+        // The actual crossing is retained between regular output times.
         assert!(r.summary.max_pressure_pa >= threshold);
-        assert!(
-            r.summary.max_pressure_pa
-                <= threshold + 3e-6 * dt / s.machine.hydraulic_compliance_m3_pa
-        );
+        assert!(r.summary.max_pressure_pa <= threshold + 0.01);
         let peak = r
             .series
             .pressure_pa
@@ -336,4 +332,33 @@ fn pressure_exit_crosses_its_threshold_and_then_discharge_continues() {
             *r.series.cumulative_inlet_volume_m3.last().unwrap()
         );
     }
+}
+
+#[test]
+fn a_stiff_pressure_crossing_is_localized_in_time() {
+    // With vanishing storage and a nearly impermeable dry bed, pressure
+    // rises beyond the threshold immediately after headspace fill. The
+    // charging timescale is below the clock's resolution: locate the time
+    // instead of demanding an unattainable pressure residual.
+    let mut s = spec();
+    let q = 3e-6;
+    s.machine.hydraulic_compliance_m3_pa = 1e-24;
+    s.hydraulics.permeability_m2 = 1e-18;
+    s.machine.phases = vec![phase(q, 30.0), phase(0.0, 30.0)];
+    s.machine.phases[0].exit = PhaseExit {
+        pressure_pa: Some(100.0),
+        ..PhaseExit::default()
+    };
+    s.machine.stop.time_s = Some(20.0);
+    let r = run(&s);
+    let crossing = r
+        .series
+        .pressure_pa
+        .iter()
+        .position(|&p| p >= 100.0)
+        .unwrap();
+    let expected = r.summary.headspace_m3 / q;
+    assert!((r.series.t_s[crossing] - expected).abs() < 1e-8);
+    assert_eq!(r.summary.first_drops_s, None);
+    assert_eq!(r.series.flow_in_m3_s[crossing + 1], 0.0);
 }
