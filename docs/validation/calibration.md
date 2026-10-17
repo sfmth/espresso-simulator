@@ -17,6 +17,9 @@ Their bounds are transformed from the existing preparation priors. See the
 [transport identification review](../research/06-transport-identification.md).
 The preserved `data/calibration/v3.yaml`, [0.6.0 validation](baseline-v0.6.0/), earlier fits and
 [particle audit](m11-particle-inputs.md) remain historical artifacts.
+The [0.6.2 startup review](m11-startup-identification.md) subsequently checks local sensitivity,
+training-cost grids and bounded connectivity refits while preserving v4. Its pressure-resolution
+probe cautions against reading a local Jacobian SD as independent identification of a wetting law.
 The original V1, V2-dispersion, V4-long-time-flow and V6 residuals, weights and holdouts remain
 unchanged. V3, V4 transient and V5 are never used to choose the PSD, caps, priors or fitted parameters.
 First-drop and flow-rise targets remain within ×1.5 of measured times, with the same no-overshoot

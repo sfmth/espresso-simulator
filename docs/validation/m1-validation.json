@@ -1,12 +1,12 @@
 {
  "schema": "puckworks.validation-report/1",
  "created": "2026-10-16",
- "tools_version": "0.6.1",
- "core_version": "0.6.1",
+ "tools_version": "0.6.2",
+ "core_version": "0.6.2",
  "solver": {
-  "puckcore_version": "0.6.1",
-  "extension_sha256": "2c8fac7be082b3f9",
-  "extension_built": "2026-10-16T21:26:19-07:00",
+  "puckcore_version": "0.6.2",
+  "extension_sha256": "bc1af714c46292d2",
+  "extension_built": "2026-10-16T22:59:03-07:00",
   "sources_sha256": {
    "crates/puckcore/src": "7edd86f7150f4fa1",
    "crates/puckmodel/src": "1ca89ad808e6f2f7",
@@ -14,7 +14,7 @@
    "crates/puckcore-py": "563a9328b2a48052"
   },
   "files_sha256": {
-   "Cargo.lock": "97aad0fe9e0b7b94"
+   "Cargo.lock": "4eb1448eca9fb555"
   },
   "python": {
    "version": "3.14.7",
@@ -41,7 +41,10 @@
    "scipy": "1.18.1"
   }
  },
- "calibration_statistics_issues": [],
+ "calibration_statistics_issues": [
+  "core version changed",
+  "solver build inputs changed"
+ ],
  "placeholder": false,
  "solver_warnings": [
   "a large run: up to 6.36e3 steps \u00d7 1.73e5 values = 1.10e9 (expect several seconds or more)",
@@ -5991,11 +5994,9 @@
    },
    {
     "check": "V1 leave-one-condition-out (\u00b115%)",
-    "status": "fail",
+    "status": "not run",
     "target": "\u03bb and cup masses of each left-out experiment within \u00b115%",
-    "detail": "\u03bb 57/60, cup masses 180/180 within \u00b115% when predicted without their own experiment",
-    "within": 237,
-    "total": 240
+    "detail": "not run for this model/configuration; the calibration file's cached refits are historical (core version changed; solver build inputs changed)"
    },
    {
     "check": "V2 Bodenstein number 8\u201317",
@@ -10520,7 +10521,7 @@
    "statuses": [
     "fail",
     "fail",
-    "fail"
+    "not run"
    ]
   },
   {
