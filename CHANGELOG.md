@@ -2,6 +2,31 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.6.2] — 2026-10-16
+
+Review whether the existing training observations justify fitting the pore-air closure.
+The [startup-identification report](docs/validation/m11-startup-identification.md) retains
+the original residuals, priors, holdouts and v4 baseline.
+
+- Add reproducible local Jacobian checks, an 18-point conditional training grid, and a
+  30-shot timestep probe: 1,862 simulation executions, no unavailable predictions.
+  Both Jacobians and all grid costs reproduce exactly on a second run.
+- Document the pressure derivative's resolution limit: in Schmieder experiment 13,
+  amplitude 0.509 gives pour peaks of 12.00, 9.95 and 9.51 bar at maximum timesteps
+  0.05, 0.025 and 0.0125 s. A local covariance is not independent identification of
+  the physical wetting law. Bounded refits and a separate grid restart are recorded.
+- Complete three exploratory main fits and six guarded pruning trials, covering 37,357
+  simulations without failures. The retained connectivity fit has amplitude 0.499954
+  and cost 570.693 against control cost 570.698; both give 51/60 rates and 174/180 cups
+  within 10%. Retain v4 and its existing defaults.
+- Qualify the new [Wadsworth et al. permeability paper](https://doi.org/10.1098/rsos.252031)
+  and the original Schmieder supplement without adding them as startup observations.
+- Preserve the 0.6.1 validation artifacts and correct stale documentation about the
+  selected wet PSD and v4's effective water-admission fraction.
+- Rerun all 117 validation simulations: 4,696 comparable prediction values and all
+  fixture numbers are identical. The strict version/build identity guard labels the
+  saved v4 refits historical; the release comparison records that status difference.
+
 ## [0.6.1] — 2026-10-16
 
 Reassess transport identification after the inventory correction and refit shared
