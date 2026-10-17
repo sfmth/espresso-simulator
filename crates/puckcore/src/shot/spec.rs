@@ -575,9 +575,8 @@ impl Default for Control {
     }
 }
 
-/// Phase exit conditions; the first one met ends the phase. They are checked
-/// at the end of every time step; time and mass conditions land a step on the
-/// event.
+/// Phase exit conditions; the first one met ends the phase. Steps land on
+/// time events and localize mass and pressure crossings before switching.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(deny_unknown_fields, default))]
 #[derive(Clone, Debug, PartialEq, Default)]

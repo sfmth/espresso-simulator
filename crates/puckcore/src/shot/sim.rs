@@ -30,6 +30,12 @@ const MIN_WETTED_DEPTH: f64 = 1e-6;
 const MAX_HALVINGS: usize = 12;
 /// A step that overshoots a mass target is re-landed at most this many times.
 const MAX_RELANDS: usize = 8;
+/// Pressure crossings are localized to this relative overshoot. This is a
+/// numerical event tolerance, not uncertainty in the requested pressure.
+const PRESSURE_EVENT_TOLERANCE: f64 = 1e-8;
+/// Relative time bracket for a discontinuous or unresolved stiff crossing.
+const PRESSURE_EVENT_TIME_TOLERANCE: f64 = 1e-10;
+const MAX_PRESSURE_RELANDS: usize = 32;
 /// The drip ends below this share of its initial source volume.
 const DRIP_EMPTY: f64 = 1e-9;
 /// Relative mass-balance error above which a warning is issued. The balance
@@ -379,13 +385,14 @@ struct Light {
     curve: BedCurve,
 }
 
-/// A full copy, kept only for steps that may reach a mass target.
+/// A full copy, kept for steps that may reach a mass or pressure target.
 #[derive(Clone, Debug)]
 struct Full {
     state: State,
     first_drops: Option<f64>,
     drip_water: f64,
     curve: BedCurve,
+    cell_r: Vec<f64>,
     dt_prev: f64,
 }
 
@@ -961,6 +968,7 @@ impl<'a> Sim<'a> {
         match self.mode {
             Mode::Program => {
                 let phases = &spec.machine.phases;
+                consider(self.program.start + phases[self.program.phase].ramp_s);
                 let last = self.program.phase + 1 == phases.len();
                 if !last {
                     let exit = &phases[self.program.phase].exit;
@@ -1025,13 +1033,24 @@ impl<'a> Sim<'a> {
         if t1.is_nan() || t1 <= t0 {
             t1 = t0 + self.dt_base;
         }
-        // A step that may reach a mass target keeps a full copy of the state,
-        // so an overshoot can be re-landed (L-a); every step keeps the cheap
+        let pressure_target = if matches!(self.mode, Mode::Program)
+            && self.program.phase + 1 < self.spec.machine.phases.len()
+        {
+            self.spec.machine.phases[self.program.phase]
+                .exit
+                .pressure_pa
+                .filter(|&p| self.hydro.pressure < p)
+        } else {
+            None
+        };
+        // A step that may reach a mass or pressure target keeps a full copy
+        // of the state, so an overshoot can be re-landed; every step keeps the cheap
         // hydraulic state, so a step whose regimes do not converge can be
         // retried shorter (H).
-        let full = mass_target.map(|m| (m, self.save_full()));
+        let full = (mass_target.is_some() || pressure_target.is_some()).then(|| self.save_full());
         let light = self.save_light();
         let (mut halvings, mut relands, mut force_be) = (0, 0, false);
+        let mut pressure_relands = 0;
         loop {
             if !self.attempt(t0, t1, force_be)? {
                 if halvings >= MAX_HALVINGS {
@@ -1050,7 +1069,7 @@ impl<'a> Sim<'a> {
                 self.rejected_steps += 1;
                 continue;
             }
-            if let Some((m, saved)) = &full {
+            if let (Some(m), Some(saved)) = (mass_target, &full) {
                 let (cup0, cup1) = (
                     saved.state.cup_water + saved.state.cup_solute,
                     self.cup_mass(),
@@ -1062,6 +1081,42 @@ impl<'a> Sim<'a> {
                     self.restore_full(saved);
                     t1 = t_new;
                     relands += 1;
+                    self.rejected_steps += 1;
+                    continue;
+                }
+            }
+            if let (Some(target), Some(saved)) = (pressure_target, &full) {
+                // Use the complete end state: extraction changes viscosity,
+                // and optional compliance changes the stored pressure. The
+                // predictor's frozen concentration is insufficient here.
+                self.update_cell_resistances();
+                let wetted = self.state.wetted.clone();
+                self.build_curve(t1, &wetted);
+                let pressure = self.solve_hydro(t1, self.state.headspace_full).pressure;
+                let tolerance = PRESSURE_EVENT_TOLERANCE * target.max(1.0);
+                let time_tolerance = PRESSURE_EVENT_TIME_TOLERANCE * t0.abs().max(1.0);
+                if pressure > target + tolerance && t1 - t0 > time_tolerance {
+                    if pressure_relands >= MAX_PRESSURE_RELANDS {
+                        return Err(ShotError::Numerical {
+                            reason: format!(
+                                "the pressure exit could not be localized at t = {t0:.6} s"
+                            ),
+                        });
+                    }
+                    // Aim just above the threshold so round-off does not
+                    // leave an otherwise located event waiting another step.
+                    let fraction = ((target + 0.25 * tolerance - self.hydro.pressure)
+                        / (pressure - self.hydro.pressure))
+                        .clamp(0.01, 0.99);
+                    let next = t0 + fraction * (t1 - t0);
+                    if next <= t0 || next >= t1 {
+                        return Err(ShotError::Numerical {
+                            reason: "the pressure exit is below time resolution".to_string(),
+                        });
+                    }
+                    self.restore_full(saved);
+                    t1 = next;
+                    pressure_relands += 1;
                     self.rejected_steps += 1;
                     continue;
                 }
@@ -1080,6 +1135,12 @@ impl<'a> Sim<'a> {
         if self.output_due() {
             self.record_output();
             self.record_snapshot_candidate();
+        }
+        if matches!(self.mode, Mode::Program) {
+            let ramp_end = self.program.start + self.spec.machine.phases[self.program.phase].ramp_s;
+            if t0 < ramp_end && t1 >= ramp_end {
+                self.record_output_now();
+            }
         }
         self.events();
         // Events may change the operating point (a phase change or the stop).
@@ -1303,6 +1364,7 @@ impl<'a> Sim<'a> {
             first_drops: self.first_drops,
             drip_water: self.drip_water,
             curve: self.curve.clone(),
+            cell_r: self.cell_r.clone(),
             dt_prev: self.dt_prev,
         }
     }
@@ -1312,6 +1374,7 @@ impl<'a> Sim<'a> {
         self.first_drops = f.first_drops;
         self.drip_water = f.drip_water;
         self.curve = f.curve.clone();
+        self.cell_r.clone_from(&f.cell_r);
         self.dt_prev = f.dt_prev;
     }
 
@@ -1356,6 +1419,9 @@ impl<'a> Sim<'a> {
                             .is_some_and(|x| cup >= x - MASS_TOLERANCE_KG)
                         || exit.pressure_pa.is_some_and(|x| self.hydro.pressure >= x);
                     if fired {
+                        // Preserve the left-limit operating point at the
+                        // actual transition, even between regular outputs.
+                        self.record_output_now();
                         let next = &phases[self.program.phase + 1];
                         let from = match next.control {
                             Control::Pressure { .. } => self.hydro.pressure,

@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # M1 calibration harness
 
-*Puckworks M1 · workstream C · 2026-10-16.* `puckworks-tools calibrate` fits model parameters to the M1
+*Puckworks M1 · workstream C · 2026-10-17.* `puckworks-tools calibrate` fits model parameters to the M1
 calibration datasets ([PLAN §12 M1](../PLAN.md#m1-validated-core-and-lab-view)). The datasets are V1
 Schmieder 2023, V2 Vaca Guerra 2024 (dispersion), V4 Waszkiewicz 2026 (long-time Q(P)) and V6 Corrochano
 2017 (relative closure). The fit is written to `data/calibration/`, and the export
@@ -20,6 +20,10 @@ The preserved `data/calibration/v3.yaml`, [0.6.0 validation](baseline-v0.6.0/), 
 The [0.6.2 startup review](m11-startup-identification.md) subsequently checks local sensitivity,
 training-cost grids and bounded connectivity refits while preserving v4. Its pressure-resolution
 probe cautions against reading a local Jacobian SD as independent identification of a wetting law.
+The [0.6.3 pressure-event correction](m11-pressure-events.md) localizes phase exits and retains
+actual phase/ramp boundaries in the series. Calibration **v5** refits the original candidates
+from preserved v4 values on that corrected solver, with the same guarded pruning and full
+predictive-refit protocol. V4 and its original numerical evidence remain historical records.
 The original V1, V2-dispersion, V4-long-time-flow and V6 residuals, weights and holdouts remain
 unchanged. V3, V4 transient and V5 are never used to choose the PSD, caps, priors or fitted parameters.
 First-drop and flow-rise targets remain within ×1.5 of measured times, with the same no-overshoot
@@ -76,7 +80,7 @@ in every fitted direction, including directions whose compensating changes would
 parameters' bounds. A large marginal SD therefore does not establish that the registry value can
 replace the fitted coefficient without affecting the fit.
 
-In v4, `calibrate --prune` reviews the eligible interior shared parameter with the largest ratio first.
+From v4 onward, `calibrate --prune` reviews the eligible interior shared parameter with the largest ratio first.
 It fixes that coefficient at its registry value and refits every selected training block. Removal is
 accepted only when the refit succeeds, its final predictions and cost are finite and failure-free,
 and its cost is no more than **1% above both the preceding accepted fit and the initial pre-prune fit**.
@@ -146,6 +150,154 @@ traced every builder-read record that cites a held-out dataset:
 | `hydraulics.poroelastic.critical_pressure`, prior | Waszkiewicz's fitted P_c (V4 Q(P), calibration data) | prior and fit share data | not a held-out leak; stated |
 | `hydraulics.permeability.reference`, pre-calibration value | typical shot times (`shot.time.observed`, which cites Cameron and Smrke) | the registry default only; the calibration replaces it | no effect on the held-out checks |
 | `psd.*`, `model.psd.fines_weight_slope` | Cameron, Smrke and Waszkiewicz PSDs (inputs, not outcomes) | the grinder presets; the V3 and V5 cases use their measured PSDs | no effect on the held-out checks |
+
+## Results of the pressure-event calibration (v5, 2026-10-17)
+
+### Main fit and pruning
+
+V5 recalibrates the original 23 candidates and **339 residuals** after the
+[pressure-event correction](m11-pressure-events.md). V4 re-evaluated on the corrected solver
+has cost **573.232**; the pre-prune fit reduces it to **569.569**. Guarded pruning leaves
+**22 fitted parameters** at cost **570.523**, with reduced chi-square **3.59951**.
+The main fit and three pruning trials execute **15,438 simulations**, with no failures.
+The retained optimizer stops at `xtol` after 19 evaluations and nine Jacobian evaluations,
+with first-order optimality **124.382**. Completion does not establish stationarity or a
+global minimum. The earlier v4 objective used different output sampling and is not a
+direct optimization reference for v5.
+
+| Registry-value trial | Local SD/prior before trial | Trial cost | Change from preceding accepted fit | Decision |
+|---|---:|---:|---:|---|
+| Lumped diffusivity → 1.26×10⁻¹⁰ m²/s | 0.856 | 699.927 | +22.887% | retain fitted coefficient |
+| 5-CQA partition coefficient → 0.61 | 0.851 | 570.523 | +0.168% | fix at registry value |
+| 5-CQA surface-pool scale → 1 | 0.734 | 577.117 | +1.156% | retain fitted coefficient |
+
+Each trial terminates successfully with finite, available final predictions. The final
+structure matches v4, but it follows a new pruning review on 0.6.3. The rejected trials
+exceed both cost ceilings. No prior or residual weight changes.
+
+| Calibration block | v5 normalized RMS |
+|---|---:|
+| V1 kinetics and pressure | 1.74305 |
+| V2 dispersion | 2.26904 |
+| V4 long-time flow | 3.50925 |
+| V6 density/permeability | 1.68816 |
+
+The saved coefficients retain **51/60 rates and 174/180 cup masses within ±10%**.
+Seven coefficients remain at or within 1% of their bound span: shell thickness 40 µm,
+lumped saturation 349.675 kg/m³, trigonelline partitioning 0.999986, caffeine/trigonelline
+surface scales 0.5/2, the setup's extractable fraction 34%, and water admission 0.5.
+The fitted lumped diffusivity is 3.51197×10⁻¹¹ m²/s, the 5-CQA surface scale 0.837472,
+viscosity exponent 0.274729 and critical pressure 12.1296 bar. Their local uncertainties
+remain conditional on the model, priors and other fitted directions.
+
+Schmieder's preparation nuisances remain specific to its setup: permeability spread
+0.458682 and edge multiplier 0.259581. The pooled reference permeability is
+**1.49277×10⁻¹³ m²**, from dataset estimates of 1.01612×10⁻¹³ and 2.19301×10⁻¹³ m²;
+the individual estimates span a factor 2.28774. Pooling retains that disagreement and
+the existing grinder-preset scaling basis.
+
+All **30 fixed-coefficient timestep simulations** complete. Halving the maximum step
+preserves the rate/cup pass counts and changes rates by at most 0.390%, Eq. 3 cup masses
+by 0.144% and pour pressures by 0.362%. The [resolution evidence](m11-pressure-v5-resolution.md)
+retains all 540 comparisons; it does not establish asymptotic pressure-derivative convergence.
+
+### Leave-one-condition-out prediction
+
+All **15 folds** terminate successfully after **243 optimizer evaluations**, with every
+refit and omitted-condition prediction available. Each fold re-estimates all 22 retained
+coefficients against V1, V2, V4 and V6. Retained case counts are 14, 5, 11 and 12; no fitted
+coefficient is frozen. All stops are `xtol`, with first-order optimality ranging from
+**17.4785 to 144.3**.
+
+Recounting the saved errors gives **58/60 rates and 180/180 cup masses within ±15%**.
+The two rate misses are experiment 8 TDS (**+21.11%**) and experiment 9 caffeine
+(**−17.30%**). The all-targets criterion still fails. V4's corresponding full-block
+refits gave 57/60 and 180/180; both campaigns are conditional on the full-data parameter
+structure, pruning decisions and warm start. They are not nested model-selection checks.
+
+### Sensitivity refits
+
+All **nine variants** terminate successfully after **148 optimizer evaluations**, with
+every final prediction available. Eight V1-only variants refit 15 coefficients while
+holding the five shared V1 coefficients at the full-fit values. The structural dissolution
+variant refits all 22 coefficients against all four training blocks. Pruning is not repeated.
+
+| Variant | V1 cost | λ within 10% | Cups within 10% | Pooled κ_ref (m²) |
+|---|---:|---:|---:|---:|
+| Main fit, saved coefficients | 478.520 | 51/60 | 174/180 | 1.49277×10⁻¹³ |
+| Transition ramp 1 s | 566.567 | 50/60 | 174/180 | 1.49491×10⁻¹³ |
+| Transition ramp 0.3 s | 570.462 | 50/60 | 174/180 | 1.49599×10⁻¹³ |
+| Upstream pressure loss 0.4 bar | 466.477 | 51/60 | 174/180 | 1.52578×10⁻¹³ |
+| Whole-shot peak pressure | 437.100 | 55/60 | 174/180 | 3.24128×10⁻¹³ |
+| Pressure classification margin 1 bar | 467.909 | 51/60 | 174/180 | 1.50023×10⁻¹³ |
+| Pump-capped pour pressures excluded | 475.202 | 51/60 | 174/180 | 1.49266×10⁻¹³ |
+| Wet D32 minus 1 SD | 482.338 | 51/60 | 174/180 | 1.46551×10⁻¹³ |
+| Wet D32 plus 1 SD | 482.188 | 51/60 | 174/180 | 1.52092×10⁻¹³ |
+| Dissolution share θ = 0.27 | 541.585 | 49/60 | 173/180 | 7.77566×10⁻¹⁴ |
+
+The dissolution variant's total four-block cost is **641.678**. Whole-shot pressure changes
+the observable and more than doubles pooled permeability; its smaller cost does not justify
+replacing the established pour-pressure target. The variants are conditional assumption
+checks, not a predictive confidence interval. Their saved aggregate extraction counts cannot
+be independently recounted from individual errors in that artifact. Every optimizer stops
+at `xtol`; first-order optimality ranges from **17.0579 to 795.368**, with the largest value
+in the upper-D32 refit. No sensitivity variant replaces the selected calibration.
+
+### Held-out validation
+
+All **117 validation simulations** complete without numerical failure. This evaluation
+follows parameter selection and changes no coefficient, prior or target. The saved v5
+predictive refits match the solver/input identity and are current for this build.
+
+| Observable | Preserved v4 | v5 | Existing target or interpretation |
+|---|---:|---:|---|
+| Cameron model/data shot-time ratio, geometric mean | 0.805 | 0.802 | RMS time error 7.06 → 7.13 s |
+| Cameron peak EY | 19.62% | 19.63% | 22–24%; both peak at GS 1.1, outside 1.5–1.9 |
+| Smrke model/data shot-time ratio, geometric mean | 0.776 | 0.771 | RMS time error 22.93 → 23.05 s |
+| Smrke EY/time Spearman correlation | 0.868 | 0.868 | passes ≥0.8 |
+| V4 first drops after full pressure | 6.07 s | 6.02 s | 12.76 s measured; outside ×1.5 |
+| V4 flow-rise time after first drops | 12.45 s | 12.32 s | 25.48 s measured; outside ×1.5 |
+| V4 first 5 s fraction TDS | 24.29% | 24.22% | passes 22–28% |
+| V4 time to 36 g | 30.13 s | 29.97 s | 47.69 s measured; diagnostic |
+| Generic 18 → 36 g pump-stop range | 21.05–23.24 s | 20.91–23.08 s | all miss 25–35 s |
+
+Held-out timing slightly worsens. V4 also retains its overshoot: 1.895 g/s at 15 s after
+first drops, against 1.861 g/s at 100 s. V2 dispersion passes its Bodenstein gate, while
+one V6 relative-permeability target still fails. Cameron's peak checks retain their
+disclosed dependence on the earlier preparation mapping. **No complete M1 scientific
+exit criterion passes; M2 remains deferred.**
+
+Worst relative soluble-mass and hydraulic carrier-volume errors are **8.13×10⁻¹⁴** and
+**6.52×10⁻¹⁴**; minimum concentration is zero. The separate output-flow quadrature
+discrepancy is **0.00851**, not a conservation residual. Numerical completion and improved
+event reporting do not resolve the physical startup and extraction-peak limitations.
+
+Four [fixed-parameter startup scenarios](m11-startup-sensitivity-v5.json), eight simulations
+across V4 and a generic recipe, reproduce the final baseline. Disabling pore-air mobility
+moves first drops to 1.80 s, flow rise to 6.90 s and the generic pump stop to 10.13 s.
+Fixing water admission at 0.5 reproduces the baseline exactly because v5 already fits
+that value. These responses do not separately identify uptake and air mechanisms.
+
+### Export verification
+
+The rebuilt v5 engine agrees with the candidate on **all 4,698 compared prediction
+values**, including complete prediction structures and scientific-check outcomes.
+All 13 exported defaults match the calibration; setup nuisances remain outside the
+application defaults. Fitted/fixed values and cached-refit identities pass the checks
+after export. All **67 protected historical files** retain their original hashes.
+
+The [release audit](m11-pressure-release-check.json) records **226 passing Rust tests**
+(one existing exhaustive test ignored), **519 Python tests**, **448 web tests** and
+**55 browser checks**. Seven shot fixtures agree exactly across native and WebAssembly:
+85,288 spec/result values, compared through both recipe and direct-spec paths. All
+4,218 numeric entries in the sphere fixture remain unchanged; the independent sphere
+series agrees within 5.47×10⁻¹⁶. Formatting, lint, type, build, licence, registry, export,
+fixture, release-version and report-freshness checks pass.
+
+The browser run measures **692 ms** for the default tier-1 shot (22 s simulated),
+**30.8 ms** for the first preview and **13.4 ms** after an edit. The warm tier-0 preview
+still misses the 10 ms target. These measurements describe this machine and recipe,
+not performance across devices or inputs.
 
 ## Transport initialization review (v4, 2026-10-16)
 
@@ -813,8 +965,8 @@ placeholder, because `current.yaml` changes the app's defaults. Use `--out-dir` 
 
 ## Running it
 
-The whole pipeline rebuilds the native engine, starts from the recorded training-selected
-`data/calibration/starts/v4.yaml`, stages v4 under `.local/calibration-v4`, runs the
+The whole pipeline rebuilds the native engine, starts from preserved
+`data/calibration/v4.yaml`, stages v5 under `.local/calibration-v5`, runs the
 main/pruned fit, all 15 leave-one-condition-out refits and nine sensitivities, validates the candidate,
 then promotes a numerically complete result. It exports/rebuilds the application calibration,
 regenerates validation, calibration-labelled startup ablations and kernel verification, and checks
@@ -833,9 +985,9 @@ re-renders the report and its figures from `m1-validation.json` without simulati
 ```sh
 .venv/bin/puckworks-tools calibrate --dry-run                   # cases, residual counts, start cost, block check
 .venv/bin/puckworks-tools calibrate --tier 0 --out-dir /tmp/cal  # fast trial at tier 0
-.venv/bin/puckworks-tools calibrate --label v4 --jobs 8 --prune --loo --loo-jobs 2 --sensitivity \
-  --start-from data/calibration/starts/v4.yaml --out-dir .local/calibration-v4 --no-current \
-  --checkpoint-dir .local/calibration-v4/checkpoints
+.venv/bin/puckworks-tools calibrate --label v5 --jobs 8 --prune --loo --loo-jobs 2 --sensitivity \
+  --start-from data/calibration/v4.yaml --out-dir .local/calibration-v5 --no-current \
+  --checkpoint-dir .local/calibration-v5/checkpoints --fd-step 0.01 --max-nfev 120
 .venv/bin/puckworks-tools calibrate --pool-only                 # re-pool κ_ref after a builder change
 .venv/bin/puckworks-tools calibrate --sensitivity-only --variant θ  # re-run sensitivity variants only
 .venv/bin/puckworks-tools export                                # embed current.yaml (then rebuild puckcore)
@@ -856,7 +1008,7 @@ before publication; changing them during a run requires a new run.
 ## Leave one condition out (V1)
 
 `calibrate --loo` adds the V1 leave-one-condition-out check (PLAN §10: λ and cup masses within ±15% when
-left out). In v4 it refits every fitted parameter across all selected calibration blocks 15 times,
+left out). From v4 onward it refits every fitted parameter across all selected calibration blocks 15 times,
 each time removing one V1 experiment and retaining every observation in the other blocks. Shared
 transport and hydraulic parameters are re-estimated along with that grinding level's permeability,
 the bean's contents and the preparation nuisances. `--blocks` limits this scope explicitly.

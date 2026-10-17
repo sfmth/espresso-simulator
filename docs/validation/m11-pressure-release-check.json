@@ -1,0 +1,111 @@
+{
+  "schema": "puckworks.pressure-release-check/1",
+  "version": "0.6.3",
+  "promotion": {
+    "schema": "puckworks.local-promotion-check/1",
+    "passed": true,
+    "stage": "post-export",
+    "issues": [],
+    "historical_files": 67,
+    "historical_changed": [],
+    "candidate_sha256": "b9efebec7c728e54c76e80f0c35591cf12fbf53a4a510dadb9edc67748684cd1",
+    "candidate_optimizer": {
+      "method": "scipy.optimize.least_squares (trf, x_scale=jac)",
+      "success": true,
+      "message": "`xtol` termination condition is satisfied.",
+      "evaluations": 19,
+      "status": 3,
+      "jacobian_evaluations": 9,
+      "optimality": 124.382,
+      "simulations": 15438,
+      "start_cost": 572.683,
+      "cost": 570.523
+    },
+    "prediction_comparison": {
+      "numeric_values": 4698,
+      "different_values": 0,
+      "max_abs_difference": 0.0,
+      "max_relative_difference": 0.0,
+      "first_differences": []
+    },
+    "scientific_exit_criteria": [
+      {
+        "criterion": "V1 within targets",
+        "status": "fail",
+        "checks": [
+          "V1 \u03bb within \u00b110% (fit)",
+          "V1 cup masses within \u00b110% (fit)",
+          "V1 leave-one-condition-out (\u00b115%)"
+        ],
+        "statuses": [
+          "fail",
+          "fail",
+          "fail"
+        ]
+      },
+      {
+        "criterion": "V3 peak reproduced",
+        "status": "fail",
+        "checks": [
+          "V3 EY peak at grind setting 1.5\u20131.9",
+          "V3 peak EY 22\u201324%"
+        ],
+        "statuses": [
+          "fail",
+          "fail"
+        ]
+      },
+      {
+        "criterion": "V4 flow rise reproduced",
+        "status": "fail",
+        "checks": [
+          "V4 flow rises after the first drops",
+          "V4 first drops after full pressure"
+        ],
+        "statuses": [
+          "fail",
+          "fail"
+        ]
+      },
+      {
+        "criterion": "Verification suite green; tier 1 \u2264 1 s and tier 0 \u2264 10 ms per shot",
+        "status": "not assessed",
+        "checks": [],
+        "statuses": [],
+        "note": "covered by the solver's verification tests and benchmarks, not by this report"
+      }
+    ]
+  },
+  "checks": {
+    "rust": {
+      "passed": 226,
+      "failed": 0,
+      "ignored": 1
+    },
+    "python_passed": 519,
+    "web_passed": 448,
+    "browser_passed": 55
+  },
+  "fixtures": {
+    "sphere_numbers_unchanged": 4218,
+    "shot_cases": 7,
+    "shot_spec_result_values": 85288,
+    "native_wasm_comparisons": 170576,
+    "native_wasm_exact": true
+  },
+  "parity_count_basis": "The passing full web suite compares each fixture spec and result twice: builder/recipe paths for specs and recipe/direct-spec paths for results. No alternate fixture or result-skip option is active.",
+  "browser_timing": {
+    "first_preview_ms": 30.8,
+    "warm_preview_ms": 13.4,
+    "tier1_ms": 692.0,
+    "simulated_shot_s_rounded": 22.0,
+    "warm_preview_within_10_ms": false,
+    "scope": "One machine and default recipe; not a cross-device performance guarantee."
+  },
+  "logs": {
+    "rust-tests-final.log": "679b6b3f3805859fc95307a3fde75fdee0e052c63dbaaf7f72c139f59b5b75de",
+    "python-tests.log": "7a488fc639549c4cecadcde81bfe81bf7fc694fd4c350ec8ed586e5d471cabed",
+    "web-tests.log": "c1e6f7b3201ec4fac68b0fe4fc3e79b1dc9f9d9310e7549aeeb77d2dc3b15709",
+    "browser.log": "2db49dcd7899c3d9d4eae1babb8b53045abe8620d010fc5d2a4302bf66223d6e"
+  }
+}
