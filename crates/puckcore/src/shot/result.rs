@@ -39,8 +39,9 @@ pub struct Summary {
     pub first_drops_s: Option<f64>,
     /// Beverage mass in the cup, including the post-stop drip, kg.
     pub beverage_mass_kg: f64,
-    /// Beverage mass added by the post-stop drip, kg: at most the water left
-    /// in the headspace, and 0 when the machine vents it.
+    /// Beverage mass added by the post-stop drip, kg. Its carrier volume is
+    /// bounded by retained headspace (legacy) or charged compliance storage;
+    /// dissolved solute also contributes mass. Zero when the machine vents.
     pub drip_mass_kg: f64,
     /// Total dissolved solids of the cup, mass fraction.
     pub tds: f64,
@@ -93,10 +94,22 @@ pub struct Series {
     pub t_s: Vec<f64>,
     /// Pressure at the top of the bed, Pa (gauge).
     pub pressure_pa: Vec<f64>,
-    /// Pump flow into the headspace, m³/s.
+    /// Pump flow into the headspace, bed and any pressure storage, m³/s.
     pub flow_in_m3_s: Vec<f64>,
     /// Flow leaving the basket, m³/s.
     pub flow_out_m3_s: Vec<f64>,
+    /// Charged upstream carrier volume C·P, m³ (zero without compliance).
+    pub storage_volume_m3: Vec<f64>,
+    /// Cumulative carrier volume delivered by the pump, m³.
+    pub cumulative_inlet_volume_m3: Vec<f64>,
+    /// Cumulative carrier volume leaving the basket, m³.
+    pub cumulative_outlet_volume_m3: Vec<f64>,
+    /// Cumulative carrier volume discharged through the stop vent, m³.
+    /// Includes the instantaneous vent at the final-stop timestamp.
+    pub cumulative_vented_volume_m3: Vec<f64>,
+    /// Total retained carrier volume: headspace, wetted pore inventory and
+    /// charged compliance storage, m³. Not an exact solvent-mass inventory.
+    pub retained_volume_m3: Vec<f64>,
     /// Beverage mass in the cup, kg.
     pub beverage_mass_kg: Vec<f64>,
     /// TDS of the cup so far (mass fraction).
@@ -195,7 +208,7 @@ pub struct ClassEy {
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct Diagnostics {
     /// Relative final carrier-liquid volume residual: pump delivery minus
-    /// basket outflow, retained startup pore/headspace liquid, and vented
+    /// basket outflow, retained pore/headspace/compliance liquid, and vented
     /// liquid, divided by delivery (0 without delivery). Uses the solver's
     /// incompressible hydraulic convention; not an exact solvent-mass
     /// balance including solute displacement or dissolution-created pores.

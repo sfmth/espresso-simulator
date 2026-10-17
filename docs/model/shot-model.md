@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # Shot model: from first water to the cup
 
-*puckcore 0.3.0 · Milestones M1 and M1.1 · Last updated 2026-10-15.*
+*puckcore 0.5.0 · Milestones M1 and M1.1 · Last updated 2026-10-16.*
 
 This is the specification of `puckcore::shot::simulate_shot`, the M1 shot solver behind `simulateShot` (JavaScript) and `puckcore.simulate_shot` (Python). It implements §4 of the [M1 contract](m1-contract.md) for both fidelity tiers, as modules H and X of [PLAN §7.3](../PLAN.md#73-modules).
 
@@ -32,7 +32,7 @@ Schemas: [`data/schema/shot-spec.schema.json`](../../data/schema/shot-spec.schem
 2. **Wetting.** Water then infiltrates each column behind a sharp front. The wetted part resists flow; the dry part ahead of the front is at atmospheric pressure. Extraction starts in each cell as the front enters it.
 3. **First drops.** A column drips once its front reaches the floor. `summary.first_drops_s` is the earliest such time, interpolated within the step.
 4. **Extraction.** Every size class has a fast broken-cell surface pool and a slow intact kernel. They feed the bed liquid, which flows to the cup with axial dispersion. Viscosity, porosity, temperature, compaction, swelling, gas and fines change the flow as the shot goes on.
-5. **Stop and drip.** The stop rule stops the pump. The water left in the headspace then drains through the puck under an inlet pressure that decays as P_stop·e^{−t/τ} (`machine.stop.drip_tau_s`), for 8τ or until that water is gone. A machine that vents the headspace (`machine.stop.vent_headspace`, a three-way solenoid valve) does not drip. The reported beverage mass includes the drip.
+5. **Stop and drip.** The stop rule stops the pump. By default, retained headspace drains under P_stop·e^{−t/τ} (`machine.stop.drip_tau_s`), for 8τ or until empty. With optional pressure storage (§4.8), only charged storage drains, with pressure determined by its water balance over the same observation window. A machine that vents the headspace (`machine.stop.vent_headspace`) discharges headspace and charged storage through the valve and does not drip. The reported beverage mass includes the drip.
 
 ---
 
@@ -99,6 +99,7 @@ Every number has a range (`validate.rs`; the same bounds are in the JSON Schema,
 | κ₀; P_c; D_ax; σ | 1e-18–1e-10 m²; 1e4–1e8 Pa; 0–1e-3 m²/s; 0–3 |
 | fines amplitude; relaxation τ; drip τ | 0–100; 0–600 s; 0–60 s |
 | pressures; flows; times; beverage targets | ≤ 200 bar; ≤ 100 mL/s; ≤ 3600 s; ≤ 10 kg |
+| optional upstream compliance C | 0–1e-10 m³/Pa (0–10 mL/bar); default 0 |
 | loading-capacity normalisation u_w | 0–0.9 (keeps the reference particle capacity ε_p(1 − u_w) positive) |
 | intraparticle water fraction; pore-air amplitude; exponent | 0–1 or null; [0,1); 1–10 |
 | max_dt; steps; output points | ≤ 0.5 s; (max_duration + 8τ_drip)/min(Δt_max, Δt_out) ≤ 2e6; output values ≤ 1e7 |
@@ -210,7 +211,7 @@ $$Q_\text{bed}(P)=G_w\,\Phi(P)+y(P),\qquad y=G_t\,\Phi(P-a\,y^2),\qquad G_{w,t}=
 
 ### 4.6 Program, pump and operating point
 
-The program and the pump deliver at most S(P), which never increases with P, below a pressure cap P_cap. The operating point is the intersection of Q_bed with S below the cap, or the cap itself. The flow is always the bed's flow at the chosen pressure.
+The program and the pump deliver at most S(P), which never increases with P, below a pressure cap P_cap. With default zero compliance, the operating point is the intersection of Q_bed with S below the cap, or the cap itself. The flow is then the bed's flow at the chosen pressure. Optional storage separates pump and bed flow (§4.8).
 
 | control | S(P) | P_cap |
 |---|---|---|
@@ -237,6 +238,28 @@ Tracking volume rather than position keeps tapered baskets exact. The front dept
 - **Wetting time.** Under constant flow Q with one column, the first drops come at (V_hs + φ_T V_bed)/Q exactly (verified to 2.8e-15, §8).
 
 ---
+
+### 4.8 Optional upstream pressure storage (0.5.0)
+
+`machine.hydraulic_compliance_m3_pa` defaults to zero, preserving §4.6. For C > 0,
+the upstream store starts empty and holds V = C P after headspace filling. Backward Euler
+solves C(P₁ − P₀)/Δt + Q_bed(P₁) = Q_pump on the predicted end-front curve. The
+accepted pump and bed volumes are accounted separately; the bed volume advances wetting
+and transport. This is a first-order frozen-curve approximation. Rejected steps restore
+the pressure state along with the water inventory.
+
+The pump is one-way. A pressure cap throttles delivery without venting; stored pressure
+may exceed a lowered command while draining. Zero commanded flow can therefore leave
+positive outflow. At the final stop, a vent dumps both headspace and charged storage;
+without a vent, only C P feeds the tail and headspace remains retained. `drip_tau_s`
+sets the 8τ observation window, not an imposed decay rate. Unspent storage stays in the
+final inventory, including when the horizon is zero.
+
+The registry's `model.machine.hydraulic_compliance` is in mL/bar (×10⁻¹¹ to SI),
+default 0, with an implementation range 0–10. It is a grade-D assumption with no
+empirical prior. Constant compliance does not resolve gas compression, machine
+elasticity, puck deformation, gravity drainage, storage temperature, active relief
+valves or separate particle-water exchange. See [ADR 0011](../decisions/0011-upstream-pressure-storage.md).
 
 ## 5. Extraction
 
@@ -378,7 +401,7 @@ If the limit is reached the step is rejected and retried shorter (§7.2); unconv
 
 **Conservation.** The liquid receives exactly what the pools and kernels lose, as the same linear functions of c′. Interior face fluxes cancel, the inlet carries nothing, and the outlet flux goes to the cup. The soluble mass of particles + liquid + cup is therefore conserved to round-off for every scheme. The species obey the same identity.
 
-**Hydraulic carrier volume.** `diagnostics.hydraulic_volume_balance_error` checks the final identity V_pump = V_outlet + φ_T ΣW_i + V_headspace,left + V_vented, using the accepted steps' actual volume transfers. The residual is divided by delivered volume, or zero with no delivery. Dripping subtracts the same water from the headspace that it supplies to the bed; venting has its own discharged volume. This is a check of the solver's incompressible carrier-volume convention, **not an exact solvent-mass balance** including dissolved-solids displacement or dissolution-created pore volume. Pure-water tests check the actual water budget at fill, partial wetting, breakthrough, drip and venting.
+**Hydraulic carrier volume.** `diagnostics.hydraulic_volume_balance_error` checks the final identity V_pump = V_outlet + φ_T ΣW_i + V_headspace,left + C P + V_vented, using accepted volume transfers. The residual is divided by delivered volume, or zero with no delivery. Dripping consumes headspace water in legacy mode or charged storage with C > 0; venting has its own discharged volume. The result series includes cumulative inlet/outlet/vented volumes, charged storage and total retained volume, enabling the same identity at each output. Interval diagnostics use differences of these cumulative values. This checks the incompressible carrier-volume convention, **not exact solvent mass** including dissolved-solids displacement or dissolution-created pore volume. Pure-water tests cover fill, partial wetting, breakthrough, drip and venting.
 
 **M1.1 startup verification.** `tests/shot_startup.rs` verifies exact constant-flow full-pore breakthrough and a capped flow ramp across multiple steps, disabled-closure compatibility, dry waiting versus wet-age relaxation, pump-off phases, late-flow recovery and conservation. In a raw default spec with f_water = 1 and test air values A = 0.5, τ = 10 s, n = 3, reducing Δt from 0.05 to 0.025 s changes first drops by 0.0063 s, shot time by 0.0118 s and EY by 0.0099 percentage point. These are numerical checks, not observations used to calibrate startup.
 

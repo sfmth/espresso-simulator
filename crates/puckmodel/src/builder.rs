@@ -488,6 +488,7 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
         machine: MachineSpec {
             phases: machine.phases.clone(),
             pump: machine.pump.clone(),
+            hydraulic_compliance_m3_pa: machine.hydraulic_compliance_ml_bar.v / 1e11,
             stop: StopRule {
                 time_s: time.as_ref().map(|t| t.v),
                 beverage_mass_kg: beverage.as_ref().map(|b| b.v),
@@ -626,6 +627,10 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
         ("thermal.ambient_temp_c", ambient.src.clone()),
         ("machine.phases", machine.phases_src.clone()),
         ("machine.pump", machine.pump_src.clone()),
+        (
+            "machine.hydraulic_compliance_m3_pa",
+            machine.hydraulic_compliance_ml_bar.src.clone(),
+        ),
         ("machine.stop.drip_tau_s", machine.drip_tau.src.clone()),
         ("machine.stop.vent_headspace", machine.vent_src.clone()),
         (

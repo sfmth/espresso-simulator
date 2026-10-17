@@ -494,7 +494,7 @@ impl Default for ThermalSpec {
 
 /// Machine program, pump and stop rule (PLAN §7.3, module M). The headspace
 /// fills first (at zero pressure); then pressure and flow follow from the
-/// program, the pump and the bed.
+/// program, the pump, the bed and optional charged upstream compliance.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(deny_unknown_fields, default))]
 #[derive(Clone, Debug, PartialEq)]
@@ -506,6 +506,13 @@ pub struct MachineSpec {
     pub pump: Pump,
     /// When the shot ends.
     pub stop: StopRule,
+    /// Optional upstream hydraulic compliance, m³/Pa (0 = legacy algebraic
+    /// hydraulics). Stores the pump-supplied carrier volume C·P and obeys
+    /// C dP/dt = Q_pump − Q_bed after the sequential headspace fill.
+    /// Pressure caps throttle delivery without venting or reverse flow;
+    /// retained pressure can exceed a newly lowered command while draining.
+    /// This experimental lumped closure does not model gas or gravity.
+    pub hydraulic_compliance_m3_pa: f64,
 }
 
 impl Default for MachineSpec {
@@ -514,6 +521,7 @@ impl Default for MachineSpec {
             phases: vec![Phase::default()],
             pump: Pump::default(),
             stop: StopRule::default(),
+            hydraulic_compliance_m3_pa: 0.0,
         }
     }
 }
@@ -622,6 +630,9 @@ impl Default for Pump {
 /// P_stop·e^(−t/τ) and the simulation runs 8τ more, or until the water left
 /// in the headspace has drained into the puck. Without a condition the shot
 /// runs to `numerics.max_duration_s`.
+/// With nonzero `machine.hydraulic_compliance_m3_pa`, pressure instead follows
+/// the stored-volume balance during the same 8τ observation window. Only
+/// charged storage supplies the bed; unpressurised headspace stays retained.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(deny_unknown_fields, default))]
 #[derive(Clone, Debug, PartialEq)]
@@ -630,11 +641,14 @@ pub struct StopRule {
     pub time_s: Option<f64>,
     /// Beverage mass on the scale, kg.
     pub beverage_mass_kg: Option<f64>,
-    /// Time constant of the post-stop drip, s (0 = none, at most 60).
+    /// Time constant of the legacy post-stop drip, s (0 = none, at most 60).
+    /// With nonzero hydraulic compliance, 8τ is only the tail observation
+    /// horizon: pressure follows the compliance/bed balance, and only charged
+    /// storage drains. Unpressurised headspace water remains retained.
     pub drip_tau_s: f64,
-    /// The machine vents the headspace at the stop (a three-way solenoid
-    /// valve): its water leaves through the valve, none reaches the puck, and
-    /// there is no drip.
+    /// The machine vents the headspace and any charged compliance at the stop
+    /// (a three-way solenoid valve): their water leaves through the valve,
+    /// none reaches the puck, and there is no drip.
     pub vent_headspace: bool,
 }
 

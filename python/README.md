@@ -4,7 +4,7 @@
 Offline Python tools for Puckworks. They check the parameter registry and the datasets, write the
 golden fixtures shared with the web tests, produce the kernel verification report, calibrate the M1
 model against the literature datasets and write the M1 validation report, export presets and registry
-for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.4.0,
+for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.5.0,
 GPL-2.0-or-later.
 
 ## Install
@@ -67,6 +67,15 @@ observations used. Pressure-driven comparisons condition on the measured pressur
 validate pressure prediction. Missing particle-size and machine inputs prevent matched calibration;
 these runs are exploratory and do not replace the existing held-out tests. Raw sources and detailed
 reports remain local; only the cited aggregate report is committed.
+
+Command probes use the fixed 0/0.5/2 mL/bar compliance grid; pressure-conditioned runs
+retain zero compliance. The report includes bloom pressure decline, charged storage,
+cumulative inlet/outlet volumes and interval conservation, plus time-step refinement
+for a fixed nonzero-compliance case. It does not choose a best-fit storage value.
+For your own experiments, use recipe override `model.machine.hydraulic_compliance`
+in mL/bar or raw-spec `machine.hydraulic_compliance_m3_pa` in SI (×10⁻¹¹).
+The default remains zero. [ADR 0011](../docs/decisions/0011-upstream-pressure-storage.md)
+defines the boundary and post-stop behavior.
 
 ## Tests
 
@@ -211,7 +220,7 @@ units. See [data/datasets/README.md](../data/datasets/README.md) for the rules a
 
 ## Golden shot fixture
 
-`data/fixtures/shot_cases.json` holds five recipes with the spec the native builder makes of each and
+`data/fixtures/shot_cases.json` holds seven recipes with the spec the native builder makes of each and
 the result the native solver returns for that spec. The web tests feed each recipe to the WebAssembly
 build and compare:
 
@@ -222,7 +231,8 @@ build and compare:
 
 `spec` is `build.spec` of `simulate_recipe(recipe)` and `result` its `result`. The cases cover tiers 0
 and 1, a vibratory pump, a pressurised basket, flow-controlled programs, a custom tapered basket and a
-measured PSD; the file has no wall-clock fields and stays well under 2 MB. Floats round-trip exactly.
+measured PSD, plus pressure-storage pause/resume cases with a stored-water tail or a stop vent.
+The file has no wall-clock fields and stays under 3 MB. Floats round-trip exactly.
 `shot-fixtures --check` compares recipes, keys and strings exactly and the numbers of `spec` and
 `result` to `--tolerance`. Regenerate it whenever the builder or the solver changes on purpose.
 

@@ -51,7 +51,7 @@
           "type": "number"
         },
         "drip_mass_kg": {
-          "description": "Beverage mass added by the post-stop drip (at most the headspace water), kg.",
+          "description": "Beverage mass added by the post-stop drip, kg. Its carrier volume is bounded by retained headspace (legacy) or charged compliance storage; dissolved solute also contributes mass. Zero when the machine vents.",
           "type": "number"
         },
         "tds": {
@@ -145,7 +145,7 @@
           }
         },
         "flow_in_m3_s": {
-          "description": "Pump flow into the headspace, m³/s (0 during the drip).",
+          "description": "Pump flow into the headspace, bed and any pressure storage, m³/s (0 during the drip).",
           "type": "array",
           "items": {
             "type": "number"
@@ -153,6 +153,41 @@
         },
         "flow_out_m3_s": {
           "description": "Flow leaving the basket, m³/s.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "storage_volume_m3": {
+          "description": "Charged upstream carrier volume C·P, m³ (zero without compliance).",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "cumulative_inlet_volume_m3": {
+          "description": "Cumulative carrier volume delivered by the pump, m³.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "cumulative_outlet_volume_m3": {
+          "description": "Cumulative carrier volume leaving the basket, m³.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "cumulative_vented_volume_m3": {
+          "description": "Cumulative carrier volume discharged through the stop vent, m³. Includes the instantaneous vent at the final-stop timestamp.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "retained_volume_m3": {
+          "description": "Total retained carrier volume: headspace, wetted pore inventory and charged compliance storage, m³. Not an exact solvent-mass inventory.",
           "type": "array",
           "items": {
             "type": "number"
@@ -348,7 +383,7 @@
       "type": "object",
       "properties": {
         "hydraulic_volume_balance_error": {
-          "description": "Final relative carrier-liquid volume residual: supplied minus outlet, retained startup pore/headspace liquid and vented liquid, over supplied volume (0 without supply). This follows the incompressible hydraulic convention, not exact solvent mass including solute displacement or dissolution-created pore volume.",
+          "description": "Final relative carrier-liquid volume residual: supplied minus basket outflow, retained pore/headspace/compliance liquid and vented liquid, over supplied volume (0 without supply). This follows the incompressible hydraulic convention, not exact solvent mass including solute displacement or dissolution-created pore volume.",
           "type": "number"
         },
         "mass_balance_error": {

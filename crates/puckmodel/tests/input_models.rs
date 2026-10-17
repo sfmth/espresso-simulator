@@ -1093,6 +1093,7 @@ fn provenance_is_filled_and_every_token_resolves() {
         "thermal.heat_loss_w_k",
         "machine.phases",
         "machine.pump",
+        "machine.hydraulic_compliance_m3_pa",
         "machine.stop.beverage_mass_kg",
         "machine.stop.drip_tau_s",
         "numerics.tier",

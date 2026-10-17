@@ -2,6 +2,62 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.5.0] — 2026-10-16
+
+Experimental upstream pressure storage for bloom pauses. It is opt-in; default recipes keep
+zero compliance and the v2 fit. M1 scientific validation remains open and M2 stays deferred.
+
+### Added
+- `machine.hydraulic_compliance_m3_pa` tracks charged carrier volume C P, with a conservative
+  implicit pressure step. A pump pause can release stored water through the bed. Pressure caps
+  throttle the inlet without venting; a final vent discharges headspace and storage. Without a
+  vent, only charged storage supplies the optional tail. [ADR 0011](docs/decisions/0011-upstream-pressure-storage.md)
+  records the boundary assumptions and omitted mechanisms.
+- Registry override `model.machine.hydraulic_compliance` (mL/bar), with unit conversion,
+  provenance and an experimental note. Its default is zero; neither a fitted value nor an
+  empirical prior is assigned. The registry now has 231 parameters.
+- Cumulative inlet, outlet and vented carrier volumes, charged storage and total retained
+  volume in shot results. Interval diagnostics use cumulative-volume differences and keep
+  carrier volumes separate from beverage mass and dissolved solids.
+- Fixed 0/0.5/2 mL/bar community probes, including logged low-flow and counterfactual zero-flow
+  plateaus. They report pressure decline, storage depletion and interval conservation.
+  Sources remain local and the original calibration/held-out split and gates stay unchanged.
+
+### Verification
+- Analytical RC charge/discharge and pump-curve checks, plus ten compliance regressions covering
+  dry waiting, pauses/resumption, low-flow bloom, partial wetting, tail/vent, lowered pressure
+  caps, time refinement, mass/pressure events, ramp-flow reporting and charging without a false
+  choke. Rejected transport steps restore the stored-pressure state.
+- Native/WebAssembly fixtures add pause/resume cases with a stored-water tail and a stop vent;
+  browser transfer and export preserve the new arrays, while result validation accepts older
+  records without them.
+- The output-memory guard includes all five new inventory channels. Full-record tracking
+  errors stay unavailable for incomplete community runs, and flow tracking consistently
+  excludes the final-stop sample.
+- Final local checks pass: 219 Rust tests (one existing opt-in sweep ignored), 406 Python
+  tests, 445 web tests and 55 browser assertions. Formatting, clippy, lint, type checks,
+  production build, dependency licences, registry export and release-version checks pass.
+  Native fixtures are exact over 83,312 shot values and 4,203 kernel values; seven shot
+  cases replay exactly in WebAssembly. All 51,614 pre-existing result numbers remain
+  bit-identical, including signed zero.
+
+### Experimental results
+- All 170 fixed community simulations complete. With the largest hypothesis (2 mL/bar),
+  logged-flow-target probes give 5.52–6.08 g of bloom cup gain, versus 3.02–5.85 g observed;
+  end-bloom pressure remains only 0.0174–0.0177 bar, versus 0.72–1.08 bar observed. The
+  [report](docs/validation/community-shot-comparison.md) retains both observables: these
+  scenarios demonstrate a storage response, not a calibrated explanation of the shots.
+- Halving the step from 0.05 to 0.025 s in the fixed 0.5 mL/bar zero-command case changes bloom
+  outlet volume by 0.00821 mL (3.09%), storage depletion by 0.00960 mL (3.15%) and record-end
+  cup mass by 0.0209 g. This one-case sensitivity check does not bound all scenario errors.
+- Worst relative hydraulic and solute residuals across the community runs are 7.17×10⁻¹⁴ and
+  2.35×10⁻¹⁴; worst bloom-interval volume residual is 7.88×10⁻¹² mL. Numerical conservation
+  does not establish experimental accuracy.
+- All 117 original validation simulations complete and their predictions, fit-quality blocks,
+  scores and diagnostics are unchanged. The v2 coefficients remain untouched; cached
+  leave-one-condition-out refits retain their historical identity. No complete M1 scientific
+  exit criterion passes.
+
 ## [0.4.0] — 2026-10-16
 
 Offline community-shot comparisons. M1.1's physics and fitted values remain unchanged; M2 stays deferred.

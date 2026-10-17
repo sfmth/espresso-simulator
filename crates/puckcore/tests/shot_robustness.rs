@@ -382,3 +382,40 @@ fn random_valid_specs_run_cleanly() {
          most regime solves in a step {worst_solves}, rejected steps {rejected}; stop reasons {reasons:?}"
     );
 }
+
+#[test]
+fn optional_pressure_storage_stays_conservative_across_random_valid_specs() {
+    let mut rng = Lcg(20261014);
+    for case in 0..25 {
+        let mut spec = random_spec(&mut rng);
+        spec.machine.hydraulic_compliance_m3_pa = [1e-24, 1e-12, 5e-12, 2e-11, 1e-10][case % 5];
+        let r = simulate_shot(&spec).unwrap_or_else(|e| panic!("case {case}: {e}\n{spec:?}"));
+        assert!(
+            r.diagnostics.hydraulic_volume_balance_error < 1e-10,
+            "case {case}: {:?}",
+            r.diagnostics
+        );
+        assert!(
+            r.diagnostics.mass_balance_error < 1e-9,
+            "case {case}: {:?}",
+            r.diagnostics
+        );
+        assert!(r.diagnostics.min_concentration_kg_m3 >= 0.0);
+        let a = &r.series;
+        for i in 0..a.t_s.len() {
+            assert_eq!(
+                a.storage_volume_m3[i],
+                spec.machine.hydraulic_compliance_m3_pa * a.pressure_pa[i]
+            );
+            let residual = a.cumulative_inlet_volume_m3[i]
+                - a.cumulative_outlet_volume_m3[i]
+                - a.cumulative_vented_volume_m3[i]
+                - a.retained_volume_m3[i];
+            assert!(
+                residual.abs() < 1e-10 * a.cumulative_inlet_volume_m3[i].max(1e-9),
+                "case {case} at {}: {residual:e}",
+                a.t_s[i]
+            );
+        }
+    }
+}

@@ -8,7 +8,8 @@ deferred while the startup and extraction coupling needs further work.
 The results below describe the original [0.3.0 evaluation](baseline-v0.3.0/README.md). Version 0.4.0
 adds [community comparison tooling](community-shot-comparison.md) without changing the physics or fit.
 Its rerun reproduces the same predictions; cached leave-one-condition-out refits remain labelled with
-their original build identity.
+their original build identity. Version 0.5.0 adds [optional pressure storage](../decisions/0011-upstream-pressure-storage.md)
+and fixed community probes, with zero compliance in the original validation cases and no new fit.
 
 ## What changed
 

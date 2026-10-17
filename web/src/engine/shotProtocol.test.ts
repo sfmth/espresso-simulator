@@ -13,6 +13,7 @@ import {
   toJsonResult,
   toShotRunData,
 } from './shotData';
+import { HYDRAULIC_VOLUME_FIELDS } from './shotTypes';
 import type { PuckcoreModule } from './types';
 
 /** A clock that advances by `step` ms on every reading. */
@@ -92,6 +93,65 @@ describe('shot results in transfer form', () => {
     const copy = structuredClone(data, { transfer: shotTransferables(data.result) });
     expect(Array.from(copy.result.series.ey)).toEqual(fixtureResult({ points: 5 }).series.ey);
     expect(data.result.series.ey.length).toBe(0); // moved, not copied
+  });
+
+  it('keeps hydraulic inventories aligned with pressure through thinning, transfer and export', () => {
+    const doc = fixtureResult({ points: 101 });
+    const s = doc.series;
+    s.storage_volume_m3 = s.pressure_pa.map((p) => 1e-11 * p);
+    s.cumulative_inlet_volume_m3 = s.t_s.map((t) => 4e-6 * t);
+    s.cumulative_outlet_volume_m3 = s.t_s.map((t) => 1e-6 * t);
+    s.cumulative_vented_volume_m3 = s.t_s.map((_, i) => (i === s.t_s.length - 1 ? 1e-6 : 0));
+    s.retained_volume_m3 = s.t_s.map(
+      (_, i) =>
+        s.cumulative_inlet_volume_m3![i] -
+        s.cumulative_outlet_volume_m3![i] -
+        s.cumulative_vented_volume_m3![i],
+    );
+    const keep = shotThinningIndices(s as unknown as Record<string, unknown>, s.t_s.length, 20)!;
+    const data = toShotRunData(doc, 0, 20);
+    const copy = structuredClone(data, { transfer: shotTransferables(data.result) });
+    const exported = toJsonResult(copy.result);
+    for (const key of HYDRAULIC_VOLUME_FIELDS) {
+      expect(data.result.series[key]?.length).toBe(0);
+      expect(copy.result.series[key]).toBeInstanceOf(Float64Array);
+      expect(exported.series[key]).toEqual(keep.map((i) => s[key]![i]));
+    }
+    const a = exported.series;
+    a.t_s.forEach((_, i) => {
+      expect(a.storage_volume_m3![i]).toBe(1e-11 * a.pressure_pa[i]);
+      expect(
+        a.cumulative_inlet_volume_m3![i] -
+          a.cumulative_outlet_volume_m3![i] -
+          a.cumulative_vented_volume_m3![i] -
+          a.retained_volume_m3![i],
+      ).toBe(0);
+    });
+    expect(checkShotResult(exported)).toEqual([]);
+  });
+});
+
+describe('hydraulic result contract', () => {
+  it('accepts older results without hydraulic inventories', () => {
+    expect(checkShotResult(fixtureResult())).toEqual([]);
+  });
+
+  it.each(HYDRAULIC_VOLUME_FIELDS)('validates the optional series.%s inventory', (field) => {
+    const doc = fixtureResult({ points: 3 });
+    doc.series[field] = [0, 1e-6, 2e-6];
+    expect(checkShotResult(doc)).toEqual([]);
+    doc.series[field] = [0, 1e-6];
+    expect(checkShotResult(doc)).toContain(`series.${field}: has 2 values, expected 3`);
+    doc.series[field] = [0, Number.NaN, 2e-6];
+    expect(checkShotResult(doc)).toContain(`series.${field}[1]: must be a finite number`);
+  });
+
+  it('rejects a nonfinite hydraulic-volume diagnostic', () => {
+    const doc = fixtureResult();
+    doc.diagnostics.hydraulic_volume_balance_error = Number.NaN;
+    expect(checkShotResult(doc)).toContain(
+      'diagnostics.hydraulic_volume_balance_error: must be a finite number',
+    );
   });
 });
 

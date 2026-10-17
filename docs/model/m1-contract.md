@@ -170,6 +170,7 @@ Recorded here by the lead as workstreams report them (rule 3).
 | `numerics.kernel_shells` | equal-volume shells per kernel (2–64) |
 | `solubles.kernel_loading_cap` | second round, default `true`: caps kernel re-uptake at the initial pore content u₀ |
 | `machine.stop.vent_headspace` | second round, default `false`: a 3-way valve vents the group at the stop, so there is no drip |
+| `machine.hydraulic_compliance_m3_pa` | 0.5.0: optional constant upstream pressure storage C, 0–1e-10 m³/Pa; default 0 preserves algebraic hydraulics. Registry override `model.machine.hydraulic_compliance` is in mL/bar. See ADR 0011 |
 
 **ShotResult** (workstream A):
 
@@ -178,20 +179,23 @@ Recorded here by the lead as workstreams report them (rule 3).
 | `summary.drip_mass_kg` | beverage mass that dripped after the stop (included in `beverage_mass_kg`) |
 | `summary.uniformity.ey_mean` | mean local EY across the bed |
 | `series.wetted_fraction` | wetted fraction of the bed against time |
+| `series.storage_volume_m3` | 0.5.0: charged upstream carrier volume C P, zero without compliance |
+| `series.cumulative_inlet_volume_m3`, `series.cumulative_outlet_volume_m3`, `series.cumulative_vented_volume_m3` | 0.5.0: accepted cumulative carrier volumes, including an instantaneous stop vent at its timestamp |
+| `series.retained_volume_m3` | 0.5.0: headspace + initial wetted pore inventory + charged storage; not an exact solvent-mass inventory |
 | `diagnostics.min_concentration_kg_m3` | smallest concentration seen (positivity check) |
 | `diagnostics.tier` | the tier that ran |
 | `spatial.depth_edges_m` | second round: the depth-cell edges (cells + 1 values) |
 | `spatial.snapshots[].wetted_fraction` | second round: the wetted share of each [column][depth] cell, 0–1 |
 | `diagnostics.outflow_integral_error` | second round: cup solute against ∫q·c dt, as a relative difference. This is a quadrature-consistency check; it cannot detect errors inside the bed (third round wording) |
 | `diagnostics.max_regime_solves`, `diagnostics.rejected_steps` | third round: the most policy-iteration solves in one step, and how many steps were rejected and retried at Δt/2 |
-| `diagnostics.hydraulic_volume_balance_error` | M1.1: relative hydraulic carrier-volume residual, including retained and vented headspace water; separate from soluble mass conservation and not an exact solvent-mass balance with dissolution |
+| `diagnostics.hydraulic_volume_balance_error` | relative hydraulic carrier-volume residual, including retained pore/headspace/charged water and vented water; separate from soluble mass conservation and not an exact solvent-mass balance with dissolution |
 
 **Solver semantics** (second round, after the independent review):
 - Every spec number is bounded (`docs/model/shot-model.md` §2.1, mirrored in the schema), and the model size is capped.
 - Mass balance above 1e-9 warns, and above 1e-6 fails with `Numerical`. Negative concentrations warn or fail likewise.
 - Partition coefficients are Corrochano's K, per swollen-particle envelope volume. The kernel boundary value is c/(K·ε_p).
 - `spatial.snapshots[].liquid_conc_kg_m3` is per liquid holdup. Local EY is never negative while the loading cap is on.
-- The drip drains only the headspace water.
+- With default zero compliance, drip drains only headspace water. With nonzero compliance, it drains only charged storage; `drip_tau_s` then sets an 8τ observation window rather than prescribing pressure decay. A vent discharges both stores. Lowered program pressure caps throttle incoming water without venting stored pressure.
 - Tier 0 reports 4 columns (3 strata plus the edge), 2 without spread, or 1 without spread or edge.
 - **Third round** (after a verification review):
   - A step whose pool regimes do not converge is rejected and retried at Δt/2, never accepted; after 12 halvings the run fails with `Numerical`.

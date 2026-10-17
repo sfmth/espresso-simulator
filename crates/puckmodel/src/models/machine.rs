@@ -42,6 +42,8 @@ pub(crate) struct MachineOut {
     /// Water volume between basket rim and shower screen, mL.
     pub group_headspace_ml: Val,
     pub drip_tau: Val,
+    /// Upstream hydraulic compliance, mL/bar (zero keeps legacy hydraulics).
+    pub hydraulic_compliance_ml_bar: Val,
     /// True if a three-way valve vents the group at the stop (no drip).
     pub vent_headspace: bool,
     pub vent_src: String,
@@ -514,15 +516,24 @@ pub(crate) fn resolve(
             .map(|v| Val::new(v, psrc.clone())),
         None,
     )?;
+    let hydraulic_compliance_ml_bar = ctx.param("model.machine.hydraulic_compliance", "mL/bar")?;
+    if hydraulic_compliance_ml_bar.v > 0.0 {
+        ctx.note(format!(
+            "Machine: experimental upstream hydraulic compliance is {} mL/bar; stored pump water can continue through the puck during a pause. This lumped closure is an uncalibrated modeling assumption (grade D).",
+            hydraulic_compliance_ml_bar.v
+        ));
+    }
     // Three-way valve: recipe > preset > none.
     let (vent_headspace, vent_src) = match (m.vent_headspace, preset.and_then(|p| p.vent_headspace))
     {
         (Some(v), _) => (v, "recipe:machine.vent_headspace".to_string()),
         (None, Some(v)) => (v, psrc.clone()),
         (None, None) => {
-            ctx.note(
-                "Machine: no three-way valve assumed, so the water above the puck drips into the cup after the stop; set machine.vent_headspace to true if your machine vents the group.",
-            );
+            ctx.note(if hydraulic_compliance_ml_bar.v > 0.0 {
+                "Machine: no three-way valve assumed, so charged pressure storage can drain through the puck after the stop; set machine.vent_headspace to true if your machine vents the group."
+            } else {
+                "Machine: no three-way valve assumed, so the water above the puck drips into the cup after the stop; set machine.vent_headspace to true if your machine vents the group."
+            });
             (false, "model:no three-way valve assumed".to_string())
         }
     };
@@ -544,6 +555,7 @@ pub(crate) fn resolve(
         temperature,
         group_headspace_ml,
         drip_tau,
+        hydraulic_compliance_ml_bar,
         vent_headspace,
         vent_src,
         preheat,

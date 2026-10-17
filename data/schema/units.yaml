@@ -82,6 +82,7 @@ units:
   # Pressure
   "Pa":    {dims: {kg: 1, m: -1, s: -2}, scale: 1.0, description: "pascal"}
   "bar":   {dims: {kg: 1, m: -1, s: -2}, scale: 1.0e+5, description: "bar"}
+  "mL/bar": {dims: {m: 4, kg: -1, s: 2}, scale: 1.0e-11, description: "millilitre per bar (hydraulic compliance)"}
 
   # Flow
   "mL/s":  {dims: {m: 3, s: -1}, scale: 1.0e-6, description: "millilitre per second"}

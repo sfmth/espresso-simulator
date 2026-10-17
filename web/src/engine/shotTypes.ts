@@ -304,12 +304,14 @@ export type Pump =
 export interface MachineSpec {
   phases: Phase[];
   pump: Pump;
+  /** Experimental upstream pressure storage, m³/Pa; 0 or omitted keeps legacy hydraulics. */
+  hydraulic_compliance_m3_pa?: number;
   stop: {
     time_s: number | null;
     beverage_mass_kg: number | null;
-    /** Post-stop drip time constant, s (at most 60). */
+    /** Legacy drip time constant, s (at most 60); with compliance, only the 8τ observation horizon. */
     drip_tau_s: number;
-    /** The headspace is vented at the stop: no drip (newer cores). */
+    /** The headspace and charged pressure storage are vented at the stop: no drip (newer cores). */
     vent_headspace?: boolean;
   };
 }
@@ -386,6 +388,16 @@ export interface Series<A = number[]> {
   pressure_pa: A;
   flow_in_m3_s: A;
   flow_out_m3_s: A;
+  /** Charged upstream carrier volume C·P, m³ (newer cores; zero without compliance). */
+  storage_volume_m3?: A;
+  /** Cumulative pump-delivered carrier volume, m³ (newer cores). */
+  cumulative_inlet_volume_m3?: A;
+  /** Cumulative basket-outlet carrier volume, m³ (newer cores). */
+  cumulative_outlet_volume_m3?: A;
+  /** Cumulative carrier volume discharged through the stop vent, m³ (newer cores). */
+  cumulative_vented_volume_m3?: A;
+  /** Headspace, wetted pore inventory and charged storage, m³; not solvent mass (newer cores). */
+  retained_volume_m3?: A;
   beverage_mass_kg: A;
   tds_cup: A;
   tds_outlet: A;
@@ -414,6 +426,15 @@ export const SERIES_FIELDS = [
 ] as const;
 
 export type SeriesField = (typeof SERIES_FIELDS)[number];
+
+/** Optional hydraulic inventories, introduced after the original result contract. */
+export const HYDRAULIC_VOLUME_FIELDS = [
+  'storage_volume_m3',
+  'cumulative_inlet_volume_m3',
+  'cumulative_outlet_volume_m3',
+  'cumulative_vented_volume_m3',
+  'retained_volume_m3',
+] as const;
 
 export interface Spatial {
   /** Depth of each cell centre below the bed top, m. */

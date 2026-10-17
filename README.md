@@ -2,7 +2,7 @@
 
 An open-source espresso simulator that runs entirely in the browser. It models a shot from bean and grinder, through the puck and the flow, to the cup. The goal is to follow the ~55 compounds that dissolve and to end with an explainable taste estimate, giving every number a source and an uncertainty band. The status below says what exists today.
 
-**Status:** version 0.4.0 adds offline community-shot import and exploratory simulator comparisons. The shot physics and fitted parameters remain those of M1.1 (0.3.0): pore-water storage, a separate trapped-air mobility closure and conservative headspace filling. **The scientific validation targets are still not all met.** The startup parameters are explicitly labelled estimates and were not fitted to held-out shot times. Treat predicted times and extraction yields as indicative; see the [validation report](docs/validation/m1-validation.md) and the preserved [0.2.0 baseline](docs/validation/baseline-v0.2.0/m1-validation.md).
+**Status:** version 0.5.0 adds optional pressure storage, allowing charged water to drain during a pump pause, with explicit inlet/outlet and retained-water accounts. The [community comparison](docs/validation/community-shot-comparison.md) tests fixed storage assumptions against online shot logs. Storage remains disabled by default and the v2 fitted parameters are unchanged. **The scientific validation targets are still not all met.** Startup and storage parameters are labelled estimates; no held-out shot times or community observations set them. Treat predicted times and extraction yields as indicative; see the [validation report](docs/validation/m1-validation.md) and preserved [0.2.0 baseline](docs/validation/baseline-v0.2.0/m1-validation.md).
 
 First drops improve from 1.8 to 6.8 s against 12.8 s measured, and the flow rise from 6.7 to 12.1 s against 25.5 s. Extraction accuracy regresses: 48/60 fitted rates meet the ±10% target, versus 57/60 before. No complete M1 scientific exit criterion passes. The [M1.1 investigation](docs/validation/m11-startup.md) records the improvements, regressions and remaining model gaps.
 
@@ -14,7 +14,7 @@ First drops improve from 1.8 to 6.8 s against 12.8 s measured, and the flow rise
 | Shot lab (web) | A recipe editor for gear described by preset or from scratch; the shot graph, summary tiles and particle-size chart; a compound table with sources; a cross-section of the puck with the wetting front; 1D sweeps, pinned overlays and exports. |
 | Calibration and validation | 18 published datasets (Schmieder, Waszkiewicz, Cameron, Corrochano, Smrke, Vaca Guerra), with calibration on some and held-out tests on others. |
 | Community comparisons | Safe offline import of original DE1 logs and the matching measurement sheet, followed by fixed-scenario comparisons. The [community report](docs/validation/community-shot-comparison.md) separates observed scale mass from estimated inlet flow and conditional model output; these sources have not entered the numerical fit. |
-| Parameter registry | 230 sourced parameters, each with an evidence grade. The startup assumptions are exposed in the sandbox. |
+| Parameter registry | 231 sourced parameters, each with an evidence grade. Startup assumptions and experimental pressure storage are exposed in the sandbox. |
 | CI | Rust, Python and web workflows, plus GitHub Pages deployment. |
 
 Nothing you enter leaves your browser.

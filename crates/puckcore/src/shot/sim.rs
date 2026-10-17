@@ -20,7 +20,7 @@ const CHOKE_FLOW_M3_S: f64 = 1e-8;
 const CHOKE_TIME_S: f64 = 5.0;
 /// Mass events fire within this margin, kg.
 const MASS_TOLERANCE_KG: f64 = 1e-7;
-/// The post-stop drip runs this many time constants.
+/// Legacy decay time constants, or compliance-tail observation duration.
 const DRIP_TAUS: f64 = 8.0;
 /// Smallest wetted depth used for a column's resistance, as a share of the
 /// bed height (it regularises the instant the front enters the bed).
@@ -30,7 +30,7 @@ const MIN_WETTED_DEPTH: f64 = 1e-6;
 const MAX_HALVINGS: usize = 12;
 /// A step that overshoots a mass target is re-landed at most this many times.
 const MAX_RELANDS: usize = 8;
-/// The drip ends when the headspace holds less than this share of its water.
+/// The drip ends below this share of its initial source volume.
 const DRIP_EMPTY: f64 = 1e-9;
 /// Relative mass-balance error above which a warning is issued. The balance
 /// is algebraic, so round-off alone stays near 1e-12 even for stiff specs at
@@ -68,6 +68,8 @@ pub(crate) struct SpeciesState {
 pub(crate) struct State {
     pub t: f64,
     pub temp: f64,
+    /// Pressure of the optional charged upstream compliance, Pa gauge.
+    pub stored_pressure: f64,
     pub headspace_filled: f64,
     pub headspace_full: bool,
     /// Wetted bed volume of each column, m³.
@@ -176,6 +178,7 @@ impl State {
         let mut s = Self {
             t: 0.0,
             temp: spec.thermal.initial_bed_temp_c,
+            stored_pressure: 0.0,
             headspace_filled: 0.0,
             headspace_full: model.headspace_volume <= 0.0,
             wetted: vec![0.0; ncol],
@@ -347,7 +350,7 @@ enum Mode {
 #[derive(Clone, Debug, Default)]
 struct Hydro {
     pressure: f64,
-    /// Pump flow into the headspace (or the bed once it is full), m³/s.
+    /// Pump flow into the headspace, bed and optional pressure storage, m³/s.
     pump_flow: f64,
     /// Flow of each column, m³/s.
     col_flow: Vec<f64>,
@@ -359,6 +362,7 @@ struct Hydro {
 /// fail (the step is then retried shorter).
 #[derive(Clone, Debug)]
 struct Light {
+    stored_pressure: f64,
     headspace_filled: f64,
     headspace_full: bool,
     wetted: Vec<f64>,
@@ -414,7 +418,7 @@ struct Sim<'a> {
     cup_at_stop: f64,
     stall_since: Option<f64>,
     mass_error: f64,
-    /// Water left in the headspace during the drip, m³.
+    /// Remaining drip source: legacy headspace or charged storage, m³.
     drip_water: f64,
     /// Outlet solute flux now (Σ q·c over the columns through), kg/s, and
     /// its trapezoidal integral over the run, kg.
@@ -522,10 +526,48 @@ impl<'a> Sim<'a> {
         }
     }
 
+    /// Right-hand rate of the pressure cap. A pressure ramp can charge or
+    /// discharge compliance even while pressure exactly tracks the command;
+    /// the pump's own pressure limit stays constant.
+    fn pressure_cap_rate(&self, t: f64) -> f64 {
+        if !matches!(self.mode, Mode::Program) {
+            return 0.0;
+        }
+        let ph = &self.spec.machine.phases[self.program.phase];
+        let Control::Pressure { target_pa } = ph.control else {
+            return 0.0;
+        };
+        let elapsed = t - self.program.start;
+        if ph.ramp_s <= 0.0 || elapsed < 0.0 || elapsed >= ph.ramp_s {
+            return 0.0;
+        }
+        let slope = (target_pa - self.program.ramp_from) / ph.ramp_s;
+        let commanded =
+            self.program.ramp_from + (target_pa - self.program.ramp_from) * (elapsed / ph.ramp_s);
+        let (_, pump_cap, _) = self.pump_caps();
+        if commanded > pump_cap || (commanded == pump_cap && slope >= 0.0) {
+            0.0
+        } else {
+            slope
+        }
+    }
+
     /// The supply at time `t`, and the pump flow while the headspace fills.
     fn supply(&self, t: f64) -> (Supply, f64) {
         match self.mode {
             Mode::Drip { t_stop, p_stop, .. } => {
+                if self.spec.machine.hydraulic_compliance_m3_pa > 0.0 {
+                    // The charged volume supplies the bed after the pump
+                    // stops. No empirical pressure boundary is imposed.
+                    return (
+                        Supply {
+                            flow_cap: 0.0,
+                            pump: None,
+                            pressure_cap: 0.0,
+                        },
+                        0.0,
+                    );
+                }
                 // The headspace water drains into the puck under the decaying
                 // pressure until it is gone.
                 let tau = self.spec.machine.stop.drip_tau_s;
@@ -773,7 +815,17 @@ impl<'a> Sim<'a> {
                 out_flow: 0.0,
             };
         }
-        let (p, q) = hydraulics::operating_point(&self.curve, &supply);
+        let compliance = self.spec.machine.hydraulic_compliance_m3_pa;
+        let (p, q) = if compliance > 0.0 {
+            let p = self.state.stored_pressure;
+            let storage_flow = compliance * self.pressure_cap_rate(t);
+            (
+                p,
+                supply.regulated_flow(p, self.curve.flow(p), storage_flow),
+            )
+        } else {
+            hydraulics::operating_point(&self.curve, &supply)
+        };
         self.curve.column_flows(p, &mut col_flow);
         // fold from +0 (an empty float `sum()` is −0).
         let out_flow = col_flow
@@ -808,9 +860,15 @@ impl<'a> Sim<'a> {
         self.record_output();
         self.record_snapshot_candidate();
         loop {
-            if let Mode::Drip { t_end, .. } = self.mode
+            if let Mode::Drip { t_end, p_stop, .. } = self.mode
                 && (self.state.t >= t_end
-                    || self.drip_water <= DRIP_EMPTY * self.model.headspace_volume)
+                    || self.drip_water
+                        <= DRIP_EMPTY
+                            * if self.spec.machine.hydraulic_compliance_m3_pa > 0.0 {
+                                self.spec.machine.hydraulic_compliance_m3_pa * p_stop
+                            } else {
+                                self.model.headspace_volume
+                            })
             {
                 break;
             }
@@ -1069,14 +1127,33 @@ impl<'a> Sim<'a> {
                 }
             }
             self.build_curve(t1, &w_pred);
-            let h1 = self.solve_hydro(t1, true);
-            let mut average: Vec<f64> = h0
-                .col_flow
-                .iter()
-                .zip(&h1.col_flow)
-                .map(|(a, b)| 0.5 * (a + b))
-                .collect();
-            if matches!(self.mode, Mode::Drip { .. }) {
+            let compliance = self.spec.machine.hydraulic_compliance_m3_pa;
+            let mut average: Vec<f64> = if compliance > 0.0 {
+                // First-order implicit pressure/storage balance on the
+                // predicted end-front curve. The same bed volume enters
+                // transport and wetting; delivered pump volume is independent.
+                let (supply, _) = self.supply(t1);
+                let (pressure, pump_flow) = hydraulics::compliant_step(
+                    &self.curve,
+                    &supply,
+                    compliance,
+                    self.state.stored_pressure,
+                    dt,
+                );
+                self.state.stored_pressure = pressure;
+                supplied_volume = dt * pump_flow;
+                let mut flows = vec![0.0; ncol];
+                self.curve.column_flows(pressure, &mut flows);
+                flows
+            } else {
+                let h1 = self.solve_hydro(t1, true);
+                h0.col_flow
+                    .iter()
+                    .zip(&h1.col_flow)
+                    .map(|(a, b)| 0.5 * (a + b))
+                    .collect()
+            };
+            if compliance == 0.0 && matches!(self.mode, Mode::Drip { .. }) {
                 let requested: f64 = dt * average.iter().sum::<f64>();
                 if requested > self.drip_water {
                     let scale = self.drip_water / requested;
@@ -1132,7 +1209,11 @@ impl<'a> Sim<'a> {
             }
         }
 
-        if let Mode::Drip { .. } = self.mode {
+        if self.spec.machine.hydraulic_compliance_m3_pa > 0.0 {
+            if matches!(self.mode, Mode::Drip { .. }) {
+                self.drip_water = self.storage_volume();
+            }
+        } else if let Mode::Drip { .. } = self.mode {
             self.drip_water = fmax(self.drip_water - dt * bed_inflow, 0.0);
             self.state.headspace_filled = self.drip_water;
         } else {
@@ -1183,6 +1264,7 @@ impl<'a> Sim<'a> {
     /// (the transport changes nothing else before it reports failure).
     fn save_light(&self) -> Light {
         Light {
+            stored_pressure: self.state.stored_pressure,
             headspace_filled: self.state.headspace_filled,
             headspace_full: self.state.headspace_full,
             wetted: self.state.wetted.clone(),
@@ -1197,6 +1279,7 @@ impl<'a> Sim<'a> {
     }
 
     fn restore_light(&mut self, l: &Light) {
+        self.state.stored_pressure = l.stored_pressure;
         self.state.headspace_filled = l.headspace_filled;
         self.state.headspace_full = l.headspace_full;
         self.state.wetted.clone_from(&l.wetted);
@@ -1285,11 +1368,18 @@ impl<'a> Sim<'a> {
                     }
                 }
                 // Stall detection, against the flow the program asks for (a
-                // slow soak is not a stall).
+                // slow soak is not a stall). Compliance can accept pump
+                // delivery while pressure rises, or supply the bed while
+                // the pump is closed. Both flows must be negligible.
                 let demand = self.demand_flow(t);
+                let actual = if self.spec.machine.hydraulic_compliance_m3_pa > 0.0 {
+                    fmax(self.hydro.pump_flow, self.hydro.col_flow.iter().sum())
+                } else {
+                    self.hydro.pump_flow
+                };
                 let stalled = self.state.headspace_full
                     && demand > 0.0
-                    && self.hydro.pump_flow < fmin(CHOKE_FLOW_M3_S, 0.1 * demand);
+                    && actual < fmin(CHOKE_FLOW_M3_S, 0.1 * demand);
                 if stalled {
                     let since = *self.stall_since.get_or_insert(t);
                     if t - since >= CHOKE_TIME_S {
@@ -1328,18 +1418,25 @@ impl<'a> Sim<'a> {
         }
         // Record the stop itself (unless it was just recorded as an output).
         self.record_output_now();
-        // The drip is fed by the water left in the headspace; a venting
-        // machine dumps it, so there is none.
+        // The legacy drip spends headspace water. With compliance, only the
+        // separately charged volume can discharge; a vent dumps both stores.
         let stop = &self.spec.machine.stop;
+        let compliance = self.spec.machine.hydraulic_compliance_m3_pa;
+        let available = if compliance > 0.0 {
+            self.storage_volume()
+        } else {
+            self.state.headspace_filled
+        };
         let (t_end, water) = if stop.vent_headspace || self.hydro.pressure <= 0.0 {
             (t, 0.0)
         } else {
-            (t + DRIP_TAUS * stop.drip_tau_s, self.state.headspace_filled)
+            (t + DRIP_TAUS * stop.drip_tau_s, available)
         };
         self.drip_water = water;
         if stop.vent_headspace {
-            self.state.volume_vented += self.state.headspace_filled;
+            self.state.volume_vented += self.state.headspace_filled + self.storage_volume();
             self.state.headspace_filled = 0.0;
+            self.state.stored_pressure = 0.0;
         }
         self.mode = Mode::Drip {
             t_stop: t,
@@ -1347,9 +1444,34 @@ impl<'a> Sim<'a> {
             t_end,
         };
         self.hydro = self.solve_hydro(t, self.state.headspace_full);
+        if compliance > 0.0 {
+            // Right-limit stop state: in particular a vent's P=0 and C·P=0
+            // must appear at the same timestamp as its accounted volume.
+            self.replace_output_now();
+        } else {
+            // Preserve the legacy instantaneous series while recording the
+            // instantaneous vent in the new cumulative/inventory channels.
+            let retained = self.retained_volume();
+            if let Some(v) = self.series.retained_volume_m3.last_mut() {
+                *v = retained;
+            }
+            if let Some(v) = self.series.cumulative_vented_volume_m3.last_mut() {
+                *v = self.state.volume_vented;
+            }
+        }
     }
 
     // ----- Outputs -----------------------------------------------------------------
+
+    fn storage_volume(&self) -> f64 {
+        self.spec.machine.hydraulic_compliance_m3_pa * self.state.stored_pressure
+    }
+
+    fn retained_volume(&self) -> f64 {
+        self.state.headspace_filled
+            + self.model.phi_t * self.state.wetted.iter().sum::<f64>()
+            + self.storage_volume()
+    }
 
     fn record_output(&mut self) {
         self.output_index += 1;
@@ -1368,15 +1490,51 @@ impl<'a> Sim<'a> {
         }
     }
 
+    fn replace_output_now(&mut self) {
+        let s = &mut self.series;
+        if s.t_s.last().copied() == Some(self.state.t) {
+            for values in [
+                &mut s.t_s,
+                &mut s.pressure_pa,
+                &mut s.flow_in_m3_s,
+                &mut s.flow_out_m3_s,
+                &mut s.storage_volume_m3,
+                &mut s.cumulative_inlet_volume_m3,
+                &mut s.cumulative_outlet_volume_m3,
+                &mut s.cumulative_vented_volume_m3,
+                &mut s.retained_volume_m3,
+                &mut s.beverage_mass_kg,
+                &mut s.tds_cup,
+                &mut s.tds_outlet,
+                &mut s.ey,
+                &mut s.outlet_temp_c,
+                &mut s.wetted_fraction,
+            ] {
+                values.pop();
+            }
+            for species in &mut s.species_cup_kg {
+                species.values.pop();
+            }
+        }
+        self.push_series();
+    }
+
     fn push_series(&mut self) {
         let m = self.model;
         let nc = m.n_cells();
+        let storage = self.storage_volume();
+        let retained = self.retained_volume();
         let s = &mut self.series;
         let t = self.state.t;
         s.t_s.push(t);
         s.pressure_pa.push(self.hydro.pressure);
         s.flow_in_m3_s.push(self.hydro.pump_flow);
         s.flow_out_m3_s.push(self.hydro.out_flow);
+        s.storage_volume_m3.push(storage);
+        s.cumulative_inlet_volume_m3.push(self.state.volume_in);
+        s.cumulative_outlet_volume_m3.push(self.state.volume_out);
+        s.cumulative_vented_volume_m3.push(self.state.volume_vented);
+        s.retained_volume_m3.push(retained);
         let cup = self.state.cup_water + self.state.cup_solute;
         s.beverage_mass_kg.push(cup);
         s.tds_cup.push(if cup > 0.0 {
@@ -1639,8 +1797,7 @@ impl<'a> Sim<'a> {
         } else {
             0.0
         };
-        let retained_volume =
-            self.state.headspace_filled + m.phi_t * self.state.wetted.iter().sum::<f64>();
+        let retained_volume = self.retained_volume();
         let hydraulic_volume_balance_error = if self.state.volume_in > 0.0 {
             (self.state.volume_in
                 - self.state.volume_out
@@ -1769,6 +1926,33 @@ mod tests {
         match run_limited(&spec, 1) {
             Err(ShotError::Numerical { reason }) => assert!(reason.contains("did not converge")),
             other => panic!("expected a numerical error, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn pressure_storage_is_restored_when_transport_rejects_a_step() {
+        let mut spec = ShotSpec::default();
+        spec.machine.hydraulic_compliance_m3_pa = 1e-11;
+        spec.solubles.surface_rate_m_s = 1.0;
+        spec.hydraulics.axial_dispersion_m2_s = 0.0;
+        spec.numerics.depth_cells = 200;
+        spec.numerics.max_dt_s = 0.5;
+        spec.numerics.output_interval_s = 0.5;
+        let free = run_limited(&spec, usize::MAX).unwrap();
+        let limited = run_limited(&spec, 3).unwrap();
+        assert!(limited.diagnostics.rejected_steps > 0);
+        assert!(limited.diagnostics.max_regime_solves <= 3);
+        assert!(limited.diagnostics.hydraulic_volume_balance_error < 1e-10);
+        assert!(limited.diagnostics.mass_balance_error < 1e-10);
+        assert!(limited.diagnostics.min_concentration_kg_m3 >= 0.0);
+        assert!((limited.summary.ey / free.summary.ey - 1.0).abs() < 0.03);
+        for i in 0..limited.series.t_s.len() {
+            let a = &limited.series;
+            let residual = a.cumulative_inlet_volume_m3[i]
+                - a.cumulative_outlet_volume_m3[i]
+                - a.cumulative_vented_volume_m3[i]
+                - a.retained_volume_m3[i];
+            assert!(residual.abs() < 1e-16);
         }
     }
 

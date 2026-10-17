@@ -26,6 +26,25 @@ def sample_case():
     }
 
 
+def inventory_result(*, complete=True):
+    """Synthetic conserved inventory with pressure storage and ongoing pore filling."""
+    series = {
+        "t_s": [0, 3, 10, 20], "beverage_mass_kg": [0, 0, .0042, .0094],
+        "pressure_pa": [0, 12e5, 4e5, 0], "flow_in_m3_s": [0, 0, 0, 0],
+        "cumulative_inlet_volume_m3": [0, 10e-6, 11e-6, 15e-6],
+        "cumulative_outlet_volume_m3": [0, 0, 4e-6, 9e-6],
+        "cumulative_vented_volume_m3": [0, 0, 0, 0],
+        "retained_volume_m3": [0, 10e-6, 7e-6, 6e-6],
+        "storage_volume_m3": [0, 6e-6, 2e-6, 0],
+    }
+    if not complete:
+        series = {key: values[:-1] for key, values in series.items()}
+    return {"core_version": "synthetic", "series": series,
+            "summary": {"stop_reason": "time" if complete else "choked", "first_drops_s": 4},
+            "diagnostics": {"hydraulic_volume_balance_error": 0, "mass_balance_error": 0,
+                            "warnings": [] if complete else ["choked"]}}
+
+
 def test_compression_keeps_input_knots_and_respects_native_phase_limit():
     t = np.linspace(0, 80, 401)
     y = np.sin(t) + 3 + .2 * np.sin(9 * t)
@@ -66,6 +85,7 @@ def test_bloom_window_excludes_ramps_and_does_not_equate_target_and_estimated_fl
     assert window["scale_gain_g"] == pytest.approx(1.4)
     assert window["target_inlet_volume_ml"] == pytest.approx(.0625 * 7)
     assert window["estimated_inlet_volume_ml"] == pytest.approx(.02 * 7)
+    assert (window["pressure_start_bar"], window["pressure_end_bar"], window["pressure_drop_bar"]) == (3, 1, 2)
     changed = copy.deepcopy(case)
     changed["scale_mass_g"] = [999] * len(case["t_s"])
     selected = c.bloom_window(changed)
@@ -114,15 +134,124 @@ def test_zero_probe_tracking_uses_supplied_program_and_retains_incomplete_status
     result = {
         "summary": {"stop_reason": "choked", "first_drops_s": None},
         "series": {"t_s": [0, 3, 10], "beverage_mass_kg": [0, 0, 0],
-                   "pressure_pa": [0, 0, 0], "flow_in_m3_s": [0, 0, 0]},
+                   "pressure_pa": [0, 0, 0], "flow_in_m3_s": [0, 0, 0],
+                   "cumulative_inlet_volume_m3": [0, 0, 0],
+                   "cumulative_outlet_volume_m3": [0, 0, 0],
+                   "cumulative_vented_volume_m3": [0, 0, 0],
+                   "retained_volume_m3": [0, 0, 0], "storage_volume_m3": [0, 0, 0]},
         "diagnostics": {"hydraulic_volume_balance_error": 0, "mass_balance_error": 0, "warnings": ["choked"]},
     }
     program = {"t_s": [0, 20], "targets": [0, 0]}
     obs = c._result_observables(case, result, window, "flow", program)
-    assert obs["flow_target_rmse_ml_s"] == 0
+    assert obs["flow_target_rmse_ml_s"] is None
+    assert obs["pressure_rmse_bar"] is None
+    assert obs["pressure_max_abs_error_bar"] is None
+    assert obs["simulated_window_flow_target_rmse_ml_s"] == 0
     assert obs["mass_at_record_end_g"] is None
     assert obs["complete_record_window"] is False
     assert all(t["time_s"] is None and t["status"] == "not_reached" for t in obs["thresholds"])
+
+
+def test_flow_tracking_excludes_final_stop_for_both_stop_sample_conventions():
+    case = sample_case()
+    result = inventory_result()
+    result["summary"]["shot_time_s"] = 20
+    program = {"t_s": [0, 20], "targets": [2.1875, 2.1875]}
+    for last_flow in (2.1875e-6, 0.0):
+        result["series"]["flow_in_m3_s"] = [2.1875e-6] * 3 + [last_flow]
+        obs = c._result_observables(case, result, c.bloom_window(case), "flow", program)
+        assert obs["complete_record_window"] is True
+        assert obs["flow_target_rmse_ml_s"] == 0
+        assert obs["simulated_window_flow_target_rmse_ml_s"] == 0
+
+
+def test_bloom_inventory_uses_cumulative_volumes_and_distinguishes_pore_filling():
+    case = sample_case()
+    result = inventory_result()
+    program = {"t_s": [0, 20], "targets": [0, 0]}
+    obs = c._result_observables(case, result, c.bloom_window(case), "flow", program)
+    # Instantaneous flow samples are deliberately zero; integrating them would lose the inlet.
+    assert obs["bloom_input_volume_ml"] == pytest.approx(1)
+    assert obs["bloom_output_volume_ml"] == pytest.approx(4)
+    assert obs["bloom_mass_gain_g"] == pytest.approx(4.2)
+    assert obs["bloom_pressure_start_bar"] == 12
+    assert obs["bloom_pressure_end_bar"] == 4
+    assert obs["bloom_pressure_drop_bar"] == 8
+    assert obs["bloom_storage_depletion_ml"] == pytest.approx(4)
+    assert obs["bloom_retained_volume_depletion_ml"] == pytest.approx(3)
+    assert obs["bloom_hydraulic_volume_residual_ml"] == pytest.approx(0, abs=1e-12)
+    # Interpolated endpoints preserve the linear volume identity.
+    window = {"start_s": 4.5, "end_s": 8.75}
+    partial = c._result_observables(case, result, window, "flow", program)
+    assert partial["bloom_input_volume_ml"] == pytest.approx(4.25 / 7)
+    assert partial["bloom_hydraulic_volume_residual_ml"] == pytest.approx(0, abs=1e-12)
+
+
+def test_uncompleted_bloom_keeps_unobserved_endpoints_and_differences_missing():
+    case = sample_case()
+    result = inventory_result(complete=False)
+    result["series"] = {key: values[:-1] for key, values in result["series"].items()}
+    obs = c._result_observables(case, result, c.bloom_window(case), "flow",
+                                {"t_s": [0, 20], "targets": [0, 0]})
+    assert obs["complete_record_window"] is False
+    assert obs["bloom_pressure_start_bar"] == 12
+    for key in ("bloom_pressure_end_bar", "bloom_pressure_drop_bar", "bloom_input_volume_ml",
+                "bloom_output_volume_ml", "bloom_storage_depletion_ml", "bloom_hydraulic_volume_residual_ml"):
+        assert obs[key] is None
+
+
+def test_missing_inventory_series_requires_rebuilding_the_extension():
+    result = inventory_result()
+    del result["series"]["storage_volume_m3"]
+    case = sample_case()
+    with pytest.raises(ValueError, match="rebuild the extension"):
+        c._result_observables(case, result, c.bloom_window(case), "flow",
+                              {"t_s": [0, 20], "targets": [0, 0]})
+
+
+def test_fixed_compliance_grid_keeps_scenarios_distinct_and_reports_incomplete_runs(repo, monkeypatch):
+    puckcore = pytest.importorskip("puckcore")
+    specs = []
+
+    def simulate(spec):
+        specs.append(copy.deepcopy(spec))
+        # An incomplete scenario and an incomplete approximation are returned states,
+        # not exceptions; both must survive aggregation and rendering.
+        return inventory_result(complete=len(specs) not in (1, 16))
+
+    monkeypatch.setattr(puckcore, "simulate_shot", simulate)
+    monkeypatch.setattr(c, "solver_identity", lambda paths: {"puckcore_version": "synthetic"})
+    sources = {"identity_verified": True, "article_url": "https://example.test/experiment",
+               "archive": {"url": "https://example.test/archive", "sha256": "synthetic"},
+               "measurement_log": {"url": "https://example.test/log", "sha256": "synthetic"}}
+    report = c.run_comparison({"cases": [sample_case()], "sources": sources}, repo, tier=0)
+    runs = report["cases"][0]["simulations"]
+    pressure = [r for r in runs if r["mode"] == "pressure_conditioned"]
+    assert {(r["psd_scale"], r["headspace_ml"]) for r in pressure} == {
+        (scale, headspace) for scale in (.5, 1, 2) for headspace in (0, 10, 30)}
+    assert all(r["compliance_ml_per_bar"] == 0 for r in pressure)
+    assert len(pressure) == 9
+    for mode in ("recorded_flow_target", "zero_plateau_probe"):
+        commands = [r for r in runs if r["mode"] == mode]
+        assert {r["compliance_ml_per_bar"] for r in commands} == {0, .5, 2}
+        assert {(r["psd_scale"], r["headspace_ml"]) for r in commands} == {(1, 10)}
+    assert [spec["machine"]["hydraulic_compliance_m3_pa"] for spec in specs[9:15]] == pytest.approx(
+        [0, 5e-12, 2e-11, 0, 5e-12, 2e-11])
+    refined = [r for r in report["approximation_checks"]["runs"] if r["mode"] == "zero_plateau_probe"]
+    assert {r["max_dt_s"] for r in refined} == {.05, .025}
+    assert all(r["compliance_ml_per_bar"] == .5 for r in refined)
+    assert report["numerical_checks"]["simulations"] == 20
+    assert report["numerical_checks"]["incomplete_scenario_simulations"] == 1
+    assert report["numerical_checks"]["incomplete_approximation_simulations"] == 1
+    assert len(report["aggregate"]["synthetic"]["scenarios"]) == 15
+    assert report["aggregate"]["synthetic"]["scenarios"][0]["mass_at_record_end_g"]["missing"] == 1
+    assert report["aggregate"]["synthetic"]["scenarios"][0]["pressure_rmse_bar"]["missing"] == 1
+    assert report["numerical_checks"]["max_abs_bloom_hydraulic_volume_residual_ml"] < 1e-12
+    markdown = c.render_markdown(report)
+    assert "1 incomplete scenario runs and 1 incomplete approximation runs" in markdown
+    assert "Returned incomplete runs remain visible" in markdown
+    assert "Pressure-storage depletion" in markdown
+    assert report["refitted"] is False and report["scientific_acceptance_scored"] is False
 
 
 def test_real_core_zero_command_has_no_mid_program_drainage():
@@ -139,6 +268,31 @@ def test_real_core_zero_command_has_no_mid_program_drainage():
     assert len(mass[inside]) > 2
     assert np.max(mass[inside]) - np.min(mass[inside]) < 1e-12
     assert max(result["series"]["flow_in_m3_s"][i] for i in np.flatnonzero(inside)) == 0
+    assert abs(result["diagnostics"]["hydraulic_volume_balance_error"]) < 1e-9
+
+
+def test_real_core_opt_in_compliance_releases_stored_water_during_zero_command():
+    puckcore = pytest.importorskip("puckcore")
+    case = sample_case()
+    case["t_s"] = [0, 20, 21, 31, 32, 45]
+    program = {"t_s": case["t_s"], "targets": [4, 4, 0, 0, 4, 4]}
+    spec = c.build_conditional_spec(case, program, control="flow", psd_scale=1,
+                                    headspace_ml=0, tier=0, compliance_ml_per_bar=.5)
+    result = puckcore.simulate_shot(spec)
+    series = result["series"]
+    times = np.asarray(series["t_s"])
+    inside = np.flatnonzero((times >= 22) & (times <= 30))
+    first, last = inside[0], inside[-1]
+    pressure = np.asarray(series["pressure_pa"])[inside]
+    assert pressure[0] > pressure[-1] >= 0
+    assert np.max(np.diff(pressure)) <= 1e-8
+    assert max(series["flow_in_m3_s"][i] for i in inside) == 0
+    inlet = series["cumulative_inlet_volume_m3"]
+    outlet = series["cumulative_outlet_volume_m3"]
+    storage = series["storage_volume_m3"]
+    assert inlet[last] - inlet[first] == 0
+    assert outlet[last] - outlet[first] > 0
+    assert outlet[last] - outlet[first] == pytest.approx(storage[first] - storage[last], abs=1e-12)
     assert abs(result["diagnostics"]["hydraulic_volume_balance_error"]) < 1e-9
 
 

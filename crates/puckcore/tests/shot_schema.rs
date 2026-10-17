@@ -792,6 +792,7 @@ fn spec_instances() -> Vec<ShotSpec> {
     v.hydraulics.pore_air_permeability_exponent = 3.0;
     v.hydraulics.poroelastic_pc_pa = None;
     v.machine.stop.time_s = Some(30.0);
+    v.machine.hydraulic_compliance_m3_pa = 1e-11;
     vec![ShotSpec::default(), v]
 }
 
@@ -850,6 +851,26 @@ fn old_specs_without_startup_fields_keep_the_legacy_closure() {
     });
     let restored: ShotSpec = from_value(Value::Obj(root)).expect("legacy JSON remains accepted");
     assert_eq!(restored, expected);
+}
+
+#[test]
+fn old_specs_without_compliance_keep_the_algebraic_hydraulics() {
+    let expected = ShotSpec::default();
+    let Value::Obj(mut root) = to_value(&expected) else {
+        panic!("a shot spec is an object");
+    };
+    let (_, Value::Obj(machine)) = root.iter_mut().find(|(key, _)| key == "machine").unwrap()
+    else {
+        panic!("machine is an object");
+    };
+    machine.retain(|(key, _)| key != "hydraulic_compliance_m3_pa");
+    let restored: ShotSpec =
+        from_value(Value::Obj(root)).expect("legacy machine JSON remains accepted");
+    assert_eq!(restored, expected);
+    assert_eq!(
+        simulate_shot(&restored).unwrap(),
+        simulate_shot(&expected).unwrap()
+    );
 }
 
 #[test]

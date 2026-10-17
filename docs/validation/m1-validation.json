@@ -1,20 +1,20 @@
 {
  "schema": "puckworks.validation-report/1",
  "created": "2026-10-16",
- "tools_version": "0.4.0",
- "core_version": "0.4.0",
+ "tools_version": "0.5.0",
+ "core_version": "0.5.0",
  "solver": {
-  "puckcore_version": "0.4.0",
-  "extension_sha256": "2cb29430ad716e12",
-  "extension_built": "2026-10-16T13:56:26-07:00",
+  "puckcore_version": "0.5.0",
+  "extension_sha256": "70e0d9f108ca72e7",
+  "extension_built": "2026-10-16T15:30:46-07:00",
   "sources_sha256": {
-   "crates/puckcore/src": "2bc3b20936480bae",
-   "crates/puckmodel/src": "6d9ebc09c7f9b2d2",
-   "crates/puckmodel/generated": "bea0b03f938990c9",
+   "crates/puckcore/src": "d821bd5bbb0b7c20",
+   "crates/puckmodel/src": "f4a760d8bd0c0997",
+   "crates/puckmodel/generated": "a0c8288a70de512e",
    "crates/puckcore-py": "563a9328b2a48052"
   },
   "files_sha256": {
-   "Cargo.lock": "34320fe937dd0c54"
+   "Cargo.lock": "2a4c41fc27d17c0f"
   },
   "python": {
    "version": "3.14.7",
@@ -43,7 +43,9 @@
  },
  "calibration_statistics_issues": [
   "core version changed",
-  "solver build inputs changed"
+  "solver/model sources changed or lack an identity",
+  "solver build inputs changed",
+  "numeric registry defaults changed or lack an identity"
  ],
  "placeholder": false,
  "solver_warnings": [
@@ -3174,7 +3176,7 @@
     "check": "V1 leave-one-condition-out (\u00b115%)",
     "status": "not run",
     "target": "\u03bb and cup masses of each left-out experiment within \u00b115%",
-    "detail": "not run for this model/configuration; the calibration file's cached refits are historical (core version changed; solver build inputs changed)"
+    "detail": "not run for this model/configuration; the calibration file's cached refits are historical (core version changed; solver/model sources changed or lack an identity; solver build inputs changed; numeric registry defaults changed or lack an identity)"
    },
    {
     "check": "V2 Bodenstein number 8\u201317",
