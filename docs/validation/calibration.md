@@ -173,6 +173,14 @@ The startup closure improves timing while extraction fit quality worsens; it has
 single-liquid water-inventory approximation or the estimated pore-air law. V2 dispersion and V5's
 EY/time rank correlation also regress from passing to failing their existing checks.
 
+The [0.5.1 particle-input audit](m11-particle-inputs.md) keeps every v2 shared and nuisance value
+fixed while substituting the source-constrained wet PSD, varying its reported D32 by one SD,
+holding the original pore-air timescale fixed, and refining the particle classes. It is an input
+sensitivity study, not a new calibration or a replacement for these gates. The
+[partition-source review](../research/05-water-and-particle-inventory.md) identifies a solute-capacity
+overlap in the current full-water approximation. Resolve that inventory and qualify the PSD's
+physical role before interpreting a refit as evidence for particle-water exchange kinetics.
+
 The sensitivity runs retain the same seven variants as v1. The pooled permeability ranges from
 2.23×10⁻¹³ to 4.83×10⁻¹³ m² across the six V1 case variants; the whole-shot pressure variant gives the
 upper end and V1 cost 572.5 versus 821.5 in the main fit. The full structural refit at θ = 0.27 gives

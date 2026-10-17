@@ -87,8 +87,16 @@ Native and WebAssembly shot fixtures agree exactly, including a noninteger pore-
 disabled closure. Software verification and measured browser runtimes are recorded in the
 [changelog](../../CHANGELOG.md).
 
-The next model investigation needs to separate mobile water, finite-rate intraparticle uptake and
-solute exchange, and assess gas displacement and simultaneous headspace/puck filling. Independent
+The 0.5.1 [particle-input audit](m11-particle-inputs.md) replaces the assumed size distribution in
+explicit comparison cases with the published wet CDF and D[3,2], retaining the original fit. The
+[source review](../research/05-water-and-particle-inventory.md) also identifies a solute-capacity
+overlap: the measured partition coefficient includes pore solution, which the full-water continuum
+counts again. Hydraulic and solute conservation of the implemented equations do not establish a
+non-overlapping physical partition. Changing K alone would not correct the transient equations.
+
+The next model investigation needs to implement non-overlapping mobile and total-particle solute
+inventories with conservative solute transfer during pore filling, then reassess uptake, gas
+displacement and simultaneous headspace/puck filling. Independent
 uptake and pressure/flow evidence is needed to constrain those choices. The held-out curves should
 remain diagnostic evidence rather than become tuning targets. M1's validation gates and the remaining
 preview-performance target stay open.

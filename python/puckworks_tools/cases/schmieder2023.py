@@ -4,9 +4,10 @@
 One case per experiment (15). Each case is the builder's spec for a 20 g recipe, then:
 
 - basket: IMS 58 mm, 26.5 mm deep (straight walls); dose 20 g;
-- particle sizes: a fines + boulders log-normal mixture whose D[4,3] equals the wet-measured
-  value of the grinding level (273, 277, 295 µm) with a fixed fines weight of 25% (the article
-  reports only D[4,3] and D[3,2]; its PSD figure was not digitised);
+- particle sizes: by default, a fines + boulders log-normal mixture whose D[4,3] equals the
+  wet-measured value of the grinding level (273, 277, 295 µm) with a fixed fines weight of 25%.
+  The explicit ``wet_cdf`` alternative uses the resolved wet CDF from Fig. A1b, with its
+  unresolved small-particle fraction constrained by the reported D[3,2];
 - machine: flow control with an ideal pump — preinfusion at 7 mL/s until the pressure reaches
   2.5 bar, then a linear ramp over 4 s to the experiment's measured mean flow (Table 2), at its
   measured brew temperature. The article's Fig. A2 shows the DE1's flow falling from 7 to 2 mL/s
@@ -32,10 +33,13 @@ from collections.abc import Mapping
 from types import ModuleType
 from typing import Any
 
+import numpy as np
+
 from ..paths import RepoPaths
 from .common import (
     IMS_58_H26_5,
     Case,
+    Psd,
     bimodal_psd,
     cup_mass_at,
     fit_exponential,
@@ -53,6 +57,8 @@ from .common import (
 
 KEY = "schmieder2023"
 DATASETS = ("schmieder2023-design", "schmieder2023-fractions", "schmieder2023-kinetics", "schmieder2023-replicates")
+#: Separate from the four datasets used by the existing calibration: this input is opt-in.
+PSD_DATASET = "schmieder2023-psd"
 
 #: Analytes as (dataset name, ShotResult species id, concentration column, factor kg/kg → column unit).
 ANALYTES = (
@@ -85,11 +91,112 @@ def load(paths: RepoPaths) -> dict[str, list[dict[str, Any]]]:
         "fractions": read_table(paths, "schmieder2023-fractions"),
         "kinetics": read_table(paths, "schmieder2023-kinetics"),
         "replicates": read_table(paths, "schmieder2023-replicates"),
+        "psd": read_table(paths, PSD_DATASET),
     }
 
 
 def grind_group(grind_level: float) -> str:
     return f"gl{grind_level:.1f}".replace(".", "_")
+
+
+def _wet_psd_with_info(
+    data: Mapping[str, list[dict[str, Any]]], grind: float, sauter_offset_sd: float,
+) -> tuple[Psd, dict[str, Any]]:
+    """Validate the source curves and discretise one, retaining the reconstruction metadata."""
+    moment_columns = ("reported_d32_um", "reported_d32_sd_um", "reported_d43_um", "reported_d43_sd_um")
+    columns = ("diameter_um", "cumulative_volume_fraction", *moment_columns)
+    grouped: dict[float, list[tuple[float, ...]]] = defaultdict(list)
+    try:
+        for row in data["psd"]:
+            level = float(row["grind_level"])
+            values = tuple(float(row[column]) for column in columns)
+            if not math.isfinite(level) or not all(math.isfinite(value) for value in values):
+                raise ValueError("wet PSD values must be finite")
+            grouped[level].append(values)
+    except (KeyError, TypeError) as exc:
+        raise ValueError("wet PSD rows need a grind level, CDF points and reported moments") from exc
+    if set(grouped) != set(D43_WET_UM):
+        raise ValueError("wet PSD requires exactly the grinding levels 1.4, 1.7 and 2.0")
+    if grind not in grouped:
+        raise ValueError("wet PSD grind must be 1.4, 1.7 or 2.0")
+    if not math.isfinite(sauter_offset_sd):
+        raise ValueError("sauter_offset_sd must be finite")
+    curves = {}
+    for level, rows in grouped.items():
+        points = np.asarray(rows)
+        diameter, cdf = points[:, 0], points[:, 1]
+        if len(points) < 2 or np.any(diameter <= 0) or np.any(np.diff(diameter) <= 0):
+            raise ValueError(f"wet PSD GL {level} needs positive, strictly increasing diameters")
+        if np.any(cdf < 0) or np.any(cdf > 1) or np.any(np.diff(cdf) < 0) or cdf[-1] != 1.0:
+            raise ValueError(f"wet PSD GL {level} needs a nondecreasing CDF in [0, 1], ending at 1")
+        moments = points[0, 2:]
+        if np.any(points[:, 2:] != moments):
+            raise ValueError(f"wet PSD GL {level} has inconsistent reported moments")
+        if np.any(moments[[0, 2]] <= 0) or np.any(moments[[1, 3]] < 0):
+            raise ValueError(f"wet PSD GL {level} needs positive reported means and nonnegative SDs")
+        curves[level] = (diameter, cdf, dict(zip(moment_columns, map(float, moments))))
+
+    diameter, cdf, moments = curves[grind]
+    target_d32 = moments["reported_d32_um"] + sauter_offset_sd * moments["reported_d32_sd_um"]
+    if not math.isfinite(target_d32) or target_d32 <= 0:
+        raise ValueError("wet PSD target D[3,2] must be positive and finite")
+    widths, masses = np.diff(diameter), np.diff(cdf)
+    # Exact inverse-diameter moment of a density constant in diameter on each source interval.
+    tail_inverse = float(np.sum(masses * np.log1p(widths / diameter[:-1]) / widths))
+    head_mass = float(cdf[0])
+    head_diameter = None
+    if head_mass > 0:
+        head_inverse = 1.0 / target_d32 - tail_inverse
+        if head_inverse <= 0:
+            raise ValueError("wet PSD target D[3,2] leaves no positive unresolved-head inverse moment")
+        head_diameter = head_mass / head_inverse
+        if not 0 < head_diameter < diameter[0]:
+            raise ValueError("wet PSD unresolved-head diameter must be below the first resolved diameter")
+    elif not math.isclose(1.0 / target_d32, tail_inverse, rel_tol=1e-12):
+        raise ValueError("wet PSD without an unresolved head cannot match the target D[3,2]")
+
+    diameters, weights = [], []
+    if head_diameter is not None:
+        diameters.append(np.array([head_diameter]))
+        weights.append(np.array([head_mass]))
+    for lower, upper, mass in zip(diameter[:-1], diameter[1:], masses):
+        if mass == 0:
+            continue
+        # Geometric subinterval edges keep the midpoint inverse-moment error below 1e-7.
+        # Density stays uniform in diameter, not in log diameter: each weight is density × width.
+        count = max(1, math.ceil((math.log(upper) - math.log(lower)) / 1e-3))
+        edges = np.geomspace(lower, upper, count + 1)
+        diameters.append(edges[:-1] + 0.5 * np.diff(edges))
+        weights.append(mass * (np.diff(edges) / (upper - lower)))
+    psd = Psd(np.concatenate(diameters), np.concatenate(weights))
+    # The continuous tail and separate head atom define this share without interpolating across
+    # empty size intervals or treating the head atom as a measured continuous distribution.
+    fines = float(np.interp(100.0, diameter, cdf - head_mass, left=0.0, right=1.0 - head_mass))
+    if head_diameter is not None and head_diameter < 100.0:
+        fines += head_mass
+    return psd, {
+        **moments,
+        "sauter_offset_sd": float(sauter_offset_sd),
+        "target_d32_um": target_d32,
+        "resolved_start_um": float(diameter[0]),
+        "unresolved_head_fraction": head_mass,
+        "unresolved_head_diameter_um": head_diameter,
+        "fines_fraction_below_100um": fines,
+    }
+
+
+def wet_psd(
+    data: Mapping[str, list[dict[str, Any]]], grind: float, *, sauter_offset_sd: float = 0.0,
+) -> Psd:
+    """Wet Fig. A1b CDF with a D[3,2]-constrained unresolved head, not measured head locations.
+
+    Between resolved CDF points the volume density is constant in diameter. Dense midpoint
+    quadrature preserves its volume and D[4,3], and approximates D[3,2] to better than 1e-7
+    relative error. The initial CDF's unresolved volume is a single effective diameter chosen
+    from the reported D[3,2] plus ``sauter_offset_sd`` times its reported SD. Infeasible moments
+    are rejected; no negative weights, CDF repair or diameter clipping is applied.
+    """
+    return _wet_psd_with_info(data, grind, sauter_offset_sd)[0]
 
 
 def fraction_windows(fractions: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -112,7 +219,14 @@ def build_cases(
     module: ModuleType | None = None,
     experiments: list[int] | None = None,
     transition_ramp_s: float = TRANSITION_RAMP_S,
+    psd_source: str = "reconstructed",
+    sauter_offset_sd: float = 0.0,
 ) -> list[Case]:
+    if psd_source not in ("reconstructed", "wet_cdf"):
+        raise ValueError("psd_source must be 'reconstructed' or 'wet_cdf'")
+    if not math.isfinite(sauter_offset_sd) or (psd_source == "reconstructed" and sauter_offset_sd != 0.0):
+        raise ValueError("sauter_offset_sd must be finite and is only supported by psd_source='wet_cdf'")
+    wet_distributions = {}
     by_experiment: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for row in fraction_windows(list(data["fractions"])):
         by_experiment[row["experiment"]].append(row)
@@ -124,14 +238,31 @@ def build_cases(
         windows = by_experiment[exp]
         stop_g = max(62.0, 1.03 * max(w["end_g"] for w in windows))
         grind = design["grind_level"]
-        psd = bimodal_psd(de_brouckere_um=D43_WET_UM[grind], fines_weight=FINES_WEIGHT)
+        psd_details = {}
+        if psd_source == "reconstructed":
+            psd = bimodal_psd(de_brouckere_um=D43_WET_UM[grind], fines_weight=FINES_WEIGHT)
+        else:
+            if grind not in wet_distributions:
+                wet_distributions[grind] = _wet_psd_with_info(data, grind, sauter_offset_sd)
+            psd, psd_details = wet_distributions[grind]
         classes = psd.classes(n_classes)
+        psd_info = {"d32_um": psd.sauter_um(), "d43_um": psd.de_brouckere_um(),
+                    "fines_fraction_below_100um": psd.share_below(100.0), **psd_details}
+        class_psd_info = {
+            "d32_um": 1.0 / sum(c["volume_fraction"] / (c["radius_m"] * 2e6) for c in classes),
+            "d43_um": sum(c["volume_fraction"] * c["radius_m"] * 2e6 for c in classes),
+            "fines_fraction_below_100um": sum(c["volume_fraction"] for c in classes if c["radius_m"] * 2e6 < 100),
+        }
         temperature = design["temp_measured_c"]
         flow_ml_s = design["flow_measured_ml_s"]
         profile = [{"control": "flow", "target": PREINFUSION_FLOW_ML_S, "until_pressure_bar": PREINFUSION_EXIT_BAR},
                    {"control": "flow", "target": flow_ml_s}]
         recipe = minimal_recipe(DOSE_G, psd.recipe_psd(n_classes), IMS_58_H26_5, profile=profile, beverage_g=stop_g,
                                 tier=tier, temperature_c=temperature)
+        if psd_source == "wet_cdf":
+            # The builder must use these same classes when deriving D32-dependent inputs such as
+            # pore-air tau; otherwise its default 30-class limit rebins a 32-class refinement.
+            recipe["numerics"]["size_classes"] = n_classes
 
         def finalize(spec: dict[str, Any], values: Mapping[str, float], *, classes=classes, temperature=temperature,
                      flow_ml_s=flow_ml_s, stop_g=stop_g, ramp_s=float(transition_ramp_s)) -> None:
@@ -156,7 +287,8 @@ def build_cases(
         cases.append(make_case(
             KEY, f"{KEY}/exp{exp:02d}", recipe, finalize, group=grind_group(grind),
             info={"experiment": exp, "design": design, "windows": windows, "flow_ml_s": flow_ml_s,
-                  "temperature_c": temperature, "grind_level": grind, "transition_ramp_s": float(transition_ramp_s)},
+                  "temperature_c": temperature, "grind_level": grind, "transition_ramp_s": float(transition_ramp_s),
+                  "psd_source": psd_source, "psd": psd_info, "class_psd": class_psd_info},
             overrides=overrides, module=module,
         ))
     return cases
@@ -165,7 +297,7 @@ def build_cases(
 def scaling_recipe(case: Case) -> tuple[dict[str, Any], str]:
     """The recipe whose builder scaling maps this case's fitted bare κ₀ to the reference permeability:
     the case's recipe with the E65S grinder preset at the article's grinding level, so that the app's
-    E65S at that level gets the fitted bed permeability (the case itself simulates the reconstructed PSD)."""
+    E65S at that level gets the fitted bed permeability (the case simulates its selected PSD)."""
     recipe = copy.deepcopy(case.recipe)
     recipe["grinder"] = {"preset": GRINDER_PRESET, "setting": float(case.info["grind_level"])}
     return recipe, f"grinder preset {GRINDER_PRESET} at GL {case.info['grind_level']}"

@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # Shot model: from first water to the cup
 
-*puckcore 0.5.0 · Milestones M1 and M1.1 · Last updated 2026-10-16.*
+*puckcore 0.5.1 · Milestones M1 and M1.1 · Last updated 2026-10-16.*
 
 This is the specification of `puckcore::shot::simulate_shot`, the M1 shot solver behind `simulateShot` (JavaScript) and `puckcore.simulate_shot` (Python). It implements §4 of the [M1 contract](m1-contract.md) for both fidelity tiers, as modules H and X of [PLAN §7.3](../PLAN.md#73-modules).
 
@@ -270,6 +270,8 @@ The solubles, E_max of the dry dose, are spread uniformly through the solid: s�
 **Liquid volume and particle loading.** The liquid holdup is H = ε + (1 − ε₀)ε_p f_water. Recipe-built M1.1 specs use f_water = 1, filling the total initial porosity ε_T = ε₀ + (1 − ε₀)ε_p. Particle states retain the reference capacity ε_c = ε_p(1 − u_w), but are interpreted as **effective soluble loadings**, not another physical water inventory. Water is counted only in H. This approximation makes the intraparticle water locally accessible to the liquid continuum while retaining diffusive particle loading; it does not resolve an immobile water reservoir, finite-rate water ingress, or a measured saturation field. Increasing H also changes dilution, residence time and extraction kinetics, so the extraction fit must be reassessed. Water-volume conservation does not establish the accuracy of this approximation.
 
 **Legacy mode.** With `intraparticle_water_fraction = null`, f_water = u_w and the previous equations are recovered. M1 described ε_c as a fully filled second liquid without charging the pump for that water; that interpretation was not a complete startup water budget. The null option preserves numerical compatibility, not a claim that all dry pores have been filled.
+
+**Known solute-capacity overlap (0.5.1 audit).** Calling particle states effective loadings does not by itself make this partition basis consistent with the measured K. Corrochano's C_s already includes solute in absorbed pore water, while H above also lets that water carry c. With no surface pool, the implemented equilibrium capacity is ε + (1 − ε₀)ε_p f_water + (1 − ε₀)/K; a mobile-liquid plus total-particle balance has capacity ε + (1 − ε₀)/K. At ε₀ = 0.17, ε_p = 0.56, K = 0.61 and full pore water, the implemented closed-system equilibrium concentration is about 23.3% lower. The numerical conservation tests conserve the implemented inventories and cannot detect this source-definition overlap. Subtracting pore-water capacity from 1/K alone is not a dynamically equivalent correction: a transformed particle equation gains time-derivative terms. The [primary-source audit](../research/05-water-and-particle-inventory.md) describes a conservative mobile/particle-water formulation and the unresolved filling, pool and cap choices. Version 0.5.1 documents the defect and preserves the existing equations for reproducibility; it does not claim a corrected transport model.
 
 Each particle of class k splits into two loading states:
 - **Surface pool.** The broken-cell shell of thickness δ, a volume share f_s = 1 − ((a − δ)/a)³ (f_s = 1 when a ≤ δ). It holds S = f_s φ_k s₀ per bed volume with reference capacity V_p = ε_c f_s φ_k. Its concentration-equivalent loading is c_pool = S/V_p, initially s₀/ε_c.

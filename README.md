@@ -2,9 +2,11 @@
 
 An open-source espresso simulator that runs entirely in the browser. It models a shot from bean and grinder, through the puck and the flow, to the cup. The goal is to follow the ~55 compounds that dissolve and to end with an explainable taste estimate, giving every number a source and an uncertainty band. The status below says what exists today.
 
-**Status:** version 0.5.0 adds optional pressure storage, allowing charged water to drain during a pump pause, with explicit inlet/outlet and retained-water accounts. The [community comparison](docs/validation/community-shot-comparison.md) tests fixed storage assumptions against online shot logs. Storage remains disabled by default and the v2 fitted parameters are unchanged. **The scientific validation targets are still not all met.** Startup and storage parameters are labelled estimates; no held-out shot times or community observations set them. Treat predicted times and extraction yields as indicative; see the [validation report](docs/validation/m1-validation.md) and preserved [0.2.0 baseline](docs/validation/baseline-v0.2.0/m1-validation.md).
+**Status:** version 0.5.1 adds a [particle-input audit](docs/validation/m11-particle-inputs.md) using the published wet size distribution and surface-area diameter. It also identifies an unresolved overlap between the model's liquid and particle solute capacities; the [source review](docs/research/05-water-and-particle-inventory.md) explains the required correction. Default recipes and the v2 fitted parameters are unchanged. Optional pressure storage remains available for [community comparisons](docs/validation/community-shot-comparison.md), disabled by default. **The scientific validation targets are still not all met.** Treat predicted times and extraction yields as indicative; see the [validation report](docs/validation/m1-validation.md) and preserved [0.2.0 baseline](docs/validation/baseline-v0.2.0/m1-validation.md).
 
 First drops improve from 1.8 to 6.8 s against 12.8 s measured, and the flow rise from 6.7 to 12.1 s against 25.5 s. Extraction accuracy regresses: 48/60 fitted rates meet the ±10% target, versus 57/60 before. No complete M1 scientific exit criterion passes. The [M1.1 investigation](docs/validation/m11-startup.md) records the improvements, regressions and remaining model gaps.
+
+All 91 particle-input audit simulations complete. With the existing fit fixed, the nominal wet PSD gives only 19/60 rates within the same target; keeping the original pore-air timescale gives 32/60. The new input does not resolve the model's accuracy failures, and remains opt-in.
 
 | Part | What exists |
 |---|---|
@@ -12,7 +14,7 @@ First drops improve from 1.8 to 6.8 s against 12.8 s measured, and the flow rise
 | Input models | Bean, grinder (burr family and gap, a grinder preset with its dial, or your own measured particle sizes), basket (any profile), puck preparation and machine programs. Every value has a source in the parameter registry. |
 | Presets | 7 grinders, 12 baskets, 10 machine programs and 6 beans. The owner's own gear is just one set of presets, marked unverified. |
 | Shot lab (web) | A recipe editor for gear described by preset or from scratch; the shot graph, summary tiles and particle-size chart; a compound table with sources; a cross-section of the puck with the wetting front; 1D sweeps, pinned overlays and exports. |
-| Calibration and validation | 18 published datasets (Schmieder, Waszkiewicz, Cameron, Corrochano, Smrke, Vaca Guerra), with calibration on some and held-out tests on others. |
+| Calibration and validation | 19 published datasets (Schmieder, Waszkiewicz, Cameron, Corrochano, Smrke, Vaca Guerra), including an exploratory wet particle-size input. The original calibration and held-out split remains unchanged. |
 | Community comparisons | Safe offline import of original DE1 logs and the matching measurement sheet, followed by fixed-scenario comparisons. The [community report](docs/validation/community-shot-comparison.md) separates observed scale mass from estimated inlet flow and conditional model output; these sources have not entered the numerical fit. |
 | Parameter registry | 231 sourced parameters, each with an evidence grade. Startup assumptions and experimental pressure storage are exposed in the sandbox. |
 | CI | Rust, Python and web workflows, plus GitHub Pages deployment. |
@@ -45,6 +47,7 @@ Calibration source selection includes online community shot archives and control
 - [Particle kernel](docs/model/particle-kernel.md): the diffusion solver, with measured verification results.
 - [M1 validation report](docs/validation/m1-validation.md) and [calibration](docs/validation/calibration.md).
 - [M1.1 startup investigation](docs/validation/m11-startup.md): before/after results, fixed-fit ablations and remaining work.
+- [Particle-input audit](docs/validation/m11-particle-inputs.md): fixed-fit comparisons using a source-constrained wet PSD, with measurement and model assumptions separated.
 - [Community shot comparisons](docs/validation/community-shot-comparison.md): reproducible online-data diagnostics, assumptions and remaining model limitations.
 - [M0 kernel verification report](docs/validation/m0-kernel-verification.md), generated by `puckworks-tools verify`.
 - Research notes:
@@ -52,6 +55,7 @@ Calibration source selection includes online community shot archives and control
   - [02 Chemistry and sensory](docs/research/02-chemistry-and-sensory.md)
   - [03 Grinding, PSD and data](docs/research/03-grinding-psd-and-data.md)
   - [04 Community shot data](docs/research/04-community-shot-data.md): online archives, measurement provenance and calibration admission.
+  - [05 Water and particle inventory](docs/research/05-water-and-particle-inventory.md): source definitions, solute-capacity overlap, wet particle sizes and remaining model work.
 - [Contributing](CONTRIBUTING.md): setup, everyday commands and project rules.
 - [Changelog](CHANGELOG.md).
 

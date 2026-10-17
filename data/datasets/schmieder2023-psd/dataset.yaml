@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.dataset/1
+id: schmieder2023-psd
+title: Resolved wet particle-size cumulative distributions and reported moments for Schmieder 2023
+citation: >-
+  Schmieder B.K.L., Pannusch V.B., Vannieuwenhuyse L., Briesen H., Minceva M. (2023).
+  Influence of Flow Rate, Particle Size, and Temperature on Espresso Extraction Kinetics.
+  Foods 12(15):2871. Figure A1(b) and section 2.4. Digitisation and unresolved-head
+  reconstruction by Puckworks; these are not the authors' raw instrument files.
+doi: "10.3390/foods12152871"
+url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10418593/"
+licence: CC-BY-4.0
+redistribution: allowed
+retrieved: "2026-10-16"
+research_note_ref: ["05 §4"]
+obtained: >-
+  python/puckworks_tools/sources/schmieder2023_psd.py renders page 15 of the published PDF
+  (SHA-256 e7ff3e581fb3c5fc3e0148124929748aa153ab0990d8372079c02bd33a0e2a75) at 600 dpi,
+  cropping x=2540,y=4020,width=1710,height=1260. Cumulative Q3, not the plotted density q3,
+  supplies the volume measure. Full coloured errorbar spans give central values, including
+  gaps occluded by another colour. Diameter uses 315 pixels per log10 decade; the mapping
+  differs from the labelled intermediate ticks by at most 1 pixel. Q3 uses y=1099 for 0
+  and y=130 for 100 percent. Sub-3.04 um points are unresolved and omitted. Three columns
+  where q3 and Q3 cross (x=1044,1067,1092) are omitted. A least-squares monotonic projection
+  removes small digitisation reversals; the largest change is 0.002580 volume fraction
+  (GL1.4), and all raw readings are retained. The endpoint (1000 um,1) is an explicit
+  support assumption. Reported D32, D43 and their SDs are transcribed from section 2.4.
+uncertainty: >-
+  Resolved, separated pixel centres can be read to approximately 2-3 pixels (0.21-0.31
+  percentage points of volume); occlusion and the 0.258 percentage-point monotonicity
+  correction motivate a conservative 1 percentage-point reading sensitivity. This is an
+  estimated digitisation allowance, not a statistical confidence interval. Measurement
+  error bars in the figure are not transcribed as independent errors. The omitted fine
+  head, interpolation over omitted crossings, within-bin shape, and assumed terminal
+  support add uncertainty. Reported D32 SDs are 1.6,3.2,1.4 um and D43 SDs are 7.6,17,18 um
+  for GL1.4,1.7,2.0. A distribution's D32 is nonlinear: imposing the reported mean D32 on
+  the digitised mean curve is a reconstruction convention, not recovery of every replicate.
+columns:
+  - {name: grind_level, type: number, units: "1", description: Mahlkoenig E65S setting.}
+  - {name: diameter_um, type: number, units: um, description: Resolved CDF diameter or assumed terminal support.}
+  - {name: cumulative_volume_fraction, type: number, units: "1", description: Monotonic projected cumulative volume share.}
+  - {name: reported_d32_um, type: number, units: um, description: Published wet Sauter mean diameter for this setting.}
+  - {name: reported_d32_sd_um, type: number, units: um, description: Published SD of the wet Sauter diameter.}
+  - {name: reported_d43_um, type: number, units: um, description: Published wet De Brouckere mean diameter for this setting.}
+  - {name: reported_d43_sd_um, type: number, units: um, description: Published SD of the wet De Brouckere diameter.}
+  - {name: raw_cumulative_volume_fraction, type: number, units: "1", description: Pixel reading before monotonic projection; final endpoint assumed.}
+files:
+  - {path: psd.csv, format: csv, description: 31 CDF coordinates per grind setting; 93 rows.}
+notes: >-
+  This dataset is an exploratory case input, not an added espresso-response fitting target.
+  The default calibration keeps its historical reconstructed PSD. The explicit wet_cdf
+  case uses uniform volume density in diameter between resolved coordinates. The first
+  cumulative share is represented by one unresolved-head diameter chosen to match the
+  published D32 (or a declared SD sensitivity); head mass and diameter must be admissible.
+  D43 remains an unfitted cross-check. The wet measurement uses HELOS/BR and Quixel;
+  Fig.A1(a) uses dry Rodos dispersion. These wet equivalent-sphere diameters do not measure
+  dry puck geometry, intact-cell diffusion distances, or a moisture/gas-relaxation radius.

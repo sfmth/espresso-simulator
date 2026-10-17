@@ -2,6 +2,56 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.5.1] — 2026-10-16
+
+Audit the measured particle input and the physical inventories behind M1.1. The solver,
+default recipes and v2 fitted values remain unchanged; scientific validation remains open.
+
+### Input audit
+- Add a reproducible, checksum-pinned import of the readable wet cumulative particle-size
+  curves in [Schmieder et al. 2023, Fig. A1b and §2.4](https://doi.org/10.3390/foods12152871),
+  with CC BY 4.0 attribution, raw pixel readings, monotonic projection and explicit support
+  assumptions. The default reconstructed input has D32 around 101 µm, against the published
+  wet means of 28.3, 26.9 and 29.2 µm.
+- The opt-in case constrains the unresolved fine-particle share with the published D32.
+  Unfitted D43 values are 274.045, 279.255 and 296.169 µm, within the reported measurement
+  SDs. D32 agreement is a construction constraint; neither it nor a one-SD sensitivity is
+  independent validation or a complete uncertainty band.
+- Add a [fixed-parameter comparison](docs/validation/m11-particle-inputs.md) of the original
+  input, wet CDF, D32 ± SD, fixed pore-air timescale and particle-class refinement, with a
+  halved-timestep check. Missing predictions retain the original scoring denominators.
+  No input is selected by its fit score, and no held-out data or validation targets change.
+
+### Model evidence
+- The [source review](docs/research/05-water-and-particle-inventory.md) verifies that
+  [Corrochano's partition definition](https://etheses.bham.ac.uk/id/eprint/7176/2/Roman-Corrochano17EngD.pdf)
+  includes internal pore solute as part of the total particle inventory. Combining it with
+  full-water liquid storage overlaps solute capacity even when numerical conservation passes.
+  Correcting that inventory requires consistent transient storage and front transfer;
+  changing the partition number alone is insufficient. This release documents the issue.
+- Review wetting imaging, swelling and water-mobility measurements without interpreting
+  NMR relaxation times or swelling-derived diffusivity as a measured hydraulic exchange law.
+  The next physics work is explicit in the plan; M2 remains deferred.
+
+### Results and verification
+- All 91 audit simulations complete with finite scored observations. At fixed v2 parameters,
+  nominal wet-PSD rates within ±10% fall from 48/60 to 19/60; cups fall from 163/180 to 161/180.
+  Keeping the original pore-air timescale gives 32/60 rates and 163/180 cups. The PSD also
+  changes estimated preparation heterogeneity, so that variant isolates only the air timescale.
+- Refining the wet distribution from a maximum of 16 to 32 classes, with every other spec field
+  held fixed, changes individual fitted rates by at most 0.438%; its score is 20/60. Halving dt
+  in experiment 7 changes rates by at most 0.661%, cups by 0.264%, and first drops by 0.00274 s.
+  These are numerical sensitivity checks within the stated reconstruction assumptions.
+- Worst relative soluble-mass and carrier-volume residuals across the audit are 4.07×10⁻¹⁴
+  and 6.62×10⁻¹⁴. Passing conservation does not remove the physical inventory overlap.
+- All 117 original validation simulations reproduce their previous numerical results exactly.
+  Kernel verification passes, and the native/WASM fixture payloads remain bit-identical;
+  only fixture version labels change to 0.5.1. Historical refits keep their original identity.
+- Final local checks pass: 219 Rust tests (one existing opt-in sweep ignored), 440 Python
+  tests, 445 web tests and 55 browser checks. Formatting, clippy, lint, type checks,
+  production build, dependency licences, registry export, report rendering and release
+  versions pass. Import review reproduces all 93 source CSV rows exactly.
+
 ## [0.5.0] — 2026-10-16
 
 Experimental upstream pressure storage for bloom pauses. It is opt-in; default recipes keep

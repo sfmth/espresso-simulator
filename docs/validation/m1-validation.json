@@ -1,12 +1,12 @@
 {
  "schema": "puckworks.validation-report/1",
  "created": "2026-10-16",
- "tools_version": "0.5.0",
- "core_version": "0.5.0",
+ "tools_version": "0.5.1",
+ "core_version": "0.5.1",
  "solver": {
-  "puckcore_version": "0.5.0",
-  "extension_sha256": "70e0d9f108ca72e7",
-  "extension_built": "2026-10-16T15:30:46-07:00",
+  "puckcore_version": "0.5.1",
+  "extension_sha256": "526693a7ee034491",
+  "extension_built": "2026-10-16T17:18:48-07:00",
   "sources_sha256": {
    "crates/puckcore/src": "d821bd5bbb0b7c20",
    "crates/puckmodel/src": "f4a760d8bd0c0997",
@@ -14,7 +14,7 @@
    "crates/puckcore-py": "563a9328b2a48052"
   },
   "files_sha256": {
-   "Cargo.lock": "2a4c41fc27d17c0f"
+   "Cargo.lock": "d5d312c4e2a14c37"
   },
   "python": {
    "version": "3.14.7",
@@ -45,7 +45,8 @@
   "core version changed",
   "solver/model sources changed or lack an identity",
   "solver build inputs changed",
-  "numeric registry defaults changed or lack an identity"
+  "numeric registry defaults changed or lack an identity",
+  "Python calibration/case sources changed or lack an identity"
  ],
  "placeholder": false,
  "solver_warnings": [
@@ -3176,7 +3177,7 @@
     "check": "V1 leave-one-condition-out (\u00b115%)",
     "status": "not run",
     "target": "\u03bb and cup masses of each left-out experiment within \u00b115%",
-    "detail": "not run for this model/configuration; the calibration file's cached refits are historical (core version changed; solver/model sources changed or lack an identity; solver build inputs changed; numeric registry defaults changed or lack an identity)"
+    "detail": "not run for this model/configuration; the calibration file's cached refits are historical (core version changed; solver/model sources changed or lack an identity; solver build inputs changed; numeric registry defaults changed or lack an identity; Python calibration/case sources changed or lack an identity)"
    },
    {
     "check": "V2 Bodenstein number 8\u201317",
