@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # 0010 — Startup water inventory and an effective pore-air closure
 
-**Status:** Accepted, 2026-10-15. Extends ADR 0009; no validation threshold changes.
+**Status:** Accepted, 2026-10-15. Solute-holdup interpretation superseded by [ADR 0012](0012-total-particle-solute-inventory.md) in 0.6.0; the original decision and v2 outcome below are preserved. Extends ADR 0009; no validation threshold changes.
 
 ## Context
 

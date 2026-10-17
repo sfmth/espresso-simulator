@@ -473,9 +473,9 @@ parameters:
     comment: >-
       Grudeva's wetting front fills the intergranular liquid plus the boulders' pores (uptake ≈ 1);
       moisture uptake into particles is slow (D ≈ 2–3×10⁻¹¹ m²/s, Mateus 2007, 01 §4.6).
-      The solver caps u_w at 0.9 to keep the loading normalization positive. M1.1 counts water
-      only in the continuum holdup and treats particle states as effective solute loading,
-      not additional water. This grade-D parameter is fixed, not fitted to held-out wetting times.
+      The solver caps u_w at 0.9 to keep the loading normalization positive. Since 0.6.0,
+      mobile solute occupies intergranular water and total particle loading includes absorbed
+      pore solution. This grade-D parameter is fixed, not fitted to held-out wetting times.
     status: draft
 
   # -- Extraction (module X) ------------------------------------------------------------

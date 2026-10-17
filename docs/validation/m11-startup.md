@@ -10,6 +10,8 @@ adds [community comparison tooling](community-shot-comparison.md) without changi
 Its rerun reproduces the same predictions; cached leave-one-condition-out refits remain labelled with
 their original build identity. Version 0.5.0 adds [optional pressure storage](../decisions/0011-upstream-pressure-storage.md)
 and fixed community probes, with zero compliance in the original validation cases and no new fit.
+Version 0.6.0 changes the solute inventories and recalibrates as v3; the discussion below remains the
+historical v2 investigation. Its last unchanged evaluation is [archived](baseline-v0.5.1/m1-validation.md).
 
 ## What changed
 
@@ -30,9 +32,10 @@ geometry and the machine's pump characteristics remain estimates.
 ## Experimental results
 
 The original calibration blocks, held-out split and scoring targets are unchanged. The complete v1
-baseline is [preserved](baseline-v0.2.0/README.md). The [current report](m1-validation.md) and
-[calibration comparison](calibration.md) include the full results, all 15 leave-one-condition-out
-refits and all seven structural sensitivity refits.
+baseline is [preserved](baseline-v0.2.0/README.md). The [archived v2 report](baseline-v0.5.1/m1-validation.md) and
+[calibration comparison](calibration.md) include the v2 results, all 15 leave-one-condition-out
+refits and all seven original structural sensitivity refits. The [current report](m1-validation.md)
+evaluates v3 with two additional particle-input sensitivities.
 
 | Observable | 0.2.0 / v1 | 0.3.0 / v2 | Measurement or target |
 |---|---:|---:|---:|
@@ -48,7 +51,7 @@ refits and all seven structural sensitivity refits.
 The observed V4 rise was reported as 25.78 s in v1. Interpolating the crossing within the same recorded
 curve gives 25.48 s in v2; this is a scoring correction, not a changed measurement or target. Neither
 startup timing criterion passes. The 15-second overshoot check now passes, but later overshoot remains
-visible in the [flow plot](m1/v4-waszkiewicz.png).
+visible in the [archived flow plot](baseline-v0.5.1/m1/v4-waszkiewicz.png).
 
 V3 peak EY reaches 22.09%, within the 22–24% magnitude target, but its maximum remains at the edge of
 the grind range (setting 1.1 instead of 1.5–1.9). V2 dispersion and V5's EY/time rank correlation also
@@ -94,13 +97,16 @@ overlap: the measured partition coefficient includes pore solution, which the fu
 counts again. Hydraulic and solute conservation of the implemented equations do not establish a
 non-overlapping physical partition. Changing K alone would not correct the transient equations.
 
-The next model investigation needs to implement non-overlapping mobile and total-particle solute
-inventories with conservative solute transfer during pore filling, then reassess uptake, gas
-displacement and simultaneous headspace/puck filling. Independent
-uptake and pressure/flow evidence is needed to constrain those choices. The held-out curves should
-remain diagnostic evidence rather than become tuning targets. M1's validation gates and the remaining
-preview-performance target stay open.
+Version 0.6.0 implements non-overlapping mobile and total-particle solute inventories with
+conservative solute transfer during pore filling ([ADR 0012](../decisions/0012-total-particle-solute-inventory.md)).
+The [v3 calibration](calibration.md#results-of-the-inventory-corrected-calibration-v3-2026-10-16) records its
+effects and remaining failures. Independent uptake and pressure/flow evidence is still needed to
+constrain internal-water exchange, gas displacement and simultaneous headspace/puck filling. The
+held-out curves remain diagnostic evidence; their targets do not select these model assumptions.
 
-Reproduce the complete calibration and validation with `python/scripts/m1-pipeline.sh 8` (writes v2).
-Reproduce only these fixed-fit ablations with
-`.venv/bin/python python/scripts/m11-startup-sensitivity.py`.
+Reproducing these v2 results requires the original 0.3.0 source/build. The current `python/scripts/m1-pipeline.sh 8` writes v3 after the inventory correction; see [calibration.md](calibration.md).
+On that original build, reproduce only these fixed-fit ablations with
+`.venv/bin/python python/scripts/m11-startup-sensitivity.py`. On 0.6.0 the script instead writes
+[m11-startup-sensitivity-v3.json](m11-startup-sensitivity-v3.json), leaving the historical v2 JSON
+unchanged. The [v3 results](calibration.md#results-of-the-inventory-corrected-calibration-v3-2026-10-16)
+summarize the new ablations alongside the complete refit.

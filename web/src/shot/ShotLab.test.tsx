@@ -301,7 +301,7 @@ describe('ShotLab', () => {
     expect(screen.getByText(/Puck cross-section at 10\.0 s/)).toBeTruthy();
     // The first snapshot has a negative cell, which the legend explains.
     expect(
-      screen.getByText(/Values below 0 mean the particles there took solubles back up/),
+      screen.getByText(/Values below 0 mean the particles there gained more solubles/),
     ).toBeTruthy();
     const figure = screen.getByRole('group', { name: /Cross-section cells/ });
     fireEvent.keyDown(figure, { key: 'ArrowRight' });
@@ -313,6 +313,7 @@ describe('ShotLab', () => {
     expect(document.querySelector('.section-readout')?.textContent).toMatch(
       /solubles in the bed liquid 43 kg\/m³; wet; in this column the wetting front is 4\.5 mm below the top$/,
     );
+    expect(screen.getByText(/per volume of mobile water between the particles/)).toBeTruthy();
   });
 
   it('draws a result with any number of columns (tier 0 may use just one)', async () => {

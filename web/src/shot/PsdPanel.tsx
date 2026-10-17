@@ -221,12 +221,16 @@ export function PsdPanel({ runs }: { runs: readonly PsdRun[] }) {
           xLabel="Diameter (µm)"
           yLabel="EY (%)"
           xLog
-          yFromZero
+          baseline={0}
           formatX={formatDiameter}
           formatY={formatPercent}
           formatTick={formatTick}
           summary={`Extraction yield of each size class: from ${fixed((classEy[0]?.ey ?? 0) * 100, 1)}% for the finest to ${fixed((classEy.at(-1)?.ey ?? 0) * 100, 1)}% for the coarsest.`}
         />
+        <p className="note">
+          Negative values mean those particles gained more solubles than they released, including
+          solubles carried by absorbed water.
+        </p>
       </figure>
       <details className="table-view">
         <summary>Table view ({classes.length} size classes)</summary>

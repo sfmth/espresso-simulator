@@ -183,6 +183,34 @@ def test_synthetic_fit_recovers_known_parameters():
     assert 0.3 < cal.uncertainties(problem, result.x, result.jacobian, result.residuals)["reduced_chi2"] < 3.0
 
 
+def test_warm_start_records_actual_values_and_refuses_nonphysical_clipping():
+    problem = synthetic_problem()
+    assert cal.apply_start_values(problem, {"s.a": 2.0, "s.b": 15.0, "not.fitted": 90}) == {"s.a": 2.0, "s.b": 15.0}
+    assert problem.values(problem.x0()) == pytest.approx({"s.a": 2, "s.b": 15, "s.c": 0})
+    for invalid in (math.nan, math.inf, -1, 100.01):
+        with pytest.raises(cal.CalibrationError):
+            cal.apply_start_values(problem, {"s.b": invalid})
+    assert problem.params[1].start == 15
+
+
+def test_pipeline_completion_requires_every_declared_refit_but_not_scientific_passes():
+    document = {"fit": {"optimizer": {"success": True},
+                       "loo": {"experiments": {f"exp{i:02d}": {"optimizer": {"success": True}}
+                                                for i in range(1, 16)}, "lambda_within": 0, "cup_within": 0},
+                       "sensitivity": {"variants": {name: {"optimizer": {"success": True}}
+                                                    for name in cal.SENSITIVITY_VARIANTS}}}}
+    assert len(cal.SENSITIVITY_VARIANTS) == 9
+    assert cal.completion_issues(document) == []
+    document["fit"]["loo"]["experiments"]["exp01"]["optimizer"]["success"] = False
+    assert cal.completion_issues(document) == ["one or more leave-one-out optimizers did not converge"]
+    del document["fit"]["sensitivity"]["variants"]["wet PSD D32 plus 1 SD"]
+    assert "sensitivity does not contain all nine declared variants" in cal.completion_issues(document)
+    document["fit"]["blocks"] = {"V1": {"failures": ["missing observation"]}}
+    document["fit"]["loo"]["experiments"]["exp02"]["predicted"] = False
+    assert "main/pruned fit has unavailable final predictions" in cal.completion_issues(document)
+    assert "leave-one-out has unavailable refit or left-out predictions" in cal.completion_issues(document)
+
+
 def test_jacobian_reruns_only_affected_blocks():
     problem = synthetic_problem()
     x = problem.x0()
@@ -239,6 +267,43 @@ def test_real_problem_builds_and_evaluates(repo, config):
         r = problem.residuals(problem.x0())
         assert r.size == len(problem.labels) and np.all(np.isfinite(r))
         assert len(set(problem.labels)) == len(problem.labels)
+    finally:
+        problem.runner.close()
+
+
+def test_v3_qualified_wet_input_enters_dataset_identity(repo, config):
+    from puckworks_tools.cases import schmieder2023 as sch
+
+    problem = cal.build_problem(repo, config, blocks=["V1"])
+    try:
+        block = problem.blocks[0]
+        assert all(case.info["psd_source"] == "wet_cdf" for case in block.cases)
+        assert cal.datasets_for_block(block) == (*sch.DATASETS, sch.PSD_DATASET)
+        assert all(case.info["psd"]["sauter_offset_sd"] == 0 for case in block.cases)
+        for case in block.cases:
+            case.info["psd_source"] = "reconstructed"
+        assert cal.datasets_for_block(block) == sch.DATASETS
+    finally:
+        problem.runner.close()
+
+
+def test_required_observations_reject_nonfinite_fit_inputs_without_scientific_thresholds(repo, config):
+    from puckworks_tools.cases import schmieder2023 as sch
+
+    problem = cal.build_problem(repo, config, blocks=["V1"])
+    try:
+        block, case = problem.blocks[0], problem.blocks[0].cases[0]
+        # Finite values far from the measurements remain available predictions.
+        observation = {"lambda": {a: 1e6 for a, *_ in sch.ANALYTES},
+                       "c0": {a: 1e6 for a, *_ in sch.ANALYTES},
+                       "cup_eq3": {a: {mass: 1e6 for mass in (20, 40, 60)} for a, *_ in sch.ANALYTES},
+                       "pour_peak_pressure_bar": 100.0}
+        assert cal.required_observations_available(block, case, observation)
+        observation["lambda"]["caffeine"] = math.nan
+        assert not cal.required_observations_available(block, case, observation)
+        observation["lambda"]["caffeine"] = 1e6
+        observation["cup_eq3"]["tds"][60] = math.inf
+        assert not cal.required_observations_available(block, case, observation)
     finally:
         problem.runner.close()
 
@@ -337,13 +402,18 @@ def test_leave_one_out_structure(repo, config):
     """The V1 leave-one-condition-out machinery: one refit per experiment, errors of the one left out."""
     keep = {"calibration.schmieder2023.extractable_fraction", "calibration.schmieder2023.permeability.gl1_7"}
     sub = {**config, "parameters": [p for p in config["parameters"] if p["id"] in keep]}
-    loo = cal.leave_one_out(repo, sub, {}, tier=0, max_nfev=2)
+    checkpoints = []
+    loo = cal.leave_one_out(repo, sub, {}, tier=0, max_nfev=2, progress=checkpoints.append)
     assert len(loo["experiments"]) == 15
     assert loo["lambda_total"] == 60 and loo["cup_total"] == 180
     first = loo["experiments"]["exp01"]["errors"]
     assert set(first["lambda"]) == {"trigonelline", "caffeine", "cqa5", "tds"}
     assert set(first["cup"]["tds"]) == {20, 40, 60}
     assert 0 <= loo["lambda_within"] <= 60 and 0 <= loo["cup_within"] <= 180
+    assert [c["completed"] for c in checkpoints] == list(range(1, 16))
+    assert all(c["required"] == 15 and len(c["experiments"]) == c["completed"] for c in checkpoints)
+    assert loo["completed"] == loo["required"] == 15
+    assert loo["all_optimizers_converged"] == all(e["optimizer"]["success"] for e in loo["experiments"].values())
 
 
 def test_parallel_runner_matches_serial(repo):
@@ -465,8 +535,9 @@ def test_sensitivity_refits_v1_under_each_variant(repo, config):
                 "theta": {"blocks": ["V1", "V4"], "structural": True,
                           "options": {"spec_fields": {"hydraulics.dissolution_porosity_share": 0.27}}}}
     reference = {"datasets": {"schmieder2023": 9e-14, "waszkiewicz2026": 8e-14}}
+    checkpoints = []
     out = cal.sensitivity(repo, sub, {"hydraulics.poroelastic.critical_pressure": 10.0}, reference,
-                          tier=0, max_nfev=2, variants=variants)
+                          tier=0, max_nfev=2, variants=variants, progress=checkpoints.append)
     assert set(out["variants"]) == set(variants)
     ramp, theta = out["variants"]["ramp 1 s"], out["variants"]["theta"]
     # the critical pressure is shared with V6 as well: held at its full-fit value, not refitted
@@ -480,6 +551,10 @@ def test_sensitivity_refits_v1_under_each_variant(repo, config):
     assert ramp["pooled_kappa_ref_m2"] == pytest.approx(math.sqrt(ramp["schmieder_kappa_ref_m2"] * 8e-14))
     assert "calibration.waszkiewicz2026.permeability" in theta["nuisance"] and theta["structural"]
     assert theta["kappa_ref_by_dataset"]["waszkiewicz2026"] != 8e-14
+    assert [c["completed"] for c in checkpoints] == [1, 2]
+    assert len(checkpoints[0]["variants"]) == 1 and len(checkpoints[1]["variants"]) == 2
+    assert out["completed"] == out["required"] == 2
+    assert out["all_optimizers_converged"] == all(v["optimizer"]["success"] for v in out["variants"].values())
 
 
 def test_prune_fixes_parameters_the_data_do_not_constrain(repo, config):

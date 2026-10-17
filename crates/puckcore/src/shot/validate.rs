@@ -304,9 +304,9 @@ fn solubles(s: &SolublesSpec, bed: &BedSpec, warnings: &mut Vec<String>) -> Chec
         0.0,
         2e-3,
     )?;
-    // The bed liquid never exceeds the larger of saturation and the kernels'
-    // equilibrium K·s₀ (K·ε_c·u₀ with u₀ = s₀/ε_c; shot-model.md §5.4), and it
-    // must keep a positive water content there: v̄·c_max < 0.9.
+    // Reject initial equilibria that already imply almost no solvent.
+    // These are not a universal transient bound after pore-water carriage;
+    // the realized maximum is checked independently by the shot driver.
     let s0 =
         s.extractable_fraction * bed.skeletal_density_kg_m3 * (1.0 - bed.intraparticle_porosity);
     let kernel_eq = s.partition_coefficient * s0;
@@ -340,7 +340,7 @@ fn solubles(s: &SolublesSpec, bed: &BedSpec, warnings: &mut Vec<String>) -> Chec
         ));
     }
     // Without the loading cap, kernels in contact with liquid above K·s₀ take
-    // up solute beyond their initial content, without limit.
+    // up solute beyond their initial content according to the linear law.
     if !s.kernel_loading_cap && s0 > 0.0 && kernel_eq < s.saturation_kg_m3 {
         warnings.push(format!(
             "solubles.kernel_loading_cap is off and K·s₀ = {kernel_eq:.0} kg/m³ is below \

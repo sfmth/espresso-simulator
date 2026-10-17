@@ -105,7 +105,7 @@
       }
     },
     "Uniformity": {
-      "description": "Mass-weighted statistics of local EY over all bed cells (weights: the dry solid mass of each cell). Local EY counts what has left the particles, so its mean exceeds the cup EY by what is still in the bed liquid.",
+      "description": "Mass-weighted statistics of local EY over all bed cells (weights: the dry solid mass of each cell). Local EY counts net soluble loss from particles and can be negative. Its mean exceeds the cup EY by what remains in the mobile bed liquid, divided by the dry dose.",
       "type": "object",
       "properties": {
         "ey_std": {
@@ -333,7 +333,7 @@
           "type": "number"
         },
         "local_ey": {
-          "description": "Local extraction yield of the solids in each cell: the net soluble loss of the cell's particles over their dry mass. Negative only where particles re-absorbed more than they lost (possible with solubles.kernel_loading_cap = false).",
+          "description": "Local extraction yield of the solids in each cell: the net soluble loss of the cell's particles over their dry mass. Can be negative when particles receive more solute than they release, including solute carried into newly filled pores while the optional boundary cap is on.",
           "type": "array",
           "items": {
             "type": "array",
@@ -343,7 +343,7 @@
           }
         },
         "liquid_conc_kg_m3": {
-          "description": "Concentration of lumped solubles in the bed liquid (intergranular plus imbibed water), kg/m³ (0 where dry).",
+          "description": "Concentration of lumped solubles in mobile intergranular water, kg/m³ (0 where dry). Solubles in absorbed water belong to total particle loading.",
           "type": "array",
           "items": {
             "type": "array",
@@ -365,7 +365,7 @@
       }
     },
     "ClassEy": {
-      "description": "Extraction yield of one size class: mass that left its particles over its dry mass.",
+      "description": "Extraction yield of one size class: net soluble loss from its particles over its dry mass. Negative values mean the class gained solute, including solute carried by absorbed water.",
       "type": "object",
       "properties": {
         "radius_m": {
@@ -413,11 +413,11 @@
           "maximum": 1
         },
         "outflow_integral_error": {
-          "description": "Quadrature consistency of the outlet accounting: the relative difference between the cup's solute (the implicit outflow of every step) and the trapezoidal integral of outlet flow × outlet concentration at the step ends. Both integrate the same q·c, so it checks the bookkeeping of the outlet, not the bed; it is first order in the step (about 3e-3 at Δt = 0.05 s).",
+          "description": "Quadrature consistency of the outlet accounting: the relative difference between the cup's solute (the implicit outflow of every step) and the trapezoidal integral of outlet flow × outlet concentration at the step ends. Both integrate the same q·c, so it checks outlet bookkeeping rather than the bed's mass balance. The discrepancy is first order in the time step; its size depends on the shot and discretisation.",
           "type": "number"
         },
         "max_regime_solves": {
-          "description": "Most bed-liquid solves any column needed in one step (the policy iteration over pool regimes and caps; 1–3 is typical).",
+          "description": "Most bed-liquid solves any column needed in one step, during policy iteration over pool regimes and caps.",
           "type": "integer",
           "minimum": 0
         },

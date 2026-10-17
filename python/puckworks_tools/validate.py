@@ -32,6 +32,7 @@ permeability and case parameters); setup-specific (nuisance) parameters stay wit
 from __future__ import annotations
 
 import argparse
+import copy
 import datetime
 import json
 import math
@@ -239,6 +240,11 @@ def loo_check(loo: Mapping[str, Any] | None, *, stale_reasons: Sequence[str] = (
     if not loo:
         return _check("V1 leave-one-condition-out (±15%)", None,
                       "not run (`puckworks-tools calibrate --loo` records it in the calibration file)", target)
+    if (loo.get("all_optimizers_converged") is False or loo.get("all_predictions_available") is False
+            or ("completed" in loo and loo["completed"] != loo.get("required"))):
+        return _check("V1 leave-one-condition-out (±15%)", None,
+                      "recorded refits are incomplete or an optimizer did not converge; per-experiment results "
+                      "remain in the calibration document", target)
     ok = loo["lambda_within"] == loo["lambda_total"] and loo["cup_within"] == loo["cup_total"]
     check = _check("V1 leave-one-condition-out (±15%)", ok,
                    f"λ {loo['lambda_within']}/{loo['lambda_total']}, cup masses {loo['cup_within']}/{loo['cup_total']} "
@@ -278,6 +284,8 @@ def calibration_reuse_issues(document: Mapping[str, Any], solver: Mapping[str, A
     if (not recorded.get("calibration_sources_sha256")
             or recorded.get("calibration_sources_sha256") != inputs.get("calibration_sources_sha256")):
         issues.append("Python calibration/case sources changed or lack an identity")
+    if recorded.get("conversion_inputs_sha256") != inputs.get("conversion_inputs_sha256"):
+        issues.append("unit conversion/input loader sources changed or lack an identity")
     return issues
 
 
@@ -1012,6 +1020,7 @@ def run_validation(
             "placeholder": problem.runner.placeholder,
             "solver_warnings": sorted(problem.runner.warnings),
             "calibration_file": paths.relative(calibration_path) if calibrated else None,
+            "calibration_config": copy.deepcopy(config),
             "parameters": parameters,
             "reference_permeability": reference,
             "calibration_blocks": fit_doc.get("blocks") or {},
@@ -1109,7 +1118,7 @@ def known_biases(report: Mapping[str, Any]) -> list[str]:
     if blocks:
         per = ", ".join(f"{name} {_fmt(b.get('chi2_per_residual', (b['chi2'] / b['residuals']) if b.get('residuals') else math.nan), 3)}"
                         for name, b in blocks.items())
-        items.append(f"**Uncertainties are lower bounds.** Reduced chi-square {_fmt(report.get('reduced_chi2'), 3)} "
+        items.append(f"**Local uncertainties omit model discrepancy.** Reduced chi-square {_fmt(report.get('reduced_chi2'), 3)} "
                      f"(χ²/n by block: {per}); V1 holds {blocks.get('V1', {}).get('residuals', '—')} of "
                      f"{sum(b.get('residuals', 0) for b in blocks.values())} residuals, and its cup masses share "
                      "information with c₀, λ and the first fraction (Eq. 3).")
@@ -1233,14 +1242,28 @@ def render_markdown(report: Mapping[str, Any], figures: Sequence[str]) -> str:
                   "particles were under-represented (settling in a wet dispersion unit, or sample selection; the "
                   "article does not say), which lowers this D32 and raises this dataset's κ_ref. The authors describe "
                   "their grounds as \"of typical size below 200 µm\".",
-                  "- *Schmieder's D32 rests on the E65S dial mapping.* The dial's scale is disputed (the brochure's "
+                  "- *Schmieder's reference-permeability scaling uses the E65S dial mapping.* The dial's scale "
+                  "is disputed (the brochure's "
                   "≈5 µm per indicator read as burr movement or as a particle-size bandwidth), so the preset maps the "
                   "dial to a burr gap fitted to the article's wet-laser D[4,3] at GL 1.4 and 2.0, and its D32 comes "
                   "from the input models' fines relation (fitted to dry-laser and Camsizer PSDs), not from the "
-                  "article's wet D32 of 27–29 µm, which includes 1–10 µm debris. A 10% smaller D32 at the same "
-                  "settings would raise the Schmieder estimate by about 23%."]
+                  "article's wet D32 of 27–29 µm, which includes 1–10 µm debris. A 10% smaller scaling-basis D32 "
+                  "with fitted κ₀ and reference D32 held fixed would raise the Schmieder κ_ref estimate by about 23%."]
+        v1_options = ((report.get("calibration_config") or {}).get("blocks") or {}).get("V1", {})
+        if (v1_options.get("case_options") or {}).get("psd_source") == "wet_cdf":
+            lines += ["", "**V1 particle input in this run:** the qualified Schmieder Fig. A1b wet CDF, with its "
+                      "unresolved fine tail constrained by the published D32. The E65S D32 above is only the "
+                      "reference-permeability scaling basis; it is not the PSD simulated in these V1 cases. "
+                      "D32 agreement is an input constraint, and wet-dispersed debris is not independently "
+                      "validated as dry-puck geometry or a particle diffusion length. The dataset sidecar's "
+                      "note about the historical default describes the 0.5.1 input audit; this run's explicit "
+                      "calibration configuration selects the wet CDF."]
     if report.get("fixed"):
-        lines += ["", "**Held at their registry values** (reviewed, not fitted):", "", "| Parameter | Value | Reason |",
+        lines += ["", "**Held at their registry values** (reviewed, not fitted):", "",
+                  "The SD/prior ratios and correlations quoted in inherited reasons below come from the "
+                  "2026-10-14 trial fits, not new identifiability measurements on this solver. Reasons explicitly "
+                  "marked as pruning in this calibration run describe the current fit.", "",
+                  "| Parameter | Value | Reason |",
                   "|---|---|---|"]
         for pid, f in report["fixed"].items():
             unit = "" if f.get("units") in (None, "1") else f.get("units")
@@ -1296,6 +1319,12 @@ def render_markdown(report: Mapping[str, Any], figures: Sequence[str]) -> str:
             lines.append(f"| {name} | {_fmt(v.get('v1_cost', v.get('cost')), 4)} | {ks} | "
                          f"{_fmt(v.get('schmieder_kappa_ref_m2'), 3)} | {_fmt(v.get('pooled_kappa_ref_m2'), 3)} | "
                          f"{_fmt(v.get('pressure_rms'), 3)} | {v.get('lambda_within', '—')}/60 | {v.get('cup_within', '—')}/180 |")
+        if any(name.startswith("wet PSD D32 ") for name in sens["variants"]):
+            lines += ["", "The wet-PSD rows reconstruct the unresolved finest-particle head with the published "
+                      "D32 shifted by ±1 SD, leaving the resolved tail CDF and parameter priors unchanged. "
+                      "They are input sensitivities followed by refitting, not confidence bands or additional "
+                      "independent observations. Each reconstruction changes the particle sizes supplied to "
+                      "the model, including its derived pore-air timescale."]
     structural = report["held_out"].get("structural") or {}
     if structural:
         v3h, v5h = report["held_out"].get("v3", {}), report["held_out"].get("v5", {})

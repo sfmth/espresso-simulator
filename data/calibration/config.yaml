@@ -73,10 +73,16 @@ parameters:
 fixed:
   - id: model.hydraulics.intraparticle_water_fraction
     reason: >-
-      M1.1 fills the complete intraparticle pore-water inventory behind the front (fraction 1), rather
-      than counting only the mobile share. This is a water-volume accounting choice, not a fit to shot
-      times. The effective-loading approximation is documented in the startup model and remains subject
-      to validation against independent uptake measurements.
+      The full intraparticle pore-water inventory behind the front (fraction 1) is held inside the
+      total particle loading. External mobile water occupies interparticle porosity only; front filling
+      transfers its dissolved solute into the particle reservoir conservatively. The fixed water-volume
+      choice and instantaneous pore filling are not fitted to shot times or independent uptake data.
+  - field: solubles.kernel_loading_cap
+    value: false
+    reason: >-
+      Disabled by the builder for total particle loading: the initial particle concentration is not an
+      equilibrium capacity. Kernel loading follows its source partition law and may exceed its initial
+      value during inward diffusion. This boundary restriction is not selected by fit quality.
   - id: model.hydraulics.pore_air_amplitude
     reason: >-
       The initial effective connectivity deficit is a grade D model assumption (0.5), separate from coffee
@@ -142,7 +148,9 @@ blocks:
     pressure: pour
     exit_margin_bar: 0.5
     # the article's preinfusion-to-pour switch (Fig. A2: 7 → 2 mL/s over about 4 s)
-    case_options: {transition_ramp_s: 4.0}
+    # Qualified Fig. A1b wet CDF with its unresolved head constrained by the reported D32.
+    # This input is fixed before fitting; ±1 SD D32 reconstructions are separate sensitivity runs.
+    case_options: {transition_ramp_s: 4.0, psd_source: wet_cdf, sauter_offset_sd: 0.0}
   V2:
     dataset: vacaguerra2024
     weight: 1.0

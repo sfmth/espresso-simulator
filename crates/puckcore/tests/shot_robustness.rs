@@ -299,16 +299,24 @@ fn random_valid_specs_run_cleanly() {
         if !ser.t_s.windows(2).all(|w| w[1] > w[0]) {
             fail("times do not increase");
         }
-        // The liquid never exceeds the larger of saturation and the
-        // kernels' equilibrium K·ε_p·u₀; with the loading cap, no cell's
-        // particles hold more than they started with.
+        // The front carries solute into particle water. For K*beta<1,
+        // C >= K*(s0+beta*C) gives a finite concentration bound. Above that
+        // domain there is no such invariant box; finiteness, positivity,
+        // solvent content and conservation still have to hold.
         let sol = &spec.solubles;
         let b = &spec.bed;
         let eps_p = b.intraparticle_porosity;
-        let u0 = sol.extractable_fraction * b.skeletal_density_kg_m3 * (1.0 - eps_p) / eps_p;
-        let c_max = sol
-            .saturation_kg_m3
-            .max(sol.partition_coefficient * eps_p * u0);
+        let s0 = sol.extractable_fraction * b.skeletal_density_kg_m3 * (1.0 - eps_p);
+        let water = spec
+            .hydraulics
+            .intraparticle_water_fraction
+            .unwrap_or(spec.hydraulics.wetting_uptake);
+        let beta = eps_p * water;
+        let denominator = 1.0 - sol.partition_coefficient * beta;
+        let c_max = (denominator > 0.0).then(|| {
+            sol.saturation_kg_m3
+                .max(sol.partition_coefficient * s0 / denominator)
+        });
         for snap in &r.spatial.snapshots {
             if !snap
                 .local_ey
@@ -325,14 +333,24 @@ fn random_valid_specs_run_cleanly() {
                 .iter()
                 .flatten()
                 .fold(0.0_f64, |m, &c| m.max(c));
-            if c_top > c_max * (1.0 + 1e-9) {
+            if c_max.is_some_and(|bound| c_top > bound * (1.0 + 1e-9)) {
                 fail(&format!(
-                    "the bed liquid exceeds saturation: {c_top} > {c_max} at {} s",
+                    "the bed liquid exceeds its front-loading bound: {c_top} > {c_max:?} at {} s",
                     snap.t_s
                 ));
             }
-            if sol.kernel_loading_cap && snap.local_ey.iter().flatten().any(|&e| e < -1e-9) {
-                fail("negative local EY with the loading cap");
+            if sol.kernel_loading_cap
+                && let Some(bound) = c_max
+            {
+                let carried_ey = beta * bound / (b.skeletal_density_kg_m3 * (1.0 - eps_p));
+                if snap
+                    .local_ey
+                    .iter()
+                    .flatten()
+                    .any(|&e| e < -carried_ey - 1e-9)
+                {
+                    fail("particle gain exceeds the matrix cap plus carried-water inventory");
+                }
             }
         }
         if !r.diagnostics.outflow_integral_error.is_finite() {

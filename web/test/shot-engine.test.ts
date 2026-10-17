@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { checkShotResult } from '../src/engine/shotCheck';
-import type { BuiltSpec, PresetsDoc, Recipe, ShotResult } from '../src/engine/shotTypes';
+import type { BuiltSpec, PresetsDoc, Recipe, ShotResult, ShotSpec } from '../src/engine/shotTypes';
 import { loadPuckcore } from './loadWasm';
 
 const core = loadPuckcore();
@@ -16,11 +16,11 @@ const presets = JSON.parse(core.presets()) as PresetsDoc;
 
 /**
  * What the lab draws from every result of this core: the cell faces, the
- * wetted share of every cell, the outflow check, and a local EY that does not
- * dip below zero (beyond round-off; the cross-section keeps a diverging scale
- * only as a fallback for older cores).
+ * wetted share of every cell, the outflow check, and signed net particle EY.
+ * Particles may gain carried/dissolved solute. Their remaining inventory and
+ * mobile liquid concentration must stay nonnegative; dry reserves stay intact.
  */
-function expectLabFields(result: ShotResult) {
+function expectLabFields(result: ShotResult, spec: ShotSpec) {
   const sp = result.spatial;
   expect(sp.depth_edges_m?.length).toBe(sp.depth_m.length + 1);
   expect(sp.depth_edges_m?.[0]).toBe(0);
@@ -33,8 +33,30 @@ function expectLabFields(result: ShotResult) {
         expect(w).toBeLessThanOrEqual(1);
       }
     }
-    // 1e-8 as a fraction is the cross-section's 1e-6 % tolerance.
-    expect(Math.min(...snap.local_ey.flat())).toBeGreaterThan(-1e-8);
+    snap.local_ey.forEach((column, j) => {
+      column.forEach((ey, k) => {
+        const wet = snap.wetted_fraction?.[j][k];
+        expect(wet).toBeDefined();
+        expect(Number.isFinite(ey)).toBe(true);
+        // A cell cannot lose more than the initial solute in its wetted share.
+        expect(ey).toBeLessThanOrEqual(spec.solubles.extractable_fraction * (wet ?? 0) + 1e-8);
+        const concentration = snap.liquid_conc_kg_m3[j][k];
+        expect(Number.isFinite(concentration)).toBe(true);
+        expect(concentration).toBeGreaterThanOrEqual(-1e-8);
+        if (spec.solubles.solute_specific_volume_m3_kg !== undefined) {
+          expect(concentration * spec.solubles.solute_specific_volume_m3_kg).toBeLessThan(0.95);
+        }
+        if (wet === 0) {
+          // Subtracting initial and current shell sums can leave round-off.
+          expect(Math.abs(ey)).toBeLessThan(1e-12);
+          expect(concentration).toBe(0);
+        }
+      });
+    });
+  }
+  for (const entry of sp.class_ey ?? []) {
+    expect(Number.isFinite(entry.ey)).toBe(true);
+    expect(entry.ey).toBeLessThanOrEqual(spec.solubles.extractable_fraction + 1e-8);
   }
   expect(result.diagnostics.outflow_integral_error).toBeTypeOf('number');
   expect(result.diagnostics.hydraulic_volume_balance_error).toBeTypeOf('number');
@@ -171,7 +193,7 @@ describe('WASM shot API in Node', () => {
     // Tier 0 is a coarse grid; its exact size is the solver's choice (contract §4: "about 8").
     expect(run.result.spatial.columns.length).toBeGreaterThan(0);
     expect(run.result.spatial.depth_m.length).toBeGreaterThan(0);
-    expectLabFields(run.result);
+    expectLabFields(run.result, built.spec);
   });
 
   it.each([cases()[0], cases().at(-1) as [string, Recipe]])(
@@ -181,7 +203,7 @@ describe('WASM shot API in Node', () => {
         core.simulateRecipe(
           JSON.stringify({ ...recipe, numerics: { ...recipe.numerics, tier: 1 } }),
         ),
-      ) as { result: ShotResult };
+      ) as { build: BuiltSpec; result: ShotResult };
       expect(checkShotResult(run.result)).toEqual([]);
       // Tier 1 resolves the bed more finely than tier 0.
       const preview = JSON.parse(
@@ -196,7 +218,7 @@ describe('WASM shot API in Node', () => {
         preview.result.spatial.columns.length,
       );
       expect(run.result.spatial.snapshots.length).toBeGreaterThan(1);
-      expectLabFields(run.result);
+      expectLabFields(run.result, run.build.spec);
       // Early on, the water has not reached the bottom of the bed yet.
       const first = run.result.spatial.snapshots[0].wetted_fraction ?? [];
       expect(Math.min(...first.flat())).toBeLessThan(1);

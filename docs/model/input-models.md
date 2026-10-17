@@ -310,7 +310,7 @@ Distribution, WDT, papers, screens and headspace rest on single-operator communi
 | `axial_dispersion_m2_s` | 5×10⁻⁶ | `extraction.dispersion.axial_coefficient` (C, derived from Bo) |
 | `viscosity` | a1 3.75, a2 14.1, γ 0.45 | `model.hydraulics.viscosity_ln_a1/a2`: exact solve through Moreno 2015's 20% and 35% w/w points at 4 °C (A, derived); `…_temperature_exponent` γ derived so 25% w/w extract is 2.25× water at brew temperature, the centre of `hydraulics.viscosity.extract_relative` (B) |
 | `wetting_uptake` | 0.5 | `model.hydraulics.wetting_uptake` (D, 0–0.9): effective particle loading normalization; legacy raw specs also use it for water capacity |
-| `intraparticle_water_fraction` | 1 | `model.hydraulics.intraparticle_water_fraction` (D): fills the accessible particle pore volume along with intergranular pores; counted once in the continuum holdup |
+| `intraparticle_water_fraction` | 1 | `model.hydraulics.intraparticle_water_fraction` (D): fills the accessible particle pore volume along with intergranular pores; counted in hydraulic/thermal storage; its solute belongs to total particle loading |
 | `pore_air` | A = 0.5; τ = (D32/2)²/(π² D_m), capped at 600 s | `model.hydraulics.pore_air_amplitude` and `…moisture_diffusivity`; D_m = 2.5×10⁻¹¹ m²/s from Mateus 2007 moisture diffusion, extrapolated to hydraulic mobility (D) |
 | `pore_air_permeability_exponent` | 3 | `model.hydraulics.pore_air_permeability_exponent` (D): power-law closure for incomplete wetting, separate from CO₂ |
 | `dissolution_kozeny_carman` | true | solver default (contract §4) |
@@ -332,9 +332,10 @@ this timescale to wet-dispersion fines. Its fixed-τ scenario isolates that effe
 D32 is not independent evidence for a moisture-transport radius. The
 [source audit](../research/05-water-and-particle-inventory.md) also identifies overlapping solute
 capacities when full particle pore water is held at the continuum concentration while particle
-loading uses Corrochano's total-inventory partition coefficient. The current builder retains
-that approximation and the v2 fit. Correcting it requires consistent storage and front transfer,
-not only a different coefficient; see [shot-model §5.1](shot-model.md#51-inventories).
+loading uses Corrochano's total-inventory partition coefficient. Version 0.6.0 corrects this:
+mobile solute occupies intergranular water and newly filled pore water carries solute into total
+particle loading. Recipe builds use uncapped kernel partitioning; see
+[shot-model §5.1](shot-model.md#51-inventories) and [ADR 0012](../decisions/0012-total-particle-solute-inventory.md).
 
 These defaults were fixed before testing the held-out transients. The moisture coefficient was
 inferred from swelling in [Mateus et al. (2007)](https://doi.org/10.1021/jf062841g); the mapping from
@@ -345,7 +346,8 @@ resolve air pressure, capillarity or separate mobile/immobile water exchange. Fu
 capacity is an upper-envelope approximation, not a claim of instantaneous microscopic hydration.
 The pool and kernel states represent effective soluble loading, so their normalization does not
 add a second water inventory. Setting pore-air amplitude to zero disables that mobility closure;
-older raw specs omit the new fields and retain their legacy defaults.
+omitting the new fields preserves the older hydraulic parameter defaults, while every spec uses
+the corrected 0.6.0 solute inventories.
 
 ---
 
@@ -360,9 +362,9 @@ older raw specs omit the new fields and retain their legacy defaults.
 | `kernel_diffusivity_m2_s` | 1.26×10⁻¹⁰ | `extraction.diffusivity.lumped.corrochano_80c` (A, fitted) |
 | `surface_rate_m_s` | 1×10⁻³ | `extraction.surface_rate.grudeva2026` (B) |
 | `reference_temp_c` | 80 °C | the temperature of every registry diffusivity used; the solver scales D with temperature |
-| `solute_specific_volume_m3_kg` | 1/1570 = 6.37×10⁻⁴ | 1/`model.extraction.solute_apparent_density` (A, derived from extract density: 25% w/w ≈ 275 kg/m³ at 1.10 g/mL). The solver checks that the highest concentration, max(c_sat, K·s₀), still leaves the liquid water; the builder maps a failure to the extractable fraction, porosity, density, saturation, K and solute density behind it |
+| `solute_specific_volume_m3_kg` | 1/1570 = 6.37×10⁻⁴ | 1/`model.extraction.solute_apparent_density` (A, derived from extract density: 25% w/w ≈ 275 kg/m³ at 1.10 g/mL). Spec validation checks initial equilibrium concentrations for positive water content; the builder names the extractable fraction, porosity, density, saturation, K and solute density behind an invalid initial value. A separate check rejects a simulation whose realized transient concentration leaves too little water |
 | `species[]` | §3.2 | bean model |
-| `kernel_loading_cap` | true | solver default: kernels never take up more solute than they started with (shot-model.md §5.3) |
+| `kernel_loading_cap` | false | total-particle partition relation; optional raw-spec cap admits aqueous loading (shot-model.md §5.3) |
 
 **Species groups.** The solver groups species with identical (D, K, surface scale), and its cost grows with the number of distinct groups. Species should therefore share one parameter set wherever the evidence does not distinguish them (for M2's larger species set); the four M1 species keep their own values.
 
@@ -418,7 +420,7 @@ C = 4.186 J/(g K) × (`model.thermal.hardware_water_equivalent` 30 g + dose × `
 
 ### 8.5 Stop rule
 
-Beverage mass (≤ 500 g) and/or time (≤ 600 s) from the recipe; with neither, `model.stop.default_ratio` (2, C) × dose, with a note. The hard stop `numerics.max_duration_s` is the largest of 120 s, the stop time + 30 s and the program's timed phases and ramps + 60 s, capped at 1200 s (with a note). The beverage mass includes the post-stop drip of the headspace water, so without a three-way valve a shot stopped at 36 g ends about 2 g heavier (generic recipe: 38.3 g); with one it ends at 36 g.
+Beverage mass (≤ 500 g) and/or time (≤ 600 s) from the recipe; with neither, `model.stop.default_ratio` (2, C) × dose, with a note. The hard stop `numerics.max_duration_s` is the largest of 120 s, the stop time + 30 s and the program's timed phases and ramps + 60 s, capped at 1200 s (with a note). Beverage mass includes the post-stop drip, so without a three-way valve the final mass can exceed the requested stop mass. A machine that vents adds no post-stop drip.
 
 ### 8.6 Machine presets
 

@@ -64,6 +64,7 @@ describe('note routing', () => {
         'Medium-roast washed Arabica: Composition priors are …',
         '58 mm precision basket, 18 g: Basket dimensions are estimates.',
         'Override extraction.max_yield has no effect on this recipe.',
+        'Solver: solubles.kernel_loading_cap is off; kernels can gain solute.',
         'Flat 9 bar: An ideal pump holds the programmed pressure.',
         'Something else entirely.',
       ],
@@ -73,7 +74,7 @@ describe('note routing', () => {
     expect(routed.prep).toHaveLength(1);
     expect(routed.bean).toHaveLength(1);
     expect(routed.basket).toHaveLength(1);
-    expect(routed.overrides).toHaveLength(1);
+    expect(routed.overrides).toHaveLength(2);
     expect(routed.machine).toHaveLength(1);
     expect(routed.other).toEqual(['Something else entirely.']);
   });

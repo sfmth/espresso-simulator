@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -19,7 +20,7 @@ import numpy as np
 from .cases.common import Basket, base_spec, ideal_pump, minimal_recipe, phase, set_program
 from .identity import solver_identity
 from .paths import RepoPaths
-from .yamlio import load_yaml
+from .yamlio import loads_yaml
 
 # Fixed before inspecting model responses; deliberately the same hypotheses for both grinders.
 # These are sensitivity scenarios, not measured PSDs or a probability distribution.
@@ -33,22 +34,44 @@ REFINEMENT_COMPLIANCE_ML_PER_BAR = 0.5
 
 
 def _assert_fixed_calibration(paths: RepoPaths, registry: dict[str, Any]) -> dict[str, Any]:
-    """Refuse to label an installed builder's different defaults as the preserved v2 fit."""
-    expected = load_yaml(paths.root / "data/calibration/v2.yaml")
-    current = load_yaml(paths.root / "data/calibration/current.yaml")
-    if expected.get("label") != "v2" or current != expected:
-        raise ValueError("community comparison requires current.yaml to match preserved v2.yaml")
+    """Verify the selected versioned fit against the installed builder before replay."""
+    current_bytes = (paths.root / "data/calibration/current.yaml").read_bytes()
+    current = loads_yaml(current_bytes.decode("utf-8"))
+    label = current.get("label") if isinstance(current, dict) else None
+    if (not isinstance(label, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", label)
+            or label == "current"):
+        raise ValueError("current.yaml must select a named versioned calibration")
+    relative_path = f"data/calibration/{label}.yaml"
+    try:
+        expected_bytes = (paths.root / relative_path).read_bytes()
+    except FileNotFoundError as exc:
+        raise ValueError(f"selected calibration {label} requires {relative_path}") from exc
+    expected = loads_yaml(expected_bytes.decode("utf-8"))
+    if not isinstance(expected, dict) or expected.get("label") != label or current != expected:
+        raise ValueError(f"community comparison requires current.yaml to match {label}.yaml")
     values = expected.get("parameters", {})
+    if (not isinstance(values, dict) or not values
+            or any(not isinstance(key, str) or isinstance(value, bool)
+                   or not isinstance(value, (int, float)) or not math.isfinite(value)
+                   for key, value in values.items())):
+        raise ValueError(f"selected calibration {label} must contain finite numeric parameters")
     metadata = registry.get("calibration", {})
-    records = {record["id"]: record for record in registry.get("parameters", [])}
+    raw_records = registry.get("parameters", [])
+    records = {record["id"]: record for record in raw_records}
     embedded_keys = {key for key, record in records.items() if record.get("default_from") == "calibration"}
-    if (not values or metadata.get("label") != "v2" or embedded_keys != set(values)
-            or set(metadata.get("parameters", [])) != set(values)):
-        raise ValueError("installed puckcore calibration metadata differs from v2; rebuild the extension")
+    metadata_keys = metadata.get("parameters", [])
+    if (metadata.get("label") != label or len(records) != len(raw_records)
+            or embedded_keys != set(values) or set(metadata_keys) != set(values)
+            or len(metadata_keys) != len(values)):
+        raise ValueError(f"installed puckcore calibration metadata differs from {label}; rebuild the extension")
     for key, value in values.items():
-        if records[key].get("default") != value:
-            raise ValueError(f"installed puckcore default for {key} differs from v2; rebuild the extension")
-    return {"label": "v2", "embedded_values_verified": True, "parameters": dict(values)}
+        actual = records[key].get("default")
+        if isinstance(actual, bool) or actual != value:
+            raise ValueError(f"installed puckcore default for {key} differs from {label}; rebuild the extension")
+    return {"label": label, "path": relative_path,
+            "sha256": hashlib.sha256(expected_bytes).hexdigest(),
+            "current_sha256": hashlib.sha256(current_bytes).hexdigest(),
+            "embedded_values_verified": True, "parameters": dict(values)}
 
 
 def _numeric(values: Any, name: str) -> np.ndarray:
@@ -351,10 +374,8 @@ def run_comparison(bundle: dict[str, Any], paths: RepoPaths, *, tier: int = 1) -
         "case_helpers_sha256": hashlib.sha256((Path(__file__).parent / "cases/common.py").read_bytes()).hexdigest(),
         "source_tools_sha256": {name: hashlib.sha256((Path(__file__).parent / "sources" / name).read_bytes()).hexdigest()
                                 for name in ("de1.py", "gagne2021.py") if (Path(__file__).parent / "sources" / name).is_file()},
-        "calibration": {"path": "data/calibration/v2.yaml",
-                        "sha256": hashlib.sha256((paths.root / "data/calibration/v2.yaml").read_bytes()).hexdigest(),
-                        **calibration_identity,
-                        "use": "Builder's embedded v2 coefficients, unchanged; no community data fitted."},
+        "calibration": {**calibration_identity,
+                        "use": f"Builder's embedded {calibration_identity['label']} coefficients, unchanged; no community data fitted."},
         "sources": bundle["sources"], "source_limitations": bundle.get("limitations", []),
         "assumptions": {"psd_diameters_um_at_scale_1": [40, 400], "psd_volume_fractions": [0.3, 0.7],
                         "psd_scales": list(PSD_SCALES), "headspace_ml": list(HEADSPACE_ML),
@@ -546,7 +567,7 @@ def render_markdown(report: dict[str, Any]) -> str:
               f'Solver: `{report["solver"]["puckcore_version"]}`, extension `{report["solver"].get("extension_sha256", "unavailable")}`; tier {report["tier"]}.', "",
               f'Analysis module SHA-256: `{report["analysis_sha256"]}`.', "",
               f'Case-helper module SHA-256: `{report["case_helpers_sha256"]}`.', "",
-              f'Unchanged v2 calibration SHA-256: `{report["calibration"]["sha256"]}`.', ""]
+              f'Unchanged {report["calibration"]["label"]} calibration (`{report["calibration"]["path"]}`) SHA-256: `{report["calibration"]["sha256"]}`.', ""]
     source = report["sources"]
     lines.append(f'[Original experiment]({source["article_url"]}). Raw files remain local; source qualification does not grant redistribution rights.')
     for key in ("archive", "measurement_log"):

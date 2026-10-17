@@ -165,11 +165,11 @@ pub(crate) struct SpeciesModel {
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct SpeciesGroup {
     pub diffusivity_ref: f64,
-    /// K·ε_p: the partition between bed liquid and kernel pore liquid.
+    /// K·ε_c: liquid concentration / concentration-equivalent total loading.
     pub kernel_partition: f64,
     /// Surface-pool mass per bed volume for a unit mass fraction, by class, kg/m³.
     pub pool0: Vec<f64>,
-    /// Initial kernel pore concentration for a unit mass fraction, by class, kg/m³.
+    /// Initial concentration-equivalent kernel loading for a unit mass fraction, by class, kg/m³.
     pub kernel0: Vec<f64>,
 }
 
@@ -191,8 +191,8 @@ pub(crate) struct Model {
     pub eps0: f64,
     /// Filled water porosity φ_T = ε₀ + (1 − ε₀) ε_p · water fraction.
     pub phi_t: f64,
-    /// Water imbibed into the particles per bed volume, φ_T − ε₀: part of the
-    /// bed-liquid holdup, which is ε + (φ_T − ε₀).
+    /// Absorbed water per bed volume, φ_T − ε₀. Its solute is included in
+    /// total particle loading, separately from mobile intergranular liquid.
     pub imbibed: f64,
     /// Lumped solubles per particle volume, kg/m³ (E_max ρ_s (1 − ε_p)).
     pub s0: f64,
@@ -205,14 +205,15 @@ pub(crate) struct Model {
     /// Water density at the brew temperature, kg/m³.
     pub rho_water: f64,
     pub saturation: f64,
-    /// K·ε_c: the lumped partition between bed liquid and kernel pore liquid
-    /// (K is per particle envelope volume, and the solubles live in the
-    /// particles' pore liquid ε_c).
+    /// K·ε_c: liquid concentration / concentration-equivalent total loading;
+    /// K is per particle envelope volume, ε_c is a reference normalization.
     pub kernel_partition: f64,
-    /// Initial kernel pore concentration of the lumped solubles, s₀/ε_c.
+    /// Initial concentration-equivalent kernel loading of the lumped solubles, s₀/ε_c.
     pub u0: f64,
-    /// Whether kernel uptake is capped at the initial content.
+    /// Whether excess boundary loading is capped, admitting aqueous solute.
     pub loading_cap: bool,
+    /// Absorbed water per particle envelope volume / loading normalization.
+    pub loading_water_ratio: f64,
     pub diffusivity_ref: f64,
     pub reference_temp: f64,
     /// Share θ of dissolved solid volume that becomes intergranular pore space.
@@ -284,8 +285,8 @@ impl Model {
         let (mut classes, shells_per_cell) = classes(spec, tier);
         let s0 = s.extractable_fraction * bed.skeletal_density_kg_m3 * (1.0 - eps_p);
         // Reference capacity of the pools/kernels. In the startup closure
-        // these are soluble loadings, not an additional solvent inventory;
-        // the front and holdup count the water once using water_fraction.
+        // these represent total particle solute, including pore solution.
+        // The mobile liquid therefore uses only intergranular water.
         let eps_c = eps_p * (1.0 - spec.hydraulics.wetting_uptake);
         let water_fraction = spec
             .hydraulics
@@ -377,6 +378,7 @@ impl Model {
             kernel_partition: s.partition_coefficient * eps_c,
             u0: s0 / eps_c,
             loading_cap: s.kernel_loading_cap,
+            loading_water_ratio: eps_p * water_fraction / eps_c,
             diffusivity_ref: s.kernel_diffusivity_m2_s,
             reference_temp: s.reference_temp_c,
             // null means θ = 0 (shot-model.md §5.5).

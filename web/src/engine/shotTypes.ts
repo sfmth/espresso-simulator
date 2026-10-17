@@ -239,7 +239,10 @@ export interface SolublesSpec {
   species: SpeciesSpec[];
   /** Volume of dissolved solids per mass, m³/kg (added by the M1 solver). */
   solute_specific_volume_m3_kg?: number;
-  /** Cap kernel loading at the content (default true); false keeps the linear partition. */
+  /**
+   * Cap the kernel boundary at initial loading plus its liquid-carried share.
+   * Raw specs default true; recipe builds use false to keep the linear partition.
+   */
   kernel_loading_cap?: boolean;
 }
 
@@ -458,11 +461,11 @@ export interface ColumnInfo {
 /** Bed state at one instant; arrays are [column][depth cell]. */
 export interface Snapshot {
   t_s: number;
-  /** Net soluble loss of each cell's particles over their dry mass. */
+  /** Net soluble loss of each cell's particles over their dry mass; a gain is negative. */
   local_ey: number[][];
   /**
-   * Concentration of lumped solubles in the bed liquid (intergranular plus
-   * imbibed water), kg/m³; 0 where dry.
+   * Concentration of lumped solubles in mobile intergranular water, kg/m³;
+   * 0 where dry. Solubles in absorbed water are part of the particle inventory.
    */
   liquid_conc_kg_m3: number[][];
   /** Wetted share of each cell: 0 dry, 1 wet, in between at the wetting front (newer cores). */
@@ -471,6 +474,7 @@ export interface Snapshot {
 
 export interface ClassEy {
   radius_m: number;
+  /** Net soluble loss of a particle class over its dry mass; a gain is negative. */
   ey: number;
 }
 

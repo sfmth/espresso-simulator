@@ -47,14 +47,24 @@ fn extremes(r: &ShotResult) -> (f64, f64) {
     (c_max, ey_min)
 }
 
-/// H1: the wetting front no longer supersaturates. The liquid stays at or
-/// below saturation, no cell's particles end up holding more than they
-/// started with, and first-drop TDS and the local-EY extremes converge with
-/// the grid.
+/// With the matrix-loading cap, particles may gain the solute in their
+/// absorbed water, but not more than beta*C per particle envelope volume.
+fn carried_ey_bound(s: &ShotSpec, concentration: f64) -> f64 {
+    let water = s
+        .hydraulics
+        .intraparticle_water_fraction
+        .unwrap_or(s.hydraulics.wetting_uptake);
+    s.bed.intraparticle_porosity * water * concentration
+        / (s.bed.skeletal_density_kg_m3 * (1.0 - s.bed.intraparticle_porosity))
+}
+
+/// H1: for the default partition and water uptake, the wetting front stays
+/// below saturation; carried solute bounds local reloading. First-drop TDS
+/// and the local-EY extremes converge with the grid.
 #[test]
 fn the_front_never_supersaturates_and_converges() {
     let mut results = Vec::new();
-    for cells in [30, 120] {
+    for cells in [30, 60, 120] {
         let mut s = ShotSpec::default();
         s.numerics.depth_cells = cells;
         s.numerics.snapshot_count = 200;
@@ -62,15 +72,17 @@ fn the_front_never_supersaturates_and_converges() {
         let (c_max, ey_min) = extremes(&r);
         let sat = s.solubles.saturation_kg_m3;
         println!(
-            "{cells} cells: EY {:.3}%, first-drop TDS {:.3}% (saturation {:.3}%), max c/c_sat {:.9}, min local EY {:.1e}",
+            "{cells} cells: EY {:.3}%, first-drop TDS {:.3}% (saturation {:.3}%), max c/c_sat {:.9}, min local EY {:.1e}; final EY range [{:.8}, {:.8}]",
             r.summary.ey * 100.0,
             first_drop_tds(&r) * 100.0,
             saturation_tds(&s) * 100.0,
             c_max / sat,
-            ey_min
+            ey_min,
+            r.summary.uniformity.ey_min,
+            r.summary.uniformity.ey_max
         );
         assert!(c_max <= sat * (1.0 + 1e-9), "{c_max}");
-        assert!(ey_min >= -1e-12, "{ey_min}");
+        assert!(ey_min >= -carried_ey_bound(&s, sat) - 1e-12, "{ey_min}");
         assert!(first_drop_tds(&r) <= saturation_tds(&s) * (1.0 + 1e-6));
         results.push(r);
     }
@@ -89,13 +101,16 @@ fn the_front_never_supersaturates_and_converges() {
             c_max <= s.solubles.saturation_kg_m3 * (1.0 + 1e-9),
             "{cells}, {dt}: {c_max}"
         );
-        assert!(ey_min >= -1e-12);
+        assert!(ey_min >= -carried_ey_bound(&s, s.solubles.saturation_kg_m3) - 1e-12);
     }
-    let (a, b) = (&results[0], &results[1]);
+    let (a, b) = (&results[1], &results[2]);
     assert!((a.summary.ey / b.summary.ey - 1.0).abs() < 2e-3);
     assert!((first_drop_tds(a) / first_drop_tds(b) - 1.0).abs() < 1e-4);
     let (ua, ub) = (&a.summary.uniformity, &b.summary.uniformity);
     assert!((ua.ey_min - ub.ey_min).abs() < 1e-3 && (ua.ey_max - ub.ey_max).abs() < 1e-3);
+    let coarse = &results[0].summary.uniformity;
+    assert!((ua.ey_min - ub.ey_min).abs() < (coarse.ey_min - ua.ey_min).abs());
+    assert!((ua.ey_max - ub.ey_max).abs() < (coarse.ey_max - ua.ey_max).abs());
 }
 
 /// H2: inputs that used to crash or return garbage are rejected, naming the
@@ -290,13 +305,14 @@ fn mass_events_land_with_the_largest_step() {
     assert_eq!(r.summary.stop_reason, "beverage_mass");
 }
 
-/// M7: K is per particle envelope volume; with the loading cap kernels never
-/// end above their initial content, without it they re-absorb and a warning
-/// says so. Conservation holds either way.
+/// M7: without carried pore-water solute, the optional matrix-loading cap
+/// bounds kernels at their initial content. Without the cap they may
+/// re-absorb more; conservation holds either way.
 #[test]
 fn the_kernel_loading_cap_is_switchable() {
-    let capped = run(&ShotSpec::default());
     let mut s = ShotSpec::default();
+    s.hydraulics.intraparticle_water_fraction = Some(0.0);
+    let capped = run(&s);
     s.solubles.kernel_loading_cap = false;
     let linear = run(&s);
     assert!(extremes(&capped).1 >= -1e-12);
@@ -497,6 +513,9 @@ fn stiff_fine_coarse_specs_converge() {
 #[test]
 fn kernels_above_saturation_are_bounded_and_reported() {
     let mut s = ShotSpec::default();
+    // Isolate partition loading from pore-water carriage. The finite bound
+    // with carriage also requires K*beta<1.
+    s.hydraulics.intraparticle_water_fraction = Some(0.0);
     s.solubles.partition_coefficient = 3.0;
     s.numerics.snapshot_count = 100;
     let r = run(&s);
@@ -507,9 +526,6 @@ fn kernels_above_saturation_are_bounded_and_reported() {
     let (c_max, _) = extremes(&r);
     assert!(c_max <= 3.0 * s0 * (1.0 + 1e-9), "{c_max}");
     assert!(c_max > s.solubles.saturation_kg_m3);
-    // The front cell no longer concentrates the whole cell's release in its
-    // wetted sliver (395 kg/m³ before).
-    assert!(c_max < 300.0, "{c_max}");
     assert!(
         r.diagnostics
             .warnings
@@ -526,11 +542,11 @@ fn kernels_above_saturation_are_bounded_and_reported() {
     assert!(simulate_shot(&s).is_ok());
 }
 
-/// M-b: mobile, pool and kernel liquid fill the total porosity, so the
-/// results barely depend on the unconstrained wetting uptake, which now sets
-/// mainly the wetting time; the H1 guarantees hold at every uptake.
+/// M-b: uptake changes front transport and the pool reference capacity, so
+/// extraction need not be nearly unchanged. It must preserve solute and
+/// delay breakthrough while respecting the applicable concentration bound.
 #[test]
-fn the_wetting_uptake_moves_little_but_the_wetting_time() {
+fn wetting_uptake_preserves_inventory_and_delays_breakthrough() {
     let mut eys = Vec::new();
     let mut drops = Vec::new();
     for u_w in [0.0, 0.5, 0.9] {
@@ -540,14 +556,15 @@ fn the_wetting_uptake_moves_little_but_the_wetting_time() {
         let r = run(&s);
         let (c_max, ey_min) = extremes(&r);
         assert!(c_max <= s.solubles.saturation_kg_m3 * (1.0 + 1e-9));
-        assert!(ey_min >= -1e-12);
+        assert!(ey_min >= -carried_ey_bound(&s, s.solubles.saturation_kg_m3) - 1e-12);
         assert!(first_drop_tds(&r) <= saturation_tds(&s) * (1.0 + 1e-6));
+        assert!(r.diagnostics.mass_balance_error < 1e-10);
+        assert!(r.diagnostics.min_concentration_kg_m3 >= 0.0);
+        assert!((0.0..=s.solubles.extractable_fraction).contains(&r.summary.ey));
         eys.push(r.summary.ey);
         drops.push(r.summary.first_drops_s.unwrap());
     }
     println!("uptake 0 / 0.5 / 0.9: EY {eys:?}, first drops {drops:?}");
-    let spread = (eys[2] - eys[0]).abs() / eys[1];
-    assert!(spread < 0.02, "{spread}");
     assert!(drops[0] < drops[1] && drops[1] < drops[2]);
     let mut s = ShotSpec::default();
     s.hydraulics.wetting_uptake = 0.95;

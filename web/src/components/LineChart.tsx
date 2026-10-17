@@ -41,7 +41,7 @@ export interface LineChartProps {
   yFromZero?: boolean;
   /** Logarithmic x axis (e.g. particle diameter). */
   xLog?: boolean;
-  /** Draws a baseline at this y value, e.g. 0 for an error curve. */
+  /** Draws a baseline at this y value and includes it in the automatic y range. */
   baseline?: number;
   formatX: (value: number) => string;
   formatY: (value: number) => string;
@@ -96,6 +96,16 @@ function buildOptions(
         const top = Number.isFinite(max) && max > 0 ? max : 1;
         return [0, uPlot.rangeNum(0, top, 0.1, true)[1] ?? top];
       },
+    };
+  } else if (baseline !== undefined) {
+    yScale = {
+      range: (_u, min, max): uPlot.Range.MinMax =>
+        uPlot.rangeNum(
+          Number.isFinite(min) ? Math.min(min, baseline) : baseline,
+          Number.isFinite(max) ? Math.max(max, baseline) : baseline,
+          0.1,
+          true,
+        ),
     };
   }
   return {
