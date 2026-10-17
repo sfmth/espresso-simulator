@@ -1,6 +1,6 @@
 {
   "schema": "puckworks.shot-cases/1",
-  "core_version": "0.6.1",
+  "core_version": "0.6.2",
   "generator": "puckworks-tools shot-fixtures",
   "cases": [
     {
@@ -311,7 +311,7 @@
       },
       "result": {
         "schema": "puckworks.shot-result/1",
-        "core_version": "0.6.1",
+        "core_version": "0.6.2",
         "summary": {
           "stop_reason": "beverage_mass",
           "shot_time_s": 21.724439329365527,
@@ -16737,7 +16737,7 @@
       },
       "result": {
         "schema": "puckworks.shot-result/1",
-        "core_version": "0.6.1",
+        "core_version": "0.6.2",
         "summary": {
           "stop_reason": "beverage_mass",
           "shot_time_s": 24.537198201747152,
@@ -33693,7 +33693,7 @@
       },
       "result": {
         "schema": "puckworks.shot-result/1",
-        "core_version": "0.6.1",
+        "core_version": "0.6.2",
         "summary": {
           "stop_reason": "time",
           "shot_time_s": 35.0,
@@ -52564,7 +52564,7 @@
       },
       "result": {
         "schema": "puckworks.shot-result/1",
-        "core_version": "0.6.1",
+        "core_version": "0.6.2",
         "summary": {
           "stop_reason": "beverage_mass",
           "shot_time_s": 26.524362447660767,
@@ -61976,7 +61976,7 @@
       },
       "result": {
         "schema": "puckworks.shot-result/1",
-        "core_version": "0.6.1",
+        "core_version": "0.6.2",
         "summary": {
           "stop_reason": "beverage_mass",
           "shot_time_s": 10.624848989564878,
@@ -66755,7 +66755,7 @@
       },
       "result": {
         "schema": "puckworks.shot-result/1",
-        "core_version": "0.6.1",
+        "core_version": "0.6.2",
         "summary": {
           "stop_reason": "time",
           "shot_time_s": 50.0,
@@ -79856,7 +79856,7 @@
       },
       "result": {
         "schema": "puckworks.shot-result/1",
-        "core_version": "0.6.1",
+        "core_version": "0.6.2",
         "summary": {
           "stop_reason": "time",
           "shot_time_s": 50.0,

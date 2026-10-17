@@ -1,0 +1,49 @@
+{
+  "predictions": {
+    "numeric_values": 4696,
+    "different_values": 2,
+    "max_abs_difference": 0.0,
+    "max_relative_difference": 0.0,
+    "first_differences": [
+      "calibration/checks/2",
+      "exit_criteria/0/statuses/2"
+    ]
+  },
+  "comparison_with_recorded_cache_status_normalized": {
+    "numeric_values": 4698,
+    "different_values": 0,
+    "max_abs_difference": 0.0,
+    "max_relative_difference": 0.0,
+    "first_differences": []
+  },
+  "cache_status_difference": {
+    "old": {
+      "check": "V1 leave-one-condition-out (\u00b115%)",
+      "status": "fail",
+      "target": "\u03bb and cup masses of each left-out experiment within \u00b115%",
+      "detail": "\u03bb 57/60, cup masses 180/180 within \u00b115% when predicted without their own experiment",
+      "within": 237,
+      "total": 240
+    },
+    "new": {
+      "check": "V1 leave-one-condition-out (\u00b115%)",
+      "status": "not run",
+      "target": "\u03bb and cup masses of each left-out experiment within \u00b115%",
+      "detail": "not run for this model/configuration; the calibration file's cached refits are historical (core version changed; solver build inputs changed)"
+    }
+  },
+  "historical_refit_records_identical": true,
+  "fixtures": {
+    "sphere_cases.json": {
+      "values_compared": 4218,
+      "exactly_equal": true
+    },
+    "shot_cases.json": {
+      "values_compared": 85388,
+      "exactly_equal": true
+    }
+  },
+  "preserved_files": 55,
+  "calibration_changed": false,
+  "version": "0.6.2"
+}

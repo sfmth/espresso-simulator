@@ -4,7 +4,7 @@
 Offline Python tools for Puckworks. They check the parameter registry and the datasets, write the
 golden fixtures shared with the web tests, produce the kernel verification report, calibrate the M1
 model against the literature datasets and write the M1 validation report, export presets and registry
-for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.5.0,
+for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.6.2,
 GPL-2.0-or-later.
 
 ## Install
@@ -271,6 +271,18 @@ browser and native agree). `fixtures --check` compares parameters and metadata e
 to `--tolerance`.
 
 ## Calibration and validation (M1)
+
+The [startup-identification review](../docs/validation/m11-startup-identification.md) preserves v4
+and tests pore-air parameters using the original training blocks. Its standalone script writes
+local configurations, Jacobian diagnostics and fixed grids without changing defaults:
+
+```bash
+.venv/bin/python python/scripts/m11-startup-identification.py \
+  --calibration data/calibration/v4.yaml --output-dir .local/startup-identification --jobs 8
+```
+
+The report gives the separate bounded-refit commands and their limitations. The companion
+`m11-startup-identification-plot.py` renders the saved JSON using the optional `report` dependencies.
 
 - **Datasets** (`data/datasets/`): 19 folders from Schmieder 2023, Waszkiewicz 2026, Cameron 2020, Vaca
   Guerra 2024, Corrochano 2017 and Smrke 2024 (licences and gaps in
