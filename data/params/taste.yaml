@@ -1,0 +1,258 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: M3 relative taste index conventions. Every coefficient is an explicit
+  uncalibrated grade D estimate; primary sensory literature motivates directions and
+  caveats, not these numerical values.
+parameters:
+- id: taste.acidity.reference_ta
+  name: Acidity reference scale
+  description: TA to pH 6.6 giving latent acidity one; an arbitrary display reference,
+    not a sourness threshold.
+  units: mol/m^3
+  value: 20.0
+  range:
+    min: 0.001
+    max: 1000.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.bitterness.lactone_reference
+  name: Lactone reference concentration
+  description: Grouped mono- and di-lactone concentration giving latent bitterness
+    one; no common family potency is established.
+  units: kg/m^3
+  value: 0.5
+  range:
+    min: 1.0e-06
+    max: 100.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.bitterness.phenylindane_reference
+  name: Phenylindane reference concentration
+  description: Grouped phenylindane concentration giving latent bitterness one; not
+    a water detection threshold.
+  units: kg/m^3
+  value: 0.1
+  range:
+    min: 1.0e-06
+    max: 100.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.bitterness.caffeine_reference
+  name: Caffeine reference concentration
+  description: Caffeine concentration giving latent unweighted bitterness one before
+    the arbitrary caffeine weight.
+  units: kg/m^3
+  value: 3.0
+  range:
+    min: 1.0e-06
+    max: 100.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.bitterness.caffeine_weight
+  name: Caffeine relative display weight
+  description: Arbitrary caffeine term multiplier; this is not a sensory contribution
+    percentage or a matrix-suppression measurement.
+  units: '1'
+  value: 0.2
+  range:
+    min: 0.0
+    max: 10.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.astringency.phenolic_reference
+  name: Astringency correlate reference
+  description: CQA, FQA and diCQA total concentration giving latent astringency one;
+    concentration is a correlate, not an identified causal mechanism.
+  units: kg/m^3
+  value: 4.0
+  range:
+    min: 1.0e-06
+    max: 100.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.body.tds_reference
+  name: Body TDS reference fraction
+  description: True dissolved coffee mass fraction giving latent unweighted body one;
+    mineral and optical biases are excluded.
+  units: '1'
+  value: 0.08
+  range:
+    min: 1.0e-06
+    max: 1.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.body.polymer_reference
+  name: Body polymer reference concentration
+  description: Soluble polysaccharide and melanoidin concentration giving latent unweighted
+    body one; not a viscosity calibration.
+  units: kg/m^3
+  value: 12.0
+  range:
+    min: 1.0e-06
+    max: 1000.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.body.lipid_reference
+  name: Body lipid reference concentration
+  description: Emulsified lipid concentration giving latent unweighted body one; phase
+    recovery remains an M2 estimate.
+  units: kg/m^3
+  value: 1.5
+  range:
+    min: 1.0e-06
+    max: 100.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.body.tds_weight
+  name: Body TDS display weight
+  description: Arbitrary latent body weight for true TDS. This is not a sensory contribution
+    fraction.
+  units: '1'
+  value: 0.7
+  range:
+    min: 0.0
+    max: 10.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.body.polymer_weight
+  name: Body polymer display weight
+  description: Arbitrary latent body weight reweighting polymers already counted in
+    TDS, not a distinct mass inventory.
+  units: '1'
+  value: 0.2
+  range:
+    min: 0.0
+    max: 10.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.
+- id: taste.body.lipid_weight
+  name: Body lipid display weight
+  description: Arbitrary latent body weight for the separate lipid-emulsion proxy,
+    not a measured creaminess coefficient.
+  units: '1'
+  value: 0.1
+  range:
+    min: 0.0
+    max: 10.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 uncalibrated relative-index conventions (2026); all scales
+      and weights are modelling assumptions, not sensory fits.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-taste.md
+  research_note_ref: 02 §6
+  used_by:
+  - T
+  status: draft
+  conditions: M2 cup-chemistry reference temperature (25 C by default); relative comparisons
+    only. No sensory panel calibration or validation.

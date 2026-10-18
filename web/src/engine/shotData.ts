@@ -17,6 +17,7 @@
  */
 import { decimationIndices, MAX_SERIES_POINTS } from './decimate';
 import type { BuiltSpec, Diagnostics, ShotResult, Summary } from './shotTypes';
+import type { TasteEstimate } from './m3Types';
 
 /** A result whose time series are Float64Arrays. */
 export type ShotResultData = ShotResult<Float64Array>;
@@ -32,6 +33,7 @@ export interface ShotRunData {
 /** `simulateRecipe`: the build and the result. */
 export interface RecipeRunData extends ShotRunData {
   build: BuiltSpec;
+  taste?: TasteEstimate;
 }
 
 /** One point of a sweep: the scalar outputs only. */

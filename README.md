@@ -2,9 +2,9 @@
 
 An open-source espresso simulator that runs entirely in the browser. It models a shot from bean and grinder, through the puck and the flow, to the cup. The goal is to follow the ~55 compounds that dissolve and to end with an explainable taste estimate, giving every number a source and an uncertainty band. The status below says what exists today.
 
-**Status:** version 0.6.0 starts **M2: chemistry, beans and water**. The [compound catalogue](data/chemistry/species.json) covers all 55 planned compounds, with K1–K6 transport classes, separate gas/oil inventories and explicit unassigned-solids accounting. Bean descriptors and storage scenarios, water buffering/pH, aroma headspace and binding, crema-volume and refractometer estimates now run through the shared engine and browser controls. [M2 model and limitations](docs/model/m2-chemistry.md).
+**Status:** version 0.7.0 adds **M3: uncertainty and explainable taste** on top of the merged M2 chemistry model. Reproducible input ensembles vary grinder/PSD, roast age, composition and water assumptions, with unknown/measured/fixed controls. Scalar and trajectory ranges describe those scenarios. The shared Rust taste model reports acidity, bitterness, astringency and body with visible drivers and low-trust labels. [Uncertainty contract](docs/model/m3-uncertainty.md) · [Taste contract](docs/model/m3-taste.md).
 
-The existing v2 fit is unchanged. **Scientific validation remains incomplete:** the [M1 report](docs/validation/m1-validation.md) retains its existing targets, and the [M2 report](docs/validation/m2-validation.md) distinguishes conditional Gloess comparisons from independent validation. Estimated species, acidity, aroma and phase recovery are labelled; they are not validated taste predictions. The pre-M2 report is [preserved](docs/validation/baseline-v0.5.0/README.md).
+The existing v2 fit is unchanged. **Scientific validation remains incomplete:** the [M1 report](docs/validation/m1-validation.md) retains its existing targets, and the [M2 report](docs/validation/m2-validation.md) distinguishes conditional Gloess comparisons from independent validation. Estimated species, acidity, aroma, phase recovery and taste indices are labelled. Scenario percentiles do not establish predictive coverage, and the taste indices have not been validated against an espresso sensory panel. The pre-M2 report is [preserved](docs/validation/baseline-v0.5.0/README.md).
 
 | Part | What exists |
 |---|---|
@@ -12,14 +12,15 @@ The existing v2 fit is unchanged. **Scientific validation remains incomplete:** 
 | Input models | Bean, grinder (burr family and gap, a grinder preset with its dial, or your own measured particle sizes), basket (any profile), puck preparation and machine programs. Every value has a source in the parameter registry. |
 | Presets | 7 grinders, 12 baskets, 10 machine programs and 9 beans. The owner's own gear is just one set of presets, marked unverified. |
 | Shot lab (web) | A recipe editor for gear described by preset or from scratch; the shot graph, summary tiles and particle-size chart; a compound table with sources; a cross-section of the puck with the wetting front; 1D sweeps, pinned overlays and exports. |
+| Uncertainty and taste | Seeded Tier 0 input ensembles with scenario quantiles, central Tier 0/Tier 1 comparisons, full report export and chemistry-based relative taste indices. Assumptions, evidence and omitted model errors remain visible. |
 | Calibration and validation | 19 published datasets (Schmieder, Waszkiewicz, Cameron, Corrochano, Smrke, Vaca Guerra), with calibration on some and held-out tests on others. |
 | Community comparisons | Safe offline import of original DE1 logs and the matching measurement sheet, followed by fixed-scenario comparisons. The [community report](docs/validation/community-shot-comparison.md) separates observed scale mass from estimated inlet flow and conditional model output; these sources have not entered the numerical fit. |
-| Parameter registry | 514 sourced parameters, each with an evidence grade. Startup assumptions and experimental pressure storage are exposed in the sandbox. |
+| Parameter registry | 540 sourced parameters, each with an evidence grade. Startup assumptions and experimental pressure storage are exposed in the sandbox. |
 | CI | Rust, Python and web workflows, plus GitHub Pages deployment. |
 
 Nothing you enter leaves your browser.
 
-The owner selected M2 development on 2026-10-17; remaining M1 accuracy work stays documented ([plan §12](docs/PLAN.md#12-roadmap-and-milestones)). The owner's AMZCHEF preset now records a confirmed **58 mm single-wall basket**.
+The owner selected uncertainty before taste after integrating M2 on 2026-10-17; remaining M1 and M2 accuracy work stays documented ([plan §12](docs/PLAN.md#12-roadmap-and-milestones)). The owner's AMZCHEF preset now records a confirmed **58 mm single-wall basket**.
 
 Calibration source selection includes online community shot archives and controlled hobbyist experiments; it does not depend on the owner's equipment. The [community-source audit](docs/research/04-community-shot-data.md) records candidate datasets and what each can support. Newly discovered sources have not yet entered the numerical fit.
 
@@ -41,6 +42,7 @@ Calibration source selection includes online community shot archives and control
 - [Architecture decision records](docs/decisions/README.md): how it is built, and why.
 - [M1 contract](docs/model/m1-contract.md): the recipe, shot-spec and shot-result documents, and the API in Rust, JavaScript and Python.
 - [M2 chemistry, beans and water](docs/model/m2-chemistry.md): compound classes, water, cup observations and evidence limits.
+- [M3 uncertainty](docs/model/m3-uncertainty.md), [taste](docs/model/m3-taste.md) and [verification report](docs/validation/m3-validation.md): scenario ranges, explainable indices and the distinction between numerical checks and sensory validation.
 - [Shot model](docs/model/shot-model.md): the shot solver's physics and numerics, with verification results.
 - [Input models](docs/model/input-models.md): from a recipe to the physics, including the presets.
 - [Particle kernel](docs/model/particle-kernel.md): the diffusion solver, with measured verification results.
@@ -68,7 +70,7 @@ cd web && npm ci && npm run dev       # run the web app locally
 ## Principles
 
 - **Physics first,** with machine learning for the gaps.
-- **Provenance and uncertainty.** Every parameter has a source and an evidence grade; output uncertainty bands remain planned work.
+- **Provenance and uncertainty.** Every parameter has a source and an evidence grade. Scenario bands expose selected input uncertainty; they do not include every source of model error.
 - **Private by construction.** The site never collects user data. Everything you enter stays in your browser.
 
 ## Licence

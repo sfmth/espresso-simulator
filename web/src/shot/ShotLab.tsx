@@ -27,7 +27,7 @@ import { PsdPanel, type PsdRun } from './PsdPanel';
 import { ProvenancePanel } from './ProvenancePanel';
 import { RecipeEditor } from './RecipeEditor';
 import { RecipeFiles } from './RecipeFiles';
-import { sectionOf, type FormErrors } from './recipeForm';
+import { physicalKey, sectionOf, type FormErrors } from './recipeForm';
 import type { Recipe } from '../engine/shotTypes';
 import { ShotCharts } from './ShotCharts';
 import type { ChartRun } from './shotChartData';
@@ -36,6 +36,9 @@ import { browserStorage, saveDraft } from './storage';
 import { SummaryTiles } from './SummaryTiles';
 import { SweepPanel } from './SweepPanel';
 import { useShotRun } from './useShotRun';
+import { useUncertainty } from './useUncertainty';
+import { UncertaintyPanel } from './UncertaintyPanel';
+import { TastePanel } from './TastePanel';
 
 /** Quiet time before the draft is saved to this browser's storage. */
 const DRAFT_SAVE_MS = 500;
@@ -76,6 +79,7 @@ export function ShotLab() {
   const catalog = useShotStore((s) => s.catalog);
   const catalogError = useShotStore((s) => s.catalogError);
   const { validation, key, run, cancel, retry: retryRun } = useShotRun();
+  const uncertainty = useUncertainty(validation.ok ? validation.recipe : null);
   const notices = useShotStore((s) => s.notices);
   const dismissNotices = useShotStore((s) => s.dismissNotices);
   const revealField = useShotStore((s) => s.revealField);
@@ -382,7 +386,10 @@ export function ShotLab() {
                 </ul>
               </div>
             )}
-            <SummaryTiles outcome={latest} />
+            <SummaryTiles
+              outcome={latest}
+              uncertainty={current && uncertainty.current ? uncertainty.outcome?.result : null}
+            />
             {allNotes.length > 0 && (
               <details className="model-notes">
                 <summary>Model notes for this recipe ({allNotes.length})</summary>
@@ -396,6 +403,38 @@ export function ShotLab() {
             {latest && (
               <div className="actions export-actions">
                 <span className="note">Export:</span>
+                <button
+                  id="download-full-report"
+                  type="button"
+                  className="button button-small"
+                  onClick={() =>
+                    downloadJson(datedName('full-report', 'json'), {
+                      schema: 'puckworks.report/1',
+                      core_version: catalog.coreVersion,
+                      parameter_registry: catalog.registry,
+                      created_at: new Date().toISOString(),
+                      central: {
+                        recipe: latest.recipe,
+                        build: latest.build,
+                        result: toJsonResult(latest.result),
+                        taste: latest.taste ?? null,
+                        tier: latest.tier,
+                        kind: latest.kind,
+                        current,
+                        core_ms: latest.coreMs,
+                      },
+                      uncertainty: uncertainty.outcome,
+                      uncertainty_matches_current_inputs_and_settings: uncertainty.current,
+                      uncertainty_matches_central_recipe:
+                        uncertainty.outcome !== null &&
+                        physicalKey(uncertainty.outcome.recipe) === latest.key,
+                      interpretation:
+                        'Scenario percentiles omit model error, Tier-0/Tier-1 discrepancy and sensory-model uncertainty. Taste indices are unvalidated relative heuristics.',
+                    })
+                  }
+                >
+                  Full report JSON
+                </button>
                 <button
                   type="button"
                   className="button button-small"
@@ -452,6 +491,37 @@ export function ShotLab() {
                     ) : (
                       <p className="note">The shot graph appears after the first run.</p>
                     ),
+                },
+                {
+                  id: 'uncertainty',
+                  label: 'Uncertainty',
+                  render: () => (
+                    <ErrorBoundary name="input uncertainty">
+                      <UncertaintyPanel
+                        validation={validation}
+                        controls={uncertainty}
+                        central={current ? latest : null}
+                        catalog={catalog}
+                      />
+                    </ErrorBoundary>
+                  ),
+                },
+                {
+                  id: 'taste',
+                  label: 'Taste estimates',
+                  render: () => (
+                    <ErrorBoundary name="taste estimates">
+                      <TastePanel
+                        outcome={latest}
+                        stale={stale}
+                        uncertainty={
+                          current && uncertainty.current
+                            ? (uncertainty.outcome?.result ?? null)
+                            : null
+                        }
+                      />
+                    </ErrorBoundary>
+                  ),
                 },
                 {
                   id: 'particles',

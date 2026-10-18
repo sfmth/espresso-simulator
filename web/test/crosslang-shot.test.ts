@@ -36,6 +36,9 @@ const SKIP_RESULTS = process.env.PUCKWORKS_SHOT_RESULTS === 'skip';
 const IGNORED_RESULT_KEYS = new Set(['core_version']);
 /** Mismatches listed per comparison before the rest are only counted. */
 const MAX_LISTED = 5;
+// These are exact-result correctness checks of full M2 shots. Their scheduling
+// deadline is separate from the measured runtime targets in the roadmap.
+const SHOT_TEST_TIMEOUT_MS = 30_000;
 
 interface ShotCase {
   name: string;
@@ -219,33 +222,41 @@ describe('cross-language check: WASM vs data/fixtures/shot_cases.json', () => {
       expect(comparison.listed, describeComparison(`${c.name} spec`, comparison)).toEqual([]);
     });
 
-    it.skipIf(SKIP_RESULTS)(`simulateRecipe reproduces "${c.name}" exactly`, () => {
-      const run = JSON.parse(loadPuckcore().simulateRecipe(JSON.stringify(c.recipe))) as {
-        build: { spec: unknown };
-        result: unknown;
-      };
-      const spec = compareJson(run.build.spec, c.spec);
-      const result = compareJson(run.result, c.result, IGNORED_RESULT_KEYS);
-      compared += spec.values + result.values;
-      const problems = [spec, result].flatMap((r) => r.listed);
-      if (spec.differences > 0) {
-        report.push(`${c.name}: ${describeComparison('simulateRecipe spec', spec)}`);
-      }
-      if (result.differences > 0) {
-        report.push(`${c.name}: ${describeComparison('simulateRecipe result', result)}`);
-      }
-      expect(problems, describeComparison(`${c.name} result`, result)).toEqual([]);
-    });
+    it.skipIf(SKIP_RESULTS)(
+      `simulateRecipe reproduces "${c.name}" exactly`,
+      () => {
+        const run = JSON.parse(loadPuckcore().simulateRecipe(JSON.stringify(c.recipe))) as {
+          build: { spec: unknown };
+          result: unknown;
+        };
+        const spec = compareJson(run.build.spec, c.spec);
+        const result = compareJson(run.result, c.result, IGNORED_RESULT_KEYS);
+        compared += spec.values + result.values;
+        const problems = [spec, result].flatMap((r) => r.listed);
+        if (spec.differences > 0) {
+          report.push(`${c.name}: ${describeComparison('simulateRecipe spec', spec)}`);
+        }
+        if (result.differences > 0) {
+          report.push(`${c.name}: ${describeComparison('simulateRecipe result', result)}`);
+        }
+        expect(problems, describeComparison(`${c.name} result`, result)).toEqual([]);
+      },
+      SHOT_TEST_TIMEOUT_MS,
+    );
 
-    it.skipIf(SKIP_RESULTS)(`simulateShot on the fixture's spec reproduces "${c.name}"`, () => {
-      const result = JSON.parse(loadPuckcore().simulateShot(JSON.stringify(c.spec))) as unknown;
-      const comparison = compareJson(result, c.result, IGNORED_RESULT_KEYS);
-      compared += comparison.values;
-      if (comparison.differences > 0) {
-        report.push(`${c.name}: ${describeComparison('simulateShot result', comparison)}`);
-      }
-      expect(comparison.listed, describeComparison(`${c.name} result`, comparison)).toEqual([]);
-    });
+    it.skipIf(SKIP_RESULTS)(
+      `simulateShot on the fixture's spec reproduces "${c.name}"`,
+      () => {
+        const result = JSON.parse(loadPuckcore().simulateShot(JSON.stringify(c.spec))) as unknown;
+        const comparison = compareJson(result, c.result, IGNORED_RESULT_KEYS);
+        compared += comparison.values;
+        if (comparison.differences > 0) {
+          report.push(`${c.name}: ${describeComparison('simulateShot result', comparison)}`);
+        }
+        expect(comparison.listed, describeComparison(`${c.name} result`, comparison)).toEqual([]);
+      },
+      SHOT_TEST_TIMEOUT_MS,
+    );
   }
 });
 

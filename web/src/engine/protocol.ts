@@ -24,6 +24,7 @@
  */
 import { thinSphereResult } from './decimate';
 import { RECYCLE_MEMORY_BYTES } from './memory';
+import type { TasteEstimate, UncertaintyOptions, UncertaintyResult } from './m3Types';
 import {
   shotTransferables,
   toShotRunData,
@@ -54,6 +55,11 @@ export interface EngineMethods {
   simulateShot: { params: { spec: ShotSpec }; result: ShotRunData };
   /** Recipe → the result's summary and diagnostics only (one point of a sweep). */
   sweepPoint: { params: { recipe: Recipe }; result: SweepPointData };
+  /** Input-scenario ensemble, always Tier 0; independent of the central shot. */
+  simulateUncertainty: {
+    params: { recipe: Recipe; options: UncertaintyOptions };
+    result: UncertaintyResult;
+  };
 }
 
 export type EngineMethod = keyof EngineMethods;
@@ -66,6 +72,7 @@ export const ENGINE_METHODS: readonly EngineMethod[] = [
   'simulateRecipe',
   'simulateShot',
   'sweepPoint',
+  'simulateUncertainty',
 ];
 
 /** Methods whose params carry a recipe object. */
@@ -253,9 +260,12 @@ export function handleRequest(
         const coreStart = now();
         const text = core.simulateRecipe(json);
         const coreMs = now() - coreStart;
-        const run = parseCoreOutput<{ build: BuiltSpec; result: unknown }>(text, 'simulateRecipe');
+        const run = parseCoreOutput<{ build: BuiltSpec; result: unknown; taste?: TasteEstimate }>(
+          text,
+          'simulateRecipe',
+        );
         const data = toShotRunData(run.result, coreMs);
-        const result: RecipeRunData = { build: run.build, ...data };
+        const result: RecipeRunData = { build: run.build, ...data, taste: run.taste };
         return success(request.id, request.method, result, shotTransferables(data.result));
       }
       case 'simulateShot': {
@@ -277,6 +287,14 @@ export function handleRequest(
           diagnostics: run.result.diagnostics,
           coreMs,
         };
+        return success(request.id, request.method, result, []);
+      }
+      case 'simulateUncertainty': {
+        const text = core.simulateUncertainty(
+          JSON.stringify(request.params.recipe),
+          JSON.stringify(request.params.options),
+        );
+        const result = parseCoreOutput<UncertaintyResult>(text, 'simulateUncertainty');
         return success(request.id, request.method, result, []);
       }
     }
@@ -369,6 +387,25 @@ export function parseRequest(message: unknown): ParsedRequest {
     return { ok: true, request: { id, method, params: null } };
   }
   const params = message.params;
+  if (method === 'simulateUncertainty') {
+    if (
+      !isRecord(params) ||
+      !isRecord(params.recipe) ||
+      Array.isArray(params.recipe) ||
+      !isRecord(params.options) ||
+      Array.isArray(params.options)
+    ) {
+      return bad('simulateUncertainty needs params.recipe and params.options objects');
+    }
+    return {
+      ok: true,
+      request: {
+        id,
+        method,
+        params: params as unknown as EngineMethods['simulateUncertainty']['params'],
+      },
+    };
+  }
   if ((RECIPE_METHODS as readonly string[]).includes(method)) {
     if (!isRecord(params) || !isRecord(params.recipe) || Array.isArray(params.recipe)) {
       return bad(`${method} needs params.recipe, a recipe object`);

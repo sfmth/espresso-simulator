@@ -84,6 +84,7 @@ function deferredEngine({ ignoreAbort = false } = {}) {
     catalog: () => new Promise(() => {}),
     buildShotSpec: () => new Promise(() => {}),
     simulateRecipe: () => new Promise(() => {}),
+    simulateUncertainty: () => new Promise(() => {}),
     simulateShot: () => new Promise(() => {}),
     sweepPoint: () => new Promise(() => {}),
     terminate: () => {},

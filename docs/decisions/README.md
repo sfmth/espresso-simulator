@@ -15,9 +15,9 @@ Implementation decisions for Puckworks, one short file per decision. Product dec
 | [0009](0009-shot-solver-numerics.md) | Shot solver numerics and the bare base permeability | Accepted |
 | [0010](0010-startup-water-and-pore-air.md) | Startup water inventory and an effective pore-air closure | Accepted |
 | [0011](0011-upstream-pressure-storage.md) | Optional upstream pressure storage | Accepted, experimental |
+| [0012](0012-m2-chemistry-and-phase-accounting.md) | M2 chemistry and phase accounting | Accepted, experimental |
+| [0013](0013-m3-scenario-bands-and-taste.md) | Input scenario bands and explainable taste | Accepted, experimental |
 
 ## Format
 
 Each record has a **Status**, **Context**, **Decision**, **Consequences** and **Alternatives considered**. To change a decision, add a new record and mark the old one "Superseded by NNNN"; don't rewrite history.
-
-- [0012: M2 chemistry and phase accounting](0012-m2-chemistry-and-phase-accounting.md).

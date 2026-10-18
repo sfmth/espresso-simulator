@@ -360,7 +360,7 @@ struct Hydro {
 
 /// The cheap part of the state an attempt changes before the transport can
 /// fail (the step is then retried shorter).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 struct Light {
     stored_pressure: f64,
     headspace_filled: f64,
@@ -373,6 +373,38 @@ struct Light {
     first_drops: Option<f64>,
     drip_water: f64,
     curve: BedCurve,
+}
+
+/// Hydraulic predictor and transport inputs reused between attempts. Keeping
+/// these allocations across steps matters for ensembles of short Tier 0 shots.
+#[derive(Default)]
+struct StepWork {
+    start_flow: Vec<f64>,
+    wetted_start: Vec<f64>,
+    wetted_end: Vec<f64>,
+    wetted_predicted: Vec<f64>,
+    flow: Vec<f64>,
+    outflow: Vec<f64>,
+    active: Vec<usize>,
+    end_hydro: Hydro,
+}
+
+impl StepWork {
+    fn new(columns: usize) -> Self {
+        Self {
+            start_flow: vec![0.0; columns],
+            wetted_start: vec![0.0; columns],
+            wetted_end: vec![0.0; columns],
+            wetted_predicted: vec![0.0; columns],
+            flow: vec![0.0; columns],
+            outflow: vec![0.0; columns],
+            active: vec![0; columns],
+            end_hydro: Hydro {
+                col_flow: vec![0.0; columns],
+                ..Hydro::default()
+            },
+        }
+    }
 }
 
 /// A full copy, kept only for steps that may reach a mass target.
@@ -398,6 +430,8 @@ struct Sim<'a> {
     model: &'a Model,
     state: State,
     scratch: Scratch,
+    step_work: StepWork,
+    light: Light,
     program: Program,
     mode: Mode,
     /// Per-cell resistance without the time-dependent factors, at the
@@ -469,6 +503,8 @@ impl<'a> Sim<'a> {
             model,
             state,
             scratch: Scratch::new(model),
+            step_work: StepWork::new(ncol),
+            light: Light::default(),
             program: Program {
                 phase: 0,
                 start: 0.0,
@@ -803,11 +839,12 @@ impl<'a> Sim<'a> {
     }
 
     /// Operating point at time `t` on the current curve.
-    fn solve_hydro(&self, t: f64, full: bool) -> Hydro {
+    fn solve_hydro(&self, t: f64, full: bool, mut col_flow: Vec<f64>) -> Hydro {
         let (supply, fill) = self.supply(t);
         let ncol = self.model.columns.len();
-        let mut col_flow = vec![0.0; ncol];
+        col_flow.resize(ncol, 0.0);
         if !full {
+            col_flow.fill(0.0);
             return Hydro {
                 pressure: 0.0,
                 pump_flow: fill,
@@ -848,9 +885,11 @@ impl<'a> Sim<'a> {
     /// Recomputes the hydraulics for the current state and time.
     fn refresh_hydro(&mut self) {
         self.update_cell_resistances();
-        let wetted = self.state.wetted.clone();
+        let wetted = std::mem::take(&mut self.state.wetted);
         self.build_curve(self.state.t, &wetted);
-        self.hydro = self.solve_hydro(self.state.t, self.state.headspace_full);
+        self.state.wetted = wetted;
+        let flows = std::mem::take(&mut self.hydro.col_flow);
+        self.hydro = self.solve_hydro(self.state.t, self.state.headspace_full, flows);
     }
 
     // ----- Time loop --------------------------------------------------------------
@@ -1026,7 +1065,8 @@ impl<'a> Sim<'a> {
         // hydraulic state, so a step whose regimes do not converge can be
         // retried shorter (H).
         let full = mass_target.map(|m| (m, self.save_full()));
-        let light = self.save_light();
+        let mut light = std::mem::take(&mut self.light);
+        self.save_light(&mut light);
         let (mut halvings, mut relands, mut force_be) = (0, 0, false);
         loop {
             if !self.attempt(t0, t1, force_be)? {
@@ -1080,6 +1120,7 @@ impl<'a> Sim<'a> {
         self.events();
         // Events may change the operating point (a phase change or the stop).
         self.outlet_flux = self.outlet_flux_now();
+        self.light = light;
         Ok(())
     }
 
@@ -1087,6 +1128,19 @@ impl<'a> Sim<'a> {
     /// transport. Returns `Ok(false)` when the transport's regime iteration
     /// does not converge; the caller then restores the saved state.
     fn attempt(&mut self, t0: f64, t1: f64, force_be: bool) -> Result<bool, ShotError> {
+        let mut work = std::mem::take(&mut self.step_work);
+        let result = self.attempt_with_work(t0, t1, force_be, &mut work);
+        self.step_work = work;
+        result
+    }
+
+    fn attempt_with_work(
+        &mut self,
+        t0: f64,
+        t1: f64,
+        force_be: bool,
+        work: &mut StepWork,
+    ) -> Result<bool, ShotError> {
         let model = self.model;
         let ncol = model.columns.len();
         let nc = model.n_cells();
@@ -1094,12 +1148,22 @@ impl<'a> Sim<'a> {
 
         // Hydraulics at the start (cell resistances are fresh from the last
         // refresh) and the flows over the step.
-        let h0 = self.hydro.clone();
-        let wetted_start = self.state.wetted.clone();
-        let mut wetted_end = self.state.wetted.clone();
-        let mut flow = vec![0.0; ncol];
-        let mut outflow = vec![0.0; ncol];
-        let mut active = vec![0usize; ncol];
+        let StepWork {
+            start_flow,
+            wetted_start,
+            wetted_end,
+            wetted_predicted,
+            flow,
+            outflow,
+            active,
+            end_hydro,
+        } = work;
+        start_flow.copy_from_slice(&self.hydro.col_flow);
+        wetted_start.copy_from_slice(&self.state.wetted);
+        wetted_end.copy_from_slice(&self.state.wetted);
+        flow.fill(0.0);
+        outflow.fill(0.0);
+        active.fill(0);
         let mut bed_inflow = 0.0;
         let mut supplied_volume = 0.0;
         if !self.state.headspace_full {
@@ -1116,19 +1180,20 @@ impl<'a> Sim<'a> {
             }
         } else {
             // Heun predictor–corrector for the wetting fronts and flows.
-            let w0 = self.state.wetted.clone();
-            let mut w_pred = w0.clone();
+            let w0 = &*wetted_start;
+            let w_pred = wetted_predicted;
+            w_pred.copy_from_slice(w0);
             for i in 0..ncol {
                 if !self.state.through[i] {
                     w_pred[i] = fmin(
-                        w0[i] + dt * h0.col_flow[i] / model.phi_t,
+                        w0[i] + dt * start_flow[i] / model.phi_t,
                         model.columns[i].volume,
                     );
                 }
             }
-            self.build_curve(t1, &w_pred);
+            self.build_curve(t1, w_pred);
             let compliance = self.spec.machine.hydraulic_compliance_m3_pa;
-            let mut average: Vec<f64> = if compliance > 0.0 {
+            if compliance > 0.0 {
                 // First-order implicit pressure/storage balance on the
                 // predicted end-front curve. The same bed volume enters
                 // transport and wetting; delivered pump volume is independent.
@@ -1142,29 +1207,24 @@ impl<'a> Sim<'a> {
                 );
                 self.state.stored_pressure = pressure;
                 supplied_volume = dt * pump_flow;
-                let mut flows = vec![0.0; ncol];
-                self.curve.column_flows(pressure, &mut flows);
-                flows
+                self.curve.column_flows(pressure, flow);
             } else {
-                let h1 = self.solve_hydro(t1, true);
-                h0.col_flow
-                    .iter()
-                    .zip(&h1.col_flow)
-                    .map(|(a, b)| 0.5 * (a + b))
-                    .collect()
-            };
+                *end_hydro = self.solve_hydro(t1, true, std::mem::take(&mut end_hydro.col_flow));
+                for ((q, a), b) in flow.iter_mut().zip(&*start_flow).zip(&end_hydro.col_flow) {
+                    *q = 0.5 * (a + b);
+                }
+            }
             if compliance == 0.0 && matches!(self.mode, Mode::Drip { .. }) {
-                let requested: f64 = dt * average.iter().sum::<f64>();
+                let requested: f64 = dt * flow.iter().sum::<f64>();
                 if requested > self.drip_water {
                     let scale = self.drip_water / requested;
-                    for q in &mut average {
+                    for q in &mut *flow {
                         *q *= scale;
                     }
                 }
             }
             for i in 0..ncol {
-                let q = average[i];
-                flow[i] = q;
+                let q = flow[i];
                 bed_inflow += q;
                 if self.state.through[i] {
                     outflow[i] = q;
@@ -1236,11 +1296,11 @@ impl<'a> Sim<'a> {
                 dt_prev: if force_be { 0.0 } else { self.dt_prev },
                 t_start: t0,
                 temp: self.state.temp,
-                flow: &flow,
-                outflow: &outflow,
-                active: &active,
-                wetted_start: &wetted_start,
-                wetted_end: &wetted_end,
+                flow,
+                outflow,
+                active,
+                wetted_start,
+                wetted_end,
                 axial_dispersion: self.spec.hydraulics.axial_dispersion_m2_s,
             };
             if !transport::step(model, &mut self.state, &mut self.scratch, &input)? {
@@ -1262,20 +1322,18 @@ impl<'a> Sim<'a> {
 
     /// The hydraulic and front state a rejected attempt may have changed
     /// (the transport changes nothing else before it reports failure).
-    fn save_light(&self) -> Light {
-        Light {
-            stored_pressure: self.state.stored_pressure,
-            headspace_filled: self.state.headspace_filled,
-            headspace_full: self.state.headspace_full,
-            wetted: self.state.wetted.clone(),
-            through: self.state.through.clone(),
-            t_through: self.state.t_through.clone(),
-            t_wet: self.state.t_wet.clone(),
-            temp: self.state.temp,
-            first_drops: self.first_drops,
-            drip_water: self.drip_water,
-            curve: self.curve.clone(),
-        }
+    fn save_light(&self, saved: &mut Light) {
+        saved.stored_pressure = self.state.stored_pressure;
+        saved.headspace_filled = self.state.headspace_filled;
+        saved.headspace_full = self.state.headspace_full;
+        saved.wetted.clone_from(&self.state.wetted);
+        saved.through.clone_from(&self.state.through);
+        saved.t_through.clone_from(&self.state.t_through);
+        saved.t_wet.clone_from(&self.state.t_wet);
+        saved.temp = self.state.temp;
+        saved.first_drops = self.first_drops;
+        saved.drip_water = self.drip_water;
+        saved.curve.copy_from(&self.curve);
     }
 
     fn restore_light(&mut self, l: &Light) {
@@ -1289,7 +1347,7 @@ impl<'a> Sim<'a> {
         self.state.temp = l.temp;
         self.first_drops = l.first_drops;
         self.drip_water = l.drip_water;
-        self.curve = l.curve.clone();
+        self.curve.copy_from(&l.curve);
     }
 
     /// Everything a successful attempt changes.
@@ -1307,7 +1365,7 @@ impl<'a> Sim<'a> {
         self.state.clone_from(&f.state);
         self.first_drops = f.first_drops;
         self.drip_water = f.drip_water;
-        self.curve = f.curve.clone();
+        self.curve.copy_from(&f.curve);
         self.dt_prev = f.dt_prev;
     }
 
@@ -1363,7 +1421,8 @@ impl<'a> Sim<'a> {
                             start: t,
                             ramp_from: from,
                         };
-                        self.hydro = self.solve_hydro(t, self.state.headspace_full);
+                        let flows = std::mem::take(&mut self.hydro.col_flow);
+                        self.hydro = self.solve_hydro(t, self.state.headspace_full, flows);
                         self.max_pressure = fmax(self.max_pressure, self.hydro.pressure);
                     }
                 }
@@ -1443,7 +1502,8 @@ impl<'a> Sim<'a> {
             p_stop: self.hydro.pressure,
             t_end,
         };
-        self.hydro = self.solve_hydro(t, self.state.headspace_full);
+        let flows = std::mem::take(&mut self.hydro.col_flow);
+        self.hydro = self.solve_hydro(t, self.state.headspace_full, flows);
         if compliance > 0.0 {
             // Right-limit stop state: in particular a vent's P=0 and C·P=0
             // must appear at the same timestamp as its accounted volume.

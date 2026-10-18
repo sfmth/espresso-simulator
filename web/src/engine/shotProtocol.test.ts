@@ -39,6 +39,7 @@ function fakeCore(overrides: Partial<PuckcoreModule> = {}): PuckcoreModule {
     buildShotSpec: () => JSON.stringify(run.build),
     simulateShot: () => JSON.stringify(run.result),
     simulateRecipe: () => JSON.stringify(run),
+    simulateUncertainty: () => '{}',
     ...overrides,
   };
 }

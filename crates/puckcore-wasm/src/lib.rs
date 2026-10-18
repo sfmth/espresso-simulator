@@ -200,6 +200,38 @@ pub fn simulate_recipe(recipe_json: &str) -> Result<String, JsError> {
     Ok(puckmodel::api::simulate_recipe_json(recipe_json)?)
 }
 
+/// Seeded Tier 0 input scenarios; returns `puckworks.uncertainty/1` JSON.
+#[wasm_bindgen(js_name = simulateUncertainty)]
+pub fn simulate_uncertainty(recipe_json: &str, options_json: &str) -> Result<String, JsError> {
+    Ok(puckmodel::api::simulate_uncertainty_json(
+        recipe_json,
+        options_json,
+    )?)
+}
+
+/// Explain taste from an existing result, without running the shot again.
+#[wasm_bindgen(js_name = estimateTaste)]
+pub fn estimate_taste(
+    recipe_json: &str,
+    result_json: &str,
+    conditions_json: &str,
+) -> Result<String, JsError> {
+    Ok(puckmodel::api::estimate_taste_json(
+        recipe_json,
+        result_json,
+        conditions_json,
+    )?)
+}
+
+/// Build and simulate a recipe, returning explainable taste proxies.
+#[wasm_bindgen(js_name = analyzeTaste)]
+pub fn analyze_taste(recipe_json: &str, conditions_json: &str) -> Result<String, JsError> {
+    Ok(puckmodel::api::analyze_taste_json(
+        recipe_json,
+        conditions_json,
+    )?)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

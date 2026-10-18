@@ -110,8 +110,12 @@ fn numerical(reason: impl Into<String>) -> ShotError {
 }
 
 /// One class's kernel matrices for this step (shared by all its cells).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) struct KernelStep {
+    /// Exact dimensionless step and step-ratio bits. Reuse is allowed only
+    /// for the identical matrix; approximate temperature bins would change
+    /// diffusion and the calibration.
+    prepared: Option<(u64, u64)>,
     pub use_bdf: bool,
     pub lu_be: TridiagonalLu,
     pub w_be: Vec<f64>,
@@ -129,6 +133,7 @@ impl KernelStep {
     fn empty() -> Self {
         let lu = TridiagonalLu::new(&[], &[1.0], &[]).expect("1×1 identity");
         Self {
+            prepared: None,
             use_bdf: false,
             lu_be: lu.clone(),
             w_be: Vec::new(),
@@ -327,6 +332,10 @@ fn prepare_kernel(
     } else {
         f64::INFINITY
     };
+    let key = (h.to_bits(), omega.to_bits());
+    if ks.prepared == Some(key) {
+        return Ok(());
+    }
     ks.use_bdf = h <= BDF2_MAX_DTAU && omega <= BDF2_MAX_RATIO;
     let mut solve_w =
         |lu: &mut TridiagonalLu, w: &mut Vec<f64>, mass: f64| -> Result<f64, ShotError> {
@@ -346,6 +355,7 @@ fn prepare_kernel(
         let mass = (1.0 + 2.0 * omega) / (1.0 + omega);
         ks.beta_bdf = solve_w(&mut ks.lu_bdf, &mut ks.w_bdf, mass)?;
     }
+    ks.prepared = Some(key);
     Ok(())
 }
 
@@ -1503,6 +1513,181 @@ fn update_porosity(model: &Model, state: &mut State, active: usize, col: usize, 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cached_kernel_factors_match_fresh_assembly_after_step_changes() {
+        let grid = KernelGrid::new(8);
+        let mut cached = KernelStep::empty();
+        let mut lower = Vec::new();
+        let mut diag = Vec::new();
+        // Repetition, a changed diffusivity/temperature, changed dt, forced
+        // BE after rejection, and a changed step ratio must all remain exact.
+        for (d, dt, previous) in [
+            (1.9e-10, 0.05, 0.05),
+            (1.9e-10, 0.05, 0.05),
+            (2.0e-10, 0.05, 0.05),
+            (2.0e-10, 0.025, 0.05),
+            (2.0e-10, 0.025, 0.0),
+            (2.0e-10, 0.025, 0.025),
+            (2.0e-10, 0.025, 0.025),
+        ] {
+            let input = StepInput {
+                dt,
+                dt_prev: previous,
+                t_start: 1.0,
+                temp: 90.0,
+                flow: &[],
+                outflow: &[],
+                active: &[],
+                wetted_start: &[],
+                wetted_end: &[],
+                axial_dispersion: 0.0,
+            };
+            prepare_kernel(&grid, 150e-6, d, &input, &mut cached, &mut lower, &mut diag).unwrap();
+            let mut fresh = KernelStep::empty();
+            prepare_kernel(&grid, 150e-6, d, &input, &mut fresh, &mut lower, &mut diag).unwrap();
+            assert_eq!(cached.use_bdf, fresh.use_bdf);
+            assert_eq!(cached.lu_be, fresh.lu_be);
+            assert_eq!(cached.w_be, fresh.w_be);
+            assert_eq!(cached.beta_be.to_bits(), fresh.beta_be.to_bits());
+            if fresh.use_bdf {
+                assert_eq!(cached.lu_bdf, fresh.lu_bdf);
+                assert_eq!(cached.w_bdf, fresh.w_bdf);
+                assert_eq!(cached.beta_bdf.to_bits(), fresh.beta_bdf.to_bits());
+                assert_eq!(cached.c1.to_bits(), fresh.c1.to_bits());
+                assert_eq!(cached.c2.to_bits(), fresh.c2.to_bits());
+            }
+        }
+    }
+
+    #[test]
+    fn mixed_time_schemes_match_independent_cell_solves_bit_for_bit() {
+        let mut spec = super::super::ShotSpec::default();
+        spec.numerics.depth_cells = 6;
+        spec.bed.heterogeneity.columns = 2;
+        let model = Model::new(&spec, &mut Vec::new());
+        let nt = model.n_cells() * model.columns.len();
+        let nk = model.n_classes();
+        let mut s = Scratch::new(&model);
+        let input = StepInput {
+            dt: 1e-4,
+            dt_prev: 1e-4,
+            t_start: 1.0,
+            temp: 90.0,
+            flow: &[],
+            outflow: &[],
+            active: &[],
+            wetted_start: &[],
+            wetted_end: &[],
+            axial_dispersion: 0.0,
+        };
+        prepare(&model, &input, &mut s).unwrap();
+        let u: Vec<_> = (0..model.shells_per_cell * nt)
+            .map(|i| {
+                if matches!(i % nt % 8, 0 | 1) {
+                    -0.0
+                } else {
+                    2.0 + i as f64 * 0.001
+                }
+            })
+            .collect();
+        let previous: Vec<_> = u
+            .iter()
+            .enumerate()
+            .map(|(i, &x)| match i % nt % 8 {
+                3 => 5.0 * x, // Negative BDF2 right-hand side.
+                4 => 0.0,     // Positive right-hand side, negative homogeneous loss.
+                _ => x,
+            })
+            .collect();
+        let eligible: Vec<_> = (0..nt).map(|g| !matches!(g % 8, 0 | 1)).collect();
+        let dry: Vec<_> = (0..nt).filter(|g| g % 8 == 0).collect();
+        let first: Vec<_> = (0..nt).filter(|g| g % 8 == 1).collect();
+        let kcap: Vec<_> = (0..nt * nk).map(|i| i / nk % 8 == 2).collect();
+        let cells = Special {
+            eligible: &eligible,
+            dry: &dry,
+            first: &first,
+        };
+        let mut actual = previous.clone();
+        kernels_homogeneous(
+            &model,
+            &s.lumped,
+            &u,
+            &mut actual,
+            &kcap,
+            &cells,
+            &mut s.coef1,
+            &mut s.coef2,
+            &mut s.alpha,
+            &mut s.bdf,
+            &mut s.fallback,
+            &mut s.column,
+        );
+        let mut seen_bdf = false;
+        let mut seen_negative_rhs = false;
+        let mut seen_negative_loss = false;
+        for (k, class) in model.classes.iter().enumerate() {
+            let Some(grid) = &class.grid else { continue };
+            let ks = &s.lumped[k];
+            assert!(ks.use_bdf);
+            for g in 0..nt {
+                let at = |l| (class.offset + l) * nt + g;
+                let mut use_bdf = eligible[g] && !kcap[g * nk + k];
+                let mut rhs: Vec<_> = grid
+                    .volume
+                    .iter()
+                    .enumerate()
+                    .map(|(l, &v)| {
+                        if use_bdf {
+                            v * (ks.c1 * u[at(l)] - ks.c2 * previous[at(l)])
+                        } else {
+                            v * u[at(l)]
+                        }
+                    })
+                    .collect();
+                if use_bdf && rhs.iter().any(|&x| x < 0.0) {
+                    seen_negative_rhs = true;
+                    use_bdf = false;
+                    for (l, x) in rhs.iter_mut().enumerate() {
+                        *x = grid.volume[l] * u[at(l)];
+                    }
+                }
+                let lu = if use_bdf { &ks.lu_bdf } else { &ks.lu_be };
+                lu.solve_in_place(&mut rhs);
+                let loss = |rhs: &[f64]| {
+                    grid.volume
+                        .iter()
+                        .enumerate()
+                        .fold(0.0, |sum, (l, v)| sum + v * (u[at(l)] - rhs[l]))
+                };
+                if use_bdf && loss(&rhs) < 0.0 {
+                    seen_negative_loss = true;
+                    use_bdf = false;
+                    for (l, x) in rhs.iter_mut().enumerate() {
+                        *x = grid.volume[l] * u[at(l)];
+                    }
+                    ks.lu_be.solve_in_place(&mut rhs);
+                }
+                if dry.contains(&g) {
+                    for (l, x) in rhs.iter_mut().enumerate() {
+                        *x = u[at(l)];
+                    }
+                }
+                seen_bdf |= use_bdf;
+                assert_eq!(s.bdf[k * nt + g], use_bdf);
+                assert_eq!(s.alpha[k * nt + g].to_bits(), loss(&rhs).to_bits());
+                for (l, &x) in rhs.iter().enumerate() {
+                    assert_eq!(
+                        actual[at(l)].to_bits(),
+                        x.to_bits(),
+                        "class {k}, cell {g}, shell {l}"
+                    );
+                }
+            }
+        }
+        assert!(seen_bdf && seen_negative_rhs && seen_negative_loss);
+    }
 
     #[test]
     fn face_coefficients_are_conservative_and_monotone() {

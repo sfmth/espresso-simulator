@@ -2,6 +2,37 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.7.0] - 2026-10-18
+
+M3 development: performance, input uncertainty, then explainable taste. M2 is
+integrated; the existing calibration and M1/M2 scientific targets remain intact.
+
+### Added
+- Reproducible input ensembles for grinder/PSD, roast age, composition and water,
+  with unknown/measured/fixed controls, registry-backed scenario widths and
+  exported assumptions. Percentile ranges describe input scenarios, not calibrated
+  confidence or predictive intervals.
+- Relative acidity, bitterness, astringency and body indices in the shared Rust
+  model, with chemistry drivers, source references and low trust. Input uncertainty
+  propagates to taste; sensory model error and individual differences remain open.
+- Browser uncertainty and taste views, cancelable worker runs, stale-result labels
+  and full report export. Central Tier 1 predictions remain distinct from Tier 0
+  ensemble results.
+- [M3 verification report](docs/validation/m3-validation.md) and
+  [ADR 0013](docs/decisions/0013-m3-scenario-bands-and-taste.md).
+
+### Performance and verification
+- Buffer reuse reduces allocation/reallocation requests from 18,044 to 7,797
+  (56.8%) for the browser-default spec. Full M2 Tier 1 runtime is effectively
+  unchanged; loaded Tier 0 medians have overlapping ranges. The
+  [performance report](docs/validation/performance.md) records timing and exact
+  complete-output comparisons; throughput targets remain open.
+- Verification passes 263 Rust tests (one existing opt-in sweep ignored), 437
+  Python tests, 470 web tests and 19/19 M3 report checks. Native golden fixtures retain all
+  214,018 shot and 4,203 kernel values exactly; the browser E2E checks pass.
+  Full-shot correctness-test scheduling deadlines are separate from performance
+  targets. Existing fitted coefficients and scientific validation gates are unchanged.
+
 ## [0.6.0] - 2026-10-17
 
 M2 development: chemistry, beans and water. The owner selected the next milestone after the

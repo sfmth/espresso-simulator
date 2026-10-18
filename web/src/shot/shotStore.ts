@@ -12,6 +12,7 @@
 import { create } from 'zustand';
 import type { ShotResultData } from '../engine/shotData';
 import type { BuiltSpec, Catalog, Recipe, Summary } from '../engine/shotTypes';
+import type { TasteEstimate } from '../engine/m3Types';
 import {
   defaultForm,
   dropUnknownOverrides,
@@ -39,6 +40,7 @@ export interface ShotOutcome {
   runtimeMs: number;
   /** Time inside the core call, ms. */
   coreMs: number;
+  taste?: TasteEstimate;
   /** Run number in this session, for labels. */
   seq: number;
 }
@@ -137,7 +139,15 @@ export interface PinnedSweep {
 }
 
 export type OutputTab =
-  'shot' | 'particles' | 'compounds' | 'chemistry' | 'section' | 'sweep' | 'provenance';
+  | 'shot'
+  | 'uncertainty'
+  | 'taste'
+  | 'particles'
+  | 'compounds'
+  | 'chemistry'
+  | 'section'
+  | 'sweep'
+  | 'provenance';
 
 export interface ShotState {
   catalog: Catalog | null;

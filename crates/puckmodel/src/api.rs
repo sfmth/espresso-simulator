@@ -65,11 +65,66 @@ pub fn simulate_recipe_json(recipe_json: &str) -> Result<String, ApiError> {
     struct RecipeRun {
         build: Built,
         result: ShotResult,
+        taste: crate::taste::TasteEstimate,
     }
     let built = builder::build(&parse_recipe(recipe_json)?)?;
     let result = simulate_shot(&built.spec).map_err(|e| ApiError(e.to_string()))?;
+    let recipe = parse_recipe(recipe_json)?;
+    let taste = crate::taste::estimate(
+        &recipe,
+        &built,
+        &result,
+        &crate::taste::TasteConditions::default(),
+    )?;
     to_json(&RecipeRun {
         build: built,
         result,
+        taste,
     })
+}
+
+/// Bounded seeded Tier 0 input scenarios; see `docs/model/m3-uncertainty.md`.
+pub fn simulate_uncertainty_json(
+    recipe_json: &str,
+    options_json: &str,
+) -> Result<String, ApiError> {
+    let recipe = parse_recipe(recipe_json)?;
+    let options: crate::uncertainty::Options = serde_json::from_str(options_json)
+        .map_err(|e| ApiError(format!("invalid uncertainty options: {e}")))?;
+    to_json(&crate::uncertainty::simulate(&recipe, &options)?)
+}
+
+/// Explain taste proxies from an already simulated result without repeating the shot.
+pub fn estimate_taste_json(
+    recipe_json: &str,
+    result_json: &str,
+    conditions_json: &str,
+) -> Result<String, ApiError> {
+    let recipe = parse_recipe(recipe_json)?;
+    let result: ShotResult = serde_json::from_str(result_json)
+        .map_err(|e| ApiError(format!("invalid shot result: {e}")))?;
+    let conditions: crate::taste::TasteConditions = serde_json::from_str(conditions_json)
+        .map_err(|e| ApiError(format!("invalid taste conditions: {e}")))?;
+    let built = builder::build(&recipe)?;
+    to_json(&crate::taste::estimate(
+        &recipe,
+        &built,
+        &result,
+        &conditions,
+    )?)
+}
+
+/// Build, simulate and explain taste proxies for a recipe.
+pub fn analyze_taste_json(recipe_json: &str, conditions_json: &str) -> Result<String, ApiError> {
+    let recipe = parse_recipe(recipe_json)?;
+    let built = builder::build(&recipe)?;
+    let result = simulate_shot(&built.spec).map_err(|e| ApiError(e.to_string()))?;
+    let conditions: crate::taste::TasteConditions = serde_json::from_str(conditions_json)
+        .map_err(|e| ApiError(format!("invalid taste conditions: {e}")))?;
+    to_json(&crate::taste::estimate(
+        &recipe,
+        &built,
+        &result,
+        &conditions,
+    )?)
 }

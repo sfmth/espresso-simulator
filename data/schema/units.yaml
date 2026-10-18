@@ -113,4 +113,5 @@ units:
   "mg/L": {dims: {kg: 1, m: -3}, scale: 1.0e-3, description: "milligram per litre"}
   "ug/L": {dims: {kg: 1, m: -3}, scale: 1.0e-6, description: "microgram per litre"}
   "mol/kg": {dims: {mol: 1, kg: -1}, scale: 1.0, description: "moles per kilogram"}
+  "mol/m^3": {dims: {mol: 1, m: -3}, scale: 1.0, description: "moles per cubic metre; numerically millimoles per litre"}
   "K^-1": {dims: {K: -1}, scale: 1.0, description: "per kelvin of temperature difference"}

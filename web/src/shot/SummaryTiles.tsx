@@ -5,6 +5,8 @@
  * the engine bit for bit.
  */
 import type { ShotOutcome } from './shotStore';
+import type { UncertaintyResult } from '../engine/m3Types';
+import { bandText } from './UncertaintyPanel';
 import {
   bar,
   brewRatio,
@@ -27,6 +29,7 @@ function Tile({
   hint,
   raw,
   name,
+  interval,
 }: {
   label: string;
   value: string;
@@ -34,6 +37,7 @@ function Tile({
   raw?: number | null;
   /** Stable name for tests: data-tile. */
   name: string;
+  interval?: string;
 }) {
   return (
     <div className="tile" data-tile={name}>
@@ -46,6 +50,9 @@ function Tile({
           {value}
         </span>
         {hint && <span className="tile-hint">{hint}</span>}
+        {interval && (
+          <span className="tile-hint scenario-interval">Tier 0 p05–p95: {interval}</span>
+        )}
       </dd>
     </div>
   );
@@ -62,7 +69,13 @@ const TERMS = [
   'outflow',
 ];
 
-export function SummaryTiles({ outcome }: { outcome: ShotOutcome | null }) {
+export function SummaryTiles({
+  outcome,
+  uncertainty,
+}: {
+  outcome: ShotOutcome | null;
+  uncertainty?: UncertaintyResult | null;
+}) {
   const s = outcome?.result.summary;
   const d = outcome?.result.diagnostics;
   const dose = outcome?.build.spec.bed.dose_kg ?? null;
@@ -76,6 +89,7 @@ export function SummaryTiles({ outcome }: { outcome: ShotOutcome | null }) {
           value={seconds(s?.shot_time_s)}
           raw={s?.shot_time_s}
           hint={s ? stopReasonText(s.stop_reason) : undefined}
+          interval={bandText(uncertainty?.bands['/summary/shot_time_s'], seconds)}
         />
         <Tile
           name="first-drops"
@@ -89,6 +103,7 @@ export function SummaryTiles({ outcome }: { outcome: ShotOutcome | null }) {
           value={grams(s?.beverage_mass_kg)}
           raw={s?.beverage_mass_kg}
           hint={s?.drip_mass_kg !== undefined ? `incl. ${grams(s.drip_mass_kg)} drip` : undefined}
+          interval={bandText(uncertainty?.bands['/summary/beverage_mass_kg'], grams)}
         />
         <Tile
           name="ratio"
@@ -96,13 +111,28 @@ export function SummaryTiles({ outcome }: { outcome: ShotOutcome | null }) {
           value={s && dose ? brewRatio(dose, s.beverage_mass_kg) : '—'}
           hint={dose ? `${grams(dose)} dose` : undefined}
         />
-        <Tile name="tds" label="TDS" value={percent(s?.tds)} raw={s?.tds} hint="cup strength" />
-        <Tile name="ey" label="EY" value={percent(s?.ey)} raw={s?.ey} hint="extraction yield" />
+        <Tile
+          name="tds"
+          label="TDS"
+          value={percent(s?.tds)}
+          raw={s?.tds}
+          hint="cup strength"
+          interval={bandText(uncertainty?.bands['/summary/tds'], percent)}
+        />
+        <Tile
+          name="ey"
+          label="EY"
+          value={percent(s?.ey)}
+          raw={s?.ey}
+          hint="extraction yield"
+          interval={bandText(uncertainty?.bands['/summary/ey'], percent)}
+        />
         <Tile
           name="max-pressure"
           label="Max pressure"
           value={bar(s?.max_pressure_pa)}
           raw={s?.max_pressure_pa}
+          interval={bandText(uncertainty?.bands['/summary/max_pressure_pa'], bar)}
         />
         <Tile
           name="bed-height"
@@ -152,6 +182,13 @@ export function SummaryTiles({ outcome }: { outcome: ShotOutcome | null }) {
           hint={outcome ? `tier ${outcome.tier}, in the worker` : undefined}
         />
       </dl>
+      {uncertainty && (
+        <p className="note scenario-interval">
+          Ranges show input scenarios from the separate Tier-0 ensemble. They exclude model error
+          and Tier-0/Tier-1 discrepancy; they are not confidence intervals for the central shot. See
+          Uncertainty for the baseline comparison.
+        </p>
+      )}
       <ModelStatusNote />
       <details className="glossary">
         <summary>What do these mean?</summary>

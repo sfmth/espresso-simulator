@@ -15,7 +15,7 @@ export const MODEL_STATUS = {
     'Calibrated against published experiments (Schmieder 2023, Waszkiewicz 2026, Corrochano 2017, Vaca Guerra 2024).',
   heldOut: 'Held-out tests',
   findings:
-    'still show errors in startup flow and extraction with the M1.1 model. Startup assumptions are estimated, so treat times and EY as indicative. No uncertainty bands yet.',
+    'still show errors in startup flow and extraction with the M1.1 model. Startup assumptions are estimated, so treat times and EY as indicative. Optional Tier-0 input-scenario bands exclude model error and solver discrepancy. Taste estimates have low trust and are not sensory validated.',
 } as const;
 
 /** The validation report in the source repository, or null for a build that has none. */

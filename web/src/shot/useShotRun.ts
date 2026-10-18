@@ -135,6 +135,7 @@ export function useShotRun(): ShotRunControls {
             totalPoints: result.totalPoints,
             runtimeMs,
             coreMs: result.coreMs,
+            taste: result.taste,
           });
         },
         (error: unknown) => {

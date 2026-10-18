@@ -34,6 +34,16 @@ pub(crate) struct BedCurve {
 }
 
 impl BedCurve {
+    /// Copies a curve without discarding its column-buffer allocations.
+    pub fn copy_from(&mut self, source: &Self) {
+        self.resistance.clone_from(&source.resistance);
+        self.through.clone_from(&source.through);
+        self.g_wetting = source.g_wetting;
+        self.g_through = source.g_through;
+        self.outlet = source.outlet;
+        self.poro = source.poro;
+    }
+
     fn poro(&self) -> Poroelastic {
         Poroelastic { pc: self.poro }
     }

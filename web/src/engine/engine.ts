@@ -26,6 +26,7 @@ import type {
 } from './protocol';
 import type { RecipeRunData, ShotRunData, SweepPointData } from './shotData';
 import type { BuiltSpec, Catalog, Recipe, ShotSpec } from './shotTypes';
+import type { UncertaintyOptions, UncertaintyResult } from './m3Types';
 import type { SphereReleaseParams, SphereRunData } from './types';
 
 /** A result and the time the worker spent producing it, in milliseconds. */
@@ -63,6 +64,11 @@ export interface Engine {
   simulateShot(spec: ShotSpec, options?: CallOptions): Promise<Timed<ShotRunData>>;
   /** Builds and simulates a recipe, returning only its scalar outputs (sweeps). */
   sweepPoint(recipe: Recipe, options?: CallOptions): Promise<Timed<SweepPointData>>;
+  simulateUncertainty(
+    recipe: Recipe,
+    uncertainty: UncertaintyOptions,
+    options?: CallOptions,
+  ): Promise<Timed<UncertaintyResult>>;
   /** Stops every worker and rejects all outstanding calls. */
   terminate(): void;
 }
@@ -180,6 +186,14 @@ export class EngineClient implements Engine {
 
   sweepPoint(recipe: Recipe, options?: CallOptions): Promise<Timed<SweepPointData>> {
     return this.#call('sweepPoint', { recipe }, options);
+  }
+
+  simulateUncertainty(
+    recipe: Recipe,
+    uncertainty: UncertaintyOptions,
+    options?: CallOptions,
+  ): Promise<Timed<UncertaintyResult>> {
+    return this.#call('simulateUncertainty', { recipe, options: uncertainty }, options);
   }
 
   terminate(): void {

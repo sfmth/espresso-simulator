@@ -10,6 +10,7 @@ Subcommands:
 - ``calibrate``: fit the M1 calibration (data/calibration/<label>.yaml and current.yaml);
 - ``validate``: write the M1 validation report to docs/validation/;
 - ``m2-validate``: M2 chemistry accounting and fixed-assumption V7 comparisons;
+- ``m3-validate``: seeded scenario and mechanistic taste checks (not sensory validation);
 - ``community``: compare locally downloaded community shots with fixed model scenarios;
 - ``export [--check]``: presets and registry for the model crate (puckworks_tools.export);
 - ``check-versions [--release]``: the same version everywhere.
@@ -133,6 +134,21 @@ def _cmd_m2_validate(args: argparse.Namespace, paths: RepoPaths) -> int:
         return 2
 
 
+def _cmd_m3_validate(args: argparse.Namespace, paths: RepoPaths) -> int:
+    from . import m3validate
+
+    try:
+        report = m3validate.run(paths, args.output_dir or paths.validation_dir,
+                                seed=args.seed, samples=args.samples)
+        failed = report["summary"]["failed_checks"]
+        print(f"m3-validate: wrote M3 verification report; {failed} failed checks")
+        print("m3-validate: empirical scenario coverage and independent espresso sensory accuracy remain unvalidated")
+        return 1 if failed else 0
+    except (OSError, ValueError) as exc:
+        print(f"m3-validate: {exc}", file=sys.stderr)
+        return 2
+
+
 def _run_export(argv: Sequence[str]) -> int:
     """Forwards to ``puckworks_tools.export.main(argv)`` (workstream D's module)."""
     import importlib
@@ -250,6 +266,17 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("m2-validate", parents=[common], help="M2 chemistry accounting and conditional V7 comparisons")
     p.add_argument("--output-dir", type=Path, help="output directory (default: docs/validation)")
     p.set_defaults(handler=_cmd_m2_validate)
+
+    from . import m3validate as _m3validate
+
+    p = sub.add_parser("m3-validate", parents=[common],
+                       help="seeded scenario and mechanistic taste checks; no empirical coverage claim")
+    p.add_argument("--output-dir", type=Path, help="output directory (default: docs/validation)")
+    p.add_argument("--seed", type=int, default=_m3validate.DEFAULT_SEED,
+                   help="replay seed, 0 through 4294967295 (default: %(default)s)")
+    p.add_argument("--samples", type=int, choices=range(8, 65), default=_m3validate.DEFAULT_SAMPLES,
+                   metavar="8..64", help="members per scenario ensemble (default: %(default)s)")
+    p.set_defaults(handler=_cmd_m3_validate)
 
     p = sub.add_parser(
         "community", parents=[common],

@@ -23,6 +23,8 @@ pub mod builder;
 pub mod presets;
 pub mod recipe;
 pub mod registry;
+pub mod taste;
+pub mod uncertainty;
 pub mod validate;
 
 mod bounds;
