@@ -112,12 +112,20 @@ pub(crate) fn validate(spec: &ShotSpec) -> Result<Vec<String>, ShotError> {
     }
     basket(&spec.basket)?;
     bed(&spec.bed, &mut warnings)?;
-    solubles(&spec.solubles, &spec.bed, &mut warnings)?;
+    solubles(
+        &spec.solubles,
+        &spec.bed,
+        spec.chemistry.as_ref(),
+        &mut warnings,
+    )?;
     hydraulics(&spec.hydraulics)?;
     thermal(&spec.thermal)?;
     machine(&spec.machine)?;
     numerics(spec, &mut warnings)?;
     fits_basket(spec)?;
+    if let Some(chemistry) = &spec.chemistry {
+        super::chemistry::validate(chemistry, spec, &mut warnings)?;
+    }
     Ok(warnings)
 }
 
@@ -275,7 +283,12 @@ fn bed(b: &BedSpec, warnings: &mut Vec<String>) -> Check {
     )
 }
 
-fn solubles(s: &SolublesSpec, bed: &BedSpec, warnings: &mut Vec<String>) -> Check {
+fn solubles(
+    s: &SolublesSpec,
+    bed: &BedSpec,
+    chemistry: Option<&ChemistrySpec>,
+    warnings: &mut Vec<String>,
+) -> Check {
     closed(
         "solubles.extractable_fraction",
         s.extractable_fraction,
@@ -383,7 +396,18 @@ fn solubles(s: &SolublesSpec, bed: &BedSpec, warnings: &mut Vec<String>) -> Chec
             0.0,
             100.0,
         )?;
-        total += sp.mass_fraction;
+        // Aggregate diagnostics (notably the legacy `acids` pool) overlap
+        // the explicit M2 acids. They remain transported, but are not another
+        // physical inventory in the named-species budget. Raw M1 specs keep
+        // their original semantics when chemistry metadata is absent.
+        let diagnostic = chemistry.is_some_and(|c| {
+            c.compounds
+                .iter()
+                .any(|meta| meta.id == sp.id && meta.phase == "diagnostic")
+        });
+        if !diagnostic {
+            total += sp.mass_fraction;
+        }
     }
     if total > s.extractable_fraction * (1.0 + 1e-12) {
         warnings.push(format!(

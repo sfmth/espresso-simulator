@@ -175,5 +175,111 @@ export function checkShotResult(result: unknown): string[] {
       fail('diagnostics.warnings', 'must be an array of strings');
     }
   }
+  // M2 is optional, but malformed new output must not silently become a number
+  // in the cup panels. Validate all numeric leaves while allowing additions.
+  if (result.chemistry !== undefined && result.chemistry !== null) {
+    const chemistry = result.chemistry;
+    if (!isRecord(chemistry)) fail('chemistry', 'must be an object');
+    else {
+      const numericTree = (value: unknown, path: string) => {
+        if (typeof value === 'number') finite(path, value);
+        else if (Array.isArray(value)) value.forEach((v, i) => numericTree(v, `${path}[${i}]`));
+        else if (isRecord(value)) {
+          for (const [key, child] of Object.entries(value)) numericTree(child, `${path}.${key}`);
+        }
+      };
+      numericTree(chemistry, 'chemistry');
+      finite('chemistry.reference_temp_c', chemistry.reference_temp_c);
+      for (const block of ['acidity', 'texture', 'refractometer', 'mass_closure']) {
+        if (!isRecord(chemistry[block])) fail(`chemistry.${block}`, 'must be an object');
+      }
+      for (const field of ['aroma', 'phases', 'warnings']) {
+        if (!Array.isArray(chemistry[field])) fail(`chemistry.${field}`, 'must be an array');
+      }
+      const fields = (path: string, value: unknown, keys: readonly string[]) => {
+        if (!isRecord(value)) return;
+        for (const key of keys) finite(`${path}.${key}`, value[key]);
+      };
+      if (isRecord(chemistry.acidity)) {
+        finite('chemistry.acidity.ph', chemistry.acidity.ph, { nullable: true });
+        fields('chemistry.acidity', chemistry.acidity, [
+          'titratable_acidity_mmol_l_to_ph_6_6',
+          'titratable_acidity_mmol_l_to_ph_8',
+          'water_alkalinity_mmol_l',
+          'carbonate_mol_l',
+          'background_charge_mol_l',
+        ]);
+        if (typeof chemistry.acidity.status !== 'string')
+          fail('chemistry.acidity.status', 'must be a string');
+        if (!Array.isArray(chemistry.acidity.acids))
+          fail('chemistry.acidity.acids', 'must be an array');
+        else
+          chemistry.acidity.acids.forEach((acid: unknown, i) => {
+            const path = `chemistry.acidity.acids[${i}]`;
+            if (!isRecord(acid) || typeof acid.id !== 'string') fail(path, 'needs an id');
+            fields(path, acid, ['total_mol_l', 'mean_charge', 'ionized_fraction']);
+          });
+      }
+      if (Array.isArray(chemistry.aroma))
+        chemistry.aroma.forEach((aroma: unknown, i) => {
+          const path = `chemistry.aroma[${i}]`;
+          if (!isRecord(aroma) || typeof aroma.id !== 'string') fail(path, 'needs an id');
+          fields(path, aroma, [
+            'extracted_mass_kg',
+            'liquid_mass_kg',
+            'headspace_mass_kg',
+            'bound_mass_kg',
+            'liquid_concentration_ug_l',
+            'headspace_concentration_ug_l',
+            'mass_balance_residual_kg',
+          ]);
+          if (isRecord(aroma))
+            finite(`${path}.odor_activity_ratio`, aroma.odor_activity_ratio, { nullable: true });
+        });
+      if (Array.isArray(chemistry.phases))
+        chemistry.phases.forEach((phase: unknown, i) => {
+          const path = `chemistry.phases[${i}]`;
+          if (!isRecord(phase) || typeof phase.id !== 'string') fail(path, 'needs an id');
+          fields(path, phase, ['available_mass_kg', 'cup_mass_kg', 'retained_mass_kg']);
+        });
+      fields('chemistry.texture', chemistry.texture, [
+        'lipid_mass_kg',
+        'lipid_concentration_g_l',
+        'co2_recovered_mass_kg',
+        'crema_gas_volume_m3',
+        'crema_volume_proxy_m3',
+      ]);
+      fields('chemistry.refractometer', chemistry.refractometer, [
+        'coffee_true_tds',
+        'water_mineral_tds',
+        'coffee_equivalent_tds_at_reference',
+        'apparent_tds',
+        'temperature_bias',
+        'sample_temp_c',
+        'reference_temp_c',
+      ]);
+      if (
+        isRecord(chemistry.refractometer) &&
+        typeof chemistry.refractometer.mineral_blank_subtracted !== 'boolean'
+      )
+        fail('chemistry.refractometer.mineral_blank_subtracted', 'must be a boolean');
+      fields('chemistry.mass_closure', chemistry.mass_closure, [
+        'lumped_solubles_kg',
+        'quantified_dissolved_species_kg',
+        'unassigned_solubles_kg',
+        'overassigned_solubles_kg',
+        'excluded_diagnostic_mass_kg',
+        'phase_inventory_mass_kg',
+        'transport_unassigned_solubles_kg',
+        'transported_dissolved_species_kg',
+        'relative_transport_closure_error',
+      ]);
+      if (
+        Array.isArray(chemistry.warnings) &&
+        chemistry.warnings.some((w) => typeof w !== 'string')
+      )
+        fail('chemistry.warnings', 'must contain strings');
+    }
+  }
   return problems;
 }

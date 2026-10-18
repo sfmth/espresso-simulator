@@ -8,10 +8,27 @@
 import type { Catalog } from '../engine/shotTypes';
 
 export type NoteSection =
-  'bean' | 'grinder' | 'basket' | 'prep' | 'machine' | 'stop' | 'overrides' | 'other';
+  | 'bean'
+  | 'water'
+  | 'chemistry'
+  | 'grinder'
+  | 'basket'
+  | 'prep'
+  | 'machine'
+  | 'stop'
+  | 'overrides'
+  | 'other';
 
 const PREFIXES: [string, NoteSection][] = [
   ['Bean:', 'bean'],
+  ['Bean v2:', 'bean'],
+  ['Water:', 'water'],
+  ['Chemistry:', 'chemistry'],
+  ['M2 chemistry:', 'chemistry'],
+  ['M2 pH', 'chemistry'],
+  ['Aroma headspace', 'chemistry'],
+  ['Solver: M2', 'chemistry'],
+  ['Solver:', 'stop'],
   ['Grinder:', 'grinder'],
   ['Measured PSD:', 'grinder'],
   ['Basket:', 'basket'],
@@ -27,6 +44,8 @@ const PREFIXES: [string, NoteSection][] = [
 export function emptyRouting(): Record<NoteSection, string[]> {
   return {
     bean: [],
+    water: [],
+    chemistry: [],
     grinder: [],
     basket: [],
     prep: [],

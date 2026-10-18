@@ -106,3 +106,11 @@ units:
   # Coefficients and slopes
   "%/K":    {dims: {K: -1}, scale: 1.0e-2, description: "percent per kelvin (temperature coefficient)"}
   "%/um":   {dims: {m: -1}, scale: 1.0e+4, description: "percentage points per micrometre"}
+
+  # Chemistry and source-water measurements (M2).
+  "d": {dims: {s: 1}, scale: 86400.0, description: "day"}
+  "g/mol": {dims: {kg: 1, mol: -1}, scale: 1.0e-3, description: "molar mass"}
+  "mg/L": {dims: {kg: 1, m: -3}, scale: 1.0e-3, description: "milligram per litre"}
+  "ug/L": {dims: {kg: 1, m: -3}, scale: 1.0e-6, description: "microgram per litre"}
+  "mol/kg": {dims: {mol: 1, kg: -1}, scale: 1.0, description: "moles per kilogram"}
+  "K^-1": {dims: {K: -1}, scale: 1.0, description: "per kelvin of temperature difference"}

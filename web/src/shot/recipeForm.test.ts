@@ -53,6 +53,24 @@ const ROUND_TRIP: Recipe[] = [
       arabica_fraction: 0.9,
       process: 'natural',
       bean_temp_c: -18,
+      altitude_m: 1900,
+      variety_group: 'gesha',
+      storage: 'frozen',
+    },
+    water: {
+      alkalinity_mg_l_caco3: 35,
+      hardness_mg_l_caco3: 72,
+      calcium_mg_l: 22,
+      magnesium_mg_l: 4.1,
+      tds_mg_l: 125,
+      ph: 7.2,
+    },
+    chemistry: {
+      enabled: true,
+      aroma_age_s: 30,
+      cup_headspace_ml: 100,
+      sample_temperature_c: 25,
+      mineral_blank_subtracted: true,
     },
     grinder: {
       psd: {
@@ -178,6 +196,46 @@ describe('recipe form', () => {
     expect(Object.keys(recipe.bean)).toEqual(['preset']);
     expect(recipe.prep).toEqual({ dose_g: 18, distribution: 'wdt' });
     expect(recipe.overrides).toBeUndefined();
+    expect(recipe.water).toBeUndefined();
+    expect(recipe.chemistry).toBeUndefined();
+  });
+
+  it('migrates old recipes and nullable M2 blocks without filling in assumed measurements', () => {
+    const imported = recipeToForm({ ...DEFAULT_RECIPE, water: null, chemistry: null });
+    expect(imported.ok && imported.warnings).toEqual([]);
+    if (!imported.ok) throw new Error(imported.error);
+    expect(recipeOf(imported.form)).toEqual(DEFAULT_RECIPE);
+    expect(imported.form.bean.altitude_m).toBe('');
+    expect(imported.form.bean.storage).toBe('');
+  });
+
+  it('retains explicit chemistry toggles and records every water change in the physical key', () => {
+    const recipe: Recipe = {
+      ...DEFAULT_RECIPE,
+      chemistry: { enabled: false, mineral_blank_subtracted: false },
+      bean: { variety_group: 'unspecified' },
+    };
+    expect(recipeOf(formOf(recipe))).toEqual(recipe);
+    expect(physicalKey({ ...DEFAULT_RECIPE, water: { alkalinity_mg_l_caco3: 10 } })).not.toBe(
+      physicalKey({ ...DEFAULT_RECIPE, water: { alkalinity_mg_l_caco3: 80 } }),
+    );
+  });
+
+  it('validates water and cup observation conditions against the shared recipe schema', () => {
+    const form = defaultForm();
+    form.bean.altitude_m = '5000';
+    form.water.alkalinity_mg_l_caco3 = '-1';
+    form.water.ph = '14.1';
+    form.chemistry.aroma_age_s = '-1';
+    form.chemistry.sample_temperature_c = '101';
+    expect(Object.keys(errorsOf(form)).sort()).toEqual([
+      'bean.altitude_m',
+      'chemistry.aroma_age_s',
+      'chemistry.sample_temperature_c',
+      'water.alkalinity_mg_l_caco3',
+      'water.ph',
+    ]);
+    expect(builderErrorPath('water.ph = 15 is outside its range')).toBe('water.ph');
   });
 
   it('flags missing and out-of-range numbers with readable messages', () => {

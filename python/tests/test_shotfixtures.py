@@ -51,7 +51,8 @@ def test_coverage(document):
 
 def test_no_wall_clock_fields_and_size(document):
     text = shotfixtures.dumps(document)
-    assert len(text.encode()) < 3_000_000
+    # Full M2 passenger series and cup outputs expand the seven parity cases.
+    assert len(text.encode()) < 10_000_000
     for word in ("elapsed", "runtime", "wall_clock", "timestamp", "duration_ms"):
         assert word not in text
 

@@ -288,3 +288,11 @@ to `--tolerance`.
 
 It writes the Markdown report and a JSON file with the raw numbers to `docs/validation/`, and flags a
 solver that ignores `grid` or `scheme`. Regenerate it for every release (PLAN §16).
+
+## M2 chemistry validation
+
+`puckworks-tools m2-validate` writes `docs/validation/m2-validation.md`
+and JSON from the audited Gloess subset using fixed assumptions. It does
+not fit coefficients or declare independent V7 accuracy. Source import:
+`python -m puckworks_tools.sources.gloess2013 --help`. M1 case builders
+disable M2 explicitly; the M2 comparison enables chemistry.

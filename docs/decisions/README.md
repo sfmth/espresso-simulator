@@ -19,3 +19,5 @@ Implementation decisions for Puckworks, one short file per decision. Product dec
 ## Format
 
 Each record has a **Status**, **Context**, **Decision**, **Consequences** and **Alternatives considered**. To change a decision, add a new record and mark the old one "Superseded by NNNN"; don't rewrite history.
+
+- [0012: M2 chemistry and phase accounting](0012-m2-chemistry-and-phase-accounting.md).

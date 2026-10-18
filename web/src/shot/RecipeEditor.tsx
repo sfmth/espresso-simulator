@@ -12,6 +12,7 @@ import { GrinderSection } from './editor/GrinderSection';
 import { MachineSection } from './editor/MachineSection';
 import { OverridesSection } from './editor/OverridesSection';
 import { BeanSection, PrepSection, StopSection } from './editor/SimpleSections';
+import { WaterSection, ChemistrySection } from './editor/WaterSection';
 import {
   basketSummary,
   beanSummary,
@@ -24,7 +25,8 @@ import {
 import { sectionOf, type RecipeForm } from './recipeForm';
 import { useShotStore } from './shotStore';
 
-type SectionId = 'bean' | 'grinder' | 'basket' | 'prep' | 'machine' | 'stop' | 'overrides';
+type SectionId =
+  'bean' | 'water' | 'chemistry' | 'grinder' | 'basket' | 'prep' | 'machine' | 'stop' | 'overrides';
 
 interface SectionSpec {
   id: SectionId;
@@ -42,6 +44,26 @@ const SECTIONS: readonly SectionSpec[] = [
     keys: ['bean'],
     summary: beanSummary,
     render: () => <BeanSection />,
+  },
+  {
+    id: 'water',
+    title: 'Brew water',
+    keys: ['water'],
+    summary: (form) =>
+      Object.values(form.water).some((v) => v !== '')
+        ? 'Your water analysis'
+        : 'Illustrative water defaults',
+    render: () => <WaterSection />,
+  },
+  {
+    id: 'chemistry',
+    title: 'Cup chemistry',
+    keys: ['chemistry'],
+    summary: (form) =>
+      form.chemistry.enabled === 'no'
+        ? 'Off · legacy species'
+        : 'Acidity · aroma · phases · refractometer',
+    render: () => <ChemistrySection />,
   },
   {
     id: 'grinder',

@@ -8,6 +8,8 @@
 
 pub(crate) mod basket;
 pub(crate) mod bean;
+pub(crate) mod chemistry_catalog;
 pub(crate) mod grinder;
 pub(crate) mod machine;
 pub(crate) mod prep;
+pub(crate) mod water;

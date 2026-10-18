@@ -58,6 +58,11 @@ export function ProvenancePanel({
                 {fixed(bean.roast_colorette_pt, 0)} Pt Colorette), {fixed(bean.days_off_roast, 0)}{' '}
                 days off roast, beans at {fixed(bean.bean_temp_c, 1)} °C; CO₂{' '}
                 {fixed(bean.co2_puck_mg_g, 2)} mg/g left in the puck.
+                {bean.storage && ` Storage: ${bean.storage}.`}
+                {bean.variety_group && ` Variety: ${bean.variety_group.replaceAll('-', ' ')}.`}
+                {bean.altitude_m !== undefined &&
+                  bean.altitude_m !== null &&
+                  ` Altitude: ${fixed(bean.altitude_m, 0)} m.`}
               </dd>
             </>
           )}

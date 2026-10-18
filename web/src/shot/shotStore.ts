@@ -136,7 +136,8 @@ export interface PinnedSweep {
   run: SweepRun;
 }
 
-export type OutputTab = 'shot' | 'particles' | 'compounds' | 'section' | 'sweep' | 'provenance';
+export type OutputTab =
+  'shot' | 'particles' | 'compounds' | 'chemistry' | 'section' | 'sweep' | 'provenance';
 
 export interface ShotState {
   catalog: Catalog | null;

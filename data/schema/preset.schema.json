@@ -247,6 +247,9 @@
         "roast_level": { "type": "number", "minimum": 0, "maximum": 1 },
         "days_off_roast": { "type": "number", "minimum": 0 },
         "process": { "enum": ["washed", "natural", "honey", "anaerobic", null] },
+        "altitude_m": { "type": ["number", "null"], "minimum": 0, "maximum": 4000 },
+        "variety_group": { "enum": ["unspecified", "typica-bourbon", "gesha", "ethiopian-landrace", "canephora", "hybrid", null] },
+        "storage": { "enum": ["sealed", "open", "frozen", null] },
         "default": {
           "description": "The bean the builder assumes for fields a recipe leaves out (at most one).",
           "type": "boolean"

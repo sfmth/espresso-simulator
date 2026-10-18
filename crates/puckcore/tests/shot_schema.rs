@@ -21,6 +21,7 @@ use std::collections::BTreeSet;
 use std::fmt;
 
 use puckcore::shot::*;
+mod common;
 use serde::Serialize;
 use serde::de::{self, DeserializeOwned, Visitor};
 use serde::ser::{self, SerializeMap, SerializeSeq, SerializeStruct, SerializeTuple};
@@ -576,7 +577,13 @@ impl<'a> Walk<'a> {
                     }
                     _ => (schema, name.clone()),
                 };
-                if node.get("type").and_then(Value::as_str) != Some("object") {
+                // An optional object uses the standard nullable type array.
+                let object_allowed = match node.get("type") {
+                    Some(Value::Str(t)) => t == "object",
+                    Some(Value::Arr(types)) => types.iter().any(|t| t.as_str() == Some("object")),
+                    _ => false,
+                };
+                if !object_allowed {
                     self.errors.push(format!("{path}: schema is not an object"));
                 }
                 let props = node.get("properties");
@@ -793,6 +800,7 @@ fn spec_instances() -> Vec<ShotSpec> {
     v.hydraulics.poroelastic_pc_pa = None;
     v.machine.stop.time_s = Some(30.0);
     v.machine.hydraulic_compliance_m3_pa = 1e-11;
+    v.chemistry = Some(common::chemistry_spec());
     vec![ShotSpec::default(), v]
 }
 

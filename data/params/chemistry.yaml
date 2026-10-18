@@ -1,0 +1,6370 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: M2 chemistry composition, transport and post-brew properties. New individual inventories, kinetic-class
+  mappings, process/storage scenarios and phase recovery are broad estimates. The three measured M1 passenger
+  anchors are unchanged.
+parameters:
+- id: chemistry.species.caffeine.mw
+  name: 'Caffeine: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 194.19
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - &id001
+    citation: NCBI PubChem compound reference records and IUPAC digitized pKa dataset; room-temperature dilute
+      aqueous values, not coffee-matrix measurements.
+    url: https://pubchem.ncbi.nlm.nih.gov/
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.trigonelline.mw
+  name: 'Trigonelline: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 137.14
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.cqa5.mw
+  name: '5-Caffeoylquinic acid (5-CQA): molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 354.31
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.cqa5.pka1
+  name: '5-Caffeoylquinic acid (5-CQA): pKa 1'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8.
+  units: '1'
+  value: 3.36
+  range:
+    min: 2.86
+    max: 3.86
+  tag: measured
+  evidence_grade: B
+  sources:
+  - &id002
+    citation: Romero R., Salgado P.R., Soto C., Contreras D., Melin V. (2018) An experimental validated computational
+      method for pKa determination of substituted 1,2-dihydroxybenzenes. Front. Chem. 6:208.
+    doi: 10.3389/fchem.2018.00208
+    locator: 'Table 3, chlorogenic acid; methodology: 1 mmol/L Britton-Robinson buffer, approximately 25 C,
+      UV-Vis triplicates under argon.'
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.86
+    max: 3.86
+- id: chemistry.species.cqa5.pka2
+  name: '5-Caffeoylquinic acid (5-CQA): pKa 2'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8.
+  units: '1'
+  value: 8.1
+  range:
+    min: 7.6
+    max: 8.6
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 7.6
+    max: 8.6
+- id: chemistry.species.cqa5.pka3
+  name: '5-Caffeoylquinic acid (5-CQA): pKa 3'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8.
+  units: '1'
+  value: 11.51
+  range:
+    min: 11.01
+    max: 12.01
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 11.01
+    max: 12.01
+- id: chemistry.composition.cqa3.arabica
+  name: '3-Caffeoylquinic acid (3-CQA): available arabica inventory'
+  description: Available 3-caffeoylquinic acid (3-cqa) inventory in arabica, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.5
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - &id003
+    citation: 'Farah A. (2012) Coffee constituents. In Coffee: Emerging Health Effects and Disease Prevention,
+      pp. 21–58.'
+    doi: 10.1002/9781119949893.ch2
+  - &id004
+    citation: Puckworks M2 chemistry assumptions (2026), docs/research/02-chemistry-and-sensory.md and docs/PLAN.md
+      Appendix A. Values labelled estimated are broad scenario priors, not measurements.
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 2.0
+- id: chemistry.composition.cqa3.robusta
+  name: '3-Caffeoylquinic acid (3-CQA): available robusta inventory'
+  description: Available 3-caffeoylquinic acid (3-cqa) inventory in robusta, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.75
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 3.0
+- id: chemistry.composition.cqa3.roast_coefficient
+  name: '3-Caffeoylquinic acid (3-CQA): relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.7
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.cqa3.mw
+  name: '3-Caffeoylquinic acid (3-CQA): molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 354.31
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.cqa3.pka1
+  name: '3-Caffeoylquinic acid (3-CQA): pKa 1'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8. Transfer
+    to the 3-/4-CQA isomer is an explicitly estimated analogue, not an independent measurement.
+  units: '1'
+  value: 3.36
+  range:
+    min: 2.86
+    max: 3.86
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.86
+    max: 3.86
+- id: chemistry.species.cqa3.pka2
+  name: '3-Caffeoylquinic acid (3-CQA): pKa 2'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8. Transfer
+    to the 3-/4-CQA isomer is an explicitly estimated analogue, not an independent measurement.
+  units: '1'
+  value: 8.1
+  range:
+    min: 7.6
+    max: 8.6
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 7.6
+    max: 8.6
+- id: chemistry.species.cqa3.pka3
+  name: '3-Caffeoylquinic acid (3-CQA): pKa 3'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8. Transfer
+    to the 3-/4-CQA isomer is an explicitly estimated analogue, not an independent measurement.
+  units: '1'
+  value: 11.51
+  range:
+    min: 11.01
+    max: 12.01
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 11.01
+    max: 12.01
+- id: chemistry.composition.cqa4.arabica
+  name: '4-Caffeoylquinic acid (4-CQA): available arabica inventory'
+  description: Available 4-caffeoylquinic acid (4-cqa) inventory in arabica, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.62
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 2.48
+- id: chemistry.composition.cqa4.robusta
+  name: '4-Caffeoylquinic acid (4-CQA): available robusta inventory'
+  description: Available 4-caffeoylquinic acid (4-cqa) inventory in robusta, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.93
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 3.72
+- id: chemistry.composition.cqa4.roast_coefficient
+  name: '4-Caffeoylquinic acid (4-CQA): relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.7
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.cqa4.mw
+  name: '4-Caffeoylquinic acid (4-CQA): molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 354.31
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.cqa4.pka1
+  name: '4-Caffeoylquinic acid (4-CQA): pKa 1'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8. Transfer
+    to the 3-/4-CQA isomer is an explicitly estimated analogue, not an independent measurement.
+  units: '1'
+  value: 3.36
+  range:
+    min: 2.86
+    max: 3.86
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.86
+    max: 3.86
+- id: chemistry.species.cqa4.pka2
+  name: '4-Caffeoylquinic acid (4-CQA): pKa 2'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8. Transfer
+    to the 3-/4-CQA isomer is an explicitly estimated analogue, not an independent measurement.
+  units: '1'
+  value: 8.1
+  range:
+    min: 7.6
+    max: 8.6
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 7.6
+    max: 8.6
+- id: chemistry.species.cqa4.pka3
+  name: '4-Caffeoylquinic acid (4-CQA): pKa 3'
+  description: Conditional aqueous acid dissociation constant measured for chlorogenic acid in Britton-Robinson
+    buffer at approximately 25 C. Espresso matrix and temperature transfer are unvalidated. The older 2.66
+    value quoted by Hendon 2014 is not used; phenolic dissociation is retained for titration near pH 8. Transfer
+    to the 3-/4-CQA isomer is an explicitly estimated analogue, not an independent measurement.
+  units: '1'
+  value: 11.51
+  range:
+    min: 11.01
+    max: 12.01
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 11.01
+    max: 12.01
+- id: chemistry.composition.fqa.arabica
+  name: 'Feruloylquinic acids: available arabica inventory'
+  description: Available feruloylquinic acids inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.21
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.84
+- id: chemistry.composition.fqa.robusta
+  name: 'Feruloylquinic acids: available robusta inventory'
+  description: Available feruloylquinic acids inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.32
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.28
+- id: chemistry.composition.fqa.roast_coefficient
+  name: 'Feruloylquinic acids: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.7
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.fqa.mw
+  name: 'Feruloylquinic acids: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 368.34
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.fqa.pka1
+  name: 'Feruloylquinic acids: pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 3.3
+  range:
+    min: 2.8
+    max: 3.8
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.8
+    max: 3.8
+- id: chemistry.composition.dicqa.arabica
+  name: 'Dicaffeoylquinic acids: available arabica inventory'
+  description: Available dicaffeoylquinic acids inventory in arabica, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.18
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.72
+- id: chemistry.composition.dicqa.robusta
+  name: 'Dicaffeoylquinic acids: available robusta inventory'
+  description: Available dicaffeoylquinic acids inventory in robusta, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.27
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.08
+- id: chemistry.composition.dicqa.roast_coefficient
+  name: 'Dicaffeoylquinic acids: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.8
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.dicqa.mw
+  name: 'Dicaffeoylquinic acids: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 516.45
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.dicqa.pka1
+  name: 'Dicaffeoylquinic acids: pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 3.3
+  range:
+    min: 2.8
+    max: 3.8
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.8
+    max: 3.8
+- id: chemistry.composition.cgl_mono.arabica
+  name: 'Monoester chlorogenic acid lactones: available arabica inventory'
+  description: Available monoester chlorogenic acid lactones inventory in arabica, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.35
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.4
+- id: chemistry.composition.cgl_mono.robusta
+  name: 'Monoester chlorogenic acid lactones: available robusta inventory'
+  description: Available monoester chlorogenic acid lactones inventory in robusta, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.39
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.56
+- id: chemistry.composition.cgl_mono.roast_coefficient
+  name: 'Monoester chlorogenic acid lactones: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.3
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.cgl_di.arabica
+  name: 'Diester chlorogenic acid lactones: available arabica inventory'
+  description: Available diester chlorogenic acid lactones inventory in arabica, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.08
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.32
+- id: chemistry.composition.cgl_di.robusta
+  name: 'Diester chlorogenic acid lactones: available robusta inventory'
+  description: Available diester chlorogenic acid lactones inventory in robusta, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.1
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.4
+- id: chemistry.composition.cgl_di.roast_coefficient
+  name: 'Diester chlorogenic acid lactones: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.3
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.phenylindanes.arabica
+  name: 'Phenylindanes: available arabica inventory'
+  description: Available phenylindanes inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.025
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.1
+- id: chemistry.composition.phenylindanes.robusta
+  name: 'Phenylindanes: available robusta inventory'
+  description: Available phenylindanes inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.035
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.14
+- id: chemistry.composition.phenylindanes.roast_coefficient
+  name: 'Phenylindanes: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 1.8
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.quinic_acid.arabica
+  name: 'Quinic acid: available arabica inventory'
+  description: Available quinic acid inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.8
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 3.2
+- id: chemistry.composition.quinic_acid.robusta
+  name: 'Quinic acid: available robusta inventory'
+  description: Available quinic acid inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 1.0
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 4.0
+- id: chemistry.composition.quinic_acid.roast_coefficient
+  name: 'Quinic acid: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.5
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.quinic_acid.mw
+  name: 'Quinic acid: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 192.17
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.quinic_acid.pka1
+  name: 'Quinic acid: pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 3.46
+  range:
+    min: 2.96
+    max: 3.96
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.96
+    max: 3.96
+- id: chemistry.composition.citric_acid.arabica
+  name: 'Citric acid: available arabica inventory'
+  description: Available citric acid inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.5
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 2.0
+- id: chemistry.composition.citric_acid.robusta
+  name: 'Citric acid: available robusta inventory'
+  description: Available citric acid inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.3
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.2
+- id: chemistry.composition.citric_acid.roast_coefficient
+  name: 'Citric acid: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.7
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.citric_acid.mw
+  name: 'Citric acid: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 192.12
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.citric_acid.pka1
+  name: 'Citric acid: pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 3.13
+  range:
+    min: 2.63
+    max: 3.63
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.63
+    max: 3.63
+- id: chemistry.species.citric_acid.pka2
+  name: 'Citric acid: pKa 2'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 4.76
+  range:
+    min: 4.26
+    max: 5.26
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 4.26
+    max: 5.26
+- id: chemistry.species.citric_acid.pka3
+  name: 'Citric acid: pKa 3'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 6.4
+  range:
+    min: 5.9
+    max: 6.9
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 5.9
+    max: 6.9
+- id: chemistry.composition.malic_acid.arabica
+  name: 'Malic acid: available arabica inventory'
+  description: Available malic acid inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.25
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.0
+- id: chemistry.composition.malic_acid.robusta
+  name: 'Malic acid: available robusta inventory'
+  description: Available malic acid inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.15
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.6
+- id: chemistry.composition.malic_acid.roast_coefficient
+  name: 'Malic acid: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.8
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.malic_acid.mw
+  name: 'Malic acid: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 134.09
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.malic_acid.pka1
+  name: 'Malic acid: pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 3.51
+  range:
+    min: 3.01
+    max: 4.01
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 3.01
+    max: 4.01
+- id: chemistry.species.malic_acid.pka2
+  name: 'Malic acid: pKa 2'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 5.03
+  range:
+    min: 4.53
+    max: 5.53
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 4.53
+    max: 5.53
+- id: chemistry.composition.acetic_acid.arabica
+  name: 'Acetic acid: available arabica inventory'
+  description: Available acetic acid inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.4
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.6
+- id: chemistry.composition.acetic_acid.robusta
+  name: 'Acetic acid: available robusta inventory'
+  description: Available acetic acid inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.6
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 2.4
+- id: chemistry.composition.acetic_acid.roast_coefficient
+  name: 'Acetic acid: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.acetic_acid.mw
+  name: 'Acetic acid: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 60.05
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.acetic_acid.pka1
+  name: 'Acetic acid: pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 4.76
+  range:
+    min: 4.26
+    max: 5.26
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 4.26
+    max: 5.26
+- id: chemistry.composition.formic_acid.arabica
+  name: 'Formic acid: available arabica inventory'
+  description: Available formic acid inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.3
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.2
+- id: chemistry.composition.formic_acid.robusta
+  name: 'Formic acid: available robusta inventory'
+  description: Available formic acid inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.4
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.6
+- id: chemistry.composition.formic_acid.roast_coefficient
+  name: 'Formic acid: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.formic_acid.mw
+  name: 'Formic acid: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 46.03
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.formic_acid.pka1
+  name: 'Formic acid: pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 3.75
+  range:
+    min: 3.25
+    max: 4.25
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 3.25
+    max: 4.25
+- id: chemistry.composition.lactic_acid.arabica
+  name: 'Lactic acid: available arabica inventory'
+  description: Available lactic acid inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.15
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.6
+- id: chemistry.composition.lactic_acid.robusta
+  name: 'Lactic acid: available robusta inventory'
+  description: Available lactic acid inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.15
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.6
+- id: chemistry.composition.lactic_acid.roast_coefficient
+  name: 'Lactic acid: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.lactic_acid.mw
+  name: 'Lactic acid: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 90.08
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.lactic_acid.pka1
+  name: 'Lactic acid: pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 3.86
+  range:
+    min: 3.36
+    max: 4.359999999999999
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 3.36
+    max: 4.359999999999999
+- id: chemistry.composition.phosphate.arabica
+  name: 'Phosphate (phosphoric-acid equivalent): available arabica inventory'
+  description: Available phosphate (phosphoric-acid equivalent) inventory in arabica, percent of dry dose at
+    medium roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior
+    includes composition and availability uncertainty.
+  units: '%'
+  value: 0.25
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.0
+- id: chemistry.composition.phosphate.robusta
+  name: 'Phosphate (phosphoric-acid equivalent): available robusta inventory'
+  description: Available phosphate (phosphoric-acid equivalent) inventory in robusta, percent of dry dose at
+    medium roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior
+    includes composition and availability uncertainty.
+  units: '%'
+  value: 0.25
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.0
+- id: chemistry.composition.phosphate.roast_coefficient
+  name: 'Phosphate (phosphoric-acid equivalent): relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.phosphate.mw
+  name: 'Phosphate (phosphoric-acid equivalent): molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 97.99
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.phosphate.pka1
+  name: 'Phosphate (phosphoric-acid equivalent): pKa 1'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 2.15
+  range:
+    min: 1.65
+    max: 2.65
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 1.65
+    max: 2.65
+- id: chemistry.species.phosphate.pka2
+  name: 'Phosphate (phosphoric-acid equivalent): pKa 2'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 7.2
+  range:
+    min: 6.7
+    max: 7.7
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 6.7
+    max: 7.7
+- id: chemistry.species.phosphate.pka3
+  name: 'Phosphate (phosphoric-acid equivalent): pKa 3'
+  description: Dilute aqueous room-temperature acid dissociation constant. Coffee matrix, ionic-strength and
+    temperature transfer are unvalidated. Quinic and substituted-CGA values are explicitly estimated analogues
+    or predictions.
+  units: '1'
+  value: 12.35
+  range:
+    min: 11.85
+    max: 12.85
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 11.85
+    max: 12.85
+- id: chemistry.composition.sucrose.arabica
+  name: 'Sucrose: available arabica inventory'
+  description: Available sucrose inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.5
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 2.0
+- id: chemistry.composition.sucrose.robusta
+  name: 'Sucrose: available robusta inventory'
+  description: Available sucrose inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.2
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.8
+- id: chemistry.composition.sucrose.roast_coefficient
+  name: 'Sucrose: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.95
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.sucrose.mw
+  name: 'Sucrose: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 342.3
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.composition.potassium.arabica
+  name: 'Potassium: available arabica inventory'
+  description: Available potassium inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 1.5
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 6.0
+- id: chemistry.composition.potassium.robusta
+  name: 'Potassium: available robusta inventory'
+  description: Available potassium inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 1.5
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 6.0
+- id: chemistry.composition.potassium.roast_coefficient
+  name: 'Potassium: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.potassium.mw
+  name: 'Potassium: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 39.1
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.composition.melanoidins_low.arabica
+  name: 'Melanoidins: low molecular weight: available arabica inventory'
+  description: 'Available melanoidins: low molecular weight inventory in arabica, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.'
+  units: '%'
+  value: 2.0
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 8.0
+- id: chemistry.composition.melanoidins_low.robusta
+  name: 'Melanoidins: low molecular weight: available robusta inventory'
+  description: 'Available melanoidins: low molecular weight inventory in robusta, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.'
+  units: '%'
+  value: 2.0
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 8.0
+- id: chemistry.composition.melanoidins_low.roast_coefficient
+  name: 'Melanoidins: low molecular weight: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.6
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.melanoidins_medium.arabica
+  name: 'Melanoidins: medium molecular weight: available arabica inventory'
+  description: 'Available melanoidins: medium molecular weight inventory in arabica, percent of dry dose at
+    medium roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior
+    includes composition and availability uncertainty.'
+  units: '%'
+  value: 2.0
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 8.0
+- id: chemistry.composition.melanoidins_medium.robusta
+  name: 'Melanoidins: medium molecular weight: available robusta inventory'
+  description: 'Available melanoidins: medium molecular weight inventory in robusta, percent of dry dose at
+    medium roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior
+    includes composition and availability uncertainty.'
+  units: '%'
+  value: 2.0
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 8.0
+- id: chemistry.composition.melanoidins_medium.roast_coefficient
+  name: 'Melanoidins: medium molecular weight: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.6
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.melanoidins_high.arabica
+  name: 'Melanoidins: high molecular weight: available arabica inventory'
+  description: 'Available melanoidins: high molecular weight inventory in arabica, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.'
+  units: '%'
+  value: 1.5
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 6.0
+- id: chemistry.composition.melanoidins_high.robusta
+  name: 'Melanoidins: high molecular weight: available robusta inventory'
+  description: 'Available melanoidins: high molecular weight inventory in robusta, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.'
+  units: '%'
+  value: 1.5
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 6.0
+- id: chemistry.composition.melanoidins_high.roast_coefficient
+  name: 'Melanoidins: high molecular weight: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.6
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.polysaccharides.arabica
+  name: 'Soluble polysaccharides: available arabica inventory'
+  description: Available soluble polysaccharides inventory in arabica, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 4.0
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 16.0
+- id: chemistry.composition.polysaccharides.robusta
+  name: 'Soluble polysaccharides: available robusta inventory'
+  description: Available soluble polysaccharides inventory in robusta, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 4.5
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 18.0
+- id: chemistry.composition.polysaccharides.roast_coefficient
+  name: 'Soluble polysaccharides: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.diketopiperazines.arabica
+  name: 'Diketopiperazines: available arabica inventory'
+  description: Available diketopiperazines inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.2
+- id: chemistry.composition.diketopiperazines.robusta
+  name: 'Diketopiperazines: available robusta inventory'
+  description: Available diketopiperazines inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.07
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.28
+- id: chemistry.composition.diketopiperazines.roast_coefficient
+  name: 'Diketopiperazines: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.8
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.mozambioside.arabica
+  name: 'Mozambioside and roast products: available arabica inventory'
+  description: Available mozambioside and roast products inventory in arabica, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0.006
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.024
+- id: chemistry.composition.mozambioside.robusta
+  name: 'Mozambioside and roast products: available robusta inventory'
+  description: Available mozambioside and roast products inventory in robusta, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 0
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.mozambioside.roast_coefficient
+  name: 'Mozambioside and roast products: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.6
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.composition.magnesium.arabica
+  name: 'Magnesium: available arabica inventory'
+  description: Available magnesium inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.15
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.6
+- id: chemistry.composition.magnesium.robusta
+  name: 'Magnesium: available robusta inventory'
+  description: Available magnesium inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.15
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.6
+- id: chemistry.composition.magnesium.roast_coefficient
+  name: 'Magnesium: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.magnesium.mw
+  name: 'Magnesium: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 24.305
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.composition.calcium.arabica
+  name: 'Calcium from coffee: available arabica inventory'
+  description: Available calcium from coffee inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.2
+- id: chemistry.composition.calcium.robusta
+  name: 'Calcium from coffee: available robusta inventory'
+  description: Available calcium from coffee inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.2
+- id: chemistry.composition.calcium.roast_coefficient
+  name: 'Calcium from coffee: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.calcium.mw
+  name: 'Calcium from coffee: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 40.078
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.composition.lipid_emulsion.arabica
+  name: 'Lipid emulsion (excluding listed diterpenes): available arabica inventory'
+  description: Available lipid emulsion (excluding listed diterpenes) inventory in arabica, percent of dry
+    dose at medium roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad
+    prior includes composition and availability uncertainty.
+  units: '%'
+  value: 16.2
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 64.8
+- id: chemistry.composition.lipid_emulsion.robusta
+  name: 'Lipid emulsion (excluding listed diterpenes): available robusta inventory'
+  description: Available lipid emulsion (excluding listed diterpenes) inventory in robusta, percent of dry
+    dose at medium roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad
+    prior includes composition and availability uncertainty.
+  units: '%'
+  value: 10.79
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 43.16
+- id: chemistry.composition.lipid_emulsion.roast_coefficient
+  name: 'Lipid emulsion (excluding listed diterpenes): relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.phase.lipid_emulsion.cup_transfer_fraction
+  name: 'Lipid emulsion (excluding listed diterpenes): phase transfer fraction'
+  description: Independent empirical phase-transfer hypothesis, fraction of available inventory reaching the
+    cup or its immediate gas/foam phase. It is not intraparticle dissolution and is not included in dissolved
+    TDS. No pressure/shear-resolved mechanism is claimed.
+  units: '1'
+  value: 0.03
+  range:
+    min: 0
+    max: 1
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §1.3
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 0.15
+- id: chemistry.composition.cafestol.arabica
+  name: 'Cafestol: available arabica inventory'
+  description: Available cafestol inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.4
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.6
+- id: chemistry.composition.cafestol.robusta
+  name: 'Cafestol: available robusta inventory'
+  description: Available cafestol inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.2
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.8
+- id: chemistry.composition.cafestol.roast_coefficient
+  name: 'Cafestol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.cafestol.mw
+  name: 'Cafestol: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 316.44
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.phase.cafestol.cup_transfer_fraction
+  name: 'Cafestol: phase transfer fraction'
+  description: Independent empirical phase-transfer hypothesis, fraction of available inventory reaching the
+    cup or its immediate gas/foam phase. It is not intraparticle dissolution and is not included in dissolved
+    TDS. No pressure/shear-resolved mechanism is claimed.
+  units: '1'
+  value: 0.02
+  range:
+    min: 0
+    max: 1
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §1.3
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 0.1
+- id: chemistry.composition.kahweol.arabica
+  name: 'Kahweol: available arabica inventory'
+  description: Available kahweol inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.4
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 1.6
+- id: chemistry.composition.kahweol.robusta
+  name: 'Kahweol: available robusta inventory'
+  description: Available kahweol inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.01
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id003
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.04
+- id: chemistry.composition.kahweol.roast_coefficient
+  name: 'Kahweol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.kahweol.mw
+  name: 'Kahweol: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 314.42
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.phase.kahweol.cup_transfer_fraction
+  name: 'Kahweol: phase transfer fraction'
+  description: Independent empirical phase-transfer hypothesis, fraction of available inventory reaching the
+    cup or its immediate gas/foam phase. It is not intraparticle dissolution and is not included in dissolved
+    TDS. No pressure/shear-resolved mechanism is claimed.
+  units: '1'
+  value: 0.02
+  range:
+    min: 0
+    max: 1
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §1.3
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 0.1
+- id: chemistry.species.co2.mw
+  name: 'Carbon dioxide: molecular weight'
+  description: Molar mass of the named chemical form, in grams per mole. Phosphate uses phosphoric-acid equivalent
+    rather than elemental phosphorus.
+  units: g/mol
+  value: 44.01
+  range:
+    min: 0.1
+    max: 1000000.0
+  tag: measured
+  evidence_grade: B
+  sources:
+  - *id001
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+- id: chemistry.species.co2.henry
+  name: 'Carbon dioxide: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 1.19
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - &id006
+    citation: Sander R. (2023) Compilation of Henry law constants (version 5.0.0) for water as solvent. Atmos.
+      Chem. Phys. 23:10901–12440.
+    doi: 10.5194/acp-23-10901-2023
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.119
+    max: 11.899999999999999
+- id: chemistry.phase.co2.cup_transfer_fraction
+  name: 'Carbon dioxide: phase transfer fraction'
+  description: Independent empirical phase-transfer hypothesis, fraction of available inventory reaching the
+    cup or its immediate gas/foam phase. It is not intraparticle dissolution and is not included in dissolved
+    TDS. No pressure/shear-resolved mechanism is claimed.
+  units: '1'
+  value: 0.5
+  range:
+    min: 0
+    max: 1
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 1
+- id: chemistry.composition.furfurylthiol.arabica
+  name: '2-Furfurylthiol: available arabica inventory'
+  description: Available 2-furfurylthiol inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.000108
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - &id005
+    citation: Semmelroch P., Laskawy G., Blank I., Grosch W. (1995) Determination of potent odourants in roasted
+      coffee by stable isotope dilution assays. Flavour Fragr. J. 10:1–7.
+    doi: 10.1002/ffj.2730100102
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.furfurylthiol.robusta
+  name: '2-Furfurylthiol: available robusta inventory'
+  description: Available 2-furfurylthiol inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.000173
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.furfurylthiol.roast_coefficient
+  name: '2-Furfurylthiol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.5
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.furfurylthiol.threshold
+  name: '2-Furfurylthiol: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 0.01
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.001
+    max: 0.1
+- id: chemistry.species.furfurylthiol.binding_half_life
+  name: '2-Furfurylthiol: indicative cup binding half-life'
+  description: Estimated first-order binding half-life in brewed coffee. The 2-furfurylthiol scale follows
+    the reported substantial loss within ten minutes; transferring that scale to the other thiol is an explicit
+    grade-D analogy.
+  units: s
+  value: 600.0
+  range:
+    min: 1
+    max: 100000000.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Mueller C., Hofmann T. (2007) J. Agric. Food Chem. 55:4095–4102; thiol binding in coffee beverages.
+    doi: 10.1021/jf070095p
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 120
+    max: 3600
+- id: chemistry.composition.mmbf.arabica
+  name: '3-Mercapto-3-methylbutyl formate: available arabica inventory'
+  description: Available 3-mercapto-3-methylbutyl formate inventory in arabica, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 1.3e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.mmbf.robusta
+  name: '3-Mercapto-3-methylbutyl formate: available robusta inventory'
+  description: Available 3-mercapto-3-methylbutyl formate inventory in robusta, percent of dry dose at medium
+    roast. Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes
+    composition and availability uncertainty.
+  units: '%'
+  value: 1.15e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.mmbf.roast_coefficient
+  name: '3-Mercapto-3-methylbutyl formate: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.8
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.mmbf.threshold
+  name: '3-Mercapto-3-methylbutyl formate: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 0.0035
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.00035
+    max: 0.035
+- id: chemistry.composition.methylbutenethiol.arabica
+  name: '3-Methyl-2-butene-1-thiol: available arabica inventory'
+  description: Available 3-methyl-2-butene-1-thiol inventory in arabica, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 1.0e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.methylbutenethiol.robusta
+  name: '3-Methyl-2-butene-1-thiol: available robusta inventory'
+  description: Available 3-methyl-2-butene-1-thiol inventory in robusta, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 2.0e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.methylbutenethiol.roast_coefficient
+  name: '3-Methyl-2-butene-1-thiol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.methylbutenethiol.binding_half_life
+  name: '3-Methyl-2-butene-1-thiol: indicative cup binding half-life'
+  description: Estimated first-order binding half-life in brewed coffee. The 2-furfurylthiol scale follows
+    the reported substantial loss within ten minutes; transferring that scale to the other thiol is an explicit
+    grade-D analogy.
+  units: s
+  value: 600.0
+  range:
+    min: 1
+    max: 100000000.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Mueller C., Hofmann T. (2007) J. Agric. Food Chem. 55:4095–4102; thiol binding in coffee beverages.
+    doi: 10.1021/jf070095p
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 120
+    max: 3600
+- id: chemistry.composition.methanethiol.arabica
+  name: 'Methanethiol: available arabica inventory'
+  description: Available methanethiol inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0001
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.methanethiol.robusta
+  name: 'Methanethiol: available robusta inventory'
+  description: Available methanethiol inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.00015
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.methanethiol.roast_coefficient
+  name: 'Methanethiol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.methanethiol.threshold
+  name: 'Methanethiol: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 0.02
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.002
+    max: 0.2
+- id: chemistry.species.methanethiol.henry
+  name: 'Methanethiol: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.11
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.011
+    max: 1.1
+- id: chemistry.phase.methanethiol.cup_transfer_fraction
+  name: 'Methanethiol: phase transfer fraction'
+  description: Independent empirical phase-transfer hypothesis, fraction of available inventory reaching the
+    cup or its immediate gas/foam phase. It is not intraparticle dissolution and is not included in dissolved
+    TDS. No pressure/shear-resolved mechanism is claimed.
+  units: '1'
+  value: 0.25
+  range:
+    min: 0
+    max: 1
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 1
+- id: chemistry.composition.methional.arabica
+  name: 'Methional: available arabica inventory'
+  description: Available methional inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 2.4e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.methional.robusta
+  name: 'Methional: available robusta inventory'
+  description: Available methional inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 9.5e-06
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.methional.roast_coefficient
+  name: 'Methional: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.methional.threshold
+  name: 'Methional: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 0.2
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.02
+    max: 2.0
+- id: chemistry.composition.acetaldehyde.arabica
+  name: 'Acetaldehyde: available arabica inventory'
+  description: Available acetaldehyde inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0094
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0376
+- id: chemistry.composition.acetaldehyde.robusta
+  name: 'Acetaldehyde: available robusta inventory'
+  description: Available acetaldehyde inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0094
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0376
+- id: chemistry.composition.acetaldehyde.roast_coefficient
+  name: 'Acetaldehyde: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.acetaldehyde.threshold
+  name: 'Acetaldehyde: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 67.5
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 6.75
+    max: 675.0
+- id: chemistry.species.acetaldehyde.henry
+  name: 'Acetaldehyde: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.0031
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.00031
+    max: 0.031
+- id: chemistry.composition.propanal.arabica
+  name: 'Propanal: available arabica inventory'
+  description: Available propanal inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.002
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.008
+- id: chemistry.composition.propanal.robusta
+  name: 'Propanal: available robusta inventory'
+  description: Available propanal inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.002
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.008
+- id: chemistry.composition.propanal.roast_coefficient
+  name: 'Propanal: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.propanal.threshold
+  name: 'Propanal: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 23.25
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.325
+    max: 232.5
+- id: chemistry.species.propanal.henry
+  name: 'Propanal: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.0041
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.00041000000000000005
+    max: 0.041
+- id: chemistry.composition.methylpropanal.arabica
+  name: '2-Methylpropanal: available arabica inventory'
+  description: Available 2-methylpropanal inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0015
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.006
+- id: chemistry.composition.methylpropanal.robusta
+  name: '2-Methylpropanal: available robusta inventory'
+  description: Available 2-methylpropanal inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.002
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.008
+- id: chemistry.composition.methylpropanal.roast_coefficient
+  name: '2-Methylpropanal: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.methylpropanal.threshold
+  name: '2-Methylpropanal: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 1.2
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.12
+    max: 12.0
+- id: chemistry.species.methylpropanal.henry
+  name: '2-Methylpropanal: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.0079
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0007900000000000001
+    max: 0.07900000000000001
+- id: chemistry.phase.methylpropanal.cup_transfer_fraction
+  name: '2-Methylpropanal: phase transfer fraction'
+  description: Independent empirical phase-transfer hypothesis, fraction of available inventory reaching the
+    cup or its immediate gas/foam phase. It is not intraparticle dissolution and is not included in dissolved
+    TDS. No pressure/shear-resolved mechanism is claimed.
+  units: '1'
+  value: 0.25
+  range:
+    min: 0
+    max: 1
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 1
+- id: chemistry.composition.methylbutanal2.arabica
+  name: '2-Methylbutanal: available arabica inventory'
+  description: Available 2-methylbutanal inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0017
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0068
+- id: chemistry.composition.methylbutanal2.robusta
+  name: '2-Methylbutanal: available robusta inventory'
+  description: Available 2-methylbutanal inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0025
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.01
+- id: chemistry.composition.methylbutanal2.roast_coefficient
+  name: '2-Methylbutanal: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.methylbutanal2.henry
+  name: '2-Methylbutanal: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.016
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0016
+    max: 0.16
+- id: chemistry.composition.methylbutanal3.arabica
+  name: '3-Methylbutanal: available arabica inventory'
+  description: Available 3-methylbutanal inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0012
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0048
+- id: chemistry.composition.methylbutanal3.robusta
+  name: '3-Methylbutanal: available robusta inventory'
+  description: Available 3-methylbutanal inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0018
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0072
+- id: chemistry.composition.methylbutanal3.roast_coefficient
+  name: '3-Methylbutanal: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.methylbutanal3.threshold
+  name: '3-Methylbutanal: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 1.1
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.11000000000000001
+    max: 11.0
+- id: chemistry.species.methylbutanal3.henry
+  name: '3-Methylbutanal: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.037
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0036999999999999997
+    max: 0.37
+- id: chemistry.composition.butanedione.arabica
+  name: '2,3-Butanedione: available arabica inventory'
+  description: Available 2,3-butanedione inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0042
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0168
+- id: chemistry.composition.butanedione.robusta
+  name: '2,3-Butanedione: available robusta inventory'
+  description: Available 2,3-butanedione inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0025
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.01
+- id: chemistry.composition.butanedione.roast_coefficient
+  name: '2,3-Butanedione: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.butanedione.threshold
+  name: '2,3-Butanedione: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 4.4
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.44000000000000006
+    max: 44.0
+- id: chemistry.species.butanedione.henry
+  name: '2,3-Butanedione: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.00055
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 5.5e-05
+    max: 0.0055000000000000005
+- id: chemistry.composition.pentanedione.arabica
+  name: '2,3-Pentanedione: available arabica inventory'
+  description: Available 2,3-pentanedione inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0032
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0128
+- id: chemistry.composition.pentanedione.robusta
+  name: '2,3-Pentanedione: available robusta inventory'
+  description: Available 2,3-pentanedione inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.002
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.008
+- id: chemistry.composition.pentanedione.roast_coefficient
+  name: '2,3-Pentanedione: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: -0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.pentanedione.henry
+  name: '2,3-Pentanedione: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.0031
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.00031
+    max: 0.031
+- id: chemistry.composition.furaneol.arabica
+  name: 'Furaneol (HDMF): available arabica inventory'
+  description: Available furaneol (hdmf) inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0109
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0436
+- id: chemistry.composition.furaneol.robusta
+  name: 'Furaneol (HDMF): available robusta inventory'
+  description: Available furaneol (hdmf) inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.0057
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.0228
+- id: chemistry.composition.furaneol.roast_coefficient
+  name: 'Furaneol (HDMF): relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.furaneol.threshold
+  name: 'Furaneol (HDMF): orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 10
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 1.0
+    max: 100
+- id: chemistry.composition.homofuraneol.arabica
+  name: 'Homofuraneol: available arabica inventory'
+  description: Available homofuraneol inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.00173
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.00692
+- id: chemistry.composition.homofuraneol.robusta
+  name: 'Homofuraneol: available robusta inventory'
+  description: Available homofuraneol inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.00143
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.00572
+- id: chemistry.composition.homofuraneol.roast_coefficient
+  name: 'Homofuraneol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.2
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.homofuraneol.threshold
+  name: 'Homofuraneol: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 1.15
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.11499999999999999
+    max: 11.5
+- id: chemistry.composition.sotolon.arabica
+  name: 'Sotolon: available arabica inventory'
+  description: Available sotolon inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.000147
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.sotolon.robusta
+  name: 'Sotolon: available robusta inventory'
+  description: Available sotolon inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 6.3e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.sotolon.roast_coefficient
+  name: 'Sotolon: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.6
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.sotolon.threshold
+  name: 'Sotolon: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 20
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.0
+    max: 200
+- id: chemistry.composition.abhexon.arabica
+  name: 'Abhexon: available arabica inventory'
+  description: Available abhexon inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 1.6e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.abhexon.robusta
+  name: 'Abhexon: available robusta inventory'
+  description: Available abhexon inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 8.5e-06
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.abhexon.roast_coefficient
+  name: 'Abhexon: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.3
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.abhexon.threshold
+  name: 'Abhexon: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 7.5
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.75
+    max: 75.0
+- id: chemistry.composition.guaiacol.arabica
+  name: 'Guaiacol: available arabica inventory'
+  description: Available guaiacol inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.00042
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.00168
+- id: chemistry.composition.guaiacol.robusta
+  name: 'Guaiacol: available robusta inventory'
+  description: Available guaiacol inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.00282
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.01128
+- id: chemistry.composition.guaiacol.roast_coefficient
+  name: 'Guaiacol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.8
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.guaiacol.threshold
+  name: 'Guaiacol: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 2.5
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.25
+    max: 25.0
+- id: chemistry.species.guaiacol.henry
+  name: 'Guaiacol: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 4.7e-05
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 4.7e-06
+    max: 0.00047
+- id: chemistry.composition.ethylguaiacol.arabica
+  name: '4-Ethylguaiacol: available arabica inventory'
+  description: Available 4-ethylguaiacol inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.000163
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.ethylguaiacol.robusta
+  name: '4-Ethylguaiacol: available robusta inventory'
+  description: Available 4-ethylguaiacol inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.00181
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.00724
+- id: chemistry.composition.ethylguaiacol.roast_coefficient
+  name: '4-Ethylguaiacol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.8
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.ethylguaiacol.threshold
+  name: '4-Ethylguaiacol: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 50
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 5.0
+    max: 500
+- id: chemistry.species.ethylguaiacol.henry
+  name: '4-Ethylguaiacol: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 7.3e-05
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 7.2999999999999996e-06
+    max: 0.00073
+- id: chemistry.composition.vinylguaiacol.arabica
+  name: '4-Vinylguaiacol: available arabica inventory'
+  description: Available 4-vinylguaiacol inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.00648
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.02592
+- id: chemistry.composition.vinylguaiacol.robusta
+  name: '4-Vinylguaiacol: available robusta inventory'
+  description: Available 4-vinylguaiacol inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 0.01777
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.07108
+- id: chemistry.composition.vinylguaiacol.roast_coefficient
+  name: '4-Vinylguaiacol: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.4
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.vinylguaiacol.threshold
+  name: '4-Vinylguaiacol: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 20
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.0
+    max: 200
+- id: chemistry.composition.vanillin.arabica
+  name: 'Vanillin: available arabica inventory'
+  description: Available vanillin inventory in arabica, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.00048
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.00192
+- id: chemistry.composition.vanillin.robusta
+  name: 'Vanillin: available robusta inventory'
+  description: Available vanillin inventory in robusta, percent of dry dose at medium roast. Estimated individual
+    or soluble-class allocation; not a lot-specific assay. The broad prior includes composition and availability
+    uncertainty.
+  units: '%'
+  value: 0.00161
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.00644
+- id: chemistry.composition.vanillin.roast_coefficient
+  name: 'Vanillin: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.8
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.vanillin.threshold
+  name: 'Vanillin: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 25
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.5
+    max: 250
+- id: chemistry.species.vanillin.henry
+  name: 'Vanillin: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 2.4e-07
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.3999999999999997e-08
+    max: 2.4e-06
+- id: chemistry.composition.damascenone.arabica
+  name: 'Beta-damascenone: available arabica inventory'
+  description: Available beta-damascenone inventory in arabica, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 1.95e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.damascenone.robusta
+  name: 'Beta-damascenone: available robusta inventory'
+  description: Available beta-damascenone inventory in robusta, percent of dry dose at medium roast. Estimated
+    individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 2.05e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.damascenone.roast_coefficient
+  name: 'Beta-damascenone: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.4
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.damascenone.threshold
+  name: 'Beta-damascenone: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 0.00075
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 7.500000000000001e-05
+    max: 0.0075
+- id: chemistry.species.damascenone.henry
+  name: 'Beta-damascenone: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.0013
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.00013
+    max: 0.013
+- id: chemistry.composition.edmp.arabica
+  name: '2-Ethyl-3,5-dimethylpyrazine: available arabica inventory'
+  description: Available 2-ethyl-3,5-dimethylpyrazine inventory in arabica, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 3.3e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.edmp.robusta
+  name: '2-Ethyl-3,5-dimethylpyrazine: available robusta inventory'
+  description: Available 2-ethyl-3,5-dimethylpyrazine inventory in robusta, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 9.4e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.edmp.roast_coefficient
+  name: '2-Ethyl-3,5-dimethylpyrazine: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.1
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.edmp.threshold
+  name: '2-Ethyl-3,5-dimethylpyrazine: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 2.0
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.2
+    max: 20.0
+- id: chemistry.species.edmp.henry
+  name: '2-Ethyl-3,5-dimethylpyrazine: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.00014
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 1.3999999999999998e-05
+    max: 0.0013999999999999998
+- id: chemistry.composition.diethylmethylpyrazine.arabica
+  name: '2,3-Diethyl-5-methylpyrazine: available arabica inventory'
+  description: Available 2,3-diethyl-5-methylpyrazine inventory in arabica, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 9.5e-06
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.diethylmethylpyrazine.robusta
+  name: '2,3-Diethyl-5-methylpyrazine: available robusta inventory'
+  description: Available 2,3-diethyl-5-methylpyrazine inventory in robusta, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 3.1e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.diethylmethylpyrazine.roast_coefficient
+  name: '2,3-Diethyl-5-methylpyrazine: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0.1
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.diethylmethylpyrazine.threshold
+  name: '2,3-Diethyl-5-methylpyrazine: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 1.0
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.1
+    max: 10.0
+- id: chemistry.composition.ibmp.arabica
+  name: '3-Isobutyl-2-methoxypyrazine: available arabica inventory'
+  description: Available 3-isobutyl-2-methoxypyrazine inventory in arabica, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 1.0e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.ibmp.robusta
+  name: '3-Isobutyl-2-methoxypyrazine: available robusta inventory'
+  description: Available 3-isobutyl-2-methoxypyrazine inventory in robusta, percent of dry dose at medium roast.
+    Estimated individual or soluble-class allocation; not a lot-specific assay. The broad prior includes composition
+    and availability uncertainty.
+  units: '%'
+  value: 2.0e-05
+  range:
+    min: 0
+    max: 60.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id005
+  - *id004
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0
+    max: 0.001
+- id: chemistry.composition.ibmp.roast_coefficient
+  name: '3-Isobutyl-2-methoxypyrazine: relative roast coefficient'
+  description: 'Relative linear coefficient versus roast index: available inventory multiplies max(0, 1 + coefficient*(roast-0.5)).
+    Direction follows research note 02 where known; numerical magnitude is an uncalibrated grade-D scenario
+    assumption.'
+  units: '1'
+  value: 0
+  range:
+    min: -2
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  - *id003
+  research_note_ref: 02 §1.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: -2
+    max: 2
+- id: chemistry.species.ibmp.threshold
+  name: '3-Isobutyl-2-methoxypyrazine: orthonasal water threshold'
+  description: Orthonasal odor threshold in water, selected from the source ranges in research note 02. Used
+    only for indicative aroma activity, not a coffee-matrix sensory score. The source selection is uncertain.
+  units: ug/L
+  value: 0.009
+  range:
+    min: 1.0e-08
+    max: 1000000000.0
+  tag: estimated
+  evidence_grade: C
+  sources:
+  - *id005
+  - citation: Leffingwell & Associates odor-threshold compilation, as audited in docs/research/02-chemistry-and-sensory.md
+      Table 3.
+  - *id004
+  research_note_ref: 02 §2.1
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.0009
+    max: 0.09
+- id: chemistry.species.ibmp.henry
+  name: '3-Isobutyl-2-methoxypyrazine: air/water partition ratio'
+  description: Dimensionless air/water concentration ratio at 25 C derived from the Sander Henry compilation
+    in research note 02. Espresso-matrix and brew-temperature transfer remain unvalidated; no implicit temperature
+    correction is claimed.
+  units: '1'
+  value: 0.0024
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id006
+  - *id004
+  research_note_ref: 02 §2.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.00023999999999999998
+    max: 0.023999999999999997
+- id: chemistry.kinetics.k1.diffusivity
+  name: K1 class diffusivity
+  description: K1 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: m^2/s
+  value: 3.15e-10
+  range:
+    min: 1.0e-16
+    max: 1.0e-07
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 6.3e-11
+    max: 1.575e-09
+- id: chemistry.kinetics.k1.partition
+  name: K1 class partition
+  description: K1 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: '1'
+  value: 0.8
+  range:
+    min: 0.01
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.16
+    max: 4.0
+- id: chemistry.kinetics.k1.surface_scale
+  name: K1 class surface scale
+  description: K1 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: '1'
+  value: 1.2
+  range:
+    min: 0
+    max: 10
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 3.5999999999999996
+- id: chemistry.kinetics.k2.diffusivity
+  name: K2 class diffusivity
+  description: K2 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: m^2/s
+  value: 1.9e-10
+  range:
+    min: 1.0e-16
+    max: 1.0e-07
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 3.8e-11
+    max: 9.5e-10
+- id: chemistry.kinetics.k2.partition
+  name: K2 class partition
+  description: K2 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: '1'
+  value: 0.6
+  range:
+    min: 0.01
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.12
+    max: 3.0
+- id: chemistry.kinetics.k2.surface_scale
+  name: K2 class surface scale
+  description: K2 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: '1'
+  value: 0.8
+  range:
+    min: 0
+    max: 10
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 2.4000000000000004
+- id: chemistry.kinetics.k3.diffusivity
+  name: K3 class diffusivity
+  description: K3 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: m^2/s
+  value: 7.0e-11
+  range:
+    min: 1.0e-16
+    max: 1.0e-07
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 1.4e-11
+    max: 3.5000000000000003e-10
+- id: chemistry.kinetics.k3.partition
+  name: K3 class partition
+  description: K3 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: '1'
+  value: 0.2
+  range:
+    min: 0.01
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.04
+    max: 1.0
+- id: chemistry.kinetics.k3.surface_scale
+  name: K3 class surface scale
+  description: K3 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: '1'
+  value: 0.4
+  range:
+    min: 0
+    max: 10
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 1.2000000000000002
+- id: chemistry.kinetics.k4.diffusivity
+  name: K4 class diffusivity
+  description: K4 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: m^2/s
+  value: 1.0e-11
+  range:
+    min: 1.0e-16
+    max: 1.0e-07
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 2.0e-12
+    max: 4.9999999999999995e-11
+- id: chemistry.kinetics.k4.partition
+  name: K4 class partition
+  description: K4 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: '1'
+  value: 0.04
+  range:
+    min: 0.01
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.01
+    max: 0.2
+- id: chemistry.kinetics.k4.surface_scale
+  name: K4 class surface scale
+  description: K4 transport-basis scenario coefficient. Class ordering follows research note 02, but this numerical
+    mapping is estimated and not fitted to espresso fractions. Shared values allow exact grouped passenger
+    solves.
+  units: '1'
+  value: 0.1
+  range:
+    min: 0
+    max: 10
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §3.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 0.30000000000000004
+- id: chemistry.process.anaerobic_acetic_multiplier
+  name: 'Anaerobic process: acetic-acid multiplier'
+  description: Estimated relative acetic-acid inventory after anaerobic processing. Direction follows reports
+    of increased acids with extended fermentation; the 1.5 multiplier is a broad scenario assumption, not a
+    quantitative result transferable across lots.
+  units: '1'
+  value: 1.5
+  range:
+    min: 0
+    max: 10
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: da Silva Vale A. et al. (2022) Foods 12:37; self-induced anaerobic fermentation of coffee.
+    doi: 10.3390/foods12010037
+  - *id004
+  research_note_ref: 02 §4.2
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.5
+    max: 3
+- id: chemistry.storage.aroma_half_life
+  name: Generic whole-bean aroma half-life in sealed storage
+  description: Whole-bean aroma-inventory half-life for the generic sealed-storage scenario. Estimated; does
+    not reuse the much faster measured loss after grinding as a whole-bean decay constant.
+  units: d
+  value: 180
+  range:
+    min: 0.1
+    max: 100000.0
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §4.4
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 14
+    max: 730
+- id: chemistry.storage.sealed.rate_multiplier
+  name: 'Sealed storage: aroma-loss rate multiplier'
+  description: Estimated relative whole-bean aroma-loss rate. Sealed/open/frozen storage are scenarios, not
+    a measured shelf-life model; packaging, oxygen, temperature and thawing history are unresolved.
+  units: '1'
+  value: 1
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §4.4
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 3
+- id: chemistry.storage.open.rate_multiplier
+  name: 'Open storage: aroma-loss rate multiplier'
+  description: Estimated relative whole-bean aroma-loss rate. Sealed/open/frozen storage are scenarios, not
+    a measured shelf-life model; packaging, oxygen, temperature and thawing history are unresolved.
+  units: '1'
+  value: 6
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §4.4
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 18
+- id: chemistry.storage.frozen.rate_multiplier
+  name: 'Frozen storage: aroma-loss rate multiplier'
+  description: Estimated relative whole-bean aroma-loss rate. Sealed/open/frozen storage are scenarios, not
+    a measured shelf-life model; packaging, oxygen, temperature and thawing history are unresolved.
+  units: '1'
+  value: 0.05
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id004
+  research_note_ref: 02 §4.4
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0
+    max: 2
+- id: chemistry.storage.methanethiol_half_life
+  name: Methanethiol whole-bean half-life
+  description: Estimated first-order time scale representing reported methanethiol loss within a day after
+    roasting. Packaging transfer uses the separate storage scenario multiplier; this is not an assay for the
+    selected lot.
+  units: d
+  value: 1
+  range:
+    min: 0.01
+    max: 1000
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Holscher W., Steinhart H. (1992) Investigation of roasted coffee freshness with an improved headspace
+      technique. Z. Lebensm. Unters. Forsch. 195:33–38.
+  - *id004
+  research_note_ref: 02 §4.4
+  used_by:
+  - B
+  - X
+  - C
+  status: draft
+  prior:
+    distribution: uniform
+    min: 0.1
+    max: 10

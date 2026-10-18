@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import { describe, expect, it, vi } from 'vitest';
 import { fixtureResult } from '../../test/fixtures/shotFixture';
+import { fixtureChemistry } from '../../test/fixtures/chemistryFixture';
 import { loadPuckcore } from '../../test/loadWasm';
 import { DEFAULT_RECIPE } from '../shot/recipeForm';
 import { EngineClient, EngineError, type WorkerLike } from './engine';
@@ -62,6 +63,19 @@ describe('shot results in transfer form', () => {
   it('converts back to the same JSON document', () => {
     const doc = fixtureResult({ points: 7 });
     expect(toJsonResult(toShotRunData(doc, 0).result)).toEqual(doc);
+  });
+
+  it('preserves optional M2 chemistry through worker transfer and JSON export', () => {
+    const doc = { ...fixtureResult({ points: 7 }), chemistry: fixtureChemistry() };
+    expect(checkShotResult(doc)).toEqual([]);
+    const data = toShotRunData(doc, 0);
+    expect(data.result.chemistry).toEqual(doc.chemistry);
+    expect(toJsonResult(data.result)).toEqual(doc);
+    const malformed = {
+      ...doc,
+      chemistry: { ...doc.chemistry, acidity: { ...doc.chemistry.acidity, ph: Number.NaN } },
+    };
+    expect(checkShotResult(malformed)).toContain('chemistry.acidity.ph: must be a finite number');
   });
 
   it('thins very long results with one index set, keeping the ends and the peaks', () => {

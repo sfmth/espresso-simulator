@@ -40,7 +40,8 @@ fn schema_mirrors_the_rust_types() {
         "schema": "puckworks.recipe/1",
         "bean": {}, "grinder": {"psd": {"diameter_um": [1], "volume_fraction": [1]}},
         "basket": {"custom": {"profile_mm": [[0, 1], [1, 1]], "perforated_diameter_mm": 1}},
-        "prep": {"dose_g": 1}, "machine": {"profile": [{"control": "pump"}]}, "stop": {}
+        "prep": {"dose_g": 1}, "machine": {"profile": [{"control": "pump"}]}, "stop": {},
+        "water": {}, "chemistry": {}
     }))
     .unwrap();
     let v = serde_json::to_value(&recipe).unwrap();
@@ -51,7 +52,7 @@ fn schema_mirrors_the_rust_types() {
         .iter()
         .map(|r| r.as_str().unwrap().to_string())
         .collect();
-    let optional: BTreeSet<String> = ["numerics", "overrides"]
+    let optional: BTreeSet<String> = ["numerics", "overrides", "water", "chemistry"]
         .iter()
         .map(|s| s.to_string())
         .collect();
@@ -64,6 +65,8 @@ fn schema_mirrors_the_rust_types() {
         ("machine", "machine"),
         ("stop", "stop"),
         ("numerics", "numerics"),
+        ("water", "water"),
+        ("chemistry", "chemistry"),
     ] {
         assert_same(&v[field], def(&schema, name), field);
     }

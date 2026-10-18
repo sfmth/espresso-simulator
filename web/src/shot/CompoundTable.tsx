@@ -6,9 +6,16 @@
  * their tag, evidence grade and sources; presets; your recipe). Total
  * dissolved solids come first, from the same run.
  */
-import type { Catalog, RegistryParameter, SpeciesSpec } from '../engine/shotTypes';
+import { useState } from 'react';
+import type {
+  Catalog,
+  CompoundMeta,
+  RegistryParameter,
+  SpeciesSpec,
+  SpeciesTotal,
+} from '../engine/shotTypes';
 import { HelpHeading } from './fields';
-import { grams, milligrams, percent } from './format';
+import { grams, milligrams, percent, sig } from './format';
 import { speciesName } from './format';
 import { tokensFor, type ProvenanceToken } from './provenance';
 import { EvidenceBadges, TokenView } from './RegistryBits';
@@ -23,6 +30,39 @@ const PROPERTY_LABELS: Record<string, string> = {
   kernel_diffusivity: 'Diffusivity in the particles',
   saturation_kg_m3: 'Saturation',
 };
+
+/** Keep trace aroma inventories visible instead of rounding every trace to 0 mg. */
+function compoundMass(kg: number | null): string {
+  if (kg === null) return '—';
+  if (kg === 0 || Math.abs(kg) >= 1e-7) return milligrams(kg);
+  return Math.abs(kg) >= 1e-10 ? `${sig(kg * 1e9)} µg` : `${sig(kg * 1e12)} ng`;
+}
+
+/** Broad browsing groups; preserve the catalogue's more specific family in each row. */
+function compoundGroup(meta?: CompoundMeta): string {
+  if (!meta) return 'Tracked species';
+  if (meta.family.startsWith('odorant:')) return 'Aroma compounds';
+  const groups: Record<string, string> = {
+    alkaloid: 'Alkaloids',
+    'chlorogenic acid': 'Chlorogenic acids and roast products',
+    'bitter lactone': 'Chlorogenic acids and roast products',
+    'retained bitter': 'Chlorogenic acids and roast products',
+    'organic acid': 'Acids',
+    'mineral acid': 'Acids',
+    sugar: 'Other dissolved compounds',
+    mineral: 'Other dissolved compounds',
+    'browning polymer': 'Other dissolved compounds',
+    carbohydrate: 'Other dissolved compounds',
+    'bitter peptide': 'Other dissolved compounds',
+    'bitter glycoside': 'Other dissolved compounds',
+    'diagnostic aggregate': 'Diagnostics and unassigned solubles',
+    'unresolved soluble inventory': 'Diagnostics and unassigned solubles',
+    lipid: 'Lipids and diterpenes',
+    diterpene: 'Lipids and diterpenes',
+    gas: 'Gas inventory',
+  };
+  return groups[meta.family] ?? meta.family;
+}
 
 /** The weakest evidence among the registry records behind some tokens: "D" beats "A". */
 function weakest(
@@ -93,6 +133,63 @@ function ProvenanceCell({
   );
 }
 
+function CompoundMetadata({
+  meta,
+  registry,
+  catalog,
+  outcome,
+}: {
+  meta: CompoundMeta;
+  registry: Map<string, RegistryParameter>;
+  catalog: Catalog | null;
+  outcome: ShotOutcome;
+}) {
+  return (
+    <details className="compound-metadata">
+      <summary>Composition and transport evidence</summary>
+      <dl className="provenance-list">
+        <div>
+          <dt>Transport</dt>
+          <dd>{meta.transport_evidence}</dd>
+        </div>
+        <div>
+          <dt>Composition</dt>
+          <dd>{meta.composition_evidence}</dd>
+        </div>
+        <div>
+          <dt>TDS accounting</dt>
+          <dd>
+            {meta.counts_toward_tds
+              ? 'Dissolved species; compared with lumped coffee solubles.'
+              : 'Separate phase or diagnostic; excluded from the dissolved-species total.'}
+          </dd>
+        </div>
+      </dl>
+      {meta.notes.length > 0 && (
+        <ul>
+          {meta.notes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
+      )}
+      {meta.registry_refs.length > 0 && (
+        <ul>
+          {meta.registry_refs.map((id) => (
+            <li key={id}>
+              <TokenView
+                token={{ kind: 'registry', id, raw: `registry:${id}` }}
+                registry={registry}
+                catalog={catalog}
+                overrides={outcome.recipe.overrides}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </details>
+  );
+}
+
 export function CompoundTable({
   outcome,
   registry,
@@ -102,6 +199,9 @@ export function CompoundTable({
   registry: Map<string, RegistryParameter>;
   catalog: Catalog | null;
 }) {
+  const [query, setQuery] = useState('');
+  const [family, setFamily] = useState('');
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   if (!outcome) return <p className="note">The compound table appears after the first run.</p>;
   const summary = outcome.result.summary;
   const spec = outcome.build.spec;
@@ -111,6 +211,38 @@ export function CompoundTable({
   );
   const solubles = summary.beverage_mass_kg * summary.tds;
   const extractable = spec.solubles.extractable_fraction;
+  const metadata = new Map((outcome.build.derived.compounds ?? []).map((m) => [m.id, m]));
+  const phaseIndex = new Map((outcome.result.chemistry?.phases ?? []).map((p) => [p.id, p]));
+  const displayed: SpeciesTotal[] = [...summary.species];
+  for (const phase of phaseIndex.values()) {
+    if (!displayed.some((s) => s.id === phase.id))
+      displayed.push({
+        id: phase.id,
+        mass_kg: phase.cup_mass_kg,
+        extracted_fraction:
+          phase.available_mass_kg > 0 ? phase.cup_mass_kg / phase.available_mass_kg : 0,
+      });
+  }
+  const families = [...new Set(displayed.map((s) => compoundGroup(metadata.get(s.id))))];
+  const activeFamily = families.includes(family) ? family : '';
+  const search = query.trim().toLocaleLowerCase();
+  const visible = displayed.filter((s) => {
+    const meta = metadata.get(s.id);
+    return (
+      (!activeFamily || compoundGroup(meta) === activeFamily) &&
+      (!search ||
+        [
+          s.id,
+          speciesName(s.id, outcome.build.derived.compounds),
+          meta?.family,
+          meta?.kinetic_class,
+          meta?.phase,
+        ]
+          .join(' ')
+          .toLocaleLowerCase()
+          .includes(search))
+    );
+  });
   const speciesProps = (i: number) =>
     [
       'mass_fraction',
@@ -118,18 +250,93 @@ export function CompoundTable({
       'partition_coefficient',
       'surface_fraction_scale',
     ].map((key) => ({ label: PROPERTY_LABELS[key] ?? key, path: `solubles.species[${i}].${key}` }));
+  const speciesRow = (s: SpeciesTotal) => {
+    const entry = specIndex.get(s.id);
+    const meta = metadata.get(s.id);
+    const content = entry
+      ? entry[1].mass_fraction * dose
+      : (phaseIndex.get(s.id)?.available_mass_kg ?? null);
+    return (
+      <tr key={s.id} data-species={s.id}>
+        <th scope="row">
+          {speciesName(s.id, outcome.build.derived.compounds)}
+          {meta && (
+            <span className="compound-tags">
+              <span className="badge">{meta.kinetic_class}</span>
+              <span className="badge">{meta.phase}</span>
+            </span>
+          )}
+          {meta && (
+            <span className="note compound-family-label">Catalogue family: {meta.family}</span>
+          )}
+        </th>
+        <td className="num" data-value={String(s.mass_kg)}>
+          {compoundMass(s.mass_kg)}
+        </td>
+        <td className="num" data-value={String(s.extracted_fraction)}>
+          {percent(s.extracted_fraction)}
+        </td>
+        <td className="num">{compoundMass(content)}</td>
+        <td>
+          {entry ? (
+            <ProvenanceCell
+              properties={speciesProps(entry[0])}
+              outcome={outcome}
+              registry={registry}
+              catalog={catalog}
+            />
+          ) : (
+            <span className="note">
+              {phaseIndex.has(s.id)
+                ? 'Separate phase inventory; recovery prior, not dissolved extraction.'
+                : 'not in the spec'}
+            </span>
+          )}
+          {meta && (
+            <CompoundMetadata meta={meta} registry={registry} catalog={catalog} outcome={outcome} />
+          )}
+        </td>
+      </tr>
+    );
+  };
   return (
     <div className="panel-stack">
       <HelpHeading id="compounds-title" term="provenance" level={4}>
         Compounds in the cup, with provenance
       </HelpHeading>
+      <div className="compound-filters field-grid">
+        <label className="field">
+          Search compounds
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Name, family, K1–K6 or phase"
+          />
+        </label>
+        <label className="field">
+          Compound family
+          <select value={activeFamily} onChange={(event) => setFamily(event.target.value)}>
+            <option value="">All families</option>
+            {families.map((name) => (
+              <option key={name} value={name}>
+                {name.replaceAll('_', ' ')}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="note" role="status">
+        {visible.length} of {displayed.length} tracked compounds. Open a family to inspect its
+        species; searching opens matching families.
+      </p>
       <div className="table-wrap">
         <table className="compound-table" aria-labelledby="compounds-title">
           <thead>
             <tr>
               <th scope="col">Compound</th>
               <th scope="col">In the cup</th>
-              <th scope="col">Extracted</th>
+              <th scope="col">Extracted / recovered</th>
               <th scope="col">Content in the dose</th>
               <th scope="col">Provenance</th>
             </tr>
@@ -166,41 +373,39 @@ export function CompoundTable({
                 />
               </td>
             </tr>
-            {summary.species.map((s) => {
-              const entry = specIndex.get(s.id);
-              const content = entry ? entry[1].mass_fraction * dose : null;
+            {displayed.length <= 4 && visible.map(speciesRow)}
+          </tbody>
+          {displayed.length > 4 &&
+            families.map((name) => {
+              const rows = visible.filter((s) => compoundGroup(metadata.get(s.id)) === name);
+              if (rows.length === 0) return null;
+              const open = Boolean(search || activeFamily || expanded[name]);
               return (
-                <tr key={s.id} data-species={s.id}>
-                  <th scope="row">{speciesName(s.id)}</th>
-                  <td className="num" data-value={String(s.mass_kg)}>
-                    {milligrams(s.mass_kg)}
-                  </td>
-                  <td className="num" data-value={String(s.extracted_fraction)}>
-                    {percent(s.extracted_fraction)}
-                  </td>
-                  <td className="num">{milligrams(content)}</td>
-                  <td>
-                    {entry ? (
-                      <ProvenanceCell
-                        properties={speciesProps(entry[0])}
-                        outcome={outcome}
-                        registry={registry}
-                        catalog={catalog}
-                      />
-                    ) : (
-                      <span className="note">not in the spec</span>
-                    )}
-                  </td>
-                </tr>
+                <tbody key={name}>
+                  <tr className="compound-family">
+                    <th colSpan={5} scope="rowgroup">
+                      <button
+                        type="button"
+                        aria-expanded={open}
+                        onClick={() => setExpanded((old) => ({ ...old, [name]: !open }))}
+                      >
+                        {open ? '−' : '+'} {name.replaceAll('_', ' ')}{' '}
+                        <span className="note">({rows.length})</span>
+                      </button>
+                    </th>
+                  </tr>
+                  {open && rows.map(speciesRow)}
+                </tbody>
               );
             })}
-          </tbody>
         </table>
       </div>
+      {visible.length === 0 && <p className="note">No compounds match these filters.</p>}
       <p className="note">
-        M1 tracks four species next to the lumped solubles; the full set of about 55 arrives in M2.
-        Species other than caffeine, trigonelline and 5-CQA have no measured espresso kinetics, so
-        their parameters are estimates; the provenance says which.
+        K1–K6 identify transport-model classes, not taste categories. Most compounds use estimated
+        kinetics; open the evidence details for each species. Species are tracked beside the lumped
+        solubles and are not added to total TDS a second time. Lipid, gas and diagnostic inventories
+        have separate accounting in cup chemistry.
       </p>
     </div>
   );

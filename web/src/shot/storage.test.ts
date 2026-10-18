@@ -38,6 +38,25 @@ describe('storage of drafts and saved recipes', () => {
     expect(loadDraft(storage)).toEqual(DEFAULT_RECIPE);
   });
 
+  it('keeps M2 water, bean descriptors and cup conditions in drafts and named recipes', () => {
+    const storage = memoryStorage();
+    const recipe = {
+      ...DEFAULT_RECIPE,
+      bean: {
+        ...DEFAULT_RECIPE.bean,
+        altitude_m: 1850,
+        storage: 'frozen' as const,
+        variety_group: 'gesha' as const,
+      },
+      water: { alkalinity_mg_l_caco3: 25, ph: 6.8 },
+      chemistry: { aroma_age_s: 45, mineral_blank_subtracted: true },
+    };
+    saveDraft(storage, recipe);
+    saveRecipe(storage, 'M2 sample', recipe);
+    expect(loadDraft(storage)).toEqual(recipe);
+    expect(loadSaved(storage)[0].recipe).toEqual(recipe);
+  });
+
   it('ignores drafts that are corrupt or not recipes', () => {
     expect(loadDraft(memoryStorage({ [DRAFT_KEY]: '{not json' }))).toBeNull();
     expect(loadDraft(memoryStorage({ [DRAFT_KEY]: '{"schema":"other"}' }))).toBeNull();

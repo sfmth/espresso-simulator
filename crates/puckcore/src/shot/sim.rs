@@ -1818,9 +1818,10 @@ impl<'a> Sim<'a> {
                 permeability_multiplier: c.multiplier,
             })
             .collect();
-        Ok(ShotResult {
+        let mut result = ShotResult {
             schema: SHOT_RESULT_SCHEMA.to_string(),
             core_version: crate::VERSION.to_string(),
+            chemistry: None,
             summary: Summary {
                 stop_reason: self.stop_reason.unwrap_or("max_duration").to_string(),
                 shot_time_s: self.shot_time,
@@ -1860,7 +1861,11 @@ impl<'a> Sim<'a> {
                 max_regime_solves: self.scratch.solves_max,
                 rejected_steps: self.rejected_steps,
             },
-        })
+        };
+        if let Some(chemistry) = &spec.chemistry {
+            result.chemistry = Some(super::chemistry::evaluate(chemistry, &result));
+        }
+        Ok(result)
     }
 }
 

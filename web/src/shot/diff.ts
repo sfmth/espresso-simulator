@@ -46,7 +46,17 @@ export function flattenRecipe(
 ): Map<string, FlatField> {
   const out = new Map<string, FlatField>();
   const label = (path: string) => FIELDS[path]?.label ?? OTHER_LABELS[path] ?? path;
-  const blocks = ['bean', 'grinder', 'basket', 'prep', 'machine', 'stop', 'numerics'] as const;
+  const blocks = [
+    'bean',
+    'water',
+    'chemistry',
+    'grinder',
+    'basket',
+    'prep',
+    'machine',
+    'stop',
+    'numerics',
+  ] as const;
   for (const block of blocks) {
     const value = (recipe as unknown as Json)[block];
     if (!isRecord(value)) continue;

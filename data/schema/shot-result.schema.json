@@ -24,6 +24,9 @@
     },
     "diagnostics": {
       "$ref": "#/$defs/Diagnostics"
+    },
+    "chemistry": {
+      "$ref": "#/$defs/ChemistryResult"
     }
   },
   "$defs": {
@@ -425,6 +428,249 @@
           "description": "Steps rejected and retried: a regime iteration that did not converge (retried at half the step) or a mass target overshot by more than 0.1 mg (re-landed).",
           "type": "integer",
           "minimum": 0
+        }
+      }
+    },
+    "ChemistryResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "puckworks.cup-chemistry/1"
+        },
+        "reference_temp_c": {
+          "type": "number",
+          "description": "Acidity/headspace reference, fixed at 25 °C; not hot-shot pH."
+        },
+        "acidity": {
+          "$ref": "#/$defs/AcidityResult"
+        },
+        "aroma": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AromaResult"
+          }
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PhaseInventoryResult"
+          }
+        },
+        "texture": {
+          "$ref": "#/$defs/TextureResult"
+        },
+        "refractometer": {
+          "$ref": "#/$defs/RefractometerResult"
+        },
+        "mass_closure": {
+          "$ref": "#/$defs/ChemistryMassClosure"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "AcidityResult": {
+      "type": "object",
+      "properties": {
+        "ph": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "None when no cup exists or charge balance has no root in pH 0–14."
+        },
+        "titratable_acidity_mmol_l_to_ph_6_6": {
+          "type": "number",
+          "description": "Base equivalents to each endpoint; 0 when the cup already exceeds it."
+        },
+        "titratable_acidity_mmol_l_to_ph_8": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string"
+        },
+        "water_alkalinity_mmol_l": {
+          "type": "number",
+          "description": "Source alkalinity after dilution by the extracted coffee solids."
+        },
+        "carbonate_mol_l": {
+          "type": "number"
+        },
+        "background_charge_mol_l": {
+          "type": "number",
+          "description": "Effective fixed coffee charge closing electroneutrality at reference pH."
+        },
+        "acids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AcidSpeciation"
+          }
+        }
+      }
+    },
+    "AcidSpeciation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "total_mol_l": {
+          "type": "number"
+        },
+        "mean_charge": {
+          "type": "number"
+        },
+        "ionized_fraction": {
+          "type": "number"
+        }
+      }
+    },
+    "AromaResult": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "extracted_mass_kg": {
+          "type": "number"
+        },
+        "liquid_mass_kg": {
+          "type": "number"
+        },
+        "headspace_mass_kg": {
+          "type": "number"
+        },
+        "bound_mass_kg": {
+          "type": "number"
+        },
+        "liquid_concentration_ug_l": {
+          "type": "number"
+        },
+        "headspace_concentration_ug_l": {
+          "type": "number"
+        },
+        "odor_activity_ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Liquid concentration divided by a threshold measured in water."
+        },
+        "mass_balance_residual_kg": {
+          "type": "number"
+        }
+      }
+    },
+    "PhaseInventoryResult": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "available_mass_kg": {
+          "type": "number"
+        },
+        "cup_mass_kg": {
+          "type": "number"
+        },
+        "retained_mass_kg": {
+          "type": "number"
+        }
+      }
+    },
+    "TextureResult": {
+      "type": "object",
+      "properties": {
+        "lipid_mass_kg": {
+          "type": "number"
+        },
+        "lipid_concentration_g_l": {
+          "type": "number"
+        },
+        "co2_recovered_mass_kg": {
+          "type": "number"
+        },
+        "crema_gas_volume_m3": {
+          "type": "number"
+        },
+        "crema_volume_proxy_m3": {
+          "type": "number"
+        }
+      }
+    },
+    "RefractometerResult": {
+      "type": "object",
+      "properties": {
+        "coffee_true_tds": {
+          "type": "number",
+          "description": "Physical M1 coffee solute mass/cup mass, before the optional cup aging. Gas, emulsion and source-water minerals are excluded from this value."
+        },
+        "water_mineral_tds": {
+          "type": "number",
+          "description": "Source mineral mass divided by M1 beverage mass, separately reported."
+        },
+        "coffee_equivalent_tds_at_reference": {
+          "type": "number",
+          "description": "Instrument response factors applied at the reference temperature."
+        },
+        "apparent_tds": {
+          "type": "number"
+        },
+        "temperature_bias": {
+          "type": "number",
+          "description": "Additive bias from the residual ATC coefficient and sample temperature."
+        },
+        "sample_temp_c": {
+          "type": "number"
+        },
+        "reference_temp_c": {
+          "type": "number"
+        },
+        "mineral_blank_subtracted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ChemistryMassClosure": {
+      "type": "object",
+      "properties": {
+        "lumped_solubles_kg": {
+          "type": "number"
+        },
+        "quantified_dissolved_species_kg": {
+          "type": "number"
+        },
+        "unassigned_solubles_kg": {
+          "type": "number"
+        },
+        "overassigned_solubles_kg": {
+          "type": "number"
+        },
+        "excluded_diagnostic_mass_kg": {
+          "type": "number"
+        },
+        "phase_inventory_mass_kg": {
+          "type": "number"
+        },
+        "transport_unassigned_solubles_kg": {
+          "type": "number",
+          "description": "Independently transported residual pool, distinct from accounting slack."
+        },
+        "transported_dissolved_species_kg": {
+          "type": "number",
+          "description": "Named species plus the independently transported residual."
+        },
+        "relative_transport_closure_error": {
+          "type": "number",
+          "description": "|transported species − lumped| / lumped (0 when both are zero)."
         }
       }
     }

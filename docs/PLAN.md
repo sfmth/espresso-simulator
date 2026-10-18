@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.5.0 · Last updated 2026-10-16 · Status: [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup, community comparisons and optional pressure storage added. Scientific validation exit criteria remain open (see §12 and §15).*
+*Version 0.6.0 · Last updated 2026-10-17 · Status: M2 development selected and implemented; [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup, community comparisons and optional pressure storage added. Scientific validation exit criteria remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -629,7 +629,7 @@ Size M. **Selected by the owner on 2026-10-15, before M2; implementation in 0.3.
 - **Community comparison tooling (0.4.0):** the [online-shot investigation](validation/community-shot-comparison.md) uses original DE1 logs and their matching measurement sheet for reproducible exploratory comparisons. It distinguishes measured, estimated and target channels, and exact pump-off from the recorded bloom-flow floor. Fixed scenarios expose missing mechanisms and input uncertainty without fitting community observations or changing the existing scientific gates.
 - **Pressure-storage investigation (0.5.0):** an opt-in constant compliance stores pump-supplied water and releases it during a pause, with pressure and cumulative-volume diagnostics ([ADR 0011](decisions/0011-upstream-pressure-storage.md)). All 170 fixed 0/0.5/2 mL/bar community scenarios and approximation runs complete without fitting a value. Default flow-command scenarios still produce 1.45–1.51 g during bloom against 3.02–5.85 g observed. At 2 mL/bar they produce 5.52–6.08 g, but end-bloom pressure is only 0.0174–0.0177 bar against 0.72–1.08 bar observed. Storage enables the missing response without establishing a calibrated explanation. The original 117 validation predictions and failures remain unchanged.
 - **Next evidence and physics work:** constrain pressure/storage and uptake separately, with qualified inlet delivery, PSD and clock metadata from online sources. Resolve mobile/immobile water exchange and simultaneous filling only with stated assumptions and independent evidence. A constant compliance does not identify a unique physical mechanism, and matching bloom gain alone cannot establish calibration.
-- **Outcome:** startup improves, but the scientific gates remain open. V4 first drops move from 1.8 to 6.8 s (12.8 s measured), and the flow rise from 6.7 to 12.1 s (25.5 s measured). V1 extraction rates within ±10% regress from 57/60 to 48/60. Generic 18 → 36 g pump-stop times remain short at 15.6–17.0 s. The [M1.1 investigation](validation/m11-startup.md) documents the remaining failures and ablations; M2 stays deferred.
+- **Outcome:** startup improves, but the scientific gates remain open. V4 first drops move from 1.8 to 6.8 s (12.8 s measured), and the flow rise from 6.7 to 12.1 s (25.5 s measured). V1 extraction rates within ±10% regress from 57/60 to 48/60. Generic 18 → 36 g pump-stop times remain short at 15.6–17.0 s. The [M1.1 investigation](validation/m11-startup.md) documents the remaining failures and ablations; M2 was subsequently selected by the owner on 2026-10-17; these M1 scientific gaps remain open.
 - Count accessible particle pore water in the infiltration budget and continuum holdup, with particle extraction states represented as effective soluble loading. This is an explicit single-liquid approximation.
 - Add a local pore-air mobility relaxation, separate from roast-dependent CO₂. Its amplitude, power and moisture-diffusion mapping remain grade-D estimates, fixed before held-out evaluation.
 - Conserve headspace fill through ramps and phase changes, respect pump-off phases, and bound drip by retained water. Report a hydraulic carrier-volume balance separately from soluble mass balance.
@@ -639,7 +639,9 @@ Size M. **Selected by the owner on 2026-10-15, before M2; implementation in 0.3.
 - Full two-phase flow, finite-rate mobile/immobile water exchange and simultaneous compressible headspace dynamics remain research gaps ([ADR 0010](decisions/0010-startup-water-and-pore-air.md)). Passing all M1 validation gates is still required before calling the core validated.
 
 ### M2: Chemistry, beans and water
-Size L.
+Size L. **Selected by the owner on 2026-10-17; development available in 0.6.0.**
+
+See the [M2 implementation contract](model/m2-chemistry.md) and [current M2 report](validation/m2-validation.md). The catalogue, class bases, bean descriptors, water and cup observations are implemented with evidence labels. Scientific exit criteria remain separate from delivery: missing Gloess inputs and estimated inventories prevent a claim of independent V7 accuracy. No M1 threshold or fitted coefficient changes.
 - **Chemistry:**
   - the full species set (~55), kinetic classes K1–K6 and the transport basis;
   - aroma headspace and thiol binding;
@@ -744,7 +746,7 @@ These are optional experiments for the future local personalization feature (V9/
 - **Data requests:** too early. No outreach to data holders for now.
 - **Repository:** created by the owner; assistant git operations authorized 2026-10-15 (§16).
 - **Basket (2026-10-15):** 58 mm single-wall. The AMZCHEF preset uses the plain 58 mm stock double; its detailed dimensions remain estimates.
-- **Next milestone (2026-10-15):** M1.1 startup physics before M2.
+- **Current milestone (2026-10-17):** M2 chemistry, beans and water, selected by the owner after the novel-shot review. Remaining M1 accuracy work is retained without blocking M2 development.
 - **Calibration source (2026-10-15):** online data, including community archives and hobbyist experiments; no dependency on measurements from the owner's setup (D15).
 
 **Still open**

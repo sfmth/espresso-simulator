@@ -139,6 +139,9 @@ def minimal_recipe(
         "machine": {"profile": [dict(p) for p in (profile or [{"control": "pressure", "target": 9.0}])]},
         "stop": {},
         "numerics": {"tier": int(tier)},
+        # Preserve the M1 calibration/validation boundary. M2 case builders
+        # explicitly enable chemistry after constructing their recipe.
+        "chemistry": {"enabled": False},
         "overrides": {k: float(v) for k, v in (overrides or {}).items()},
     }
     if temperature_c is not None:

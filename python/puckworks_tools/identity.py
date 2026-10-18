@@ -17,7 +17,7 @@ from typing import Any
 from .paths import RepoPaths
 
 #: Source trees whose contents determine the extension's behaviour.
-SOURCE_TREES = ("crates/puckcore/src", "crates/puckmodel/src", "crates/puckmodel/generated", "crates/puckcore-py")
+SOURCE_TREES = ("crates/puckcore/src", "crates/puckmodel/src", "crates/puckmodel/generated", "crates/puckcore-py", "data/chemistry")
 #: Single files that pin the build (dependency versions).
 SOURCE_FILES = ("Cargo.lock",)
 

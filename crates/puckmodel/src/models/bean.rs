@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-//! Bean model v1 (PLAN §7.3 B; research note 02 §1, §4;
+//! Bean model v2 (PLAN §7.3 B; research note 02 §1, §4;
 //! docs/model/input-models.md §3).
 //!
 //! Arabica share a, roast level r (0 = very light … 1 = very dark), days off
-//! roast and process map to the extractable fraction, the four tracked
-//! species, skeletal density and intraparticle porosity, and the CO₂ left in
+//! roast and process map to the extractable fraction, compound inventories,
+//! skeletal density and intraparticle porosity, and the CO₂ left in
 //! the grounds, which sets the gas permeability penalty. Blends mix the
-//! Arabica and Robusta values linearly by mass. Process is recorded but has
-//! no effect in v1.
+//! Arabica and Robusta values linearly by mass. New chemistry coefficients
+//! are broad estimates; the three measured M1 species remain unchanged.
 
 use puckcore::math::exp;
 
+use super::chemistry_catalog::{self, PhaseInventory};
 use crate::api::ApiError;
 use crate::bounds;
 use crate::context::{Ctx, Val, describe, join};
@@ -32,6 +33,9 @@ pub(crate) struct BeanState {
     pub roast: Val,
     pub days: Val,
     pub process: Option<String>,
+    pub altitude_m: Option<f64>,
+    pub variety_group: Option<String>,
+    pub storage: Option<String>,
     pub temp_c: Val,
 }
 
@@ -52,6 +56,8 @@ pub(crate) struct Species {
 pub(crate) struct BeanOut {
     pub extractable: Val,
     pub species: Vec<Species>,
+    /// Separate K5/K6 available inventories; never included in dissolved TDS.
+    pub phase_inventories: Vec<PhaseInventory>,
     pub skeletal_density: Val,
     pub intraparticle_porosity: Val,
     /// CO₂ still in the whole beans and in the ground coffee in the puck, mg/g.
@@ -142,9 +148,47 @@ pub(crate) fn resolve(
                 PROCESSES.join(", ")
             )));
         }
-        ctx.note(format!(
-            "Bean: process ({p}) is recorded but has no effect in bean model v1 (its composition effects are small or untracked, 02 §4.2)."
-        ));
+        if p != "anaerobic" {
+            ctx.note(format!("Bean v2: process ({p}) is recorded; no quantitative correction is applied to the tracked compounds. For example, dry processing changes reducing sugars in green coffee, not a demonstrated universal sucrose correction in roasted coffee (02 §4.2)."));
+        }
+    }
+    let altitude_m = b.altitude_m.or(preset.altitude_m);
+    if let Some(h) = altitude_m {
+        in_range(h, 0.0, 4000.0, "bean.altitude_m")?;
+        ctx.note("Bean v2: altitude is recorded, but the published origin/process-dependent correlations do not identify a universal roasted-bean composition correction. No altitude multiplier is applied.");
+    }
+    let variety_group = b
+        .variety_group
+        .clone()
+        .or_else(|| preset.variety_group.clone());
+    if let Some(v) = &variety_group {
+        const VARIETIES: [&str; 6] = [
+            "unspecified",
+            "typica-bourbon",
+            "gesha",
+            "ethiopian-landrace",
+            "canephora",
+            "hybrid",
+        ];
+        if !VARIETIES.contains(&v.as_str()) {
+            return Err(ApiError(format!(
+                "bean.variety_group {v:?} is not one of {}",
+                VARIETIES.join(", ")
+            )));
+        }
+        ctx.note("Bean v2: variety group is recorded without an invented composition multiplier. Arabica/Robusta share remains the quantitative species descriptor; variety-specific lot assays are unavailable.");
+    }
+    let storage = b
+        .storage
+        .clone()
+        .or_else(|| preset.storage.clone())
+        .or_else(|| Some("sealed".to_string()));
+    if let Some(v) = &storage
+        && !["sealed", "open", "frozen"].contains(&v.as_str())
+    {
+        return Err(ApiError(format!(
+            "bean.storage {v:?} must be sealed, open or frozen"
+        )));
     }
     let temp_c = match b.bean_temp_c {
         Some(t) => Val::new(
@@ -159,7 +203,7 @@ pub(crate) fn resolve(
         None => ctx.param("model.thermal.room_temperature", "degC")?,
     };
     if days.v > 120.0 {
-        ctx.note("Bean: coffee more than four months off roast has lost nearly all its CO₂; staling is not modelled.");
+        ctx.note("Bean: coffee more than four months off roast has lost nearly all its CO₂; its aroma loss is only an estimated storage scenario, not a validated staling model.");
     }
     if days.v < 2.0 {
         ctx.note("Bean: coffee under two days off roast is very gassy; the CO₂ effect on flow is large and its size uncertain.");
@@ -170,6 +214,9 @@ pub(crate) fn resolve(
         roast,
         days,
         process,
+        altitude_m,
+        variety_group,
+        storage,
         temp_c,
     })
 }
@@ -381,9 +428,17 @@ pub(crate) fn model(ctx: &mut Ctx, s: &BeanState) -> Result<BeanOut, ApiError> {
         s.days.v,
         amp * 100.0
     ));
+    let phase_inventories = chemistry_catalog::augment(
+        ctx,
+        s,
+        &mut species,
+        &extractable,
+        Val::new(co2_puck / 1000.0, co2_src),
+    )?;
     Ok(BeanOut {
         extractable,
         species,
+        phase_inventories,
         skeletal_density,
         intraparticle_porosity,
         co2_beans_mg_g: co2_beans,

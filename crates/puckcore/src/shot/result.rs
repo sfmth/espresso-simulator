@@ -22,6 +22,8 @@ pub struct ShotResult {
     pub series: Series,
     pub spatial: Spatial,
     pub diagnostics: Diagnostics,
+    /// Optional M2 cup chemistry, evaluated after the physical shot.
+    pub chemistry: Option<super::ChemistryResult>,
 }
 
 /// Headline numbers.

@@ -194,6 +194,12 @@ preset!(
         days_off_roast: f64,
         #[serde(default)]
         process: Option<String>,
+        #[serde(default)]
+        altitude_m: Option<f64>,
+        #[serde(default)]
+        variety_group: Option<String>,
+        #[serde(default)]
+        storage: Option<String>,
         /// The bean assumed for fields a recipe leaves out.
         #[serde(default)]
         default: bool,

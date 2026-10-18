@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * TypeScript mirror of the M1 shot contract (docs/model/m1-contract.md). The
+ * TypeScript mirror of the M1/M2 shot contract. The
  * Rust types and their doc comments are the field definitions:
  * - Recipe: crates/puckmodel/src/recipe.rs (practical units: g, mm, µm, bar, mL/s, °C);
  * - ShotSpec: crates/puckcore/src/shot/spec.rs (SI, unit in every field name);
@@ -23,11 +23,23 @@ export const REGISTRY_SCHEMA = 'puckworks.registry/1';
 // ---------------------------------------------------------------- Recipe
 
 export type BeanProcess = 'washed' | 'natural' | 'honey' | 'anaerobic';
+export type BeanStorage = 'sealed' | 'open' | 'frozen';
+export type BeanVariety =
+  'unspecified' | 'typica-bourbon' | 'gesha' | 'ethiopian-landrace' | 'canephora' | 'hybrid';
 export type PsdMethod = 'dry_laser' | 'wet_laser' | 'image' | 'sieve' | 'other';
 export type Distribution = 'none' | 'tap' | 'wdt';
 export type PhaseControl = 'pressure' | 'flow' | 'pump';
 
 export const BEAN_PROCESSES: readonly BeanProcess[] = ['washed', 'natural', 'honey', 'anaerobic'];
+export const BEAN_STORAGE: readonly BeanStorage[] = ['sealed', 'open', 'frozen'];
+export const BEAN_VARIETIES: readonly BeanVariety[] = [
+  'unspecified',
+  'typica-bourbon',
+  'gesha',
+  'ethiopian-landrace',
+  'canephora',
+  'hybrid',
+];
 export const PSD_METHODS: readonly PsdMethod[] = [
   'dry_laser',
   'wet_laser',
@@ -42,6 +54,8 @@ export const PHASE_CONTROLS: readonly PhaseControl[] = ['pressure', 'flow', 'pum
 export interface Recipe {
   schema: string;
   bean: BeanInput;
+  water?: WaterInput | null;
+  chemistry?: CupChemistryInput | null;
   grinder: GrinderInput;
   basket: BasketInput;
   prep: PrepInput;
@@ -60,10 +74,32 @@ export interface BeanInput {
   /** 0 = very light … 1 = very dark. */
   roast_level?: number | null;
   days_off_roast?: number | null;
-  /** Recorded; no effect in bean model v1. */
+  /** Process descriptor; effects are limited by the composition evidence. */
   process?: BeanProcess | null;
   /** Bean temperature when ground, °C. */
   bean_temp_c?: number | null;
+  altitude_m?: number | null;
+  variety_group?: BeanVariety | null;
+  storage?: BeanStorage | null;
+}
+
+/** Brew water analysis, in mg/L unless stated otherwise. Omitted values use documented defaults. */
+export interface WaterInput {
+  alkalinity_mg_l_caco3?: number | null;
+  hardness_mg_l_caco3?: number | null;
+  calcium_mg_l?: number | null;
+  magnesium_mg_l?: number | null;
+  tds_mg_l?: number | null;
+  ph?: number | null;
+}
+
+/** Conditions for the optional M2 post-extraction cup model. */
+export interface CupChemistryInput {
+  enabled?: boolean | null;
+  aroma_age_s?: number | null;
+  cup_headspace_ml?: number | null;
+  sample_temperature_c?: number | null;
+  mineral_blank_subtracted?: boolean | null;
 }
 
 /** A preset and dial setting; a burr family and gap; or a measured PSD. */
@@ -191,6 +227,47 @@ export interface ShotSpec {
   thermal: ThermalSpec;
   machine: MachineSpec;
   numerics: NumericsSpec;
+  chemistry?: ChemistrySpec | null;
+}
+
+/** Registry-resolved physical inputs for M2 post-processing (SI except named practical units). */
+export interface ChemistrySpec {
+  water: Required<{ [K in keyof WaterInput]: number }>;
+  compounds: {
+    id: string;
+    phase: string;
+    counts_toward_tds: boolean;
+    molecular_weight_g_mol: number | null;
+    pka: number[];
+    henry_air_water_ratio: number | null;
+    aroma_threshold_ug_l: number | null;
+    binding_half_life_s: number | null;
+  }[];
+  phase_inventories: { id: string; available_mass_kg: number; cup_transfer_fraction: number }[];
+  coffee_reference_ph: number;
+  background_buffer_pka: number;
+  background_buffer_mol_per_kg_solubles: number;
+  water_pkw: number;
+  carbonate_pka: [number, number];
+  calcium_carbonate_molar_mass_g_mol: number;
+  water_density_kg_m3: number;
+  cup_headspace_m3: number;
+  aroma_age_s: number;
+  measurement: {
+    sample_temp_c: number;
+    reference_temp_c: number;
+    residual_temperature_coefficient_per_c: number;
+    coffee_response_factor: number;
+    mineral_response_factor: number;
+    mineral_blank_subtracted: boolean;
+  };
+  crema: {
+    co2_id: string;
+    lipid_id: string;
+    co2_capture_fraction: number;
+    bubble_gas_density_kg_m3: number;
+    foam_gas_volume_fraction: number;
+  };
 }
 
 export interface BasketGeometry {
@@ -342,6 +419,69 @@ export interface ShotResult<A = number[]> {
   series: Series<A>;
   spatial: Spatial;
   diagnostics: Diagnostics;
+  /** Optional M2 cup post-processing; absent on older or chemistry-disabled runs. */
+  chemistry?: CupChemistryResult | null;
+}
+
+export interface CupChemistryResult {
+  schema: string;
+  reference_temp_c: number;
+  acidity: {
+    ph: number | null;
+    titratable_acidity_mmol_l_to_ph_6_6: number;
+    titratable_acidity_mmol_l_to_ph_8: number;
+    status: string;
+    water_alkalinity_mmol_l: number;
+    carbonate_mol_l: number;
+    background_charge_mol_l: number;
+    acids: { id: string; total_mol_l: number; mean_charge: number; ionized_fraction: number }[];
+  };
+  aroma: {
+    id: string;
+    extracted_mass_kg: number;
+    liquid_mass_kg: number;
+    headspace_mass_kg: number;
+    bound_mass_kg: number;
+    liquid_concentration_ug_l: number;
+    headspace_concentration_ug_l: number;
+    odor_activity_ratio: number | null;
+    mass_balance_residual_kg: number;
+  }[];
+  phases: {
+    id: string;
+    available_mass_kg: number;
+    cup_mass_kg: number;
+    retained_mass_kg: number;
+  }[];
+  texture: {
+    lipid_mass_kg: number;
+    lipid_concentration_g_l: number;
+    co2_recovered_mass_kg: number;
+    crema_gas_volume_m3: number;
+    crema_volume_proxy_m3: number;
+  };
+  refractometer: {
+    coffee_true_tds: number;
+    water_mineral_tds: number;
+    coffee_equivalent_tds_at_reference: number;
+    apparent_tds: number;
+    temperature_bias: number;
+    sample_temp_c: number;
+    reference_temp_c: number;
+    mineral_blank_subtracted: boolean;
+  };
+  mass_closure: {
+    lumped_solubles_kg: number;
+    quantified_dissolved_species_kg: number;
+    unassigned_solubles_kg: number;
+    overassigned_solubles_kg: number;
+    excluded_diagnostic_mass_kg: number;
+    phase_inventory_mass_kg: number;
+    transport_unassigned_solubles_kg: number;
+    transported_dissolved_species_kg: number;
+    relative_transport_closure_error: number;
+  };
+  warnings: string[];
 }
 
 export interface Summary {
@@ -512,6 +652,21 @@ export interface Derived {
   /** Presets used, by kind (`bean`, `grinder` or `grinder_family`, `basket`, `machine`). */
   presets?: Record<string, string>;
   flags?: string[];
+  /** Metadata travels with the build; no runtime catalogue request is needed. */
+  compounds?: CompoundMeta[];
+}
+
+export interface CompoundMeta {
+  id: string;
+  name: string;
+  family: string;
+  kinetic_class: string;
+  phase: 'dissolved' | 'lipid' | 'gas' | 'diagnostic';
+  counts_toward_tds: boolean;
+  transport_evidence: string;
+  composition_evidence: string;
+  registry_refs: string[];
+  notes: string[];
 }
 
 export interface PsdSummary {
@@ -539,6 +694,9 @@ export interface BeanSummary {
   bean_temp_c: number;
   co2_beans_mg_g: number;
   co2_puck_mg_g: number;
+  altitude_m?: number | null;
+  variety_group?: BeanVariety | null;
+  storage?: BeanStorage | null;
 }
 
 export interface BedSummary {
@@ -639,6 +797,9 @@ export interface BeanPreset extends PresetBase {
   roast_level: number;
   days_off_roast: number;
   process: BeanProcess | null;
+  altitude_m?: number | null;
+  variety_group?: BeanVariety | null;
+  storage?: BeanStorage | null;
 }
 
 export interface PresetsDoc {

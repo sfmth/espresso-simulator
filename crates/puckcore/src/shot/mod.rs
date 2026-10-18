@@ -23,6 +23,7 @@
 //! the edge annulus, 8 depth cells, 2 size classes, coarse kernels of two
 //! shells).
 
+pub mod chemistry;
 mod geometry;
 mod hydraulics;
 mod model;
@@ -33,6 +34,7 @@ pub mod spec;
 mod transport;
 mod validate;
 
+pub use chemistry::*;
 pub use result::*;
 pub use spec::*;
 

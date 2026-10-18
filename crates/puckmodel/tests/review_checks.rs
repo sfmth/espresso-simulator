@@ -358,7 +358,13 @@ fn stop_and_phase_times_are_capped() {
             {"control": "pressure", "target": 9}
         ]}),
     );
-    let b = build_ok(&r);
+    // M2's full compound state exceeds the conservative work budget for
+    // this 1200 s horizon. Keep that safeguard, then isolate the program's
+    // duration limit with the reduced tier rather than weakening the budget.
+    let err = build_err(&r);
+    assert!(err.contains("shorten max_duration_s"), "{err}");
+    assert!(!err.contains("internal error"), "{err}");
+    let b = build_ok(&with(r, "numerics.tier", json!(0)));
     assert_eq!(num(&b, "spec.numerics.max_duration_s"), 1200.0);
     assert!(notes(&b).contains("stops at 1200 s at the latest"));
 }
@@ -454,6 +460,14 @@ fn registry_reads_list_is_exact() {
     let coverage = [
         generic_recipe(),
         owner_recipe(),
+        // M2 process/storage parameters are conditional reads. Cover both
+        // nondefault storage scenarios and the explicit fermentation model.
+        with(
+            generic_recipe(),
+            "bean",
+            json!({"process": "anaerobic", "storage": "open"}),
+        ),
+        with(generic_recipe(), "bean.storage", json!("frozen")),
         json!({
             "schema": "puckworks.recipe/1",
             "bean": {"preset": "dark-80-20-blend", "bean_temp_c": -18},

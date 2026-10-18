@@ -209,3 +209,11 @@ Recorded here by the lead as workstreams report them (rule 3).
 **Rust API** (lead): `puckcore::shot::validate_shot_spec(&ShotSpec)` runs the solver's own spec check without simulating. It returns the warnings, or `InvalidSpec` naming the field. The builder uses it, so the builder never emits a spec the solver rejects.
 
 **JavaScript diagnostics** (lead): `lastPanic()` returns the message of the most recent Rust panic, or `""`. A panic reaches JavaScript only as a `RuntimeError: unreachable` trap. Read `lastPanic()` right after catching one, then discard the worker; the instance's state is undefined after a trap.
+
+## M2 additive API (0.6.0)
+
+Optional recipe `water` and `chemistry` blocks, BeanInput descriptors,
+`derived.compounds`, optional `ShotSpec.chemistry` and `ShotResult.chemistry`
+are specified in [M2 chemistry](m2-chemistry.md). Old raw specs default to
+no cup chemistry. Recipe builds enable M2 unless explicitly disabled;
+`chemistry.enabled: false` keeps the four M1 transport diagnostics.

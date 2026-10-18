@@ -30,6 +30,9 @@
     },
     "numerics": {
       "$ref": "#/$defs/NumericsSpec"
+    },
+    "chemistry": {
+      "$ref": "#/$defs/ChemistrySpec"
     }
   },
   "$defs": {
@@ -378,7 +381,11 @@
         },
         "pore_air": {
           "description": "Effective dry-pore air connectivity penalty, independent of roast CO2: permeability factor (1 - A exp(-wet_age/tau))^n. Not a literal gas saturation or fixed time delay; disabled by default for legacy specs.",
-          "allOf": [{ "$ref": "#/$defs/Relaxation" }]
+          "allOf": [
+            {
+              "$ref": "#/$defs/Relaxation"
+            }
+          ]
         },
         "pore_air_permeability_exponent": {
           "description": "Exponent n of the effective pore-air permeability factor, default 1. Coffee's relative-permeability curve is not measured; recipe estimates are explicitly identified in the registry.",
@@ -411,7 +418,10 @@
         },
         "intraparticle_water_fraction": {
           "description": "Fraction of intraparticle pores filled by the front and counted in liquid holdup. null preserves legacy wetting_uptake; 1 fills all initial pores. When set, particle states are effective soluble loadings rather than a second physical water inventory. This is an effective single-liquid approximation, not kinetic dual-porosity flow.",
-          "type": ["number", "null"],
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0,
           "maximum": 1
         },
@@ -833,6 +843,277 @@
           "maximum": 64
         }
       }
+    },
+    "ChemistrySpec": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "water": {
+          "$ref": "#/$defs/WaterChemistrySpec"
+        },
+        "compounds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CompoundChemistrySpec"
+          },
+          "maxItems": 128
+        },
+        "phase_inventories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PhaseInventorySpec"
+          },
+          "description": "Non-dissolved source inventories; never injected into M1 solubles/TDS.",
+          "maxItems": 128
+        },
+        "coffee_reference_ph": {
+          "type": "number",
+          "description": "Effective intrinsic coffee pH without source-water carbonate, at 25 °C.",
+          "minimum": 1,
+          "maximum": 13
+        },
+        "background_buffer_pka": {
+          "type": "number",
+          "description": "Effective monoprotic unresolved coffee buffer, explicitly estimated.",
+          "minimum": 0,
+          "maximum": 16
+        },
+        "background_buffer_mol_per_kg_solubles": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "water_pkw": {
+          "type": "number",
+          "description": "Thermodynamic pKw at the 25 °C acidity reference temperature.",
+          "minimum": 10,
+          "maximum": 16
+        },
+        "carbonate_pka": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 16
+            },
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 16
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "calcium_carbonate_molar_mass_g_mol": {
+          "type": "number",
+          "maximum": 1000,
+          "minimum": 1.0
+        },
+        "water_density_kg_m3": {
+          "type": "number",
+          "description": "Density used for the approximate cup/source-water volume, kg/m³.",
+          "minimum": 900,
+          "maximum": 1200
+        },
+        "cup_headspace_m3": {
+          "type": "number",
+          "description": "Closed headspace in equilibrium with the cup; not an open-room model.",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "aroma_age_s": {
+          "type": "number",
+          "description": "Time after extraction for effective thiol binding, s.",
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "measurement": {
+          "$ref": "#/$defs/RefractometerSpec"
+        },
+        "crema": {
+          "$ref": "#/$defs/CremaSpec"
+        }
+      },
+      "additionalProperties": false
+    },
+    "WaterChemistrySpec": {
+      "type": "object",
+      "properties": {
+        "alkalinity_mg_l_caco3": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "hardness_mg_l_caco3": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "calcium_mg_l": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "magnesium_mg_l": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "tds_mg_l": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "ph": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 14
+        }
+      },
+      "additionalProperties": false
+    },
+    "CompoundChemistrySpec": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "counts_toward_tds": {
+          "type": "boolean"
+        },
+        "molecular_weight_g_mol": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "maximum": 10000000.0,
+          "minimum": 0.1
+        },
+        "pka": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 16
+          },
+          "maxItems": 4
+        },
+        "henry_air_water_ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Dimensionless equilibrium concentration ratio c_air/c_water at 25 °C.",
+          "minimum": 0,
+          "maximum": 1000000.0
+        },
+        "aroma_threshold_ug_l": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Odour threshold in water; OAV is not a sensory intensity prediction.",
+          "maximum": 1000000000000.0,
+          "minimum": 1e-12
+        },
+        "binding_half_life_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Effective first-order irreversible binding half life, not volatilisation.",
+          "maximum": 1000000000000.0,
+          "minimum": 1e-09
+        }
+      },
+      "additionalProperties": false
+    },
+    "PhaseInventorySpec": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "available_mass_kg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "cup_transfer_fraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "RefractometerSpec": {
+      "type": "object",
+      "properties": {
+        "sample_temp_c": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "reference_temp_c": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "residual_temperature_coefficient_per_c": {
+          "type": "number",
+          "minimum": -0.1,
+          "maximum": 0.1
+        },
+        "coffee_response_factor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "mineral_response_factor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "mineral_blank_subtracted": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CremaSpec": {
+      "type": "object",
+      "properties": {
+        "co2_id": {
+          "type": "string"
+        },
+        "lipid_id": {
+          "type": "string"
+        },
+        "co2_capture_fraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "bubble_gas_density_kg_m3": {
+          "type": "number",
+          "maximum": 1000,
+          "minimum": 1e-06
+        },
+        "foam_gas_volume_fraction": {
+          "type": "number",
+          "maximum": 1,
+          "minimum": 1e-06
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
