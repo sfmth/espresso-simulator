@@ -32,6 +32,7 @@ mod numeric;
 
 pub use builder::{Built, Derived, build, build_traced};
 pub use context::registry_reads;
+pub use models::chemistry_catalog::SpeciesMeta;
 pub use recipe::Recipe;
 
 /// Schema id of [`Recipe`] documents.

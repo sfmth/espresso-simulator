@@ -147,6 +147,46 @@ async function shotLabChecks(page, pkg, shot) {
     'screen readers hear the run outcome',
   );
 
+  // M2 catalogue: families stay folded until opened or searched. Separate gas
+  // inventories are joined from chemistry, rather than mislabeled as solubles.
+  await lab.getByRole('tab', { name: 'Compounds', exact: true }).click();
+  const compoundSearch = lab.getByLabel('Search compounds', { exact: true });
+  check(
+    (await lab.locator('.compound-family').count()) > 4,
+    'the M2 catalogue is grouped by family',
+  );
+  await compoundSearch.fill('caffeine');
+  check(
+    (await lab.locator('[data-species="caffeine"]').count()) === 1,
+    'compound search reveals caffeine with its provenance',
+  );
+  await compoundSearch.fill('K6');
+  check(
+    (await lab.locator('[data-species="co2"]').count()) === 1,
+    'K6 search includes the separate CO₂ phase inventory',
+  );
+  await compoundSearch.fill('');
+  await lab.locator('.compound-table').screenshot({ path: shot.path('e2e-compounds') });
+
+  await lab.getByRole('tab', { name: 'Cup chemistry', exact: true }).click();
+  const chemistryPanel = lab.locator('.cup-chemistry');
+  const ph = await chemistryPanel
+    .locator('.tile')
+    .filter({ hasText: 'Estimated cup pH' })
+    .locator('.tile-value')
+    .textContent();
+  const referencePh = referenceResult.chemistry?.acidity.ph;
+  check(
+    ph === (typeof referencePh === 'number' ? referencePh.toFixed(2) : '—'),
+    'estimated cup pH displays the WASM result with its reference conditions',
+  );
+  check(
+    (await chemistryPanel.getByText('Crema volume proxy', { exact: true }).count()) === 1 &&
+      (await chemistryPanel.getByText('True coffee TDS', { exact: true }).count()) === 1,
+    'cup chemistry separates phase proxies and true coffee TDS from the refractometer estimate',
+  );
+  await chemistryPanel.screenshot({ path: shot.path('e2e-cup-chemistry') });
+
   // Cross-section: cells on the basket, a scrubber, keyboard read-out.
   await lab.getByRole('tab', { name: 'Cross-section', exact: true }).click();
   const cells = await lab.locator('.section-cell').count();
@@ -540,6 +580,8 @@ async function main() {
     });
     const context = await browser.newContext({
       viewport: { width: 1280, height: 900 },
+      // Container locales such as en-US@posix are not valid BCP 47 tags.
+      locale: 'en-US',
       acceptDownloads: true,
     });
     const requests = [];
@@ -554,16 +596,32 @@ async function main() {
       requests.push(worker.url());
     });
     page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+      if (message.type() === 'error') {
+        errors.push(message.text());
+        console.error(`browser console: ${message.text()}`);
+      }
     });
-    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('pageerror', (error) => {
+      errors.push(error.message);
+      console.error(`browser page error: ${error.message}`);
+    });
+    page.on('requestfailed', (request) =>
+      console.error(
+        `browser request failed: ${request.url()} (${request.failure()?.errorText ?? 'unknown'})`,
+      ),
+    );
 
     mkdirSync(new URL('../test-results/', import.meta.url), { recursive: true });
     const shotPath = (name) =>
       fileURLToPath(new URL(`../test-results/${name}.png`, import.meta.url));
 
     console.log(`e2e: ${url} in ${browser.browserType().name()} ${browser.version()}`);
-    await page.goto(url);
+    const initialResponse = await page.goto(url);
+    if (process.env.E2E_DEBUG) {
+      console.log(`initial response: ${initialResponse?.status()} ${page.url()}`);
+      console.log(`initial body: ${(await page.locator('body').innerText()).slice(0, 2000)}`);
+      await page.screenshot({ path: shotPath('e2e-initial-debug'), fullPage: true });
+    }
     await page.getByRole('heading', { name: 'Puckworks' }).waitFor({ timeout: 20_000 });
     check((await page.title()) === 'Puckworks', 'page title is "Puckworks"');
     check(

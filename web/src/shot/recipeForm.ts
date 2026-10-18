@@ -17,6 +17,8 @@
  */
 import {
   BEAN_PROCESSES,
+  BEAN_STORAGE,
+  BEAN_VARIETIES,
   DISTRIBUTIONS,
   PHASE_CONTROLS,
   PSD_METHODS,
@@ -24,6 +26,8 @@ import {
   type BasketCustom,
   type BeanInput,
   type BeanProcess,
+  type BeanStorage,
+  type BeanVariety,
   type Catalog,
   type Distribution,
   type GrinderInput,
@@ -83,6 +87,20 @@ export const PHASE_FIELDS: readonly PhaseField[] = [
   'until_pressure_bar',
 ];
 
+export const WATER_FIELDS = [
+  'alkalinity_mg_l_caco3',
+  'hardness_mg_l_caco3',
+  'calcium_mg_l',
+  'magnesium_mg_l',
+  'tds_mg_l',
+  'ph',
+] as const;
+export const CHEMISTRY_FIELDS = [
+  'aroma_age_s',
+  'cup_headspace_ml',
+  'sample_temperature_c',
+] as const;
+
 export interface RecipeForm {
   bean: {
     /** '' = the default bean preset. */
@@ -93,6 +111,17 @@ export interface RecipeForm {
     days_off_roast: string;
     process: '' | BeanProcess;
     bean_temp_c: string;
+    altitude_m: string;
+    variety_group: '' | BeanVariety;
+    storage: '' | BeanStorage;
+  };
+  water: Record<keyof NonNullable<Recipe['water']>, string>;
+  chemistry: {
+    enabled: '' | 'yes' | 'no';
+    aroma_age_s: string;
+    cup_headspace_ml: string;
+    sample_temperature_c: string;
+    mineral_blank_subtracted: '' | 'yes' | 'no';
   };
   grinder: {
     mode: GrinderMode;
@@ -208,6 +237,24 @@ export function emptyForm(): RecipeForm {
       days_off_roast: '',
       process: '',
       bean_temp_c: '',
+      altitude_m: '',
+      variety_group: '',
+      storage: '',
+    },
+    water: {
+      alkalinity_mg_l_caco3: '',
+      hardness_mg_l_caco3: '',
+      calcium_mg_l: '',
+      magnesium_mg_l: '',
+      tds_mg_l: '',
+      ph: '',
+    },
+    chemistry: {
+      enabled: '',
+      aroma_age_s: '',
+      cup_headspace_ml: '',
+      sample_temperature_c: '',
+      mineral_blank_subtracted: '',
     },
     grinder: {
       mode: 'preset',
@@ -378,6 +425,22 @@ export function formToRecipe(form: RecipeForm, context: ValidationContext = {}):
   setNumber(bean, 'days_off_roast', c.optional('bean.days_off_roast', b.days_off_roast));
   if (b.process) bean.process = b.process;
   setNumber(bean, 'bean_temp_c', c.optional('bean.bean_temp_c', b.bean_temp_c));
+  setNumber(bean, 'altitude_m', c.optional('bean.altitude_m', b.altitude_m));
+  if (b.variety_group) bean.variety_group = b.variety_group;
+  if (b.storage) bean.storage = b.storage;
+
+  const water: NonNullable<Recipe['water']> = {};
+  for (const key of WATER_FIELDS) {
+    setNumber(water, key, c.optional(`water.${key}`, form.water[key]));
+  }
+  const chemistry: NonNullable<Recipe['chemistry']> = {};
+  if (form.chemistry.enabled !== '') chemistry.enabled = form.chemistry.enabled === 'yes';
+  for (const key of CHEMISTRY_FIELDS) {
+    setNumber(chemistry, key, c.optional(`chemistry.${key}`, form.chemistry[key]));
+  }
+  if (form.chemistry.mineral_blank_subtracted !== '') {
+    chemistry.mineral_blank_subtracted = form.chemistry.mineral_blank_subtracted === 'yes';
+  }
 
   // Grinder.
   const grinder: GrinderInput = {};
@@ -514,6 +577,8 @@ export function formToRecipe(form: RecipeForm, context: ValidationContext = {}):
     numerics,
   };
   if (Object.keys(overrides).length > 0) recipe.overrides = overrides;
+  if (Object.keys(water).length > 0) recipe.water = water;
+  if (Object.keys(chemistry).length > 0) recipe.chemistry = chemistry;
   if (Object.keys(c.errors).length > 0) return { ok: false, errors: c.errors, notes: c.notes };
   return { ok: true, recipe, notes: c.notes };
 }
@@ -634,8 +699,45 @@ export type ImportResult =
   { ok: true; form: RecipeForm; warnings: string[] } | { ok: false; error: string };
 
 const KNOWN_KEYS: Record<string, readonly string[]> = {
-  '': ['schema', 'bean', 'grinder', 'basket', 'prep', 'machine', 'stop', 'numerics', 'overrides'],
-  bean: ['preset', 'arabica_fraction', 'roast_level', 'days_off_roast', 'process', 'bean_temp_c'],
+  '': [
+    'schema',
+    'bean',
+    'water',
+    'chemistry',
+    'grinder',
+    'basket',
+    'prep',
+    'machine',
+    'stop',
+    'numerics',
+    'overrides',
+  ],
+  bean: [
+    'preset',
+    'arabica_fraction',
+    'roast_level',
+    'days_off_roast',
+    'process',
+    'bean_temp_c',
+    'altitude_m',
+    'variety_group',
+    'storage',
+  ],
+  water: [
+    'alkalinity_mg_l_caco3',
+    'hardness_mg_l_caco3',
+    'calcium_mg_l',
+    'magnesium_mg_l',
+    'tds_mg_l',
+    'ph',
+  ],
+  chemistry: [
+    'enabled',
+    'aroma_age_s',
+    'cup_headspace_ml',
+    'sample_temperature_c',
+    'mineral_blank_subtracted',
+  ],
   grinder: [
     'preset',
     'setting',
@@ -764,7 +866,30 @@ export function recipeToForm(input: unknown): ImportResult {
     days_off_roast: number('bean.days_off_roast', bean.days_off_roast),
     process: choice('bean.process', bean.process, BEAN_PROCESSES),
     bean_temp_c: number('bean.bean_temp_c', bean.bean_temp_c),
+    altitude_m: number('bean.altitude_m', bean.altitude_m),
+    variety_group: choice('bean.variety_group', bean.variety_group, BEAN_VARIETIES),
+    storage: choice('bean.storage', bean.storage, BEAN_STORAGE),
   };
+
+  const water = block('water');
+  for (const key of WATER_FIELDS) form.water[key] = number(`water.${key}`, water[key]);
+  const chemistry = block('chemistry');
+  for (const key of CHEMISTRY_FIELDS)
+    form.chemistry[key] = number(`chemistry.${key}`, chemistry[key]);
+  if (chemistry.enabled !== undefined && chemistry.enabled !== null) {
+    form.chemistry.enabled =
+      typeof chemistry.enabled === 'boolean' ? (chemistry.enabled ? 'yes' : 'no') : '';
+    if (typeof chemistry.enabled !== 'boolean')
+      warnings.push('Ignored chemistry.enabled: it must be true or false.');
+  }
+  if (
+    chemistry.mineral_blank_subtracted !== undefined &&
+    chemistry.mineral_blank_subtracted !== null
+  ) {
+    const blank = flag('chemistry.mineral_blank_subtracted', chemistry.mineral_blank_subtracted);
+    form.chemistry.mineral_blank_subtracted =
+      typeof chemistry.mineral_blank_subtracted === 'boolean' ? (blank ? 'yes' : 'no') : '';
+  }
 
   const grinder = block('grinder');
   const g = form.grinder;
@@ -1079,7 +1204,7 @@ export function dropUnknownOverrides(
 }
 
 const ERROR_PATH =
-  /^((?:bean|grinder|basket|prep|machine|stop|numerics|overrides)(?:\.[a-z0-9_]+|\[\d+\])*)/;
+  /^((?:bean|water|chemistry|grinder|basket|prep|machine|stop|numerics|overrides)(?:\.[a-z0-9_]+|\[\d+\])*)/;
 
 /**
  * The editor input a builder error is about, from the recipe path at the start

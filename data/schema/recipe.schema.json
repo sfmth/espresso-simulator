@@ -48,6 +48,12 @@
       "additionalProperties": {
         "type": "number"
       }
+    },
+    "water": {
+      "$ref": "#/$defs/water"
+    },
+    "chemistry": {
+      "$ref": "#/$defs/chemistry"
     }
   },
   "$defs": {
@@ -93,7 +99,7 @@
           "maximum": 3650
         },
         "process": {
-          "description": "Recorded; no effect in bean model v1.",
+          "description": "Processing method; only explicitly labelled estimated effects are applied.",
           "enum": [
             "washed",
             "natural",
@@ -110,6 +116,34 @@
           ],
           "minimum": -200,
           "maximum": 60
+        },
+        "altitude_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 4000,
+          "description": "Growing altitude in metres; recorded without a universal roast-composition correction."
+        },
+        "variety_group": {
+          "enum": [
+            "unspecified",
+            "typica-bourbon",
+            "gesha",
+            "ethiopian-landrace",
+            "canephora",
+            "hybrid",
+            null
+          ]
+        },
+        "storage": {
+          "enum": [
+            "sealed",
+            "open",
+            "frozen",
+            null
+          ]
         }
       }
     },
@@ -642,6 +676,110 @@
           "maximum": 60
         }
       }
+    },
+    "water": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "alkalinity_mg_l_caco3": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 500
+        },
+        "hardness_mg_l_caco3": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "calcium_mg_l": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 400
+        },
+        "magnesium_mg_l": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 200
+        },
+        "tds_mg_l": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "ph": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 14
+        }
+      },
+      "description": "Source-water analysis. Alkalinity and hardness are independent; both use mg/L as CaCO3."
+    },
+    "chemistry": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "mineral_blank_subtracted": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "aroma_age_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "cup_headspace_ml": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "sample_temperature_c": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "Post-shot observation settings; chemistry enabled by default."
     }
   }
 }

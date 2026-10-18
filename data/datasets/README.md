@@ -40,6 +40,7 @@ to the accepted inventory or change the fitting/held-out split below.
 | [`corrochano2017-properties/`](corrochano2017-properties/) | tapped bed porosity, solid density, particle porosity, partition coefficient, permeameter geometry | facts cited | V6 cases |
 | [`smrke2024-psd/`](smrke2024-psd/) | X50 and share of fines for 15 Bentwood V63 samples, with and without added fines (Fig. 2, digitised) | CC BY 4.0 | V5 cases |
 | [`smrke2024-shots/`](smrke2024-shots/) | shot time and EY of 46 shots (Fig. 3, digitised; settings from Fig. 7) | CC BY 4.0 | V5 (held out) |
+| [`gloess2013-espresso-chemistry/`](gloess2013-espresso-chemistry/) | 112 setup and chemistry values for four espresso/lungo preparations, retaining per-cup, per-10 mL and per-dose bases (Tables 1, S2-S4) | CC BY 2.0 | V7 held-out evidence; incompletely specified inputs |
 
 The CSV files of the converted and digitised datasets can be regenerated from the original downloads with
 the importers in [`python/puckworks_tools/sources/`](../../python/puckworks_tools/sources/); each sidecar

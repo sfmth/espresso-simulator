@@ -168,7 +168,8 @@ parameters:
     description: Effective intraparticle diffusivity of K⁺ from batch infusion.
     units: "m^2/s"
     value: 3.15e-10
-    range: {min: 0}
+    # Core admissibility range; not a statement of measurement uncertainty.
+    range: {min: 1.0e-16, max: 1.0e-7}
     conditions: 80 °C, batch infusion of Kenyan Arabica.
     tag: fitted
     evidence_grade: A
@@ -188,7 +189,8 @@ parameters:
     description: Effective intraparticle diffusivity of Mg²⁺ from batch infusion.
     units: "m^2/s"
     value: 7.0e-11
-    range: {min: 0}
+    # Core admissibility range; not a statement of measurement uncertainty.
+    range: {min: 1.0e-16, max: 1.0e-7}
     conditions: 80 °C, batch infusion of Kenyan Arabica.
     tag: fitted
     evidence_grade: A
@@ -209,7 +211,8 @@ parameters:
     description: Effective intraparticle diffusivity of H₂PO₄⁻ from batch infusion.
     units: "m^2/s"
     value: 1.09e-10
-    range: {min: 0}
+    # Core admissibility range; not a statement of measurement uncertainty.
+    range: {min: 1.0e-16, max: 1.0e-7}
     conditions: 80 °C, batch infusion of Kenyan Arabica.
     tag: fitted
     evidence_grade: A

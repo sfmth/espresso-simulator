@@ -13,6 +13,7 @@ import { checkShotResult } from '../engine/shotCheck';
 import { useEngine } from '../engine/EngineContext';
 import { toJsonResult } from '../engine/shotData';
 import { CompoundTable } from './CompoundTable';
+import { CupChemistryPanel } from './CupChemistryPanel';
 import { CrossSection } from './CrossSection';
 import { seriesCsv } from './csv';
 import { datedName, downloadCsv, downloadJson } from './download';
@@ -467,6 +468,15 @@ export function ShotLab() {
                   render: () => (
                     <ErrorBoundary name="the compound table">
                       <CompoundTable outcome={latest} registry={registry} catalog={catalog} />
+                    </ErrorBoundary>
+                  ),
+                },
+                {
+                  id: 'chemistry',
+                  label: 'Cup chemistry',
+                  render: () => (
+                    <ErrorBoundary name="cup chemistry">
+                      <CupChemistryPanel outcome={latest} />
                     </ErrorBoundary>
                   ),
                 },

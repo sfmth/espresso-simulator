@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.dataset/1
+id: gloess2013-espresso-chemistry
+title: Selected espresso and lungo chemistry with dose, volume and titration endpoints (Gloess 2013)
+citation: >-
+  Gloess A.N., Schoenbaechler B., Klopprogge B., D'Ambrosio L., Chatelain K., Bongartz A.,
+  Strittmatter A., Rast M., Yeretzian C. (2013) Comparison of nine common coffee extraction
+  methods: instrumental and sensory analysis. Eur. Food Res. Technol. 236:607-627.
+  Main article Table 1 and Electronic Supplementary Material Tables 2-4; DE, SE, DL and SL only.
+doi: "10.1007/s00217-013-1917-x"
+url: "https://link.springer.com/article/10.1007/s00217-013-1917-x"
+licence: CC-BY-2.0
+redistribution: allowed
+retrieved: "2026-10-18"
+research_note_ref: ["02 §2", "02 §5"]
+obtained: >-
+  Chemistry copied without fitting or digitisation from the official DOCX supplement by
+  python/puckworks_tools/sources/gloess2013.py. Source URL:
+  https://media.springernature.com/original/springer-static/esm/art%3A10.1007%2Fs00217-013-1917-x/MediaObjects/217_2013_1917_MOESM1_ESM.docx
+  (65701 bytes; SHA-256 536e391a7345cb0b6199ad0ee5a8333893d99e4d371e8aee6a9b41d80efd478f).
+  Setup records manually transcribed from main-article Table 1, p. 609, in the importer.
+  Main PDF SHA-256 8ce3b26f5c6eee3313ee0169587a13eb9c6dbc71b30754a4c65d14ffb83fb34a.
+  No original document, figure or entire nine-method table is redistributed. The primary article
+  explicitly permits use under Creative Commons Attribution. Publisher-deposited Crossref metadata
+  at https://api.crossref.org/works/10.1007/s00217-013-1917-x identifies the licence URL as
+  http://creativecommons.org/licenses/by/2.0 with a start date of 2013-01-30. Attribution is the
+  citation and DOI above. This long-form selection and its separation of ambiguous TA are changes.
+uncertainty: >-
+  Supplement captions call the printed +/- values standard deviation of the mean (s95%).
+  Preserve that wording; do not reinterpret these as replicate SD or raw observations. Three
+  independently prepared combined samples per method were analysed in triplicate, mostly on
+  two days. Setup +/- values are from Table 1; SE/SL dose errors are estimates from initial machine
+  settings. Table 1 gives SE 25.3 +/- 0.3 s and SL 35.3 +/- 0.1 s, whereas prose reports +/- 0.7 s
+  (n=15, 95%) and +/- 0.2 s (n=6, 95%). Blank uncertainty means unreported, not zero.
+columns:
+  - name: method
+    type: string
+    description: DE Dalla Corte espresso; DL Dalla Corte lungo; SE Schaerer espresso; SL Schaerer lungo.
+  - name: source_table
+    type: string
+    description: Main-article Table1 or supplement SuppTable2, SuppTable3, SuppTable4.
+  - name: basis
+    type: string
+    description: per_extraction, per_cup, per_10_ml, or per_dose; see notes for intensive observables.
+  - name: quantity
+    type: string
+    description: Source observable or setup quantity; cqa3 and cqa5 are explicitly distinct HPLC analytes.
+  - name: value
+    type: number
+    units_column: units
+    description: Published mean or set value in the original printed units.
+  - name: uncertainty
+    type: number
+    units_column: units
+    required: false
+    description: Published +/- value in the same units; blank if absent.
+  - name: units
+    type: string
+    description: Unit vocabulary; percent means mass percent, Brix and pH use dimensionless 1.
+files:
+  - path: measurements.csv
+    format: csv
+    description: 112 cited setup and chemistry observations for four pump-machine preparations.
+notes: >-
+  V7 held out: do not fit chemical inventories, rates or buffer constants to these observations.
+  All four machine preparations produce two cups per extraction; dry dose is for both cups.
+  Published output is volume (30 mL espresso or 120 mL lungo per cup), not a measured cup mass.
+  DE/DL use Guatemala Antigua LA CEIBA at Pt80/Pt86, respectively, stored 1-2 weeks in airtight
+  valved bags; SE/SL use the same coffee. General prose says Pt80 for espresso/Pt86 for lungo;
+  use the explicit Table 1 rows for these four methods. Water hardness 4-6 degrees dH is reported,
+  but alkalinity, pH and full ionic composition of the input water are not. SE/SL 90 degC is boiler
+  temperature; actual extraction temperature is undefined. DE uses KED640 setting 3.0 for sample1
+  and between2.5-2.75 for samples2/3; DL7.25 then7.5. The paper gives PSD peak/FWHM only for
+  neighbouring settings3 and7, not all exact samples; no PSD should be invented.
+  SupplementTable2 is normalised to10mL: caffeine and CQA are mg per10mL; NaOH volumes are mL
+  of0.1M base per10mL brew. Titration was actually performed on40mL aliquots at20degC, with
+  endpoints6.6 and8.0. Multiply the per10mL NaOH value by10 to obtain mmol/L of base equivalents.
+  SupplementTable3 gives amounts per30mL/120mL cup. Table4 percentages are extracted mass per
+  dry ground-coffee mass (e.g.DE0.79% caffeine); they are NOT fractions of the bean's available
+  caffeine inventory. Table4 NaOH values repeat Table3 despite a per-gram caption and are excluded
+  as internally ambiguous. pH, Brix and weight fractions are intensive values; do not multiply
+  them by cup count or by3/12. Total solids are gravimetric dry residue, not necessarily filtered
+  dissolved solids. Fat is esterified fatty acids after transesterification, not total lipid mass.
+  Unquantified4-CQA is absent, not zero. Headspace values are detector counts, not compound masses,
+  and are excluded. No trigonelline measurement is reported. Per-cup, per10mL and per-dose rows
+  are transformations of the same combined samples, not independent experimental replicates.

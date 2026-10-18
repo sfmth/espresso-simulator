@@ -2,6 +2,48 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.6.0] - 2026-10-17
+
+M2 development: chemistry, beans and water. The owner selected the next milestone after the
+novel-shot diagnostic; M1 scientific targets and the v2 calibration remain unchanged.
+
+### Added
+- All 55 planned compounds plus legacy acid/unassigned-solids diagnostics, shared K1–K6
+  transport bases, separate K5/K6 inventories and explicit independent transport closure.
+  Composition and transport estimates carry registry evidence and sources.
+- Bean altitude, variety and storage descriptors, explicit storage/process scenarios, and
+  three additional generic bean presets. The measured M1 analyte anchors remain intact.
+- Source-water controls, effective 25 C polyprotic/carbonate buffering, pH and titratable
+  acidity; cup-headspace aroma partition and thiol binding; separate gas/oil recoveries,
+  crema-volume proxy and a mineral/temperature-aware optical observation.
+- Searchable compound families and a cup-chemistry view, editable observation conditions,
+  persistence/import/export support, and optional raw-spec chemistry for old JSON inputs.
+- Audited Gloess 2013 publisher data (CC BY 2.0), `m2-validate`, and a conditional comparison
+  report. Missing source inputs remain explicit and do not establish a V7 pass.
+- Numerical/speciation, phase-accounting, browser and cross-language regression checks.
+  Verification and actual comparison results: [M2 report](docs/validation/m2-validation.md).
+
+### Preserved
+- The pre-M2 [0.5.0 validation](docs/validation/baseline-v0.5.0/README.md), unchanged fitted
+  parameters and M1 case boundary. No new data enter the numerical fit.
+
+### Changed
+- Bound the three existing mineral-diffusivity admissibility ranges to the
+  supported solver interval as M2 starts using them; their measured values,
+  priors and sources are unchanged.
+
+### Verification
+- 243 Rust tests pass (one existing opt-in sweep ignored), alongside 413 Python
+  and 458 web tests. Formatting, strict clippy, lint/type checks, production
+  builds, dependency licences, registry/export/release checks and browser E2E pass.
+- Native fixtures match 214,018 shot values and 4,203 kernel values exactly;
+  browser/native results agree. Seven legacy raw specs retain all 82,342 numeric
+  values bit for bit, including signed zero. Original M1 predictions are unchanged.
+- Conditional Gloess comparisons meet the compound band in 5/16 scored pairs;
+  independent dissolved transport closure meets 5% in 6/8 scenarios. Missing
+  experimental inputs keep independent V7 validation open. The M2 configuration
+  also remains above the roadmap's performance targets; see the model notes.
+
 ## [0.5.0] — 2026-10-16
 
 Experimental upstream pressure storage for bloom pauses. It is opt-in; default recipes keep

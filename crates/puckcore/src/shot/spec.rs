@@ -31,6 +31,8 @@ pub struct ShotSpec {
     pub thermal: ThermalSpec,
     pub machine: MachineSpec,
     pub numerics: NumericsSpec,
+    /// Optional post-extraction cup chemistry. `None` preserves the M1 model.
+    pub chemistry: Option<super::ChemistrySpec>,
 }
 
 impl Default for ShotSpec {
@@ -44,6 +46,7 @@ impl Default for ShotSpec {
             thermal: ThermalSpec::default(),
             machine: MachineSpec::default(),
             numerics: NumericsSpec::default(),
+            chemistry: None,
         }
     }
 }

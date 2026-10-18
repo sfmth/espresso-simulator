@@ -763,9 +763,11 @@ fn bean_defaults_process_and_validation() {
     ));
     assert_eq!(
         washed["spec"], natural["spec"],
-        "process is a documented no-op"
+        "washed/natural labels have no universal correction for tracked roasted compounds"
     );
-    assert!(notes(&natural).contains("no effect in bean model v1"));
+    assert!(
+        notes(&natural).contains("no quantitative correction is applied to the tracked compounds")
+    );
     for (bean, msg) in [
         (json!({"roast_level": 1.5}), "roast_level"),
         (json!({"arabica_fraction": -0.1}), "arabica_fraction"),

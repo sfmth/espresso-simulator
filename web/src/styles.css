@@ -1227,6 +1227,63 @@ code {
   font-weight: 600;
 }
 
+.compound-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+}
+
+.compound-family-label {
+  display: block;
+  margin-top: 0.35rem;
+  font-weight: 400;
+}
+
+.compound-family button {
+  appearance: none;
+  width: 100%;
+  border: 0;
+  padding: 0.5rem 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.compound-metadata {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.compound-metadata summary {
+  cursor: pointer;
+}
+
+.chemistry-detail > .table-wrap,
+.chemistry-detail > .note,
+.chemistry-accounting {
+  margin-top: 0.75rem;
+}
+
+.chemistry-accounting {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.chemistry-accounting > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.chemistry-accounting dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .provenance-cell summary {
   cursor: pointer;
 }

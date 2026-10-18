@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-"""Golden shot fixture for the cross-language check of the M1 shot API.
+"""Golden shot fixture for the cross-language check of the shot API.
 
 ``data/fixtures/shot_cases.json`` holds a few recipes with the spec the native builder makes of
 each and the result the native solver returns for that spec. The web tests feed each ``recipe`` to
@@ -69,8 +69,8 @@ def _compliance_recipe(*, vent: bool) -> dict[str, Any]:
     )
 
 
-#: The fixture's recipes. Short shots (35–50 s) keep the file under 3 MB: each case stores every
-#: 0.1 s output point, including the hydraulic inventories, and 12 spatial snapshots.
+#: The fixture's recipes. Short shots (35–50 s) keep the full M2 file under 10 MB: each case stores
+#: every 0.1 s output point, all passengers/hydraulic inventories and 12 spatial snapshots.
 CASES: tuple[tuple[str, dict[str, Any]], ...] = (
     (
         "presets_flat_9bar_tier1",

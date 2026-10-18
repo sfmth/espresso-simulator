@@ -1,0 +1,1253 @@
+{
+  "schema": "puckworks.chemistry-catalog/1",
+  "description": "55 PLAN Appendix A species plus a legacy diagnostic and an explicit unresolved soluble remainder. Catalogue metadata is not validation of all modeled quantities.",
+  "species": [
+    {
+      "id": "caffeine",
+      "name": "Caffeine",
+      "family": "alkaloid",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "measured espresso kinetics",
+      "composition_evidence": "existing M1 anchor; unchanged",
+      "registry_refs": [
+        "chemistry.species.caffeine.mw",
+        "bean.composition.arabica.caffeine",
+        "extraction.diffusivity.caffeine.particle_80c",
+        "extraction.partition.caffeine",
+        "model.species.caffeine.surface_fraction_scale"
+      ],
+      "notes": []
+    },
+    {
+      "id": "trigonelline",
+      "name": "Trigonelline",
+      "family": "alkaloid",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "measured espresso kinetics",
+      "composition_evidence": "existing M1 anchor; unchanged",
+      "registry_refs": [
+        "chemistry.species.trigonelline.mw",
+        "model.bean.trigonelline.arabica_light",
+        "model.species.trigonelline.diffusivity_80c",
+        "model.species.trigonelline.partition",
+        "model.species.trigonelline.surface_fraction_scale"
+      ],
+      "notes": []
+    },
+    {
+      "id": "cqa5",
+      "name": "5-Caffeoylquinic acid (5-CQA)",
+      "family": "chlorogenic acid",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "measured espresso kinetics",
+      "composition_evidence": "existing M1 anchor; unchanged",
+      "registry_refs": [
+        "chemistry.species.cqa5.mw",
+        "chemistry.species.cqa5.pka1",
+        "chemistry.species.cqa5.pka2",
+        "chemistry.species.cqa5.pka3",
+        "bean.composition.arabica.5cqa",
+        "model.species.cqa5.diffusivity_80c",
+        "model.species.cqa5.partition",
+        "model.species.cqa5.surface_fraction_scale"
+      ],
+      "notes": [
+        "Acid speciation uses Romero 2018 Table 3 chlorogenic-acid values including phenolic dissociation; transfer to coffee and to 3-/4-CQA is unvalidated."
+      ]
+    },
+    {
+      "id": "cqa3",
+      "name": "3-Caffeoylquinic acid (3-CQA)",
+      "family": "chlorogenic acid",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated analogue using the unchanged 5-CQA transport basis",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.cqa3.arabica",
+        "chemistry.composition.cqa3.robusta",
+        "chemistry.composition.cqa3.roast_coefficient",
+        "chemistry.species.cqa3.mw",
+        "chemistry.species.cqa3.pka1",
+        "chemistry.species.cqa3.pka2",
+        "chemistry.species.cqa3.pka3",
+        "model.species.cqa5.diffusivity_80c",
+        "model.species.cqa5.partition",
+        "model.species.cqa5.surface_fraction_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed.",
+        "Acid speciation uses Romero 2018 Table 3 chlorogenic-acid values including phenolic dissociation; transfer to coffee and to 3-/4-CQA is unvalidated."
+      ]
+    },
+    {
+      "id": "cqa4",
+      "name": "4-Caffeoylquinic acid (4-CQA)",
+      "family": "chlorogenic acid",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated analogue using the unchanged 5-CQA transport basis",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.cqa4.arabica",
+        "chemistry.composition.cqa4.robusta",
+        "chemistry.composition.cqa4.roast_coefficient",
+        "chemistry.species.cqa4.mw",
+        "chemistry.species.cqa4.pka1",
+        "chemistry.species.cqa4.pka2",
+        "chemistry.species.cqa4.pka3",
+        "model.species.cqa5.diffusivity_80c",
+        "model.species.cqa5.partition",
+        "model.species.cqa5.surface_fraction_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed.",
+        "Acid speciation uses Romero 2018 Table 3 chlorogenic-acid values including phenolic dissociation; transfer to coffee and to 3-/4-CQA is unvalidated."
+      ]
+    },
+    {
+      "id": "fqa",
+      "name": "Feruloylquinic acids",
+      "family": "chlorogenic acid",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.fqa.arabica",
+        "chemistry.composition.fqa.robusta",
+        "chemistry.composition.fqa.roast_coefficient",
+        "chemistry.species.fqa.mw",
+        "chemistry.species.fqa.pka1",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "dicqa",
+      "name": "Dicaffeoylquinic acids",
+      "family": "chlorogenic acid",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.dicqa.arabica",
+        "chemistry.composition.dicqa.robusta",
+        "chemistry.composition.dicqa.roast_coefficient",
+        "chemistry.species.dicqa.mw",
+        "chemistry.species.dicqa.pka1",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "cgl_mono",
+      "name": "Monoester chlorogenic acid lactones",
+      "family": "bitter lactone",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.cgl_mono.arabica",
+        "chemistry.composition.cgl_mono.robusta",
+        "chemistry.composition.cgl_mono.roast_coefficient",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "cgl_di",
+      "name": "Diester chlorogenic acid lactones",
+      "family": "bitter lactone",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.cgl_di.arabica",
+        "chemistry.composition.cgl_di.robusta",
+        "chemistry.composition.cgl_di.roast_coefficient",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "phenylindanes",
+      "name": "Phenylindanes",
+      "family": "retained bitter",
+      "kinetic_class": "K4",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.phenylindanes.arabica",
+        "chemistry.composition.phenylindanes.robusta",
+        "chemistry.composition.phenylindanes.roast_coefficient",
+        "chemistry.kinetics.k4.diffusivity",
+        "chemistry.kinetics.k4.partition",
+        "chemistry.kinetics.k4.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "quinic_acid",
+      "name": "Quinic acid",
+      "family": "organic acid",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.quinic_acid.arabica",
+        "chemistry.composition.quinic_acid.robusta",
+        "chemistry.composition.quinic_acid.roast_coefficient",
+        "chemistry.species.quinic_acid.mw",
+        "chemistry.species.quinic_acid.pka1",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "citric_acid",
+      "name": "Citric acid",
+      "family": "organic acid",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.citric_acid.arabica",
+        "chemistry.composition.citric_acid.robusta",
+        "chemistry.composition.citric_acid.roast_coefficient",
+        "chemistry.species.citric_acid.mw",
+        "chemistry.species.citric_acid.pka1",
+        "chemistry.species.citric_acid.pka2",
+        "chemistry.species.citric_acid.pka3",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "malic_acid",
+      "name": "Malic acid",
+      "family": "organic acid",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.malic_acid.arabica",
+        "chemistry.composition.malic_acid.robusta",
+        "chemistry.composition.malic_acid.roast_coefficient",
+        "chemistry.species.malic_acid.mw",
+        "chemistry.species.malic_acid.pka1",
+        "chemistry.species.malic_acid.pka2",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "acetic_acid",
+      "name": "Acetic acid",
+      "family": "organic acid",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.acetic_acid.arabica",
+        "chemistry.composition.acetic_acid.robusta",
+        "chemistry.composition.acetic_acid.roast_coefficient",
+        "chemistry.species.acetic_acid.mw",
+        "chemistry.species.acetic_acid.pka1",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "formic_acid",
+      "name": "Formic acid",
+      "family": "organic acid",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.formic_acid.arabica",
+        "chemistry.composition.formic_acid.robusta",
+        "chemistry.composition.formic_acid.roast_coefficient",
+        "chemistry.species.formic_acid.mw",
+        "chemistry.species.formic_acid.pka1",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "lactic_acid",
+      "name": "Lactic acid",
+      "family": "organic acid",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.lactic_acid.arabica",
+        "chemistry.composition.lactic_acid.robusta",
+        "chemistry.composition.lactic_acid.roast_coefficient",
+        "chemistry.species.lactic_acid.mw",
+        "chemistry.species.lactic_acid.pka1",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "phosphate",
+      "name": "Phosphate (phosphoric-acid equivalent)",
+      "family": "mineral acid",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "measured batch diffusivity; espresso transfer estimated",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.phosphate.arabica",
+        "chemistry.composition.phosphate.robusta",
+        "chemistry.composition.phosphate.roast_coefficient",
+        "chemistry.species.phosphate.mw",
+        "chemistry.species.phosphate.pka1",
+        "chemistry.species.phosphate.pka2",
+        "chemistry.species.phosphate.pka3",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale",
+        "extraction.diffusivity.phosphate.particle_80c"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "sucrose",
+      "name": "Sucrose",
+      "family": "sugar",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.sucrose.arabica",
+        "chemistry.composition.sucrose.robusta",
+        "chemistry.composition.sucrose.roast_coefficient",
+        "chemistry.species.sucrose.mw",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "potassium",
+      "name": "Potassium",
+      "family": "mineral",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "measured batch diffusivity; espresso transfer estimated",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.potassium.arabica",
+        "chemistry.composition.potassium.robusta",
+        "chemistry.composition.potassium.roast_coefficient",
+        "chemistry.species.potassium.mw",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale",
+        "extraction.diffusivity.potassium.particle_80c"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "melanoidins_low",
+      "name": "Melanoidins: low molecular weight",
+      "family": "browning polymer",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.melanoidins_low.arabica",
+        "chemistry.composition.melanoidins_low.robusta",
+        "chemistry.composition.melanoidins_low.roast_coefficient",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "melanoidins_medium",
+      "name": "Melanoidins: medium molecular weight",
+      "family": "browning polymer",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.melanoidins_medium.arabica",
+        "chemistry.composition.melanoidins_medium.robusta",
+        "chemistry.composition.melanoidins_medium.roast_coefficient",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "melanoidins_high",
+      "name": "Melanoidins: high molecular weight",
+      "family": "browning polymer",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.melanoidins_high.arabica",
+        "chemistry.composition.melanoidins_high.robusta",
+        "chemistry.composition.melanoidins_high.roast_coefficient",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "polysaccharides",
+      "name": "Soluble polysaccharides",
+      "family": "carbohydrate",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.polysaccharides.arabica",
+        "chemistry.composition.polysaccharides.robusta",
+        "chemistry.composition.polysaccharides.roast_coefficient",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "diketopiperazines",
+      "name": "Diketopiperazines",
+      "family": "bitter peptide",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.diketopiperazines.arabica",
+        "chemistry.composition.diketopiperazines.robusta",
+        "chemistry.composition.diketopiperazines.roast_coefficient",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "mozambioside",
+      "name": "Mozambioside and roast products",
+      "family": "bitter glycoside",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.mozambioside.arabica",
+        "chemistry.composition.mozambioside.robusta",
+        "chemistry.composition.mozambioside.roast_coefficient",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "magnesium",
+      "name": "Magnesium",
+      "family": "mineral",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "measured batch diffusivity; espresso transfer estimated",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.magnesium.arabica",
+        "chemistry.composition.magnesium.robusta",
+        "chemistry.composition.magnesium.roast_coefficient",
+        "chemistry.species.magnesium.mw",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale",
+        "extraction.diffusivity.magnesium.particle_80c"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "calcium",
+      "name": "Calcium from coffee",
+      "family": "mineral",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.calcium.arabica",
+        "chemistry.composition.calcium.robusta",
+        "chemistry.composition.calcium.roast_coefficient",
+        "chemistry.species.calcium.mw",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "lipid_emulsion",
+      "name": "Lipid emulsion (excluding listed diterpenes)",
+      "family": "lipid",
+      "kinetic_class": "K5",
+      "phase": "lipid",
+      "counts_toward_tds": false,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.lipid_emulsion.arabica",
+        "chemistry.composition.lipid_emulsion.robusta",
+        "chemistry.composition.lipid_emulsion.roast_coefficient",
+        "chemistry.phase.lipid_emulsion.cup_transfer_fraction"
+      ],
+      "notes": [
+        "Gas/lipid phase inventory is separate from dissolved particle transport and TDS."
+      ]
+    },
+    {
+      "id": "cafestol",
+      "name": "Cafestol",
+      "family": "diterpene",
+      "kinetic_class": "K5",
+      "phase": "lipid",
+      "counts_toward_tds": false,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.cafestol.arabica",
+        "chemistry.composition.cafestol.robusta",
+        "chemistry.composition.cafestol.roast_coefficient",
+        "chemistry.species.cafestol.mw",
+        "chemistry.phase.cafestol.cup_transfer_fraction"
+      ],
+      "notes": [
+        "Gas/lipid phase inventory is separate from dissolved particle transport and TDS."
+      ]
+    },
+    {
+      "id": "kahweol",
+      "name": "Kahweol",
+      "family": "diterpene",
+      "kinetic_class": "K5",
+      "phase": "lipid",
+      "counts_toward_tds": false,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.kahweol.arabica",
+        "chemistry.composition.kahweol.robusta",
+        "chemistry.composition.kahweol.roast_coefficient",
+        "chemistry.species.kahweol.mw",
+        "chemistry.phase.kahweol.cup_transfer_fraction"
+      ],
+      "notes": [
+        "Gas/lipid phase inventory is separate from dissolved particle transport and TDS."
+      ]
+    },
+    {
+      "id": "co2",
+      "name": "Carbon dioxide",
+      "family": "gas",
+      "kinetic_class": "K6",
+      "phase": "gas",
+      "counts_toward_tds": false,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.species.co2.mw",
+        "chemistry.species.co2.henry",
+        "chemistry.phase.co2.cup_transfer_fraction"
+      ],
+      "notes": [
+        "Gas/lipid phase inventory is separate from dissolved particle transport and TDS."
+      ]
+    },
+    {
+      "id": "furfurylthiol",
+      "name": "2-Furfurylthiol",
+      "family": "odorant: roasty, coffee",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.furfurylthiol.arabica",
+        "chemistry.composition.furfurylthiol.robusta",
+        "chemistry.composition.furfurylthiol.roast_coefficient",
+        "chemistry.species.furfurylthiol.threshold",
+        "chemistry.species.furfurylthiol.binding_half_life",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "mmbf",
+      "name": "3-Mercapto-3-methylbutyl formate",
+      "family": "odorant: blackcurrant",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.mmbf.arabica",
+        "chemistry.composition.mmbf.robusta",
+        "chemistry.composition.mmbf.roast_coefficient",
+        "chemistry.species.mmbf.threshold",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "methylbutenethiol",
+      "name": "3-Methyl-2-butene-1-thiol",
+      "family": "odorant: sulfury, roasty",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.methylbutenethiol.arabica",
+        "chemistry.composition.methylbutenethiol.robusta",
+        "chemistry.composition.methylbutenethiol.roast_coefficient",
+        "chemistry.species.methylbutenethiol.binding_half_life",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "methanethiol",
+      "name": "Methanethiol",
+      "family": "odorant: sulfury, fresh",
+      "kinetic_class": "K6",
+      "phase": "gas",
+      "counts_toward_tds": false,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.methanethiol.arabica",
+        "chemistry.composition.methanethiol.robusta",
+        "chemistry.composition.methanethiol.roast_coefficient",
+        "chemistry.species.methanethiol.threshold",
+        "chemistry.species.methanethiol.henry",
+        "chemistry.phase.methanethiol.cup_transfer_fraction"
+      ],
+      "notes": [
+        "Gas/lipid phase inventory is separate from dissolved particle transport and TDS."
+      ]
+    },
+    {
+      "id": "methional",
+      "name": "Methional",
+      "family": "odorant: boiled potato",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.methional.arabica",
+        "chemistry.composition.methional.robusta",
+        "chemistry.composition.methional.roast_coefficient",
+        "chemistry.species.methional.threshold",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "acetaldehyde",
+      "name": "Acetaldehyde",
+      "family": "odorant: fruity",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.acetaldehyde.arabica",
+        "chemistry.composition.acetaldehyde.robusta",
+        "chemistry.composition.acetaldehyde.roast_coefficient",
+        "chemistry.species.acetaldehyde.threshold",
+        "chemistry.species.acetaldehyde.henry",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "propanal",
+      "name": "Propanal",
+      "family": "odorant: fruity",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.propanal.arabica",
+        "chemistry.composition.propanal.robusta",
+        "chemistry.composition.propanal.roast_coefficient",
+        "chemistry.species.propanal.threshold",
+        "chemistry.species.propanal.henry",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "methylpropanal",
+      "name": "2-Methylpropanal",
+      "family": "odorant: malty",
+      "kinetic_class": "K6",
+      "phase": "gas",
+      "counts_toward_tds": false,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.methylpropanal.arabica",
+        "chemistry.composition.methylpropanal.robusta",
+        "chemistry.composition.methylpropanal.roast_coefficient",
+        "chemistry.species.methylpropanal.threshold",
+        "chemistry.species.methylpropanal.henry",
+        "chemistry.phase.methylpropanal.cup_transfer_fraction"
+      ],
+      "notes": [
+        "Gas/lipid phase inventory is separate from dissolved particle transport and TDS."
+      ]
+    },
+    {
+      "id": "methylbutanal2",
+      "name": "2-Methylbutanal",
+      "family": "odorant: malty",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.methylbutanal2.arabica",
+        "chemistry.composition.methylbutanal2.robusta",
+        "chemistry.composition.methylbutanal2.roast_coefficient",
+        "chemistry.species.methylbutanal2.henry",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "methylbutanal3",
+      "name": "3-Methylbutanal",
+      "family": "odorant: malty, cocoa",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.methylbutanal3.arabica",
+        "chemistry.composition.methylbutanal3.robusta",
+        "chemistry.composition.methylbutanal3.roast_coefficient",
+        "chemistry.species.methylbutanal3.threshold",
+        "chemistry.species.methylbutanal3.henry",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "butanedione",
+      "name": "2,3-Butanedione",
+      "family": "odorant: buttery",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.butanedione.arabica",
+        "chemistry.composition.butanedione.robusta",
+        "chemistry.composition.butanedione.roast_coefficient",
+        "chemistry.species.butanedione.threshold",
+        "chemistry.species.butanedione.henry",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "pentanedione",
+      "name": "2,3-Pentanedione",
+      "family": "odorant: buttery",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.pentanedione.arabica",
+        "chemistry.composition.pentanedione.robusta",
+        "chemistry.composition.pentanedione.roast_coefficient",
+        "chemistry.species.pentanedione.henry",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "furaneol",
+      "name": "Furaneol (HDMF)",
+      "family": "odorant: caramel",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.furaneol.arabica",
+        "chemistry.composition.furaneol.robusta",
+        "chemistry.composition.furaneol.roast_coefficient",
+        "chemistry.species.furaneol.threshold",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "homofuraneol",
+      "name": "Homofuraneol",
+      "family": "odorant: caramel, sweet",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.homofuraneol.arabica",
+        "chemistry.composition.homofuraneol.robusta",
+        "chemistry.composition.homofuraneol.roast_coefficient",
+        "chemistry.species.homofuraneol.threshold",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "sotolon",
+      "name": "Sotolon",
+      "family": "odorant: seasoning",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.sotolon.arabica",
+        "chemistry.composition.sotolon.robusta",
+        "chemistry.composition.sotolon.roast_coefficient",
+        "chemistry.species.sotolon.threshold",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "abhexon",
+      "name": "Abhexon",
+      "family": "odorant: seasoning",
+      "kinetic_class": "K1",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.abhexon.arabica",
+        "chemistry.composition.abhexon.robusta",
+        "chemistry.composition.abhexon.roast_coefficient",
+        "chemistry.species.abhexon.threshold",
+        "chemistry.kinetics.k1.diffusivity",
+        "chemistry.kinetics.k1.partition",
+        "chemistry.kinetics.k1.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "guaiacol",
+      "name": "Guaiacol",
+      "family": "odorant: smoky",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.guaiacol.arabica",
+        "chemistry.composition.guaiacol.robusta",
+        "chemistry.composition.guaiacol.roast_coefficient",
+        "chemistry.species.guaiacol.threshold",
+        "chemistry.species.guaiacol.henry",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "ethylguaiacol",
+      "name": "4-Ethylguaiacol",
+      "family": "odorant: spicy",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.ethylguaiacol.arabica",
+        "chemistry.composition.ethylguaiacol.robusta",
+        "chemistry.composition.ethylguaiacol.roast_coefficient",
+        "chemistry.species.ethylguaiacol.threshold",
+        "chemistry.species.ethylguaiacol.henry",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "vinylguaiacol",
+      "name": "4-Vinylguaiacol",
+      "family": "odorant: clove",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.vinylguaiacol.arabica",
+        "chemistry.composition.vinylguaiacol.robusta",
+        "chemistry.composition.vinylguaiacol.roast_coefficient",
+        "chemistry.species.vinylguaiacol.threshold",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "vanillin",
+      "name": "Vanillin",
+      "family": "odorant: vanilla",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.vanillin.arabica",
+        "chemistry.composition.vanillin.robusta",
+        "chemistry.composition.vanillin.roast_coefficient",
+        "chemistry.species.vanillin.threshold",
+        "chemistry.species.vanillin.henry",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "damascenone",
+      "name": "Beta-damascenone",
+      "family": "odorant: honey, apple",
+      "kinetic_class": "K3",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.damascenone.arabica",
+        "chemistry.composition.damascenone.robusta",
+        "chemistry.composition.damascenone.roast_coefficient",
+        "chemistry.species.damascenone.threshold",
+        "chemistry.species.damascenone.henry",
+        "chemistry.kinetics.k3.diffusivity",
+        "chemistry.kinetics.k3.partition",
+        "chemistry.kinetics.k3.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "edmp",
+      "name": "2-Ethyl-3,5-dimethylpyrazine",
+      "family": "odorant: earthy, roasty",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.edmp.arabica",
+        "chemistry.composition.edmp.robusta",
+        "chemistry.composition.edmp.roast_coefficient",
+        "chemistry.species.edmp.threshold",
+        "chemistry.species.edmp.henry",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "diethylmethylpyrazine",
+      "name": "2,3-Diethyl-5-methylpyrazine",
+      "family": "odorant: earthy, roasty",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.diethylmethylpyrazine.arabica",
+        "chemistry.composition.diethylmethylpyrazine.robusta",
+        "chemistry.composition.diethylmethylpyrazine.roast_coefficient",
+        "chemistry.species.diethylmethylpyrazine.threshold",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "ibmp",
+      "name": "3-Isobutyl-2-methoxypyrazine",
+      "family": "odorant: pea, earthy",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "estimated kinetic class; no absolute espresso calibration",
+      "composition_evidence": "estimated broad composition/availability prior",
+      "registry_refs": [
+        "chemistry.composition.ibmp.arabica",
+        "chemistry.composition.ibmp.robusta",
+        "chemistry.composition.ibmp.roast_coefficient",
+        "chemistry.species.ibmp.threshold",
+        "chemistry.species.ibmp.henry",
+        "chemistry.kinetics.k2.diffusivity",
+        "chemistry.kinetics.k2.partition",
+        "chemistry.kinetics.k2.surface_scale"
+      ],
+      "notes": [
+        "No fitted espresso-specific absolute composition is claimed."
+      ]
+    },
+    {
+      "id": "acids",
+      "name": "Legacy organic-acids aggregate",
+      "family": "diagnostic aggregate",
+      "kinetic_class": "K1",
+      "phase": "diagnostic",
+      "counts_toward_tds": false,
+      "transport_evidence": "legacy M1 estimated aggregate",
+      "composition_evidence": "sum of M1 aliphatic and quinic priors; overlaps explicit acids",
+      "registry_refs": [
+        "bean.composition.arabica.aliphatic_acids",
+        "bean.composition.arabica.quinic_acid"
+      ],
+      "notes": [
+        "Retained for backward compatibility; never add to named acids or dissolved TDS."
+      ]
+    },
+    {
+      "id": "unassigned_solubles",
+      "name": "Unassigned dissolved solids",
+      "family": "unresolved soluble inventory",
+      "kinetic_class": "K2",
+      "phase": "dissolved",
+      "counts_toward_tds": true,
+      "transport_evidence": "same transport basis as lumped TDS",
+      "composition_evidence": "derived nonnegative available-inventory remainder",
+      "registry_refs": [
+        "extraction.max_yield"
+      ],
+      "notes": [
+        "A transparent unresolved remainder; it does not rescale measured compounds or force cup TDS closure."
+      ]
+    }
+  ]
+}

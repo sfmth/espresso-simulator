@@ -1,23 +1,24 @@
 {
  "schema": "puckworks.validation-report/1",
- "created": "2026-10-16",
- "tools_version": "0.5.0",
- "core_version": "0.5.0",
+ "created": "2026-10-17",
+ "tools_version": "0.6.0",
+ "core_version": "0.6.0",
  "solver": {
-  "puckcore_version": "0.5.0",
-  "extension_sha256": "70e0d9f108ca72e7",
-  "extension_built": "2026-10-16T15:30:46-07:00",
+  "puckcore_version": "0.6.0",
+  "extension_sha256": "1dbc58c46909399a",
+  "extension_built": "2026-10-17T22:56:39-03:00",
   "sources_sha256": {
-   "crates/puckcore/src": "d821bd5bbb0b7c20",
-   "crates/puckmodel/src": "f4a760d8bd0c0997",
-   "crates/puckmodel/generated": "a0c8288a70de512e",
-   "crates/puckcore-py": "563a9328b2a48052"
+   "crates/puckcore/src": "8b6aa8e5f6e7e4c5",
+   "crates/puckmodel/src": "35a9035ce2dbf48f",
+   "crates/puckmodel/generated": "1a68bffb5b2219c7",
+   "crates/puckcore-py": "563a9328b2a48052",
+   "data/chemistry": "6dd11d8f1a08ce38"
   },
   "files_sha256": {
-   "Cargo.lock": "2a4c41fc27d17c0f"
+   "Cargo.lock": "aff80a0f394bb53e"
   },
   "python": {
-   "version": "3.14.7",
+   "version": "3.12.14",
    "numpy": "2.5.4",
    "scipy": "1.18.1"
   }
@@ -45,10 +46,14 @@
   "core version changed",
   "solver/model sources changed or lack an identity",
   "solver build inputs changed",
-  "numeric registry defaults changed or lack an identity"
+  "numeric registry defaults changed or lack an identity",
+  "preset inputs changed or lack an identity",
+  "Python calibration/case sources changed or lack an identity"
  ],
  "placeholder": false,
  "solver_warnings": [
+  "M2 pH/TA use ideal 25 \u00b0C speciation and an estimated intrinsic-pH/background-buffer charge closure; Ca/Mg do not multiply extraction",
+  "a large run: up to 2.64e3 steps \u00d7 3.37e6 values = 8.90e9 (expect several seconds or more)",
   "a large run: up to 6.36e3 steps \u00d7 1.73e5 values = 1.10e9 (expect several seconds or more)",
   "a large run: up to 6.77e3 steps \u00d7 1.73e5 values = 1.17e9 (expect several seconds or more)"
  ],
@@ -3176,7 +3181,7 @@
     "check": "V1 leave-one-condition-out (\u00b115%)",
     "status": "not run",
     "target": "\u03bb and cup masses of each left-out experiment within \u00b115%",
-    "detail": "not run for this model/configuration; the calibration file's cached refits are historical (core version changed; solver/model sources changed or lack an identity; solver build inputs changed; numeric registry defaults changed or lack an identity)"
+    "detail": "not run for this model/configuration; the calibration file's cached refits are historical (core version changed; solver/model sources changed or lack an identity; solver build inputs changed; numeric registry defaults changed or lack an identity; preset inputs changed or lack an identity; Python calibration/case sources changed or lack an identity)"
    },
    {
     "check": "V2 Bodenstein number 8\u201317",

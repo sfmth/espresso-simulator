@@ -42,6 +42,8 @@ pub struct Built {
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Derived {
+    /// M2 compound identity, phase and evidence metadata.
+    pub compounds: Vec<crate::SpeciesMeta>,
     /// Volume-weighted size distribution for plotting.
     pub psd_curve: PsdCurve,
     /// Notes for the user (assumptions, clamped inputs, flagged presets).
@@ -117,6 +119,9 @@ pub struct MixtureComponent {
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct BeanSummary {
+    pub altitude_m: Option<f64>,
+    pub variety_group: Option<String>,
+    pub storage: Option<String>,
     /// The bean preset whose values filled the recipe's gaps.
     pub preset: String,
     pub arabica_fraction: f64,
@@ -220,7 +225,11 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
 
     // Input models.
     let bean_state = bean::resolve(&mut ctx, &recipe.bean, presets)?;
-    let bean = bean::model(&mut ctx, &bean_state)?;
+    let mut bean = bean::model(&mut ctx, &bean_state)?;
+    if recipe.chemistry.as_ref().and_then(|c| c.enabled) == Some(false) {
+        bean.species
+            .retain(|s| ["caffeine", "trigonelline", "cqa5", "acids"].contains(&s.id));
+    }
     let machine = machine::resolve(&mut ctx, &recipe.machine, presets)?;
     let basket = basket::resolve(
         &mut ctx,
@@ -384,7 +393,15 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
     let (beverage, time, hard_stop) =
         machine::stop(&mut ctx, &recipe.stop, dose_g, machine.program_time_s)?;
 
+    let chemistry = crate::models::water::model(
+        &mut ctx,
+        &recipe.water.clone().unwrap_or_default(),
+        &recipe.chemistry.clone().unwrap_or_default(),
+        &bean,
+        dose_g / 1000.0,
+    )?;
     let spec = ShotSpec {
+        chemistry,
         basket: BasketGeometry {
             profile_m: basket.profile_m.clone(),
             perforated_radius_m: basket.perforated_radius_m,
@@ -748,6 +765,7 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
         .unwrap_or_default();
     let used = ctx.used().clone();
     let derived = Derived {
+        compounds: crate::models::chemistry_catalog::catalog().to_vec(),
         psd_curve: PsdCurve {
             diameter_um: psd.curve.0.clone(),
             volume_density: psd.curve.1.clone(),
@@ -769,6 +787,9 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
             rpm: psd.rpm,
         },
         bean: BeanSummary {
+            altitude_m: bean_state.altitude_m,
+            variety_group: bean_state.variety_group.clone(),
+            storage: bean_state.storage.clone(),
             preset: bean_state.preset.clone(),
             arabica_fraction: bean_state.arabica.v,
             roast_level: bean_state.roast.v,

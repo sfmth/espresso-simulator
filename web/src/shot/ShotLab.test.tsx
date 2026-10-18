@@ -272,7 +272,7 @@ describe('ShotLab', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Compounds' }));
     const table = screen.getByRole('table', { name: 'Compounds in the cup, with provenance' });
     const rows = within(table).getAllByRole('row');
-    expect(rows.map((r) => r.querySelector('th')?.textContent)).toEqual([
+    expect(rows.map((r) => r.querySelector('th')?.firstChild?.textContent)).toEqual([
       'Compound',
       'Total dissolved solids',
       'Caffeine',

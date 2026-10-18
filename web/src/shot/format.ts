@@ -7,6 +7,7 @@
  */
 
 import { BAR_PER_PA, G_PER_KG, MG_PER_KG, ML_PER_M3, MM_PER_M, PERCENT } from './units';
+import type { CompoundMeta } from '../engine/shotTypes';
 
 const MINUS = '−';
 
@@ -126,8 +127,8 @@ export const SPECIES_NAMES: Record<string, string> = {
   acids: 'Organic acids (lumped)',
 };
 
-export function speciesName(id: string): string {
-  return SPECIES_NAMES[id] ?? id;
+export function speciesName(id: string, compounds?: readonly CompoundMeta[]): string {
+  return SPECIES_NAMES[id] ?? compounds?.find((m) => m.id === id)?.name ?? id;
 }
 
 /** Registry units as displayed: "1" (dimensionless) is shown as nothing. */

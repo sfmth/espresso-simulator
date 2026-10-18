@@ -26,6 +26,12 @@ pub struct Recipe {
     pub prep: PrepInput,
     pub machine: MachineInput,
     pub stop: StopInput,
+    /// Source-water chemistry in practical units. Omitted values use registry defaults.
+    #[serde(default)]
+    pub water: Option<WaterInput>,
+    /// Cup observation conditions; chemistry is enabled unless explicitly disabled.
+    #[serde(default)]
+    pub chemistry: Option<ChemistryInput>,
     #[serde(default)]
     pub numerics: NumericsInput,
     /// Parameter-registry id → value (in the registry's units), for the
@@ -53,6 +59,34 @@ pub struct BeanInput {
     /// Bean temperature when ground, °C (room temperature if omitted). Colder
     /// beans grind finer at the same gap. *(Added in M1.)*
     pub bean_temp_c: Option<f64>,
+    /// Growing altitude, metres; recorded without a universal composition correction.
+    pub altitude_m: Option<f64>,
+    pub variety_group: Option<String>,
+    /// "sealed", "open" or "frozen" storage; aroma retention remains an estimate.
+    pub storage: Option<String>,
+}
+
+/// Source-water measurements. Hardness and alkalinity are distinct quantities as CaCO3.
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields, default)]
+pub struct WaterInput {
+    pub alkalinity_mg_l_caco3: Option<f64>,
+    pub hardness_mg_l_caco3: Option<f64>,
+    pub calcium_mg_l: Option<f64>,
+    pub magnesium_mg_l: Option<f64>,
+    pub tds_mg_l: Option<f64>,
+    pub ph: Option<f64>,
+}
+
+/// Measurement and post-shot cup settings. These do not alter extraction hydraulics.
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields, default)]
+pub struct ChemistryInput {
+    pub enabled: Option<bool>,
+    pub aroma_age_s: Option<f64>,
+    pub cup_headspace_ml: Option<f64>,
+    pub sample_temperature_c: Option<f64>,
+    pub mineral_blank_subtracted: Option<bool>,
 }
 
 /// The grinder: a preset plus a dial setting, a burr family plus a gap, or a

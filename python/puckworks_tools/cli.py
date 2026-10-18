@@ -9,6 +9,7 @@ Subcommands:
 - ``verify``: write the kernel verification report to docs/validation/;
 - ``calibrate``: fit the M1 calibration (data/calibration/<label>.yaml and current.yaml);
 - ``validate``: write the M1 validation report to docs/validation/;
+- ``m2-validate``: M2 chemistry accounting and fixed-assumption V7 comparisons;
 - ``community``: compare locally downloaded community shots with fixed model scenarios;
 - ``export [--check]``: presets and registry for the model crate (puckworks_tools.export);
 - ``check-versions [--release]``: the same version everywhere.
@@ -116,6 +117,19 @@ def _cmd_community(args: argparse.Namespace, paths: RepoPaths) -> int:
         return 0
     except (OSError, ValueError) as exc:
         print(f"community: {exc}", file=sys.stderr)
+        return 2
+
+
+def _cmd_m2_validate(args: argparse.Namespace, paths: RepoPaths) -> int:
+    from . import m2validate
+
+    try:
+        report = m2validate.run(paths, args.output_dir or paths.validation_dir)
+        print("m2-validate: wrote M2 chemistry report; conditional comparisons are not independent validation")
+        print(f"m2-validate: V7 status: {report.get('v7_status', 'see report')}")
+        return 1 if report.get("summary", {}).get("simulation_errors", 0) else 0
+    except (OSError, ValueError) as exc:
+        print(f"m2-validate: {exc}", file=sys.stderr)
         return 2
 
 
@@ -232,6 +246,10 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("validate", parents=[common], help="write the M1 validation report (docs/validation)")
     _validate.add_arguments(p)
     p.set_defaults(handler=_cmd_validate)
+
+    p = sub.add_parser("m2-validate", parents=[common], help="M2 chemistry accounting and conditional V7 comparisons")
+    p.add_argument("--output-dir", type=Path, help="output directory (default: docs/validation)")
+    p.set_defaults(handler=_cmd_m2_validate)
 
     p = sub.add_parser(
         "community", parents=[common],

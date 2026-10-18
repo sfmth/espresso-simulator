@@ -200,12 +200,11 @@ describe('WASM shot API in Node', () => {
       // Early on, the water has not reached the bottom of the bed yet.
       const first = run.result.spatial.snapshots[0].wetted_fraction ?? [];
       expect(Math.min(...first.flat())).toBeLessThan(1);
-      expect(run.result.summary.species.map((x) => x.id)).toEqual([
-        'caffeine',
-        'trigonelline',
-        'cqa5',
-        'acids',
-      ]);
+      expect(run.result.summary.species.map((x) => x.id)).toEqual(
+        expect.arrayContaining(['caffeine', 'trigonelline', 'cqa5', 'acids']),
+      );
+      expect(run.result.summary.species.length).toBeGreaterThan(4);
+      expect(run.result.chemistry).toBeTruthy();
     },
     // Tier 1 takes up to about a second here; CI runners can be several times slower.
     30_000,
@@ -218,6 +217,56 @@ describe('WASM shot API in Node', () => {
       result: unknown;
     };
     expect(JSON.parse(core.simulateShot(JSON.stringify(run.build.spec)))).toEqual(run.result);
+  });
+
+  it('builds the M2 catalogue and cup controls through the browser WASM boundary', () => {
+    const recipe: Recipe = {
+      ...BASE,
+      water: {
+        alkalinity_mg_l_caco3: 25,
+        hardness_mg_l_caco3: 68,
+        calcium_mg_l: 20,
+        magnesium_mg_l: 4,
+        tds_mg_l: 120,
+        ph: 7.1,
+      },
+      chemistry: {
+        enabled: true,
+        aroma_age_s: 45,
+        cup_headspace_ml: 100,
+        sample_temperature_c: 25,
+        mineral_blank_subtracted: true,
+      },
+    };
+    const run = JSON.parse(core.simulateRecipe(JSON.stringify(recipe))) as {
+      build: BuiltSpec;
+      result: ShotResult;
+    };
+    expect(checkShotResult(run.result)).toEqual([]);
+    expect(run.build.derived.compounds?.length).toBeGreaterThanOrEqual(55);
+    expect(run.build.spec.chemistry?.water.alkalinity_mg_l_caco3).toBe(25);
+    expect(run.build.spec.chemistry?.cup_headspace_m3).toBeCloseTo(100e-6);
+    expect(run.result.chemistry?.refractometer.mineral_blank_subtracted).toBe(true);
+    expect(run.result.chemistry?.refractometer.coffee_true_tds).toBe(run.result.summary.tds);
+    expect(run.result.chemistry?.aroma.length).toBeGreaterThan(0);
+    expect(run.result.chemistry?.phases.length).toBeGreaterThan(0);
+    for (const meta of run.build.derived.compounds ?? []) {
+      expect(meta.name).not.toBe('');
+      expect(meta.kinetic_class).toMatch(/^K[1-6]$/);
+      expect(meta.registry_refs.length).toBeGreaterThan(0);
+    }
+    const legacy = JSON.parse(
+      core.simulateRecipe(JSON.stringify({ ...recipe, chemistry: { enabled: false } })),
+    ) as { result: ShotResult };
+    expect(legacy.result.chemistry ?? null).toBeNull();
+    expect(legacy.result.summary.species.map((s) => s.id)).toEqual([
+      'caffeine',
+      'trigonelline',
+      'cqa5',
+      'acids',
+    ]);
+    expect(legacy.result.summary.ey).toBe(run.result.summary.ey);
+    expect(legacy.result.summary.shot_time_s).toBe(run.result.summary.shot_time_s);
   });
 
   it('defaults omitted compliance to zero and converts the opt-in registry override to SI', () => {

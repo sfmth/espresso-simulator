@@ -1,0 +1,490 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: M2 source-water, effective acid buffering and cup observation assumptions.
+  Unmeasured defaults remain explicit estimates.
+parameters:
+- id: water.default.alkalinity_mg_l_caco3
+  name: Alkalinity mg l caco3
+  description: Illustrative source-water default; replace with a measured alkalinity
+    mg l caco3. This is not a required water specification.
+  units: mg/L
+  value: 40
+  range:
+    min: 0
+    max: 500
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - &id001
+    citation: Puckworks M2 cup-chemistry closure assumptions (2026), docs/model/m2-chemistry.md;
+      illustrative, not fitted to V7.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m2-chemistry.md
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.default.hardness_mg_l_caco3
+  name: Hardness mg l caco3
+  description: Illustrative source-water default; replace with a measured hardness
+    mg l caco3. This is not a required water specification.
+  units: mg/L
+  value: 68
+  range:
+    min: 0
+    max: 1000
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.default.calcium_mg_l
+  name: Calcium mg l
+  description: Illustrative source-water default; replace with a measured calcium
+    mg l. This is not a required water specification.
+  units: mg/L
+  value: 20
+  range:
+    min: 0
+    max: 400
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.default.magnesium_mg_l
+  name: Magnesium mg l
+  description: Illustrative source-water default; replace with a measured magnesium
+    mg l. This is not a required water specification.
+  units: mg/L
+  value: 4
+  range:
+    min: 0
+    max: 200
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.default.tds_mg_l
+  name: Tds mg l
+  description: Illustrative source-water default; replace with a measured tds mg l.
+    This is not a required water specification.
+  units: mg/L
+  value: 150
+  range:
+    min: 0
+    max: 5000
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.default.ph
+  name: Source-water pH
+  description: Illustrative source-water default; replace with a measured ph. This
+    is not a required water specification.
+  units: '1'
+  value: 7
+  range:
+    min: 0
+    max: 14
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.equilibrium.pkw
+  name: Pkw
+  description: Negative base-ten logarithm of the water ion product at dilute freshwater
+    conditions.
+  units: '1'
+  value: 14
+  range:
+    min: 10.0
+    max: 16.0
+  tag: estimated
+  evidence_grade: B
+  sources:
+  - &id002
+    citation: 'USGS Office of Water Quality (2012), Technical Memorandum 2012.05:
+      carbonate speciation and equilibrium constants at 25 C.'
+    url: https://water.usgs.gov/water-resources/memos/memo.php?id=2098
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.equilibrium.carbonate_pka1
+  name: Carbonate pka1
+  description: First carbonic-acid dissociation pKa at 25 C, dilute freshwater.
+  units: '1'
+  value: 6.35
+  range:
+    min: 5.0
+    max: 7.0
+  tag: estimated
+  evidence_grade: B
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.equilibrium.carbonate_pka2
+  name: Carbonate pka2
+  description: Second carbonic-acid dissociation pKa at 25 C, dilute freshwater.
+  units: '1'
+  value: 10.33
+  range:
+    min: 9.0
+    max: 12.0
+  tag: estimated
+  evidence_grade: B
+  sources:
+  - *id002
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.equilibrium.caco3_molar_mass
+  name: Caco3 molar mass
+  description: Calcium carbonate molar mass used only to convert alkalinity equivalents;
+    the divalent equivalent factor is explicit.
+  units: g/mol
+  value: 100.0869
+  range:
+    min: 50
+    max: 200
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.equilibrium.reference_density
+  name: Reference density
+  description: Approximate water density at 25 C used for cup-volume conversion; dissolved-solids
+    volume effects are not resolved.
+  units: kg/m^3
+  value: 997.0
+  range:
+    min: 900
+    max: 1100
+  tag: estimated
+  evidence_grade: B
+  sources:
+  - citation: NIST (1998), Thermodynamic Properties of Water, IAPWS-95 tabulation,
+      NISTIR 5078.
+    doi: 10.6028/NIST.IR.5078
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.coffee.reference_ph
+  name: Reference ph
+  description: Estimated intrinsic coffee reference pH for unresolved counterions;
+    not an independent composition-to-pH prediction.
+  units: '1'
+  value: 5.0
+  range:
+    min: 2
+    max: 8
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.coffee.background_buffer_pka
+  name: Background buffer pka
+  description: Estimated dissociation pKa of an unresolved background coffee buffer;
+    no fit to V7.
+  units: '1'
+  value: 6.5
+  range:
+    min: 1
+    max: 13
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: water.coffee.background_buffer_mol_per_kg_solubles
+  name: Background buffer mol per kg solubles
+  description: Estimated unresolved buffer amount per kilogram of dissolved coffee;
+    no fit to V7.
+  units: mol/kg
+  value: 0.1
+  range:
+    min: 0
+    max: 10
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.cup.headspace
+  name: Headspace
+  description: Cup gas volume available for a closed headspace partition calculation;
+    not the machine group headspace.
+  units: mL
+  value: 50
+  range:
+    min: 0
+    max: 1000
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.cup.aroma_age
+  name: Aroma age
+  description: Elapsed cup observation time for free-thiol binding; does not alter
+    the extraction history.
+  units: s
+  value: 0
+  range:
+    min: 0
+    max: 86400
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.refractometer.sample_temperature
+  name: Sample temperature
+  description: Temperature of the cooled measurement sample; not the brewing temperature.
+  units: degC
+  value: 20
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.refractometer.reference_temperature
+  name: Reference temperature
+  description: Reference temperature of the illustrative compensated refractometer
+    model.
+  units: degC
+  value: 20
+  range:
+    min: 0
+    max: 100
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.refractometer.residual_temperature_coefficient
+  name: Residual temperature coefficient
+  description: Residual fractional TDS reading change per C after temperature compensation;
+    default zero models ideal compensation.
+  units: K^-1
+  value: 0
+  range:
+    min: -0.01
+    max: 0.01
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.refractometer.coffee_response
+  name: Coffee response
+  description: Illustrative coffee calibration response multiplier for refractometer-equivalent
+    TDS; not a validated instrument transfer function.
+  units: '1'
+  value: 1
+  range:
+    min: 0.5
+    max: 1.5
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.refractometer.mineral_response
+  name: Mineral response
+  description: Illustrative refractometer-equivalent response to source-water dissolved
+    minerals; not electrical conductivity TDS.
+  units: '1'
+  value: 1
+  range:
+    min: 0
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.crema.co2_capture_fraction
+  name: Co2 capture fraction
+  description: Estimated fraction of released coffee CO2 available to the foam-volume
+    proxy; not a foam stability prediction.
+  units: '1'
+  value: 0.3
+  range:
+    min: 0
+    max: 1
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.crema.gas_density
+  name: Gas density
+  description: Approximate CO2 gas density for a cup-volume proxy; fixed observation-state
+    approximation.
+  units: kg/m^3
+  value: 1.84
+  range:
+    min: 0.1
+    max: 10
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.
+- id: chemistry.crema.gas_volume_fraction
+  name: Gas volume fraction
+  description: Estimated gas volume fraction in the crema volume proxy; foam collapse
+    and bubble sizes are unresolved.
+  units: '1'
+  value: 0.9
+  range:
+    min: 0.01
+    max: 0.99
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - *id001
+  research_note_ref: 02 §5
+  used_by:
+  - W
+  - C
+  status: draft
+  conditions: M2 cup observations at 25 C unless an explicit measurement setting says
+    otherwise; estimates are not calibration results.

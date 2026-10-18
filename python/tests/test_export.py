@@ -125,8 +125,9 @@ def test_documents_are_complete_and_lean(repo: RepoPaths) -> None:
         assert text == export.render(json.loads(text))
         assert json.loads(text) == doc
     assert export.render(registry).count("\n") == len(registry["parameters"]) + 6
-    # Lean enough to embed in the WebAssembly module (ADR 0008).
-    assert len(export.render(registry).encode()) < 250_000
+    # M2 embeds the full compound catalogue and its evidence (ADR 0012).
+    # Retain a bounded budget with headroom over the 471 KB registry.
+    assert len(export.render(registry).encode()) < 600_000
     assert len(export.render(presets).encode()) < 80_000
 
 

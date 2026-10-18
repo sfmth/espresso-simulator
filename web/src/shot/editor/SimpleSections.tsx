@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** The bean, puck-preparation and stop/numerics sections of the recipe editor. */
-import { BEAN_PROCESSES, DISTRIBUTIONS } from '../../engine/shotTypes';
+import {
+  BEAN_PROCESSES,
+  BEAN_STORAGE,
+  BEAN_VARIETIES,
+  DISTRIBUTIONS,
+} from '../../engine/shotTypes';
 import { CheckField, SelectField, TextField } from '../fields';
 import { BuildNotes, PresetInfo } from '../PresetInfo';
 import { FIELDS, labelWithUnit } from '../recipeFields';
@@ -9,11 +14,26 @@ import { useShotStore } from '../shotStore';
 import { defaultRatio } from '../sweep';
 import { findPreset, presetOptions, useEditorContext } from './context';
 
-const PROCESS_LABELS: Record<string, string> = {
+export const PROCESS_LABELS: Record<string, string> = {
   washed: 'Washed',
   natural: 'Natural',
   honey: 'Honey',
   anaerobic: 'Anaerobic',
+};
+
+export const VARIETY_LABELS: Record<string, string> = {
+  unspecified: 'Unspecified',
+  'typica-bourbon': 'Typica / Bourbon',
+  gesha: 'Gesha',
+  'ethiopian-landrace': 'Ethiopian landrace',
+  canephora: 'Canephora (Robusta)',
+  hybrid: 'Hybrid',
+};
+
+export const STORAGE_LABELS: Record<string, string> = {
+  sealed: 'Sealed',
+  open: 'Open to air',
+  frozen: 'Frozen',
 };
 
 const DISTRIBUTION_LABELS: Record<string, string> = {
@@ -51,6 +71,15 @@ export function BeanSection() {
       />
       <PresetInfo preset={preset} />
       <div className="field-grid">
+        <TextField
+          path="bean.altitude_m"
+          label={labelWithUnit(FIELDS['bean.altitude_m'])}
+          value={bean.altitude_m}
+          onChange={(altitude_m) => set({ altitude_m })}
+          placeholder={fromPreset(preset?.altitude_m)}
+          error={errors['bean.altitude_m']}
+          hint="Optional origin descriptor; no fitted altitude coefficient."
+        />
         <TextField
           path="bean.arabica_fraction"
           label={labelWithUnit(FIELDS['bean.arabica_fraction'])}
@@ -101,8 +130,45 @@ export function BeanSection() {
           },
           ...BEAN_PROCESSES.map((p) => ({ value: p, label: PROCESS_LABELS[p] ?? p })),
         ]}
-        hint="Recorded; no effect in bean model v1."
+        error={errors['bean.process']}
+        hint="Process effects are limited to the composition assumptions documented by the model."
       />
+      <div className="field-grid">
+        <SelectField
+          path="bean.variety_group"
+          label="Variety group"
+          value={bean.variety_group}
+          onChange={(variety_group) =>
+            set({ variety_group: variety_group as typeof bean.variety_group })
+          }
+          options={[
+            {
+              value: '',
+              label: preset?.variety_group
+                ? `From the preset (${VARIETY_LABELS[preset.variety_group] ?? preset.variety_group})`
+                : 'Use the model default',
+            },
+            ...BEAN_VARIETIES.map((value) => ({ value, label: VARIETY_LABELS[value] })),
+          ]}
+          error={errors['bean.variety_group']}
+          hint="Recorded descriptor; the model does not infer a variety-specific composition."
+        />
+        <SelectField
+          path="bean.storage"
+          label="Bean storage"
+          value={bean.storage}
+          onChange={(storage) => set({ storage: storage as typeof bean.storage })}
+          options={[
+            {
+              value: '',
+              label: `Default (${STORAGE_LABELS[preset?.storage ?? 'sealed']?.toLowerCase() ?? 'sealed'})`,
+            },
+            ...BEAN_STORAGE.map((value) => ({ value, label: STORAGE_LABELS[value] })),
+          ]}
+          error={errors['bean.storage']}
+          hint="Storage changes the model’s age-dependent CO₂ inventory."
+        />
+      </div>
       <BuildNotes notes={notes.bean} stale={notesStale} />
     </>
   );

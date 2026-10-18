@@ -1,113 +1,198 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-#
-# Typical coffees for the bean model (PLAN §7.3 B). A bean is described by its Arabica share, roast
-# level (0 = very light … 1 = very dark; internal index, see model.bean.roast_index.*), days off roast
-# and process. These are representative descriptions, not particular lots: the composition, porosity
-# and CO₂ they imply come from the bean model and the registry. Process has no effect in bean model v1.
 schema: puckworks.preset-file/1
 kind: bean
-description: Typical coffees described by species, roast, age and process.
+description: Bean v2 descriptor scenarios with species, roast, age, process, variety, altitude and storage.
+  Descriptors do not imply lot-specific chemical measurements.
 presets:
-  - id: medium-washed-arabica
-    name: Medium-roast washed Arabica
-    description: A neutral reference coffee, ten days off roast; assumed for any bean field a recipe leaves out.
-    flags: [generic]
-    notes:
-      - "Composition priors are medium-roast Arabica values (Farah 2012 compilation, grade C)."
-    sources:
-      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
-        doi: "10.1002/9781119949893.ch2"
-    evidence_grade: C
-    tag: estimated
-    default: true
-    arabica_fraction: 1.0
-    roast_level: 0.5
-    days_off_roast: 10
-    process: washed
-
-  - id: light-washed-arabica
-    name: Light-roast washed Arabica
-    description: A light "specialty" roast of a washed Arabica, two weeks off roast.
-    flags: [generic]
-    notes:
-      - "Light roasts keep more trigonelline and chlorogenic acid and hold less CO₂ (02 §4.3)."
-    sources:
-      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
-        doi: "10.1002/9781119949893.ch2"
-      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
-        doi: "10.1021/acs.jafc.7b03310"
-    evidence_grade: C
-    tag: estimated
-    arabica_fraction: 1.0
-    roast_level: 0.25
-    days_off_roast: 14
-    process: washed
-
-  - id: medium-natural-brazil
-    name: Medium-roast natural Brazil
-    description: A dry-processed Brazilian Arabica at a medium roast, ten days off roast.
-    flags: [generic]
-    notes:
-      - "Process is recorded but has no effect in bean model v1: dry processing keeps more glucose and fructose, which the model does not track (02 §4.2)."
-    sources:
-      - citation: "Knopp S., Bytof G., Selmar D. (2006) Influence of processing on the content of sugars in green Arabica coffee beans. Eur. Food Res. Technol. 223:195–201."
-        doi: "10.1007/s00217-005-0172-1"
-    evidence_grade: C
-    tag: estimated
-    arabica_fraction: 1.0
-    roast_level: 0.55
-    days_off_roast: 10
-    process: natural
-
-  - id: medium-dark-90-10-blend
-    name: Medium-dark 90/10 espresso blend
-    description: A classic espresso blend of 90% Arabica and 10% Robusta at a medium-dark roast.
-    flags: [generic]
-    notes:
-      - "Blend composition is the mass-weighted mix of the Arabica and Robusta priors."
-    sources:
-      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
-        doi: "10.1002/9781119949893.ch2"
-    evidence_grade: C
-    tag: estimated
-    arabica_fraction: 0.9
-    roast_level: 0.65
-    days_off_roast: 10
-    process: null
-
-  - id: dark-80-20-blend
-    name: Dark 80/20 blend
-    description: A dark-roast blend of 80% Arabica and 20% Robusta, a week off roast.
-    flags: [generic]
-    notes:
-      - "Dark roasts hold the most CO₂ (10–13 mg/g in whole beans) and grind finer at the same setting (02 §4.3; 03 §2.1)."
-    sources:
-      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
-        doi: "10.1002/9781119949893.ch2"
-      - citation: "Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300."
-        doi: "10.1021/acs.jafc.7b03310"
-    evidence_grade: C
-    tag: estimated
-    arabica_fraction: 0.8
-    roast_level: 0.8
-    days_off_roast: 7
-    process: null
-
-  - id: robusta-medium
-    name: Medium-roast Robusta
-    description: A dry-processed Robusta (Coffea canephora) at a medium roast, ten days off roast.
-    flags: [generic]
-    notes:
-      - "Robusta has about twice the caffeine of Arabica; lot-to-lot spread is large (1.6–3.6% across 67 canephoras, Viencz 2023)."
-      - "The organic-acid prior does not show Robusta's reported 2–5× higher formic and acetic acid (02 §4.1)."
-    sources:
-      - citation: "Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects and Disease Prevention, Wiley-Blackwell, 21–58."
-        doi: "10.1002/9781119949893.ch2"
-      - citation: "Viencz T. et al. (2023) J. Food Compos. Anal. 117:105140 (67 Coffea canephora lots)."
-        doi: "10.1016/j.jfca.2023.105140"
-    evidence_grade: C
-    tag: estimated
-    arabica_fraction: 0.0
-    roast_level: 0.6
-    days_off_roast: 10
-    process: natural
+- id: medium-washed-arabica
+  name: Medium-roast washed Arabica
+  description: A neutral reference coffee, ten days off roast; assumed for any bean field a recipe leaves
+    out.
+  flags:
+  - generic
+  notes:
+  - Composition priors are medium-roast Arabica values (Farah 2012 compilation, grade C).
+  sources:
+  - citation: 'Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects
+      and Disease Prevention, Wiley-Blackwell, 21–58.'
+    doi: 10.1002/9781119949893.ch2
+  evidence_grade: C
+  tag: estimated
+  default: true
+  arabica_fraction: 1.0
+  roast_level: 0.5
+  days_off_roast: 10
+  process: washed
+  storage: sealed
+  variety_group: unspecified
+- id: light-washed-arabica
+  name: Light-roast washed Arabica
+  description: A light "specialty" roast of a washed Arabica, two weeks off roast.
+  flags:
+  - generic
+  notes:
+  - Light roasts keep more trigonelline and chlorogenic acid and hold less CO₂ (02 §4.3).
+  sources:
+  - citation: 'Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects
+      and Disease Prevention, Wiley-Blackwell, 21–58.'
+    doi: 10.1002/9781119949893.ch2
+  - citation: Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved
+      gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300.
+    doi: 10.1021/acs.jafc.7b03310
+  evidence_grade: C
+  tag: estimated
+  arabica_fraction: 1.0
+  roast_level: 0.25
+  days_off_roast: 14
+  process: washed
+  storage: sealed
+  variety_group: unspecified
+- id: medium-natural-brazil
+  name: Medium-roast natural Brazil
+  description: A dry-processed Brazilian Arabica at a medium roast, ten days off roast.
+  flags:
+  - generic
+  notes:
+  - 'Natural processing is recorded without a universal roasted-composition correction: reported green-bean
+    glucose/fructose changes do not justify a sucrose multiplier (02 §4.2).'
+  sources:
+  - citation: Knopp S., Bytof G., Selmar D. (2006) Influence of processing on the content of sugars in
+      green Arabica coffee beans. Eur. Food Res. Technol. 223:195–201.
+    doi: 10.1007/s00217-005-0172-1
+  evidence_grade: C
+  tag: estimated
+  arabica_fraction: 1.0
+  roast_level: 0.55
+  days_off_roast: 10
+  process: natural
+  storage: sealed
+  variety_group: unspecified
+- id: medium-dark-90-10-blend
+  name: Medium-dark 90/10 espresso blend
+  description: A classic espresso blend of 90% Arabica and 10% Robusta at a medium-dark roast.
+  flags:
+  - generic
+  notes:
+  - Blend composition is the mass-weighted mix of the Arabica and Robusta priors.
+  sources:
+  - citation: 'Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects
+      and Disease Prevention, Wiley-Blackwell, 21–58.'
+    doi: 10.1002/9781119949893.ch2
+  evidence_grade: C
+  tag: estimated
+  arabica_fraction: 0.9
+  roast_level: 0.65
+  days_off_roast: 10
+  process: null
+  storage: sealed
+  variety_group: unspecified
+- id: dark-80-20-blend
+  name: Dark 80/20 blend
+  description: A dark-roast blend of 80% Arabica and 20% Robusta, a week off roast.
+  flags:
+  - generic
+  notes:
+  - Dark roasts hold the most CO₂ (10–13 mg/g in whole beans) and grind finer at the same setting (02
+    §4.3; 03 §2.1).
+  sources:
+  - citation: 'Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects
+      and Disease Prevention, Wiley-Blackwell, 21–58.'
+    doi: 10.1002/9781119949893.ch2
+  - citation: Smrke S., Wellinger M., Suzuki T., Balsiger F., Opitz S.E.W., Yeretzian C. (2018) Time-resolved
+      gravimetric method to assess degassing of roasted coffee. J. Agric. Food Chem. 66:5293–5300.
+    doi: 10.1021/acs.jafc.7b03310
+  evidence_grade: C
+  tag: estimated
+  arabica_fraction: 0.8
+  roast_level: 0.8
+  days_off_roast: 7
+  process: null
+  storage: sealed
+  variety_group: unspecified
+- id: robusta-medium
+  name: Medium-roast Robusta
+  description: A dry-processed Robusta (Coffea canephora) at a medium roast, ten days off roast.
+  flags:
+  - generic
+  notes:
+  - Robusta has about twice the caffeine of Arabica; lot-to-lot spread is large (1.6–3.6% across 67 canephoras,
+    Viencz 2023).
+  - The organic-acid prior does not show Robusta's reported 2–5× higher formic and acetic acid (02 §4.1).
+  sources:
+  - citation: 'Farah A. (2012) Coffee constituents. In Chu Y.-F. (ed.) Coffee: Emerging Health Effects
+      and Disease Prevention, Wiley-Blackwell, 21–58.'
+    doi: 10.1002/9781119949893.ch2
+  - citation: Viencz T. et al. (2023) J. Food Compos. Anal. 117:105140 (67 Coffea canephora lots).
+    doi: 10.1016/j.jfca.2023.105140
+  evidence_grade: C
+  tag: estimated
+  arabica_fraction: 0.0
+  roast_level: 0.6
+  days_off_roast: 10
+  process: natural
+  storage: sealed
+  variety_group: canephora
+- id: light-gesha-descriptor
+  name: Light Gesha descriptor scenario
+  description: Representative bean descriptors for exploring model assumptions; not a specific farm, lot,
+    chemistry assay or sensory promise.
+  flags:
+  - generic
+  notes:
+  - Altitude and variety are recorded without fabricated universal composition corrections.
+  - M2 individual composition, storage and process coefficients are estimates; measured M1 anchors retain
+    their original model.
+  sources:
+  - &id001
+    citation: Puckworks Bean v2 descriptor scenarios (2026), docs/model/input-models.md. These are representative
+      descriptions, not measured lots.
+  evidence_grade: D
+  tag: estimated
+  arabica_fraction: 1.0
+  roast_level: 0.25
+  days_off_roast: 14
+  process: washed
+  variety_group: gesha
+  storage: sealed
+  altitude_m: 1900
+- id: light-ethiopian-landrace-descriptor
+  name: Light Ethiopian-landrace descriptor scenario
+  description: Representative bean descriptors for exploring model assumptions; not a specific farm, lot,
+    chemistry assay or sensory promise.
+  flags:
+  - generic
+  notes:
+  - Altitude and variety are recorded without fabricated universal composition corrections.
+  - M2 individual composition, storage and process coefficients are estimates; measured M1 anchors retain
+    their original model.
+  sources:
+  - *id001
+  evidence_grade: D
+  tag: estimated
+  arabica_fraction: 1.0
+  roast_level: 0.25
+  days_off_roast: 14
+  process: washed
+  variety_group: ethiopian-landrace
+  storage: sealed
+  altitude_m: 2100
+- id: light-anaerobic-descriptor
+  name: Light anaerobic Arabica descriptor scenario
+  description: Representative bean descriptors for exploring model assumptions; not a specific farm, lot,
+    chemistry assay or sensory promise.
+  flags:
+  - generic
+  notes:
+  - Altitude and variety are recorded without fabricated universal composition corrections.
+  - M2 individual composition, storage and process coefficients are estimates; measured M1 anchors retain
+    their original model.
+  sources:
+  - *id001
+  evidence_grade: D
+  tag: estimated
+  arabica_fraction: 1.0
+  roast_level: 0.25
+  days_off_roast: 14
+  process: anaerobic
+  variety_group: unspecified
+  storage: sealed

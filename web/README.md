@@ -10,11 +10,18 @@ your own recipe draft and the recipes you save, in this browser's
 `localStorage`; it works without storage too.
 
 The header has the three modes, **Dial-in**, **Lab** and **Explore** (Dial-in
-arrives in M4, Explore in M5). The Lab (milestone M1) has two views:
+arrives in M4, Explore in M5). The Lab has two views:
 
 - **Shot lab**, the M1 lab view described below;
 - **Kernel verification**, the M0 demo: diffusion out of a sphere into a
   perfect sink, solved by puckcore and compared with Crank's analytic solution.
+
+Version 0.6.0 adds M2 cup chemistry: the compound catalogue, bean storage and
+origin descriptors, brew-water analysis, and separate acidity, aroma, phase and
+refractometer estimates. Existing recipe files and saved drafts keep working;
+omitted M2 inputs use documented defaults. Chemistry can be disabled to use the
+legacy four tracked species. The chemistry panel labels assumptions and proxies;
+sensory scores remain outside this milestone.
 
 Version 0.3.0 adds M1.1 startup physics. The sandbox exposes the pore-water capacity,
 pore-air mobility and moisture-diffusion estimates with their sources and evidence grades.
@@ -34,7 +41,15 @@ summary and a problem count; a section opens by itself when a new problem
 appears in it):
 
 - **Bean**: preset (or the default bean), Arabica share, roast level, days off
-  roast, process, bean temperature. Empty fields show the preset's value.
+  roast, process, bean temperature, growing altitude, variety group and storage.
+  Empty fields show the preset's value. Altitude and variety are recorded
+  descriptors; no universal composition multiplier is assumed for them.
+- **Brew water**: alkalinity and total hardness (mg/L as CaCO₃), calcium,
+  magnesium, source-water TDS (mg/L), and pH. Empty fields retain the illustrative
+  defaults; no analysis is inferred from a water brand.
+- **Cup chemistry**: enable/disable M2 post-processing, time after extraction,
+  closed cup headspace, refractometer sample temperature, and mineral-blank
+  subtraction. All choices round-trip through recipe import/export and storage.
 - **Grinder**: a preset and its dial (or a burr gap); a burr family with a gap
   (or a dial setting and its calibration); or a measured PSD pasted as two
   columns from a spreadsheet or instrument export (tabs, commas, semicolons or
@@ -130,9 +145,18 @@ notes and errors).
   fines below 100 µm, D[3,2], D[4,3], the mixture components; EY of each size
   class at the end.
 - **Compounds**: total dissolved solids and each tracked species (mass in the
-  cup, share of its extractable content, content in the dose), with a
+  cup, extracted/recovered share, content in the dose), folded by family and
+  searchable by name, family, K1–K6 transport class or phase. Trace inventories
+  use µg/ng rather than disappearing into rounded zeros. Each row has a
   provenance column: the weakest evidence behind each, expandable to every
-  registry record (tag, grade, sources), preset and recipe field used.
+  registry record (tag, grade, sources), preset and recipe field used, plus
+  catalogue transport/composition evidence. Gas/lipid recovery is shown as a
+  separate phase, not dissolved extraction.
+- **Cup chemistry**: estimated pH and titratable acidity at 25 °C, lipid and
+  recovered CO₂ inventories, a crema-volume proxy, and a refractometer estimate
+  kept separate from true coffee TDS. Expandable tables show acid speciation,
+  closed-headspace aroma partitioning and thiol binding, and dissolved-solids
+  accounting/transport closure. Water-threshold ratios are not sensory scores.
 - **Cross-section**: local EY (or the solubles concentration in the bed
   liquid, per volume of liquid held there) over the solver's columns (however
   many the tier uses) and depth cells, drawn on the actual basket profile
