@@ -25,9 +25,37 @@ actual phase/ramp boundaries in the series. Calibration **v5** refits the origin
 from preserved v4 values on that corrected solver, with the same guarded pruning and full
 predictive-refit protocol. V4 and its original numerical evidence remain historical records.
 The original V1, V2-dispersion, V4-long-time-flow and V6 residuals, weights and holdouts remain
-unchanged. V3, V4 transient and V5 are never used to choose the PSD, caps, priors or fitted parameters.
+unchanged. V3, V4 transient and V5 remain outside these training objectives. The validation report
+marks known earlier influences on priors; previously inspected holdouts are not new independent data.
 First-drop and flow-rise targets remain within ×1.5 of measured times, with the same no-overshoot
 check at 15 s after first drops. Coverage checks prevent invented clock origins or endpoints.
+
+Version 0.6.5 addresses the coarse-cell wetting-age bias identified in the
+[mesh study](m11-mesh-refinement.md), with [mechanism ablations and analytic checks](m11-wet-age.md).
+The refined tuning round retains v5's effective 22-parameter structure and uses normalized
+optimizer coordinates. Historical v5 scores below remain tied to 0.6.3; its report and figures
+are preserved in [baseline-v0.6.3](baseline-v0.6.3/). A changed solver requires fresh predictive
+refits before a new calibration is promoted. The staged workflow writes research candidates
+outside the active calibration directory.
+
+The [completed refined fit and numerical audit](m11-refined-tuning.md) compare frozen v5 and the
+candidate on the same 150-layer / 25 ms grid: cost 694.431 → 560.217 (−19.33%), rates within
+±10% 50/60 → 52/60, and cup masses 180/180 → 174/180. All 3,485 fit simulations complete.
+At 300 layers, rates change by at most 0.2083% and cup masses by 0.0617%; halving the timestep
+changes them by 0.1551% and 0.0543%. Seven coefficients remain near bounds. A separate 972-shot
+audit finds a 0.577 cosine between half/quarter-step projected gradients and no improving
+descent trial, so the candidate has no demonstrated local stationarity. These checks retain
+every observation and exact coefficient; they do not reuse historical predictive scores.
+
+The candidate remains a [frozen research artifact](m11-refined-tuning.yaml). The 138 matched
+baseline/candidate holdout shots at 30/150/300 layers all complete. At 150 layers, V3 time RMS
+changes from 6.956 to 7.282 s, V5 from 22.866 to 23.253 s, and V4 first drops from 6.261 to
+6.094 s against 12.762 s measured. The peak EY and flow-rise errors also worsen slightly;
+these are adverse shifts within longstanding failures, with unchanged held-out pass/fail
+statuses. The separate full validation completes 94 simulations. No 15-fold LOO or nine-variant
+sensitivity campaign was run for this research candidate. Both remain necessary for promotion;
+the active v5 coefficients are unchanged, and their historical predictive scores remain stale
+for the corrected solver.
 
 The wet input uses Fig. A1b and the published D32 to constrain an unresolved fine tail. Its unfitted
 D43 remains a cross-check. Wet-dispersed fines are not independent measurements of dry-puck
@@ -868,9 +896,14 @@ pooled κ_ref, so the report shows what the assumption does to them.
 ## Solver and uncertainties
 
 - **Optimiser.** `scipy.optimize.least_squares`: trust-region reflective, box bounds, `x_scale="jac"`.
-  The optimisation variable is log10 of a log-scaled parameter and the value itself otherwise.
+  The public parameter coordinate is log10 of a log-scaled parameter and the value itself otherwise.
+  Since 0.6.5, the solver normalizes that coordinate to [0,1] across its bounds. This makes the
+  step stopping rule independent of parameter units; `x_scale="jac"` alone did not do so.
+  Returned parameters and Jacobians use the original public coordinates.
 - **Jacobian.** Forward differences, with steps of 0.01 in log10 or 1% of the bounds (`--fd-step`). Only the
   blocks a parameter lists are re-run. Results are cached by spec, and `--jobs N` simulates in N processes.
+  The refined tuning protocol uses 0.003 for its warm start and 0.001 on 150 layers, followed by
+  an audit at half and quarter finite-difference steps. Each result records the step actually used.
 - **Uncertainties.** From the Jacobian at the solution: cov = s²·(JᵀJ)⁻¹, with s² = Σr²/(m − n) the reduced
   chi-square, computed by SVD pseudo-inverse. These local linear summaries do not account for truncation
   by bounds and are not calibrated probability intervals or guaranteed lower bounds. A reduced chi-square
@@ -965,7 +998,12 @@ placeholder, because `current.yaml` changes the app's defaults. Use `--out-dir` 
 
 ## Running it
 
-The whole pipeline rebuilds the native engine, starts from preserved
+For the corrected solver, use the [staged refined-tuning commands](../../python/README.md#wetting-age-correction-and-refined-tuning).
+They preserve v5's effective problem, perform a training-only restart, and keep the result as a
+candidate until resolution and predictive checks are complete. The general calibration command
+defaults to label `v6`; v1–v5 paths in `data/calibration` are protected against overwrite.
+
+The **historical v5 pipeline**, requiring source release 0.6.3, rebuilds the native engine, starts from preserved
 `data/calibration/v4.yaml`, stages v5 under `.local/calibration-v5`, runs the
 main/pruned fit, all 15 leave-one-condition-out refits and nine sensitivities, validates the candidate,
 then promotes a numerically complete result. It exports/rebuilds the application calibration,
@@ -980,7 +1018,7 @@ python/scripts/m1-pipeline.sh 8      # 8 parallel simulation processes
 The calibration file and the validation report record the solver build they ran on (`fit.solver` and
 `solver`: the extension's hash and build time, and hashes of `crates/puckcore/src`, `crates/puckmodel/src`
 and `crates/puckmodel/generated`), so runs on different builds can be told apart. `validate --from-json`
-re-renders the report and its figures from `m1-validation.json` without simulating. The steps one by one:
+re-renders the report and its figures from `m1-validation.json` without simulating. The historical v5 steps one by one:
 
 ```sh
 .venv/bin/puckworks-tools calibrate --dry-run                   # cases, residual counts, start cost, block check
@@ -1004,6 +1042,10 @@ refits and available finite final predictions; optimizer termination on a failed
 is insufficient. Scientific failures are reported separately and never converted to optimizer success
 or used to relax gates. Input and solver identities are captured before fitting and checked again
 before publication; changing them during a run requires a new run.
+
+From 0.6.5, calibration also requires a requested stop and finite predictions for every source
+fraction. A truncated shot or unavailable fraction invalidates that case's residual block;
+available derived quantities are not fitted as if the complete experiment had been predicted.
 
 ## Leave one condition out (V1)
 

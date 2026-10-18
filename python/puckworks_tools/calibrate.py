@@ -437,6 +437,10 @@ class DatasetBlock:
                 observations.append(None)
                 failures.append(f"{case.name}: {result['error']}")
                 continue
+            if result.get("summary", {}).get("stop_reason") not in ("time", "beverage_mass"):
+                observations.append(None)
+                failures.append(f"{case.name}: shot did not reach a requested stop")
+                continue
             try:
                 obs = observe(self.module, case, result, spec)
             except (ValueError, KeyError, ZeroDivisionError) as exc:
@@ -444,6 +448,7 @@ class DatasetBlock:
                 failures.append(f"{case.name}: {exc}")
             if obs is not None and not required_observations_available(self, case, obs):
                 failures.append(f"{case.name}: required fit observations are missing, nonfinite or invalid")
+                obs = None
             observations.append(obs)
         r, labels = self.residual_fn(self, observations, values)
         r = np.where(np.isfinite(r), r, FAILED_RESIDUAL)
@@ -462,6 +467,10 @@ def required_observations_available(block: DatasetBlock, case: Case, observation
     """Availability of the residual's inputs, independent of how closely they match the data."""
     try:
         if block.module.KEY == "schmieder2023":
+            fractions = observation["fractions"]
+            if not fractions or not all(math.isfinite(row["model"]) and row["model"] >= 0
+                                        for row in fractions):
+                return False
             values = [observation[kind][analyte] for kind in ("lambda", "c0")
                       for analyte, *_ in block.module.ANALYTES]
             cup = "cup_eq3" if block.options.get("cup", "eq3") == "eq3" else "cup_direct"
@@ -764,10 +773,19 @@ def fit(problem: Problem, *, max_nfev: int | None = None, loss: str = "linear", 
     if not problem.params:
         jac = np.zeros((r0.size, 0))
         return FitResult(x0, r0, jac, True, "no parameters", 1, 0.5 * float(r0 @ r0), 0.5 * float(r0 @ r0))
-    result = least_squares(problem.residuals, x0, jac=problem.jacobian, bounds=(lo, hi), method="trf",
+    # x_scale='jac' scales the trust region, but SciPy's xtol still tests the
+    # step against the norm of the supplied coordinates. Mixing, for example,
+    # a saturation near 350 with a partition near 1 made termination depend
+    # on units. Optimize on [0, 1] and keep the public result/Jacobian in the
+    # original physical/log coordinates for export and uncertainty analysis.
+    span = hi - lo
+    result = least_squares(lambda z: problem.residuals(lo + span * z), (x0 - lo) / span,
+                           jac=lambda z: problem.jacobian(lo + span * z) * span,
+                           bounds=(np.zeros_like(lo), np.ones_like(hi)), method="trf",
                            x_scale="jac", loss=loss, max_nfev=max_nfev, verbose=verbose)
-    r = problem.residuals(result.x)
-    return FitResult(result.x, r, problem.jacobian(result.x), bool(result.success), str(result.message),
+    x = lo + span * result.x
+    r = problem.residuals(x)
+    return FitResult(x, r, problem.jacobian(x), bool(result.success), str(result.message),
                      int(result.nfev), 0.5 * float(r @ r), 0.5 * float(r0 @ r0),
                      status=int(result.status), optimality=float(result.optimality), njev=int(result.njev))
 
@@ -775,6 +793,7 @@ def fit(problem: Problem, *, max_nfev: int | None = None, loss: str = "linear", 
 def optimizer_record(result: FitResult) -> dict[str, Any]:
     """Record termination and first-order optimality separately; xtol is not stationarity."""
     return {"success": result.success, "message": result.message, "evaluations": result.nfev,
+            "coordinates": "bounds_normalized", "optimality_coordinates": "bounds_normalized",
             "status": result.status, "jacobian_evaluations": result.njev,
             "optimality": _round(result.optimality) if result.optimality is not None else None}
 
@@ -1649,7 +1668,7 @@ def _positive_int(value: str) -> int:
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", type=Path, help="calibration config (default: data/calibration/config.yaml)")
     parser.add_argument("--out-dir", type=Path, help="output directory (default: data/calibration)")
-    parser.add_argument("--label", default="v5", help="name of the versioned output file (default: v5)")
+    parser.add_argument("--label", default="v6", help="name of the versioned output file (default: v6)")
     parser.add_argument("--start-from", type=Path, help="warm-start values from a preserved calibration document")
     parser.add_argument("--checkpoint-dir", type=Path, help="retain main/prune and each completed refit checkpoint")
     parser.add_argument("--no-current", action="store_true", help="do not write current.yaml")
@@ -1690,8 +1709,8 @@ def run(args: argparse.Namespace, paths: RepoPaths) -> int:
     config_path = args.config or paths.root / "data" / "calibration" / "config.yaml"
     config = load_config(config_path)
     out_dir = args.out_dir or paths.root / "data" / "calibration"
-    if args.label in ("v1", "v2", "v3", "v4") and Path(out_dir).resolve() == (paths.root / "data/calibration").resolve():
-        raise CalibrationError("v1/v2/v3/v4 are preserved historical fits; choose a new label or an external output directory")
+    if args.label in ("v1", "v2", "v3", "v4", "v5") and Path(out_dir).resolve() == (paths.root / "data/calibration").resolve():
+        raise CalibrationError("v1/v2/v3/v4/v5 are preserved historical fits; choose a new label or an external output directory")
     fixed = fixed_parameters(config, load_registry(paths))
     if args.pool_only:
         out_dir = args.out_dir or paths.root / "data" / "calibration"

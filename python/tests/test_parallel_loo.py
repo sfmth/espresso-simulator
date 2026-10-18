@@ -60,6 +60,7 @@ def install_synthetic(monkeypatch, module=cal, *, incomplete=False):
                     "c0": {a: value for a, *_ in sch.ANALYTES},
                     "cup_eq3": {a: {m: value for m in (20, 40, 60)} for a, *_ in sch.ANALYTES},
                     "pour_peak_pressure_bar": 1.0,
+                    "fractions": [{"model": value}],
                 }
                 if incomplete and self.name == "V1" and case.info["experiment"] == 1:
                     del obs["c0"]

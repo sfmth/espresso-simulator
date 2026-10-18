@@ -194,7 +194,42 @@ def test_optimizer_record_retains_unfinished_fit_diagnostics():
     assert record["message"] == result.message
 
 
-@pytest.mark.parametrize("label", ["v1", "v2", "v3", "v4"])
+def test_fit_termination_is_independent_of_linear_parameter_units():
+    class ScaledCurve:
+        name = "scaled"
+        labels = ["scaled/anchor", "scaled/exponential", "scaled/quadratic"]
+
+        def __init__(self, scale):
+            self.scale = scale
+
+        def evaluate(self, values, runner, params):
+            anchor = values["scaled.anchor"] / self.scale
+            z = values["shape.value"]
+            r = np.array([anchor - 1.1, np.exp(z) - np.exp(1.7), z*z - 1.7**2])
+            return cal.Evaluation(r, self.labels, [], [])
+
+    results = []
+    for scale in (1.0, 1e9):
+        # The anchor starts at its optimum. Its units must not let xtol stop
+        # the still-unfitted shape coordinate after a single small physical step.
+        anchor = cal.Parameter("scaled.anchor", "spec", ("scaled",), "linear",
+                               scale, 2*scale, 1.1*scale, "1")
+        shape = cal.Parameter("shape.value", "spec", ("scaled",), "linear", 1, 2, 1.1, "1")
+        problem = cal.Problem([anchor, shape], [ScaledCurve(scale)],
+                              cal.Runner(simulate=lambda spec: spec), fd_step=1e-5)
+        result = cal.fit(problem)
+        assert result.success
+        assert result.x[0]/scale == pytest.approx(1.1, abs=1e-8)
+        assert result.x[1] == pytest.approx(1.7, abs=1e-8)
+        # Returned derivatives remain in physical coordinates, not z.
+        assert result.jacobian[0, 0]*scale == pytest.approx(1, rel=1e-5)
+        assert result.jacobian[1, 1] == pytest.approx(np.exp(1.7), rel=1e-5)
+        results.append(result)
+    assert results[0].nfev == results[1].nfev
+    assert results[0].status == results[1].status
+
+
+@pytest.mark.parametrize("label", ["v1", "v2", "v3", "v4", "v5"])
 def test_historical_fit_outputs_are_protected(repo, label):
     from types import SimpleNamespace
 
@@ -317,15 +352,39 @@ def test_required_observations_reject_nonfinite_fit_inputs_without_scientific_th
         observation = {"lambda": {a: 1e6 for a, *_ in sch.ANALYTES},
                        "c0": {a: 1e6 for a, *_ in sch.ANALYTES},
                        "cup_eq3": {a: {mass: 1e6 for mass in (20, 40, 60)} for a, *_ in sch.ANALYTES},
-                       "pour_peak_pressure_bar": 100.0}
+                       "pour_peak_pressure_bar": 100.0, "fractions": [{"model": 1e6}]}
         assert cal.required_observations_available(block, case, observation)
         observation["lambda"]["caffeine"] = math.nan
         assert not cal.required_observations_available(block, case, observation)
         observation["lambda"]["caffeine"] = 1e6
         observation["cup_eq3"]["tds"][60] = math.inf
         assert not cal.required_observations_available(block, case, observation)
+        observation["cup_eq3"]["tds"][60] = 1e6
+        observation["fractions"][0]["model"] = math.nan
+        assert not cal.required_observations_available(block, case, observation)
     finally:
         problem.runner.close()
+
+
+@pytest.mark.parametrize("failure", ["truncated", "missing_fraction"])
+def test_incomplete_shots_receive_failure_residuals(repo, config, monkeypatch, failure):
+    from puckworks_tools.cases import schmieder2023 as sch
+
+    problem = cal.build_problem(repo, config, blocks=["V1"])
+    block = problem.blocks[0]
+    block.cases = block.cases[:1]
+    observation = {"lambda": {a: 1 for a, *_ in sch.ANALYTES},
+                   "c0": {a: 1 for a, *_ in sch.ANALYTES},
+                   "cup_eq3": {a: {mass: 1 for mass in (20, 40, 60)} for a, *_ in sch.ANALYTES},
+                   "pour_peak_pressure_bar": 1.0,
+                   "fractions": [{"model": math.nan if failure == "missing_fraction" else 1.0}]}
+    monkeypatch.setattr(sch, "observe", lambda case, result: observation)
+    runner = cal.Runner(simulate=lambda spec: {
+        "summary": {"stop_reason": "max_duration" if failure == "truncated" else "beverage_mass"}})
+    result = block.evaluate(problem.values(problem.x0()), runner, problem.params)
+    assert result.observations == [None]
+    assert result.failures
+    assert np.all(result.residuals == cal.FAILED_RESIDUAL)
 
 
 def test_kappa_recovered_through_the_solver(repo, config):
@@ -490,7 +549,7 @@ def test_leave_one_out_refits_shared_parameter_without_omitted_residual(monkeypa
                 obs = {"lambda": {a: value for a, *_ in sch.ANALYTES},
                        "c0": {a: value for a, *_ in sch.ANALYTES},
                        "cup_eq3": {a: {m: value for m in (20, 40, 60)} for a, *_ in sch.ANALYTES},
-                       "pour_peak_pressure_bar": 1.0}
+                       "pour_peak_pressure_bar": 1.0, "fractions": [{"model": value}]}
                 if incomplete_prediction and self.name == "V1" and case.info["experiment"] == 1:
                     del obs["c0"]
                 observations.append(obs)

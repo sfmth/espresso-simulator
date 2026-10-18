@@ -51,6 +51,21 @@ const MASS_FAIL: f64 = 1e-6;
 const NEGATIVE_WARN: f64 = 1e-9;
 const NEGATIVE_FAIL: f64 = 1e-3;
 
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct WetPause {
+    volume: f64,
+    before: f64,
+    after: f64,
+}
+
+#[derive(Clone, Copy)]
+struct WetSpan {
+    lo: f64,
+    hi: f64,
+    entered: f64,
+    left: f64,
+}
+
 /// The state of one species group, for a unit mass fraction (a member's
 /// values are these times its mass fraction).
 #[derive(Clone, Debug)]
@@ -85,8 +100,16 @@ pub(crate) struct State {
     /// Liquid solute mass per cell, kg.
     pub m: Vec<f64>,
     pub eps: Vec<f64>,
-    /// When each cell wetted (∞ while dry).
+    /// When the front entered each cell (∞ while dry).
     pub t_wet: Vec<f64>,
+    /// When the front left each cell (∞ until completely wet).
+    pub t_wet_end: Vec<f64>,
+    /// Last actual advance of each column's front. A zero-flow soak must
+    /// age the youngest wetted material, rather than resetting its clock.
+    pub t_front: Vec<f64>,
+    /// Arrival-time jumps left by zero-flow pauses inside a cell. They remain
+    /// after breakthrough because the older material keeps its original age.
+    pub wet_pauses: Vec<Vec<WetPause>>,
     /// Lumped solubles held by the particles of each cell, kg (updated
     /// incrementally; true sums are taken at check points).
     pub particle: Vec<f64>,
@@ -196,6 +219,9 @@ impl State {
             m: vec![0.0; cells],
             eps: vec![model.eps0; cells],
             t_wet: vec![f64::INFINITY; cells],
+            t_wet_end: vec![f64::INFINITY; cells],
+            t_front: vec![0.0; ncol],
+            wet_pauses: vec![vec![]; ncol],
             particle0: particle.clone(),
             particle,
             dry,
@@ -379,6 +405,9 @@ struct Light {
     through: Vec<bool>,
     t_through: Vec<f64>,
     t_wet: Vec<f64>,
+    t_wet_end: Vec<f64>,
+    t_front: Vec<f64>,
+    wet_pauses: Vec<Vec<WetPause>>,
     temp: f64,
     first_drops: Option<f64>,
     drip_water: f64,
@@ -756,6 +785,102 @@ impl<'a> Sim<'a> {
         f
     }
 
+    /// A stored front that has stood still before a possible new advance.
+    fn front_pause(&self, column: usize) -> Option<WetPause> {
+        let volume = self.state.wetted[column];
+        let before = self.state.t_front[column];
+        let after = self.state.t;
+        (volume > 0.0
+            && volume < self.model.columns[column].volume
+            && after - before > 1e-12 * after.abs().max(1.0))
+        .then_some(WetPause {
+            volume,
+            before,
+            after,
+        })
+    }
+
+    fn inverse_time_mean(&self, t: f64, entered: f64, left: f64, nodes: &[(f64, f64); 3]) -> f64 {
+        nodes
+            .iter()
+            .map(|&(fraction, weight)| {
+                weight / self.time_factor(t, entered + fraction * (left - entered))
+            })
+            .sum()
+    }
+
+    /// Upper bound on log-mobility variation. Each relaxation's absolute
+    /// logarithmic slope decreases with age; evaluate at the youngest point.
+    fn time_variation(&self, t: f64, entered: f64, left: f64) -> f64 {
+        let h = &self.spec.hydraulics;
+        let age = (t - left.max(entered)).max(0.0);
+        let mut slope = 0.0;
+        for (relaxation, exponent, swelling) in [
+            (&h.swelling, 1.0, true),
+            (&h.gas, 1.0, false),
+            (&h.pore_air, h.pore_air_permeability_exponent, false),
+        ] {
+            if relaxation.amplitude > 0.0 && relaxation.tau_s > 0.0 {
+                let a = relaxation.amplitude * math::exp(-age / relaxation.tau_s);
+                let factor = if swelling {
+                    1.0 - relaxation.amplitude + a
+                } else {
+                    1.0 - a
+                };
+                slope += exponent * a / (relaxation.tau_s * factor);
+            }
+        }
+        (left - entered).abs() * slope
+    }
+
+    /// Compare positive three-point quadrature with two half rules for a
+    /// steep mobility closure. Interpolate time in exact volume coordinates;
+    /// retain the exact Darcy integral on each piece. Flag the bounded fallback.
+    fn refine_time_integral(
+        &self,
+        t: f64,
+        span: WetSpan,
+        coarse: f64,
+        depth: usize,
+    ) -> (f64, bool) {
+        let p = &self.model.profile;
+        let mid = 0.5 * (span.lo + span.hi);
+        if mid <= span.lo || mid >= span.hi {
+            return (coarse, false);
+        }
+        let fraction = p.volume(mid, span.hi) / p.volume(span.lo, span.hi);
+        let middle_time = span.entered + fraction * (span.left - span.entered);
+        let a = WetSpan {
+            lo: mid,
+            left: middle_time,
+            ..span
+        };
+        let b = WetSpan {
+            hi: mid,
+            entered: middle_time,
+            ..span
+        };
+        let estimate = |s: WetSpan| {
+            p.inverse_area_integral(s.lo, s.hi)
+                * self.inverse_time_mean(t, s.entered, s.left, &p.resistance_quadrature(s.lo, s.hi))
+        };
+        let (ia, ib) = (estimate(a), estimate(b));
+        let fine = ia + ib;
+        // Both interior rules can miss the same very narrow endpoint layer.
+        // Require bounded endpoint variation as well as agreement between them.
+        if self.time_variation(t, span.entered, span.left) <= 0.5
+            && (fine - coarse).abs() <= 1e-8 * fine.abs()
+        {
+            return (fine, true);
+        }
+        if depth >= 40 {
+            return (fine, false);
+        }
+        let (ra, ok_a) = self.refine_time_integral(t, a, ia, depth + 1);
+        let (rb, ok_b) = self.refine_time_integral(t, b, ib, depth + 1);
+        (ra + rb, ok_a && ok_b)
+    }
+
     /// Builds the bed curve at time `t` for wetted volumes `wetted`.
     fn build_curve(&mut self, t: f64, wetted: &[f64]) {
         let m = self.model;
@@ -763,6 +888,7 @@ impl<'a> Sim<'a> {
         let nc = m.n_cells();
         let timed =
             h.swelling.amplitude > 0.0 || h.gas.amplitude > 0.0 || h.pore_air.amplitude > 0.0;
+        let mut unresolved_quadrature = false;
         for (i, column) in m.columns.iter().enumerate() {
             let w = wetted[i];
             let through = w >= column.volume * (1.0 - 1e-12);
@@ -773,20 +899,130 @@ impl<'a> Sim<'a> {
                     break;
                 }
                 let cell = i * nc + j;
-                let f_t = if timed {
-                    self.time_factor(t, self.state.t_wet[cell])
-                } else {
-                    1.0
-                };
                 let bottom = column.cum_volume[j + 1];
-                if w >= bottom || through {
-                    r += self.cell_r[cell] / f_t;
+                let (part, quadrature) = if w >= bottom || through {
+                    (c.inverse_area, c.resistance_quadrature)
                 } else {
                     // Partial front cell: ∫ dz/A from the cell top to the front.
                     let h_front = m.profile.height_below(c.h_top, (w - top) / column.share);
                     let part = m.profile.inverse_area_integral(h_front, c.h_top);
-                    r += self.cell_r[cell] * (part / c.inverse_area) / f_t;
-                }
+                    (part, m.profile.resistance_quadrature(h_front, c.h_top))
+                };
+                let inverse_factor = if timed {
+                    // Reconstruct arrival time across the wetted cell in bed
+                    // volume coordinates. Previously the entry time aged the
+                    // entire cell too early, systematically lowering resistance.
+                    // Predicted new material uses the predictor's linear front.
+                    let old_w = self.state.wetted[i];
+                    let arrival = |v: f64| {
+                        if w > old_w {
+                            self.state.t
+                                + (t - self.state.t) * ((v - old_w) / (w - old_w)).clamp(0.0, 1.0)
+                        } else {
+                            self.state.t_front[i]
+                        }
+                    };
+                    let entered = if self.state.t_wet[cell].is_finite() {
+                        self.state.t_wet[cell]
+                    } else {
+                        arrival(top)
+                    };
+                    let left = if self.state.t_wet_end[cell].is_finite() {
+                        self.state.t_wet_end[cell]
+                    } else {
+                        arrival(fmin(bottom, w))
+                    };
+                    let mut integrate = |span: WetSpan, piece: f64, nodes: &[(f64, f64); 3]| {
+                        let coarse =
+                            piece * self.inverse_time_mean(t, span.entered, span.left, nodes);
+                        if piece > 0.0 && self.time_variation(t, span.entered, span.left) > 0.5 {
+                            let (refined, resolved) = self.refine_time_integral(t, span, coarse, 0);
+                            unresolved_quadrature |= !resolved;
+                            refined
+                        } else {
+                            coarse
+                        }
+                    };
+                    // A predictor can resume after a soak before the actual
+                    // advance has committed its breakpoint to the state.
+                    let predicted_pause = self.front_pause(i).filter(|_| w > old_w);
+                    let end = fmin(bottom, w);
+                    let mut start_v = top;
+                    let mut start_t = entered;
+                    let mut integral = 0.0;
+                    for pause in self.state.wet_pauses[i]
+                        .iter()
+                        .chain(predicted_pause.iter())
+                    {
+                        if pause.volume <= top || pause.volume >= end {
+                            continue;
+                        }
+                        let h_hi = m
+                            .profile
+                            .height_below(c.h_top, (start_v - top) / column.share);
+                        let h_lo = m
+                            .profile
+                            .height_below(c.h_top, (pause.volume - top) / column.share);
+                        let piece = m.profile.inverse_area_integral(h_lo, h_hi);
+                        if piece > 0.0 {
+                            integral += integrate(
+                                WetSpan {
+                                    lo: h_lo,
+                                    hi: h_hi,
+                                    entered: start_t,
+                                    left: pause.before,
+                                },
+                                piece,
+                                &m.profile.resistance_quadrature(h_lo, h_hi),
+                            );
+                        }
+                        start_v = pause.volume;
+                        start_t = pause.after;
+                    }
+                    if start_v == top {
+                        let lo = if w >= bottom || through {
+                            c.h_bottom
+                        } else {
+                            m.profile.height_below(c.h_top, (w - top) / column.share)
+                        };
+                        if part > 0.0 {
+                            integrate(
+                                WetSpan {
+                                    lo,
+                                    hi: c.h_top,
+                                    entered,
+                                    left,
+                                },
+                                part,
+                                &quadrature,
+                            ) / part
+                        } else {
+                            1.0
+                        }
+                    } else {
+                        let h_hi = m
+                            .profile
+                            .height_below(c.h_top, (start_v - top) / column.share);
+                        let h_lo = m.profile.height_below(c.h_top, (end - top) / column.share);
+                        let piece = m.profile.inverse_area_integral(h_lo, h_hi);
+                        if piece > 0.0 {
+                            integral += integrate(
+                                WetSpan {
+                                    lo: h_lo,
+                                    hi: h_hi,
+                                    entered: start_t,
+                                    left,
+                                },
+                                piece,
+                                &m.profile.resistance_quadrature(h_lo, h_hi),
+                            );
+                        }
+                        integral / part
+                    }
+                } else {
+                    1.0
+                };
+                r += self.cell_r[cell] * (part / c.inverse_area) * inverse_factor;
             }
             if through {
                 let f = &h.fines_layer;
@@ -811,6 +1047,11 @@ impl<'a> Sim<'a> {
             self.curve.through[i] = through;
         }
         self.curve.finish();
+        if unresolved_quadrature {
+            self.warn(
+                "wet-age resistance quadrature reached its refinement limit; refine the depth mesh",
+            );
+        }
     }
 
     /// Operating point at time `t` on the current curve.
@@ -1239,6 +1480,13 @@ impl<'a> Sim<'a> {
                 let vol = model.columns[i].volume;
                 let w_new = w0[i] + dt * q / model.phi_t;
                 wetted_end[i] = w_new;
+                if w_new > w0[i] {
+                    if let Some(pause) = self.front_pause(i) {
+                        self.state.wet_pauses[i].push(pause);
+                    }
+                    self.state.t_front[i] =
+                        t0 + dt * ((fmin(w_new, vol) - w0[i]) / (w_new - w0[i])).clamp(0.0, 1.0);
+                }
                 if w_new >= vol * (1.0 - 1e-12) {
                     // The front reaches the floor during the step.
                     let s = if w_new > w0[i] {
@@ -1257,18 +1505,22 @@ impl<'a> Sim<'a> {
                     self.state.wetted[i] = w_new;
                     active[i] = self.active_cells(i, w_new);
                 }
-                // Wetting times of the cells the front entered.
+                // Entry and exit times from the same accepted front advance.
                 for j in 0..active[i] {
                     let cell = i * nc + j;
                     if self.state.t_wet[cell] == f64::INFINITY {
                         let top = model.columns[i].cum_volume[j];
-                        let w_end = self.state.wetted[i];
-                        let s = if w_end > w0[i] {
-                            fmin(fmax((top - w0[i]) / (w_end - w0[i]), 0.0), 1.0)
+                        let s = if w_new > w0[i] {
+                            fmin(fmax((top - w0[i]) / (w_new - w0[i]), 0.0), 1.0)
                         } else {
                             0.0
                         };
                         self.state.t_wet[cell] = t0 + s * dt;
+                    }
+                    let bottom = model.columns[i].cum_volume[j + 1];
+                    if self.state.t_wet_end[cell] == f64::INFINITY && w_new >= bottom {
+                        self.state.t_wet_end[cell] =
+                            t0 + dt * ((bottom - w0[i]) / (w_new - w0[i])).clamp(0.0, 1.0);
                     }
                 }
             }
@@ -1336,6 +1588,9 @@ impl<'a> Sim<'a> {
             through: self.state.through.clone(),
             t_through: self.state.t_through.clone(),
             t_wet: self.state.t_wet.clone(),
+            t_wet_end: self.state.t_wet_end.clone(),
+            t_front: self.state.t_front.clone(),
+            wet_pauses: self.state.wet_pauses.clone(),
             temp: self.state.temp,
             first_drops: self.first_drops,
             drip_water: self.drip_water,
@@ -1351,6 +1606,9 @@ impl<'a> Sim<'a> {
         self.state.through.clone_from(&l.through);
         self.state.t_through.clone_from(&l.t_through);
         self.state.t_wet.clone_from(&l.t_wet);
+        self.state.t_wet_end.clone_from(&l.t_wet_end);
+        self.state.t_front.clone_from(&l.t_front);
+        self.state.wet_pauses.clone_from(&l.wet_pauses);
         self.state.temp = l.temp;
         self.first_drops = l.first_drops;
         self.drip_water = l.drip_water;
@@ -1937,6 +2195,200 @@ impl<'a> Sim<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn distributed_wet_age_matches_the_independent_resistance_integral() {
+        // Manufactured constant-speed front, unit pore-air exponent. The
+        // exact integral of 1/(1-A exp(-age/tau)) is available independently
+        // of the spatial quadrature. Include a partial cell and a zero-flow
+        // soak: the last front-arrival time must stay fixed during the soak.
+        for cells in [5, 30, 150] {
+            let mut spec = ShotSpec::default();
+            spec.bed.heterogeneity.columns = 1;
+            spec.bed.heterogeneity.sigma_ln_permeability = 0.0;
+            spec.bed.heterogeneity.edge_area_fraction = 0.0;
+            spec.numerics.depth_cells = cells;
+            spec.hydraulics.pore_air = Relaxation {
+                amplitude: 0.5,
+                tau_s: 0.7,
+            };
+            spec.hydraulics.pore_air_permeability_exponent = 1.0;
+            let model = Model::new(&spec, &mut vec![]);
+            let mut sim = Sim::new(&spec, &model, vec![]);
+            let total = model.columns[0].volume;
+            for fraction in [0.37, 1.0] {
+                let travel = 4.0 * fraction;
+                sim.state.wetted[0] = total * fraction;
+                sim.state.t_front[0] = travel;
+                for j in 0..cells {
+                    let a = 4.0 * model.columns[0].cum_volume[j] / total;
+                    let b = 4.0 * model.columns[0].cum_volume[j + 1] / total;
+                    sim.state.t_wet[j] = if a < travel { a } else { f64::INFINITY };
+                    sim.state.t_wet_end[j] = if b <= travel { b } else { f64::INFINITY };
+                }
+                sim.update_cell_resistances();
+                let untimed: f64 = sim.cell_r.iter().sum::<f64>() * fraction;
+                for soak in [0.0, 2.0] {
+                    let t = travel + soak;
+                    sim.state.t = t;
+                    sim.build_curve(t, &[total * fraction]);
+                    let primitive = |age: f64| age + 0.7 * (1.0 - 0.5 * (-age / 0.7).exp()).ln();
+                    let expected = untimed * (primitive(t) - primitive(soak)) / travel;
+                    let error = (sim.curve.resistance[0] / expected - 1.0).abs();
+                    let tolerance = if cells == 5 { 2e-4 } else { 2e-8 };
+                    assert!(
+                        error < tolerance,
+                        "cells={cells}, fraction={fraction}, soak={soak}, error={error}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn wet_age_history_is_restored_for_both_retry_paths() {
+        let spec = ShotSpec::default();
+        let model = Model::new(&spec, &mut vec![]);
+        let mut sim = Sim::new(&spec, &model, vec![]);
+        sim.state.t_wet[0] = 1.0;
+        sim.state.t_wet_end[0] = 2.0;
+        sim.state.t_front[0] = 2.5;
+        sim.state.wet_pauses[0].push(WetPause {
+            volume: 1e-6,
+            before: 1.0,
+            after: 1.5,
+        });
+        let light = sim.save_light();
+        let full = sim.save_full();
+        for restore_full in [false, true] {
+            sim.state.t_wet[0] = 3.0;
+            sim.state.t_wet_end[0] = 4.0;
+            sim.state.t_front[0] = 5.0;
+            sim.state.wet_pauses[0].clear();
+            if restore_full {
+                sim.restore_full(&full);
+            } else {
+                sim.restore_light(&light);
+            }
+            assert_eq!(sim.state.t_wet[0], 1.0);
+            assert_eq!(sim.state.t_wet_end[0], 2.0);
+            assert_eq!(sim.state.t_front[0], 2.5);
+            assert_eq!(sim.state.wet_pauses[0], light.wet_pauses[0]);
+        }
+    }
+
+    #[test]
+    fn infinitesimal_restart_preserves_the_age_of_already_wet_material() {
+        let mut spec = ShotSpec::default();
+        spec.bed.heterogeneity.columns = 1;
+        spec.bed.heterogeneity.sigma_ln_permeability = 0.0;
+        spec.bed.heterogeneity.edge_area_fraction = 0.0;
+        spec.numerics.depth_cells = 1;
+        spec.hydraulics.pore_air = Relaxation {
+            amplitude: 0.5,
+            tau_s: 0.7,
+        };
+        spec.hydraulics.pore_air_permeability_exponent = 3.0;
+        let model = Model::new(&spec, &mut vec![]);
+        let mut sim = Sim::new(&spec, &model, vec![]);
+        let volume = model.columns[0].volume;
+        sim.state.wetted[0] = 0.5 * volume;
+        sim.state.t_wet[0] = 0.0;
+        sim.state.t_front[0] = 1.0;
+        sim.state.t = 3.0;
+        sim.update_cell_resistances();
+        sim.build_curve(3.0, &[0.5 * volume]);
+        let before = sim.curve.resistance[0];
+        sim.build_curve(3.0 + 1e-9, &[(0.5 + 1e-10) * volume]);
+        let predicted = sim.curve.resistance[0];
+        assert!((predicted / before - 1.0).abs() < 1e-7);
+        let pause = sim.front_pause(0).unwrap();
+        sim.state.wet_pauses[0].push(pause);
+        sim.state.wetted[0] = (0.5 + 1e-10) * volume;
+        sim.state.t_front[0] = 3.0 + 1e-9;
+        sim.state.t = 3.0 + 1e-9;
+        sim.build_curve(sim.state.t, &[sim.state.wetted[0]]);
+        assert!((sim.curve.resistance[0] / predicted - 1.0).abs() < 1e-12);
+        // Once full, the old half and new half retain separate arrival maps.
+        sim.state.wetted[0] = volume;
+        sim.state.t_wet_end[0] = 4.0;
+        sim.state.t_front[0] = 4.0;
+        sim.state.t = 4.0;
+        sim.build_curve(4.0, &[volume]);
+        let reference = (0..100_000)
+            .map(|i| {
+                let v = (i as f64 + 0.5) / 100_000.0;
+                let arrival = if v < 0.5 { 2.0 * v } else { 2.0 * v + 2.0 };
+                1.0 / sim.time_factor(4.0, arrival)
+            })
+            .sum::<f64>()
+            / 100_000.0;
+        assert!((sim.curve.resistance[0] / sim.cell_r[0] / reference - 1.0).abs() < 1e-7);
+    }
+
+    #[test]
+    fn steep_wet_age_closures_match_the_integer_exponent_antiderivative() {
+        for (amplitude, exponent, tau_s) in [(0.9, 5, 0.7), (0.95, 10, 0.7), (0.95, 10, 1e-4)] {
+            let mut spec = ShotSpec::default();
+            spec.bed.heterogeneity.columns = 1;
+            spec.bed.heterogeneity.sigma_ln_permeability = 0.0;
+            spec.bed.heterogeneity.edge_area_fraction = 0.0;
+            spec.numerics.depth_cells = 30;
+            spec.hydraulics.pore_air = Relaxation { amplitude, tau_s };
+            spec.hydraulics.pore_air_permeability_exponent = exponent as f64;
+            let model = Model::new(&spec, &mut vec![]);
+            let mut sim = Sim::new(&spec, &model, vec![]);
+            let volume = model.columns[0].volume;
+            sim.state.wetted[0] = volume;
+            sim.state.t_front[0] = 4.0;
+            sim.state.t = 4.0;
+            for j in 0..30 {
+                sim.state.t_wet[j] = 4.0 * model.columns[0].cum_volume[j] / volume;
+                sim.state.t_wet_end[j] = 4.0 * model.columns[0].cum_volume[j + 1] / volume;
+            }
+            sim.update_cell_resistances();
+            sim.build_curve(4.0, &[volume]);
+            let primitive = |age: f64| {
+                let u = 1.0 - amplitude * (-age / tau_s).exp();
+                age + tau_s * u.ln()
+                    - tau_s * (1..exponent).map(|k| u.powi(-k) / k as f64).sum::<f64>()
+            };
+            let expected = sim.cell_r.iter().sum::<f64>() * (primitive(4.0) - primitive(0.0)) / 4.0;
+            assert!((sim.curve.resistance[0] / expected - 1.0).abs() < 1e-7);
+            assert!(sim.warnings.iter().all(|w| !w.contains("quadrature")));
+        }
+    }
+
+    #[test]
+    fn unresolved_endpoint_age_layers_are_reported() {
+        let mut spec = ShotSpec::default();
+        spec.bed.heterogeneity.columns = 1;
+        spec.bed.heterogeneity.sigma_ln_permeability = 0.0;
+        spec.bed.heterogeneity.edge_area_fraction = 0.0;
+        spec.numerics.depth_cells = 30;
+        spec.hydraulics.pore_air = Relaxation {
+            amplitude: 0.95,
+            tau_s: 1e-18,
+        };
+        spec.hydraulics.pore_air_permeability_exponent = 10.0;
+        let model = Model::new(&spec, &mut vec![]);
+        let mut sim = Sim::new(&spec, &model, vec![]);
+        let volume = model.columns[0].volume;
+        sim.state.wetted[0] = volume;
+        sim.state.t_front[0] = 4.0;
+        sim.state.t = 4.0;
+        for j in 0..30 {
+            sim.state.t_wet[j] = 4.0 * model.columns[0].cum_volume[j] / volume;
+            sim.state.t_wet_end[j] = 4.0 * model.columns[0].cum_volume[j + 1] / volume;
+        }
+        // Pin the endpoint itself: accumulated cell volumes can differ from
+        // total volume by an ulp, which exceeds this deliberately tiny tau.
+        sim.state.t_wet_end[29] = 4.0;
+        sim.update_cell_resistances();
+        sim.build_curve(4.0, &[volume]);
+        assert!(sim.curve.resistance[0].is_finite());
+        assert!(sim.warnings.iter().any(|w| w.contains("quadrature")));
+    }
 
     /// Runs a spec and returns the result with the kernels' gross uptake and
     /// initial content per class, kg.

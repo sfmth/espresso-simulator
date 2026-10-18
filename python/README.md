@@ -4,7 +4,7 @@
 Offline Python tools for Puckworks. They check the parameter registry and the datasets, write the
 golden fixtures shared with the web tests, produce the kernel verification report, calibrate the M1
 model against the literature datasets and write the M1 validation report, export presets and registry
-for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.6.4,
+for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.6.5,
 GPL-2.0-or-later.
 
 ## Install
@@ -45,6 +45,92 @@ any mismatch with the original calibration. No parameters or defaults are export
 To regenerate only tables and plots, pass the committed compact JSON to
 `m11-mesh-report.py --input docs/validation/m11-mesh-refinement.json`.
 
+## Wetting-age correction and refined tuning
+
+The [hydraulic study](../docs/validation/m11-wet-age.md) tests pore-air and viscosity
+ablations with frozen v5 coefficients, then compares the corrected wetting-age
+integration. Its report retains both builds' identities and full window specs:
+
+```sh
+.venv/bin/python python/scripts/m11-hydraulic-ablation.py --help
+.venv/bin/python python/scripts/m11-wet-age-report.py --from-json docs/validation/m11-wet-age.json
+```
+
+The staged tuning script preserves v5's effective 22-parameter problem, original
+training observations, weights and bounds. It selects a permeability restart from
+training cost alone, fits a 30-layer warm start, then fits 150 layers at 25 ms:
+
+```sh
+.venv/bin/python python/scripts/m11-refined-tuning.py --stage profile --depth 150 --dt .025 --output-dir .local/refined-tuning/profile150 --jobs 8
+.venv/bin/python python/scripts/m11-refined-tuning.py --stage fit --depth 30 --dt .025 --start-from .local/refined-tuning/profile150/seed.json --output-dir .local/refined-tuning/warm30 --jobs 8
+.venv/bin/python python/scripts/m11-refined-tuning.py --stage fit --depth 150 --dt .025 --fd-step .001 --start-from .local/refined-tuning/warm30/report.json --output-dir .local/refined-tuning/refined150 --jobs 8
+```
+
+`--stage score --start-from FILE` evaluates a frozen candidate at another depth
+or timestep. Each stage records its exact solver, inputs, complete observations,
+optimizer progress and failures. V1/V4 have explicit 130/131 s hard-stop budgets
+to keep refined shots within the existing work guard; source fractions and the
+requested stop must complete. A truncated shot receives failure residuals.
+Candidates remain outside `data/calibration` and do not replace the app's
+calibration. Independent resolution and validation checks are required before
+promotion; historical v5 predictive scores do not transfer to a changed solver.
+
+After fitting, audit derivatives on training data before freezing the candidate.
+The audit retains each finite difference's direction while reducing its step,
+and scores feasible descent probes without consulting holdouts:
+
+Its predeclared work rule recommends one bounded polish only if the half/quarter
+projected gradients have cosine at least 0.95 and relative difference at most 0.25,
+and two neighboring descent steps each lower cost by at least 0.01. This controls
+additional optimizer work; it does not change scientific acceptance criteria.
+
+```sh
+.venv/bin/python python/scripts/m11-tuning-derivatives.py --candidate .local/refined-tuning/refined150/report.json --output .local/refined-tuning/derivatives.json --jobs 16
+.venv/bin/python python/scripts/m11-freeze-candidate.py --report .local/refined-tuning/refined150/report.json
+```
+
+The freeze writes `frozen-candidate.yaml` and `freeze.json` alongside the completed
+fit. It preserves all exact fitted coefficients and recomputes the pooled
+reference permeability without six-significant-digit export rounding. It runs no
+holdouts and preserves the original fit export. Use the completed report's exact
+`values` for resolution scores and the frozen YAML for held-out checks:
+
+```sh
+.venv/bin/python python/scripts/m11-refined-tuning.py --stage score --depth 300 --dt .025 --start-from .local/refined-tuning/refined150/report.json --output-dir .local/refined-tuning/score300 --jobs 16
+.venv/bin/python python/scripts/m11-refined-tuning.py --stage score --depth 150 --dt .0125 --start-from .local/refined-tuning/refined150/report.json --output-dir .local/refined-tuning/score150half --jobs 16
+.venv/bin/python python/scripts/m11-refined-tuning.py --stage score --depth 30 --dt .05 --start-from .local/refined-tuning/refined150/report.json --output-dir .local/refined-tuning/scoredefault --jobs 16
+.venv/bin/python python/scripts/m11-refined-holdouts.py --candidate .local/refined-tuning/refined150/frozen-candidate.yaml --config .local/refined-tuning/refined150/config.yaml --output .local/refined-tuning/holdouts.json --jobs 16
+```
+
+The holdout sweep runs frozen v5 and candidate coefficients at 30, 150 and 300
+layers, retains all 138 shot specs and diagnostics, and checks the actual output
+meshes and completed stops. These previously inspected datasets are not new
+independent evidence. `m11-refined-tuning-report.py` assembles the completed stages
+and verifies their build, configuration and coefficient identities before rendering.
+
+The full validation retains its case-default V3/V5 grids; the separate sweep above
+checks those holdouts on the finer grids. Assemble both with the training stages:
+
+```sh
+.venv/bin/puckworks-tools validate --jobs 16 --calibration .local/refined-tuning/refined150/frozen-candidate.yaml --config .local/refined-tuning/refined150/config.yaml --output-dir .local/refined-tuning/validation
+.venv/bin/python python/scripts/m11-refined-tuning-report.py \
+  --stage profile150 --stage warm30 --stage baseline150 --stage refined150 \
+  --stage score300 --stage score150half --stage scoredefault \
+  --resolution-stage score300 --resolution-stage score150half --resolution-stage scoredefault \
+  --candidate-document .local/refined-tuning/refined150/frozen-candidate.yaml \
+  --freeze .local/refined-tuning/refined150/freeze.json \
+  --derivatives .local/refined-tuning/derivatives.json \
+  --fine-holdouts .local/refined-tuning/holdouts.json \
+  --validation candidate_full=.local/refined-tuning/validation/m1-validation.json
+```
+
+If a training-only polish selects a later fit, use that fit consistently for every
+frozen comparison and pass its name with `--candidate-stage`. Do not choose a new
+restart from held-out results. The report includes original source bytes (large JSON
+sources use lossless zlib/base64 compression) so `--from-json` verifies the same
+artifact joins without requiring local run caches. The candidate YAML preserves
+the exact frozen bytes; the readable JSON observations remain uncompressed.
+
 ## Commands
 
 Run from anywhere inside the repository (or pass `--root PATH`). Exit status: 0 success, 1 a check
@@ -57,8 +143,8 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 | `puckworks-tools fixtures --check` | Regenerates the fixture in memory and fails if the committed file differs, printing the largest difference and where it is. `--tolerance ATOL` allows small absolute differences in results (default 0, exact) |
 | `puckworks-tools shot-fixtures [--check]` | Writes, or checks, `data/fixtures/shot_cases.json`: recipes with the spec and result the native core gives (below). `--tolerance ATOL` as for `fixtures` |
 | `puckworks-tools verify` | Writes `docs/validation/m0-kernel-verification.md` and `.json`. `--quick` runs small series (smoke test); `--output-dir` writes elsewhere |
-| `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out, refitting all selected blocks and shared parameters), `--prune` (review weak shared parameters with bounded registry-value refits; accept only within the 1% training-cost safeguard), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`, `--start-from FILE` (bounded warm start), `--checkpoint-dir DIR` (atomic main/prune/refit snapshots). Defaults to v5 and protects historical v1/v2/v3/v4 output paths. Records optimizer termination and first-order optimality separately. Refuses to write `data/calibration` while the solver is a placeholder |
-| `puckworks-tools validate` | Writes the M1 validation report `docs/validation/m1-validation.md` (figures in `docs/validation/m1/`, numbers in `.json`): calibration fit quality and the held-out checks of PLAN §10. `--quick` (tier 0), `--jobs N`, `--calibration FILE`, `--output-dir`, `--from-json FILE` (re-render without simulating). `python/scripts/m1-pipeline.sh [JOBS]` runs the whole M1 pipeline (rebuild, calibrate, export, rebuild, validate, shot fixture, checks) |
+| `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out, refitting all selected blocks and shared parameters), `--prune` (review weak shared parameters with bounded registry-value refits; accept only within the 1% training-cost safeguard), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`, `--start-from FILE` (bounded warm start), `--checkpoint-dir DIR` (atomic main/prune/refit snapshots). Defaults to v6 and protects historical v1/v2/v3/v4/v5 output paths. Records optimizer termination and first-order optimality separately. Refuses to write `data/calibration` while the solver is a placeholder |
+| `puckworks-tools validate` | Writes the M1 validation report `docs/validation/m1-validation.md` (figures in `docs/validation/m1/`, numbers in `.json`): calibration fit quality and the held-out checks of PLAN §10. `--quick` (tier 0), `--jobs N`, `--calibration FILE`, `--output-dir`, `--from-json FILE` (re-render without simulating). `python/scripts/m1-pipeline.sh [JOBS]` preserves the historical v5 pipeline and requires source release 0.6.3; use the staged commands above for corrected-solver candidates |
 | `puckworks-tools community --archive ZIP --log CSV` | Imports the pinned original Gagné experiment and runs exploratory model comparisons with fixed assumptions. No download, fitting or admission to the calibration inventory. `--tier 0` is a coarse smoke run; the default is tier 1. Detailed output goes to `.local/community/gagne2021`; `--output-dir` must be outside a Git worktree or ignored |
 | `puckworks-tools export [--check]` | Forwards to `puckworks_tools.export.main` (workstream D): writes, or checks, `crates/puckmodel/generated/presets.json` and `registry.json` from `data/presets`, `data/params` and `data/calibration/current.yaml`. Run it after any change to those |
 | `puckworks-tools check-versions` | Checks that `Cargo.toml` (`[workspace.package]`), `web/package.json` (if present), `python/pyproject.toml` and `puckcore.__version__` agree. `--release` also requires a `## [<version>]` heading in `CHANGELOG.md` |
@@ -67,8 +153,9 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 
 Calibration can run independent leave-one-out folds concurrently with `--loo-jobs N` (default 1).
 Each fold owns its `--jobs` simulation processes; `--loo-jobs 2 --jobs 8` uses up to 16 of them.
-The [v5 pipeline](scripts/m1-pipeline.sh) starts from preserved v4 values,
+The historical [v5 pipeline](scripts/m1-pipeline.sh) starts from preserved v4 values,
 preserves earlier fits, and checks numerical completion before replacing `current.yaml`.
+It refuses newer source releases; current research candidates use the staged workflow above.
 
 ## Reproduce the community comparison
 
@@ -314,7 +401,9 @@ The report gives the separate bounded-refit commands and their limitations. The 
   dataset's observables. Documented in [docs/validation/case-builders.md](../docs/validation/case-builders.md).
 - **Calibration** (`calibrate.py`): registry ids ↔ recipe overrides, spec fields or case parameters, with
   bounds from the registry priors; per-dataset normalised residuals; `scipy.optimize.least_squares` with a
-  block-sparse finite-difference Jacobian; local marginal SD/prior ratios from the Jacobian;
+  block-sparse finite-difference Jacobian; bound-normalized optimizer coordinates so stopping
+  tolerances do not depend on parameter units; local marginal SD/prior ratios from the Jacobian
+  returned in the original parameter coordinates;
   the reference permeability pooled from the fitted nuisance permeabilities. Documented in
   [docs/validation/calibration.md](../docs/validation/calibration.md).
 - **Validation** (`validate.py`): fit quality of the calibration blocks and the held-out checks V3 (Cameron),

@@ -112,6 +112,34 @@ impl Profile {
         g
     }
 
+    /// Positive three-point quadrature for the resistance-weighted mean of
+    /// a field. Each pair is (volume fraction from the top, weight). Weights
+    /// sum to one: multiply the mean by the exact Darcy integral separately.
+    pub fn resistance_quadrature(&self, lo: f64, hi: f64) -> [(f64, f64); 3] {
+        let offset = (3.0_f64 / 5.0).sqrt() / 2.0;
+        let nodes = [
+            (0.5 - offset, 5.0 / 18.0),
+            (0.5, 4.0 / 9.0),
+            (0.5 + offset, 5.0 / 18.0),
+        ];
+        let volume = self.volume(lo, hi);
+        if volume <= 0.0 {
+            return [(0.5, 1.0), (0.5, 0.0), (0.5, 0.0)];
+        }
+        let mut out = [(0.0, 0.0); 3];
+        let mut total = 0.0;
+        for (i, (position, weight)) in nodes.into_iter().enumerate() {
+            let height = hi - position * (hi - lo);
+            let w = weight / self.area_at(height);
+            out[i] = (self.volume(height, hi) / volume, w);
+            total += w;
+        }
+        for (_, weight) in &mut out {
+            *weight /= total;
+        }
+        out
+    }
+
     /// Total volume of the basket.
     pub fn total_volume(&self) -> f64 {
         self.volume(0.0, self.top())
@@ -186,6 +214,8 @@ pub(crate) struct Cell {
     pub volume: f64,
     /// ∫ dz / A(z) over the cell, 1/m.
     pub inverse_area: f64,
+    /// Volume coordinates and normalized positive Darcy weights.
+    pub resistance_quadrature: [(f64, f64); 3],
     /// Cross-section area of the bottom face, m².
     pub bottom_area: f64,
 }
@@ -205,6 +235,7 @@ pub(crate) fn cells(profile: &Profile, bed_height: f64, n: usize) -> Vec<Cell> {
                 dz: h_top - h_bottom,
                 volume: profile.volume(h_bottom, h_top),
                 inverse_area: profile.inverse_area_integral(h_bottom, h_top),
+                resistance_quadrature: profile.resistance_quadrature(h_bottom, h_top),
                 bottom_area: profile.area_at(h_bottom),
             }
         })

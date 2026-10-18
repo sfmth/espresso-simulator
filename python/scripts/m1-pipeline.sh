@@ -19,6 +19,11 @@ set -euo pipefail
 JOBS="${1:-8}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
+if ! rg -q '^version = "0.6.3"$' Cargo.toml; then
+  printf '%s\n' 'This is the historical v5 pipeline for source release 0.6.3.' \
+    'For corrected-solver research candidates, use m11-refined-tuning.py; see python/README.md.' >&2
+  exit 2
+fi
 export PATH="$HOME/.cargo/bin:$PATH"
 export PYTHONUNBUFFERED=1
 TOOLS=.venv/bin/puckworks-tools
