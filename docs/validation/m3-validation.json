@@ -1,11 +1,11 @@
 {
   "schema": "puckworks.m3-validation/1",
   "created": "2026-10-18",
-  "core_version": "0.7.0",
+  "core_version": "0.8.0",
   "solver_identity": {
-    "puckcore_version": "0.7.0",
-    "extension_sha256": "0dcf8cf05c149050",
-    "extension_built": "2026-10-18T03:52:07-03:00",
+    "puckcore_version": "0.8.0",
+    "extension_sha256": "b7acf3d59761b35d",
+    "extension_built": "2026-10-18T14:44:53-07:00",
     "sources_sha256": {
       "crates/puckcore/src": "786578c5e04bb35e",
       "crates/puckmodel/src": "150b0b7fdd56cdd3",
@@ -14,12 +14,12 @@
       "data/chemistry": "6dd11d8f1a08ce38"
     },
     "files_sha256": {
-      "Cargo.lock": "1e005b159c296fc2"
+      "Cargo.lock": "0a63502b3d53b7d3"
     },
     "python": {
-      "version": "3.12.14",
-      "numpy": "2.3.5",
-      "scipy": "1.17.0"
+      "version": "3.14.7",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
     }
   },
   "seed": 20261018,
@@ -260,7 +260,7 @@
         "file_unchanged": true,
         "shared_parameter_count": 9,
         "baseline_report": "docs/validation/m1-validation.json",
-        "baseline_report_sha256": "4b8705b85f6ee314",
+        "baseline_report_sha256": "10c87d2a2cd0d2ac",
         "parameters_match_m1_report": true,
         "comparison_relative_tolerance": 1e-12,
         "parameter_mismatches": {},
@@ -279,16 +279,16 @@
     }
   ],
   "timing_s": {
-    "central_tier1": 1.8759298479999416,
-    "central_tier0": 0.027492135999636957,
-    "ensemble_unknown": 0.4107560240008752,
-    "ensemble_fixed": 0.42751404700175044,
-    "ensemble_measured": 0.45253078199675656,
-    "ensemble_unknown_replay": 0.41457313299906673,
-    "chemistry_disabled": 0.7761292020004475,
-    "no_beverage": 0.018169376999139786,
-    "alkalinity_low": 1.5687918850017013,
-    "alkalinity_high": 1.5448349809994397
+    "central_tier1": 0.8320215991698205,
+    "central_tier0": 0.01687411917373538,
+    "ensemble_unknown": 0.21892543090507388,
+    "ensemble_fixed": 0.2659680340439081,
+    "ensemble_measured": 0.22833015164360404,
+    "ensemble_unknown_replay": 0.22540104622021317,
+    "chemistry_disabled": 0.4108109511435032,
+    "no_beverage": 0.0061372313648462296,
+    "alkalinity_low": 0.8151640938594937,
+    "alkalinity_high": 0.8285843119956553
   },
   "scenario_widths": [
     {
@@ -99832,7 +99832,7 @@
     "file_unchanged": true,
     "shared_parameter_count": 9,
     "baseline_report": "docs/validation/m1-validation.json",
-    "baseline_report_sha256": "4b8705b85f6ee314",
+    "baseline_report_sha256": "10c87d2a2cd0d2ac",
     "parameters_match_m1_report": true,
     "comparison_relative_tolerance": 1e-12,
     "parameter_mismatches": {},

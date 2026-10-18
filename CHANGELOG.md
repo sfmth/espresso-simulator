@@ -2,6 +2,43 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.8.0] - 2026-10-18
+
+M4 experimental Dial-in, selected by the owner. Personal measurements remain
+optional; the prospective V9 accuracy target remains open.
+
+### Added
+- Shared barista recipe controls and an IndexedDB shot journal with immutable
+  prediction-before-measurement snapshots, transactional saves, stale-tab
+  protection, visible session fallback and JSON backup/restore.
+- Validated canonical CSV and inert DE1 shot-log import. Assumed recipe
+  conditions and imported forecast provenance remain explicit.
+- Bounded finite-grid Bayesian local permeability and optional grinder-size
+  calibration, conditional credible intervals, identifiability diagnostics,
+  cancellation and Tier 1 training rechecks. Startup, grinder zero,
+  heterogeneity and machine offsets remain fixed and disclosed.
+- Three inverse modes with equipment lattices, final-yield/drip corrections,
+  independent Tier 1 verification, local sensitivity envelopes and stale-result
+  protection. A Bayesian personal rating layer supports optional preference
+  ranking without changing the chemistry's taste indices.
+- Timing-only and complete time/EY prospective scorecards, excluding imported,
+  backfilled and calibration-training forecasts.
+- [M4 contract](docs/model/m4-dial-in.md),
+  [ADR 0014](docs/decisions/0014-local-dial-in.md) and
+  [verification record](docs/validation/m4-validation.md).
+
+### Verification
+- All 569 web tests pass, including 99 M4 checks. A real-WASM synthetic workflow
+  recovers a known permeability multiplier and exercises all three inverse
+  modes; these generated observations do not establish V9.
+- Rust formatting, strict clippy and tests pass. All 437 Python tests are
+  verified: 432 pass in the sandbox and five filesystem/process checks pass
+  when rerun outside its restrictions.
+- Native golden fixtures retain all 214,018 shot and 4,203 kernel values
+  exactly. M0/M1/M2/M3 reports are regenerated against version 0.8.0; existing
+  scientific failures remain open. No physical coefficients or original
+  training/held-out splits change.
+
 ## [0.7.0] - 2026-10-18
 
 M3 development: performance, input uncertainty, then explainable taste. M2 is

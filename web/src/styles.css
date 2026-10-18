@@ -1609,3 +1609,110 @@ code {
     fill: GrayText;
   }
 }
+/* Dial-in reuses the Lab recipe and local engine workers. */
+.dial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.dial-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.8rem;
+}
+.dial-fields label,
+.dial-measure > label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.dial-in input:not([type='checkbox'], [type='file']),
+.dial-in select,
+.dial-in textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.dial-in input:focus-visible,
+.dial-in select:focus-visible,
+.dial-in textarea:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.dial-in .checkbox-field {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+}
+.dial-in small {
+  display: block;
+  margin-top: 0.4rem;
+  font-weight: normal;
+  overflow-wrap: anywhere;
+}
+.dial-in .button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.dial-in table {
+  width: 100%;
+  min-width: 40rem;
+}
+.dial-in th,
+.dial-in td {
+  white-space: normal;
+  text-align: left;
+  vertical-align: top;
+}
+.dial-in td small {
+  max-width: 28rem;
+}
+.dial-file {
+  position: relative;
+  overflow: hidden;
+}
+.dial-file input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.dial-file:focus-within {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.dial-record,
+.dial-fit,
+.dial-candidate {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-width: 0;
+  overflow-x: auto;
+}
+.dial-candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+}
+.dial-measure {
+  display: grid;
+  gap: 0.8rem;
+}
+.dial-job {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+@media (max-width: 800px) {
+  .dial-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,0 +1,1167 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEngine } from '../engine/EngineContext';
+import { isAbortError } from '../engine/engine';
+import type { Recipe } from '../engine/shotTypes';
+import { datedName, downloadJson } from '../shot/download';
+import {
+  changeGrinderPreset,
+  formToRecipe,
+  physicalKey,
+  recipeToForm,
+  withTier,
+} from '../shot/recipeForm';
+import { useShotStore } from '../shot/shotStore';
+import { useAppStore } from '../store';
+import { applyCalibration, calibrate, scopeKey } from './calibration';
+import { importShotLog } from './imports';
+import { mergeJournal, parseJournal } from './journal';
+import { learnTaste, scorecard } from './learning';
+import { searchRecipes, type InverseOptions, type InverseResult } from './inverse';
+import type { JournalEntry, Measurement } from './types';
+import { useJournal } from './useJournal';
+
+function message(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+function number(text: string, label: string, min: number, max: number): number {
+  const value = Number(text.trim().replace(',', '.'));
+  if (!text.trim() || !Number.isFinite(value) || value < min || value > max) {
+    throw new Error(`${label} must be between ${min} and ${max}.`);
+  }
+  return value;
+}
+const f = (value: number, digits = 1) => value.toFixed(digits);
+
+function MeasureShot({
+  entry,
+  save,
+  disabled,
+}: {
+  entry: JournalEntry;
+  save: (measurement: Measurement) => Promise<void>;
+  disabled: boolean;
+}) {
+  const [time, setTime] = useState('');
+  const [yieldG, setYield] = useState('');
+  const [tds, setTds] = useState('');
+  const [rating, setRating] = useState('');
+  const [notes, setNotes] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  return (
+    <form
+      className="dial-measure"
+      aria-label={`Measurements for ${entry.label}`}
+      onSubmit={(event) => {
+        event.preventDefault();
+        try {
+          const measurement: Measurement = {
+            recordedAt: new Date().toISOString(),
+            timeS: number(time, 'Shot time', 0.1, 600),
+            yieldG: number(yieldG, 'Final beverage', 0.1, 500),
+            notes,
+            ...(tds.trim() ? { tdsPercent: number(tds, 'TDS', 0.01, 30) } : {}),
+            ...(rating ? { rating: number(rating, 'Rating', 1, 5) } : {}),
+          };
+          setSaving(true);
+          void save(measurement)
+            .catch((failure: unknown) => setError(message(failure)))
+            .finally(() => setSaving(false));
+        } catch (failure) {
+          setError(message(failure));
+        }
+      }}
+    >
+      <div className="dial-fields">
+        <label>
+          Measured time (s)
+          <input
+            value={time}
+            inputMode="decimal"
+            onChange={(e) => setTime(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          Final beverage (g)
+          <input
+            value={yieldG}
+            inputMode="decimal"
+            onChange={(e) => setYield(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          TDS (%) · optional
+          <input value={tds} inputMode="decimal" onChange={(e) => setTds(e.target.value)} />
+        </label>
+        <label>
+          Your rating · optional
+          <select value={rating} onChange={(e) => setRating(e.target.value)}>
+            <option value="">No rating</option>
+            {[1, 2, 3, 4, 5].map((v) => (
+              <option key={v} value={v}>
+                {v} / 5
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <label>
+        Shot notes
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={4000} />
+      </label>
+      <p className="note">
+        Time from pump on to pump off. Weigh the final cup including the drip. TDS is a percentage
+        from a cooled sample; omit it without a refractometer.
+      </p>
+      <button className="button" disabled={disabled || saving} type="submit">
+        Save measurements
+      </button>
+      {error && (
+        <p role="alert" className="run-error">
+          {error}
+        </p>
+      )}
+    </form>
+  );
+}
+
+export function DialIn() {
+  const engine = useEngine();
+  const journal = useJournal();
+  const catalog = useShotStore((s) => s.catalog);
+  const form = useShotStore((s) => s.form);
+  const patch = useShotStore((s) => s.patchForm);
+  const validation = useMemo(() => formToRecipe(form, { catalog }), [form, catalog]);
+  const recipe = validation.ok ? validation.recipe : null;
+  const recipeKey = recipe ? physicalKey(recipe) : '';
+  const [setupName, setSetupId] = useState('My current bag and setup');
+  const setupId = setupName.trim();
+  const [label, setLabel] = useState('Next shot');
+  const [job, setJob] = useState<{ text: string; key: string; id: number } | null>(null);
+  const [status, setStatus] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [useLocal, setUseLocal] = useState(true);
+  const [fitGrinder, setFitGrinder] = useState(false);
+  const [timeSigma, setTimeSigma] = useState('3');
+  const [tdsSigma, setTdsSigma] = useState('0.3');
+  const [selectedEntry, setSelectedEntry] = useState<string | null>(null);
+  const [mode, setMode] = useState<InverseOptions['mode']>('recipe');
+  const [targetTime, setTargetTime] = useState('28');
+  const [targetYield, setTargetYield] = useState('36');
+  const [targetTds, setTargetTds] = useState('10');
+  const [targetEy, setTargetEy] = useState('20');
+  const [tasteAttribute, setTasteAttribute] = useState('');
+  const [tasteTarget, setTasteTarget] = useState('50');
+  const [preferRatings, setPreferRatings] = useState(false);
+  const [grindMin, setGrindMin] = useState('');
+  const [grindMax, setGrindMax] = useState('');
+  const [grindStep, setGrindStep] = useState('1');
+  const [varyDose, setVaryDose] = useState(false);
+  const [doseMin, setDoseMin] = useState('16');
+  const [doseMax, setDoseMax] = useState('20');
+  const [varyTemp, setVaryTemp] = useState(false);
+  const [tempMin, setTempMin] = useState('88');
+  const [tempMax, setTempMax] = useState('96');
+  const [suggestions, setSuggestions] = useState<{
+    key: string;
+    setup: string;
+    result: InverseResult;
+  } | null>(null);
+  const controller = useRef<AbortController | null>(null);
+  const taskSequence = useRef(0);
+  const mounted = useRef(true);
+  const current = useRef({ key: recipeKey, setup: setupId });
+  useEffect(() => {
+    current.current = { key: recipeKey, setup: setupId };
+  }, [recipeKey, setupId]);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      controller.current?.abort();
+    };
+  }, []);
+
+  const entries = journal.document.entries.filter((entry) => entry.setupId === setupId);
+  const scope = recipe ? scopeKey(recipe) : '';
+  const compatible = journal.document.calibrations.filter(
+    (profile) =>
+      profile.setupId === setupId &&
+      profile.scopeKey === scope &&
+      profile.coreVersion === catalog?.coreVersion,
+  );
+  const activeProfile = useLocal ? compatible.at(-1) : undefined;
+  const training = entries.filter(
+    (entry) => !!entry.measurement && scopeKey(entry.recipe) === scope,
+  );
+  const card = scorecard(entries, journal.document.calibrations);
+  const learning = learnTaste(journal.document.entries, setupId);
+  const lastShot = [...training].reverse().find((entry) => entry.measurement);
+  const adviceKey = JSON.stringify({
+    recipeKey,
+    setupId,
+    coreVersion: catalog?.coreVersion,
+    calibration: activeProfile?.id,
+    mode,
+    targetTime,
+    targetYield,
+    targetTds,
+    targetEy,
+    tasteAttribute,
+    tasteTarget,
+    preferRatings,
+    grindMin,
+    grindMax,
+    grindStep,
+    varyDose,
+    doseMin,
+    doseMax,
+    varyTemp,
+    tempMin,
+    tempMax,
+    observations: entries.map((entry) => [entry.id, entry.measurement]),
+  });
+  const operationKey = JSON.stringify([adviceKey, label, fitGrinder, timeSigma, tdsSigma]);
+  const busy = job?.key === operationKey ? job.text : '';
+  useEffect(() => {
+    controller.current?.abort();
+    controller.current = null;
+  }, [operationKey]);
+  const canRun = journal.ready && !!catalog && !!recipe && !!setupId.trim() && !busy;
+  const pending = entries.find((entry) => entry.id === selectedEntry && !entry.measurement);
+  const staleSuggestions =
+    suggestions && (suggestions.key !== adviceKey || suggestions.setup !== setupId);
+
+  async function task(name: string, work: (signal: AbortSignal) => Promise<void>) {
+    controller.current?.abort();
+    const control = new AbortController();
+    const id = ++taskSequence.current;
+    controller.current = control;
+    setJob({ text: name, key: operationKey, id });
+    const clearJob = () => {
+      if (mounted.current) setJob((existing) => (existing?.id === id ? null : existing));
+    };
+    control.signal.addEventListener('abort', clearJob, { once: true });
+    setError(null);
+    setStatus('');
+    try {
+      await work(control.signal);
+    } catch (failure) {
+      if (!control.signal.aborted && !isAbortError(failure)) setError(message(failure));
+    } finally {
+      control.signal.removeEventListener('abort', clearJob);
+      if (controller.current === control) controller.current = null;
+      clearJob();
+    }
+  }
+  function loadRecipe(next: Recipe) {
+    const imported = recipeToForm(next);
+    if (!imported.ok) {
+      setError('The candidate recipe cannot be opened by this version.');
+      return;
+    }
+    useShotStore.getState().loadForm(imported.form, 'Undo dial-in recipe');
+  }
+  function editInLab() {
+    useAppStore.getState().setLabView('shot');
+    useAppStore.getState().setMode('lab');
+  }
+  async function predict(signal: AbortSignal) {
+    if (!recipe || !catalog) return;
+    const executed = withTier(
+      activeProfile ? applyCalibration(recipe, activeProfile, catalog.coreVersion) : recipe,
+      1,
+    );
+    const { result: run } = await engine.simulateRecipe(executed, { signal });
+    signal.throwIfAborted();
+    if (current.current.key !== recipeKey || current.current.setup !== setupId) return;
+    const summary = run.result.summary;
+    if (!['beverage_mass', 'time'].includes(summary.stop_reason) || summary.beverage_mass_kg <= 0) {
+      throw new Error(
+        `Prediction stopped with ${summary.stop_reason}. Check the recipe in the Lab before logging it.`,
+      );
+    }
+    const now = new Date().toISOString();
+    const entry: JournalEntry = {
+      id: crypto.randomUUID(),
+      createdAt: now,
+      setupId: setupId.trim(),
+      label: label.trim() || 'Shot',
+      recipe: structuredClone(recipe),
+      source: 'manual',
+      prediction: {
+        recordedAt: now,
+        coreVersion: run.result.core_version,
+        executedRecipe: executed,
+        summary,
+        ...(run.taste ? { taste: run.taste } : {}),
+        origin: 'app',
+        ...(activeProfile ? { calibrationId: activeProfile.id } : {}),
+      },
+    };
+    await journal.update((doc) => ({ ...doc, entries: [...doc.entries, entry] }));
+    if (mounted.current) {
+      setSelectedEntry(entry.id);
+      setStatus('Prediction saved. Pull the shot, then record what happened.');
+    }
+  }
+
+  return (
+    <section className="dial-in panel-stack" aria-labelledby="dial-in-title">
+      <div className="panel-header">
+        <div>
+          <h2 id="dial-in-title">Dial-in</h2>
+          <p>Predict a shot, pull it, then learn from the result.</p>
+        </div>
+        <button className="button" onClick={editInLab}>
+          Edit full recipe in Lab
+        </button>
+      </div>
+      <p className="run-warning">
+        Experimental advice. Local calibration can adapt this model to a bag and setup; its
+        scientific accuracy and taste estimates remain unvalidated. Personal measurements are
+        optional.
+      </p>
+      {journal.error && (
+        <p role="alert" className="run-error">
+          Journal: {journal.error}
+        </p>
+      )}
+      <p className="note">
+        {!journal.ready
+          ? 'Opening the local journal…'
+          : journal.persistent
+            ? 'Journal saved on this device in IndexedDB. Export a backup before clearing browser data.'
+            : 'Persistent storage is unavailable. This journal lasts only for this session; export it to keep your shots.'}
+      </p>
+      <div className="dial-grid">
+        <section className="panel panel-stack" aria-labelledby="dial-recipe-title">
+          <h3 id="dial-recipe-title">1. Set up your shot</h3>
+          <div className="dial-fields">
+            <label>
+              Bag and setup name
+              <input
+                value={setupName}
+                maxLength={120}
+                onChange={(e) => setSetupId(e.target.value)}
+              />
+            </label>
+            <label>
+              Shot name
+              <input value={label} maxLength={120} onChange={(e) => setLabel(e.target.value)} />
+            </label>
+            {catalog && (
+              <>
+                <label>
+                  Bean preset
+                  <select
+                    value={form.bean.preset}
+                    onChange={(e) => patch('bean', { preset: e.target.value })}
+                  >
+                    <option value="">Recipe / defaults</option>
+                    {catalog.presets.beans.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {form.grinder.mode === 'preset' && (
+                  <label>
+                    Grinder preset
+                    <select
+                      value={form.grinder.preset}
+                      onChange={(e) =>
+                        patch(
+                          'grinder',
+                          changeGrinderPreset(
+                            form.grinder,
+                            catalog.presets.grinders.find((p) => p.id === e.target.value),
+                            e.target.value,
+                          ),
+                        )
+                      }
+                    >
+                      {catalog.presets.grinders.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </>
+            )}
+            <label>
+              Dose (g)
+              <input
+                value={form.prep.dose_g}
+                inputMode="decimal"
+                onChange={(e) => patch('prep', { dose_g: e.target.value })}
+              />
+            </label>
+            {form.grinder.mode !== 'psd' && (
+              <label>
+                {form.grinder.by === 'setting' ? 'Grinder setting' : 'Burr gap (µm)'}
+                <input
+                  value={form.grinder.by === 'setting' ? form.grinder.setting : form.grinder.gap_um}
+                  inputMode="decimal"
+                  onChange={(e) =>
+                    patch('grinder', {
+                      [form.grinder.by === 'setting' ? 'setting' : 'gap_um']: e.target.value,
+                    })
+                  }
+                />
+              </label>
+            )}
+            <label>
+              Stop beverage (g)
+              <input
+                value={form.stop.beverage_g}
+                inputMode="decimal"
+                onChange={(e) => patch('stop', { beverage_g: e.target.value })}
+              />
+            </label>
+            <label>
+              Water temperature (°C)
+              <input
+                value={form.machine.temperature_c}
+                placeholder="From machine preset"
+                inputMode="decimal"
+                onChange={(e) => patch('machine', { temperature_c: e.target.value })}
+              />
+            </label>
+          </div>
+          <p className="note">
+            These controls share the Lab recipe, including its basket, water, machine program and
+            advanced overrides. Stop beverage is the pump-stop target; the final cup can include
+            extra drip.
+          </p>
+          {!validation.ok && (
+            <ul role="alert" className="run-error">
+              {Object.entries(validation.errors).map(([key, value]) => (
+                <li key={key}>
+                  {key}: {value}
+                </li>
+              ))}
+            </ul>
+          )}
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={useLocal}
+              onChange={(e) => setUseLocal(e.target.checked)}
+            />
+            Use compatible local calibration
+          </label>
+          <p className="note">
+            {activeProfile
+              ? `Local fit from ${activeProfile.trainingIds.length} shots, saved ${new Date(activeProfile.createdAt).toLocaleString()}.`
+              : 'Using the published model. No compatible local fit is active for this recipe and engine version.'}
+          </p>
+          <button
+            className="button button-primary"
+            disabled={!canRun}
+            onClick={() => {
+              void task('Predicting and saving…', predict);
+            }}
+          >
+            Predict and save before pulling
+          </button>
+        </section>
+        <section className="panel panel-stack" aria-labelledby="dial-calibration-title">
+          <h3 id="dial-calibration-title">2. Calibrate this bag and setup</h3>
+          <ol>
+            <li>Log at least three completed shots with the same bag and equipment.</li>
+            <li>Use varied grinder settings; TDS is optional for permeability alone.</li>
+            <li>Fit locally, then test new predictions on future shots.</li>
+          </ol>
+          <p>{training.length} matching completed shots available.</p>
+          <div className="dial-fields">
+            <label>
+              Timing uncertainty (s)
+              <input
+                value={timeSigma}
+                inputMode="decimal"
+                onChange={(e) => setTimeSigma(e.target.value)}
+              />
+            </label>
+            <label>
+              TDS uncertainty (percentage points)
+              <input
+                value={tdsSigma}
+                inputMode="decimal"
+                onChange={(e) => setTdsSigma(e.target.value)}
+              />
+            </label>
+          </div>
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={fitGrinder}
+              onChange={(e) => setFitGrinder(e.target.checked)}
+            />
+            Also fit particle-size scale (needs varied settings and TDS)
+          </label>
+          <button
+            className="button"
+            disabled={!canRun || training.length < 3}
+            onClick={() => {
+              void task('Fitting local calibration…', async (signal) => {
+                if (!catalog) return;
+                const profile = await calibrate(
+                  engine,
+                  training,
+                  catalog,
+                  {
+                    setupId,
+                    fitGrinderScale: fitGrinder,
+                    timeSigmaS: number(timeSigma, 'Timing uncertainty', 0.1, 60),
+                    tdsSigmaPercent: number(tdsSigma, 'TDS uncertainty', 0.01, 5),
+                  },
+                  signal,
+                  (done, total) => {
+                    if (!signal.aborted) setStatus(`Calibration: ${done} / ${total} evaluations`);
+                  },
+                );
+                signal.throwIfAborted();
+                await journal.update((doc) => ({
+                  ...doc,
+                  calibrations: [...doc.calibrations, profile],
+                }));
+                setStatus('Local fit saved. Training checks do not establish future accuracy.');
+              });
+            }}
+          >
+            Fit local calibration
+          </button>
+          {compatible.at(-1) && (
+            <div className="dial-fit">
+              <h4>Identifiability and training checks</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>MAP multiplier</th>
+                    <th>p05–p95</th>
+                    <th>What the data constrain</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {compatible.at(-1)!.parameters.map((p) => (
+                    <tr key={p.id}>
+                      <th scope="row">{p.label}</th>
+                      <td>{f(p.map, 2)}×</td>
+                      <td>
+                        {f(p.p05, 2)}–{f(p.p95, 2)}
+                      </td>
+                      <td>{p.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <details>
+                <summary>Fit assumptions and Tier 1 checks</summary>
+                <ul>
+                  {compatible.at(-1)!.notes.map((note, i) => (
+                    <li key={i}>{note}</li>
+                  ))}
+                </ul>
+                <p>
+                  {compatible.at(-1)!.checks.length} training shots rechecked on Tier 1. These are
+                  training residuals.
+                </p>
+                <ul>
+                  {compatible.at(-1)!.checks.map((c) => (
+                    <li key={c.entryId}>
+                      Time error {f(c.timeErrorS)} s;{' '}
+                      {c.eyErrorPoints === null
+                        ? 'EY unmeasured'
+                        : `EY error ${f(c.eyErrorPoints)} percentage points`}
+                      .
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </div>
+          )}
+        </section>
+      </div>
+      <section className="panel panel-stack" aria-labelledby="dial-journal-title">
+        <div className="panel-header">
+          <h3 id="dial-journal-title">3. Shot journal</h3>
+          <div className="button-row">
+            <button
+              className="button"
+              disabled={!journal.ready}
+              onClick={() => downloadJson(datedName('journal', 'json'), journal.document)}
+            >
+              Export journal
+            </button>
+            <label className="button dial-file">
+              Import journal or shot log
+              <input
+                aria-label="Import journal or shot log"
+                type="file"
+                accept=".json,.csv,.shot,.txt"
+                disabled={!journal.ready || !!busy}
+                onChange={(event) => {
+                  const file = event.currentTarget.files?.[0];
+                  event.currentTarget.value = '';
+                  if (!file) return;
+                  void task('Importing…', async (signal) => {
+                    const isJournal = file.name.toLowerCase().endsWith('.json');
+                    const limit = isJournal ? 10_000_000 : 2_000_000;
+                    if (file.size > limit)
+                      throw new Error(
+                        isJournal
+                          ? 'Journal backups must be at most 10 MB.'
+                          : 'Shot logs must be at most 2 MB.',
+                      );
+                    const text = await file.text();
+                    signal.throwIfAborted();
+                    if (isJournal) {
+                      const incoming = parseJournal(text);
+                      await journal.update((doc) => mergeJournal(doc, incoming));
+                    } else {
+                      if (!recipe)
+                        throw new Error('Choose a valid base recipe before importing a shot log.');
+                      const incoming = importShotLog(
+                        text,
+                        file.name.toLowerCase().endsWith('.csv') ? 'csv' : 'de1',
+                        recipe,
+                        setupId,
+                      );
+                      await journal.update((doc) => ({
+                        ...doc,
+                        entries: [...doc.entries, ...incoming],
+                      }));
+                    }
+                    setStatus(
+                      'Import complete. Imported shots can train local models; they do not count as prospective predictions.',
+                    );
+                  });
+                }}
+              />
+            </label>
+          </div>
+        </div>
+        <p className="note">
+          CSV: time_s,yield_g, optional dose_g,setting,tds_percent,rating,notes. DE1 .shot logs use
+          observed elapsed and scale-weight channels. Missing gear uses your current recipe and is
+          labelled assumed.
+        </p>
+        {!entries.length ? (
+          <p>No shots in this bag and setup yet. Save a prediction or import a log to start.</p>
+        ) : (
+          <div className="table-wrap">
+            <table aria-label="Shot journal">
+              <thead>
+                <tr>
+                  <th>Shot</th>
+                  <th>Prediction</th>
+                  <th>Measured</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...entries].reverse().map((entry) => (
+                  <tr key={entry.id}>
+                    <th scope="row">
+                      {entry.label}
+                      <small>
+                        {new Date(entry.createdAt).toLocaleString()} · {entry.source}
+                      </small>
+                    </th>
+                    <td>
+                      {entry.prediction ? (
+                        <>
+                          {f(entry.prediction.summary.shot_time_s)} s ·{' '}
+                          {f(entry.prediction.summary.beverage_mass_kg * 1000)} g<br />
+                          {f(entry.prediction.summary.tds * 100)}% TDS ·{' '}
+                          {f(entry.prediction.summary.ey * 100)}% EY
+                        </>
+                      ) : (
+                        'No prior prediction'
+                      )}
+                    </td>
+                    <td>
+                      {entry.measurement ? (
+                        <>
+                          {f(entry.measurement.timeS)} s · {f(entry.measurement.yieldG)} g<br />
+                          {entry.measurement.tdsPercent === undefined
+                            ? 'TDS unmeasured'
+                            : `${f(entry.measurement.tdsPercent, 2)}% TDS`}{' '}
+                          {entry.measurement.rating ? `· ${entry.measurement.rating}/5` : ''}
+                          <small>{entry.measurement.notes}</small>
+                        </>
+                      ) : (
+                        'Waiting for measurements'
+                      )}
+                    </td>
+                    <td>
+                      <div className="button-row">
+                        {!entry.measurement && (
+                          <button
+                            className="button"
+                            disabled={!!busy}
+                            onClick={() =>
+                              setSelectedEntry(selectedEntry === entry.id ? null : entry.id)
+                            }
+                          >
+                            Record shot
+                          </button>
+                        )}
+                        <button
+                          className="button"
+                          disabled={!!busy}
+                          onClick={() => loadRecipe(entry.recipe)}
+                        >
+                          Use recipe
+                        </button>
+                        <button
+                          className="button"
+                          disabled={!!busy}
+                          onClick={() => {
+                            void journal
+                              .update((doc) => ({
+                                ...doc,
+                                entries: doc.entries.filter((e) => e.id !== entry.id),
+                              }))
+                              .catch((e) => setError(message(e)));
+                          }}
+                        >
+                          Delete shot
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {pending && (
+          <div className="dial-record">
+            <h4>Record {pending.label}</h4>
+            <MeasureShot
+              key={pending.id}
+              entry={pending}
+              disabled={!!busy}
+              save={async (measurement) => {
+                await journal.update((doc) => ({
+                  ...doc,
+                  entries: doc.entries.map((entry) =>
+                    entry.id === pending.id ? { ...entry, measurement } : entry,
+                  ),
+                }));
+                setSelectedEntry(null);
+                setStatus('Measured shot saved.');
+              }}
+            />
+          </div>
+        )}
+      </section>
+      <section className="panel panel-stack" aria-labelledby="dial-advice-title">
+        <h3 id="dial-advice-title">4. Find the next recipe</h3>
+        <div className="dial-fields">
+          <label>
+            Advice mode
+            <select
+              value={mode}
+              onChange={(e) => setMode(e.target.value as InverseOptions['mode'])}
+            >
+              <option value="recipe">Recipe target: time and yield</option>
+              <option value="outcome">Cup target: TDS, EY or taste</option>
+              <option value="next">Next shot from the last result</option>
+            </select>
+          </label>
+          <label>
+            Target time (s)
+            <input
+              value={targetTime}
+              inputMode="decimal"
+              onChange={(e) => setTargetTime(e.target.value)}
+            />
+          </label>
+          <label>
+            Target final beverage (g)
+            <input
+              value={targetYield}
+              inputMode="decimal"
+              onChange={(e) => setTargetYield(e.target.value)}
+            />
+          </label>
+          {mode === 'outcome' && (
+            <>
+              <label>
+                Target TDS (%)
+                <input
+                  value={targetTds}
+                  inputMode="decimal"
+                  onChange={(e) => setTargetTds(e.target.value)}
+                />
+              </label>
+              <label>
+                Target EY (%)
+                <input
+                  value={targetEy}
+                  inputMode="decimal"
+                  onChange={(e) => setTargetEy(e.target.value)}
+                />
+              </label>
+              <label>
+                Optional taste attribute
+                <select value={tasteAttribute} onChange={(e) => setTasteAttribute(e.target.value)}>
+                  <option value="">No taste target</option>
+                  {['acidity', 'bitterness', 'astringency', 'body'].map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {tasteAttribute && (
+                <label>
+                  Target relative taste index
+                  <input
+                    value={tasteTarget}
+                    inputMode="decimal"
+                    onChange={(e) => setTasteTarget(e.target.value)}
+                  />
+                </label>
+              )}
+            </>
+          )}
+        </div>
+        {mode === 'next' && (
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={preferRatings}
+              onChange={(e) => setPreferRatings(e.target.checked)}
+            />
+            Include personal rating preference in ranking (needs five varied rated shots)
+          </label>
+        )}
+        <details>
+          <summary>Equipment limits and allowed changes</summary>
+          <p className="note">
+            Grinder values are dial units when the recipe uses a setting, otherwise µm of burr gap.
+            Empty limits use the preset’s range. Only selected controls change. Basket capacity
+            remains enforced by the builder.
+          </p>
+          <div className="dial-fields">
+            <label>
+              Minimum grind
+              <input
+                value={grindMin}
+                inputMode="decimal"
+                onChange={(e) => setGrindMin(e.target.value)}
+              />
+            </label>
+            <label>
+              Maximum grind
+              <input
+                value={grindMax}
+                inputMode="decimal"
+                onChange={(e) => setGrindMax(e.target.value)}
+              />
+            </label>
+            <label>
+              Grinder step
+              <input
+                value={grindStep}
+                inputMode="decimal"
+                onChange={(e) => setGrindStep(e.target.value)}
+              />
+            </label>
+          </div>
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={varyDose}
+              onChange={(e) => setVaryDose(e.target.checked)}
+            />
+            Allow dose changes (0.5 g increments)
+          </label>
+          {varyDose && (
+            <div className="dial-fields">
+              <label>
+                Minimum dose (g)
+                <input
+                  value={doseMin}
+                  inputMode="decimal"
+                  onChange={(e) => setDoseMin(e.target.value)}
+                />
+              </label>
+              <label>
+                Maximum dose (g)
+                <input
+                  value={doseMax}
+                  inputMode="decimal"
+                  onChange={(e) => setDoseMax(e.target.value)}
+                />
+              </label>
+            </div>
+          )}
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={varyTemp}
+              onChange={(e) => setVaryTemp(e.target.checked)}
+            />
+            Allow temperature changes (1 °C increments)
+          </label>
+          {varyTemp && (
+            <div className="dial-fields">
+              <label>
+                Minimum temperature (°C)
+                <input
+                  value={tempMin}
+                  inputMode="decimal"
+                  onChange={(e) => setTempMin(e.target.value)}
+                />
+              </label>
+              <label>
+                Maximum temperature (°C)
+                <input
+                  value={tempMax}
+                  inputMode="decimal"
+                  onChange={(e) => setTempMax(e.target.value)}
+                />
+              </label>
+            </div>
+          )}
+        </details>
+        <button
+          className="button"
+          disabled={!canRun || (mode === 'next' && !lastShot)}
+          onClick={() => {
+            void task('Searching recipes…', async (signal) => {
+              if (!recipe || !catalog) return;
+              const dial = catalog.presets.grinders.find(
+                (p) => p.id === recipe.grinder.preset,
+              )?.dial;
+              const controlsGrinder =
+                grindMin.trim() || grindMax.trim() || (dial && !recipe.grinder.gap_um)
+                  ? {
+                      min: number(grindMin || String(dial?.min ?? ''), 'Minimum grind', 0, 2000),
+                      max: number(grindMax || String(dial?.max ?? ''), 'Maximum grind', 0, 2000),
+                      step: number(grindStep, 'Grinder step', 0.001, 1000),
+                    }
+                  : undefined;
+              const options: InverseOptions = {
+                mode,
+                targetTimeS: number(targetTime, 'Target time', 1, 600),
+                targetYieldG: number(targetYield, 'Target final beverage', 1, 250),
+                coreVersion: catalog.coreVersion,
+                calibration: activeProfile,
+                lastShot,
+                ratedShots: journal.document.entries,
+                preferenceWeight: mode === 'next' && preferRatings ? 0.5 : 0,
+                controls: {
+                  ...(controlsGrinder ? { grinder: controlsGrinder } : {}),
+                  ...(varyDose
+                    ? {
+                        dose: {
+                          min: number(doseMin, 'Minimum dose', 1, 50),
+                          max: number(doseMax, 'Maximum dose', 1, 50),
+                          step: 0.5,
+                        },
+                      }
+                    : {}),
+                  ...(varyTemp
+                    ? {
+                        temp: {
+                          min: number(tempMin, 'Minimum temperature', 50, 100),
+                          max: number(tempMax, 'Maximum temperature', 50, 100),
+                          step: 1,
+                        },
+                      }
+                    : {}),
+                },
+                ...(mode === 'outcome'
+                  ? {
+                      targetTdsPercent: number(targetTds, 'Target TDS', 0.01, 30),
+                      targetEyPercent: number(targetEy, 'Target EY', 0.1, 40),
+                      ...(tasteAttribute
+                        ? {
+                            targetTaste: {
+                              attribute: tasteAttribute as
+                                'acidity' | 'bitterness' | 'astringency' | 'body',
+                              index: number(tasteTarget, 'Target taste index', 0, 100),
+                            },
+                          }
+                        : {}),
+                    }
+                  : {}),
+              };
+              const result = await searchRecipes(
+                engine,
+                recipe,
+                catalog,
+                options,
+                signal,
+                (progress) => {
+                  if (!signal.aborted)
+                    setStatus(`${progress.stage}: ${progress.completed} / ${progress.total}`);
+                },
+              );
+              signal.throwIfAborted();
+              setSuggestions({ key: adviceKey, setup: setupId, result });
+              setStatus('Search finished; candidates rechecked on Tier 1.');
+            });
+          }}
+        >
+          Find ranked recipes
+        </button>
+        {mode === 'next' && !lastShot && (
+          <p className="note">Record a completed shot for this recipe’s bag and setup first.</p>
+        )}
+        {suggestions && (
+          <div data-stale={staleSuggestions ? 'true' : undefined}>
+            {staleSuggestions && (
+              <p className="run-warning">
+                Suggestions for earlier inputs. Search again before using them.
+              </p>
+            )}
+            <ul className="note">
+              {suggestions.result.notes.map((note, i) => (
+                <li key={i}>{note}</li>
+              ))}
+            </ul>
+            {!suggestions.result.candidates.length && (
+              <p>No valid verified candidate found within these equipment limits.</p>
+            )}
+            <div className="dial-candidates">
+              {suggestions.result.candidates.map((candidate, i) => {
+                const personal = learnTaste(
+                  journal.document.entries,
+                  setupId,
+                  candidate.verified.taste,
+                );
+                return (
+                  <article className="dial-candidate" key={i}>
+                    <h4>Candidate {i + 1}</h4>
+                    <p>
+                      {candidate.recipe.prep.dose_g} g in · grinder{' '}
+                      {candidate.recipe.grinder.gap_um ??
+                        candidate.recipe.grinder.setting ??
+                        'measured PSD'}{' '}
+                      · {candidate.recipe.stop?.beverage_g} g stop ·{' '}
+                      {candidate.recipe.machine?.temperature_c ?? 'preset'} °C
+                    </p>
+                    <p>
+                      <strong>Tier 1:</strong> {f(candidate.verified.summary.shot_time_s)} s ·{' '}
+                      {f(candidate.verified.summary.beverage_mass_kg * 1000)} g final ·{' '}
+                      {f(candidate.verified.summary.tds * 100)}% TDS ·{' '}
+                      {f(candidate.verified.summary.ey * 100)}% EY
+                    </p>
+                    <p className="note">
+                      Tier 0 search: {f(candidate.preview.summary.shot_time_s)} s. Prediction
+                      intervals for model error are unavailable.
+                    </p>
+                    <p className="note">
+                      Target residual score: {f(candidate.score, 2)} (lower is closer).{' '}
+                      {candidate.learnedRating
+                        ? 'Ranking also includes your optional preference model.'
+                        : ''}
+                    </p>
+                    <details>
+                      <summary>
+                        Local control sensitivity ({candidate.envelope.samples} Tier 0 samples)
+                      </summary>
+                      <p>
+                        Time {f(candidate.envelope.timeS[0])}–{f(candidate.envelope.timeS[1])} s;
+                        final cup {f(candidate.envelope.yieldG[0])}–
+                        {f(candidate.envelope.yieldG[1])} g; TDS{' '}
+                        {f(candidate.envelope.tdsPercent[0])}–{f(candidate.envelope.tdsPercent[1])}
+                        %; EY {f(candidate.envelope.eyPercent[0])}–
+                        {f(candidate.envelope.eyPercent[1])}%.
+                      </p>
+                      <p className="note">
+                        Nearby equipment changes only. This range excludes model error and is not a
+                        confidence interval.
+                      </p>
+                    </details>
+                    {personal.prediction && (
+                      <p>
+                        Personal rating estimate: {f(personal.prediction.mean)} / 5 (
+                        {f(personal.prediction.p05)}–{f(personal.prediction.p95)}); {personal.count}{' '}
+                        rated shots, conditional Bayesian range.
+                      </p>
+                    )}
+                    {candidate.warnings.length > 0 && (
+                      <ul className="run-warning">
+                        {candidate.warnings.map((warning, j) => (
+                          <li key={j}>{warning}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <button
+                      className="button"
+                      disabled={!!staleSuggestions || !!busy}
+                      onClick={() => loadRecipe(candidate.recipe)}
+                    >
+                      Use candidate {i + 1}
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
+      <section className="panel panel-stack" aria-labelledby="dial-scorecard-title">
+        <h3 id="dial-scorecard-title">Prediction scorecard</h3>
+        <p>
+          {card.timeOnly.evaluated} prospective timing checks · {card.timeOnly.passed} within ±3 s
+          {card.timeOnly.maeS === null ? '' : ` · mean absolute error ${f(card.timeOnly.maeS)} s`}.
+          TDS is optional for this timing-only check.
+        </p>
+        <p>
+          {card.evaluated} complete prospective shots · {card.passed} within ±3 s and ±1 EY point ·{' '}
+          {card.required} required.
+        </p>
+        <p className={card.met ? 'note' : 'run-warning'}>
+          {card.met
+            ? 'V9 target met for this local set of prospective shots.'
+            : 'V9 remains open. Calibration training shots, imported predictions and shots without measured TDS cannot establish the complete target.'}
+        </p>
+        <p className="note">
+          {learning.count} rated shots inform your local preference model. Ratings stay separate
+          from the chemistry’s relative taste indices; sparse ratings do not establish a reliable
+          preference predictor.
+        </p>
+      </section>
+      {busy && (
+        <div className="dial-job">
+          <span role="status">{busy}</span>
+          <button
+            className="button"
+            onClick={() => {
+              controller.current?.abort();
+              controller.current = null;
+              setJob(null);
+              setStatus('Cancelled.');
+            }}
+          >
+            Cancel dial-in task
+          </button>
+        </div>
+      )}
+      <p role="status" aria-live="polite">
+        {status}
+      </p>
+      {error && (
+        <p role="alert" className="run-error">
+          {error}
+        </p>
+      )}
+    </section>
+  );
+}

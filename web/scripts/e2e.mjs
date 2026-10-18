@@ -88,6 +88,95 @@ async function downloadText(page, action) {
   return { name: download.suggestedFilename(), text: readFileSync(path, 'utf8') };
 }
 
+async function dialInChecks(page, shotPath) {
+  await page.getByRole('tab', { name: 'Dial-in' }).click();
+  const dial = page.locator('#panel-dial-in');
+  await dial.getByRole('heading', { name: 'Dial-in', exact: true }).waitFor();
+  await dial.getByText(/Journal saved on this device in IndexedDB/).waitFor();
+  await dial.getByLabel('Bag and setup name').fill('Browser smoke bag');
+  await dial.getByLabel('Shot name', { exact: true }).fill('Prospective browser shot');
+  await dial.getByRole('button', { name: 'Predict and save before pulling' }).click();
+  await dial.getByRole('button', { name: 'Save measurements' }).waitFor({ timeout: 60_000 });
+  check(
+    await dial.getByText('Waiting for measurements', { exact: true }).isVisible(),
+    'Dial-in persists a prediction before receiving measurements',
+  );
+  await dial.getByLabel('Measured time (s)').fill('28');
+  await dial.getByLabel('Final beverage (g)', { exact: true }).fill('36');
+  await dial.getByLabel('TDS (%) · optional').fill('10');
+  await dial.getByLabel('Your rating · optional').selectOption('4');
+  await dial.getByRole('button', { name: 'Save measurements' }).click();
+  await dial.getByText('Measured shot saved.', { exact: true }).waitFor();
+  const backup = await downloadText(page, () =>
+    dial.getByRole('button', { name: 'Export journal' }).click(),
+  );
+  const document = JSON.parse(backup.text);
+  const entry = document.entries.find((e) => e.label === 'Prospective browser shot');
+  check(
+    entry?.prediction?.origin === 'app' &&
+      entry.measurement?.timeS === 28 &&
+      entry.measurement?.rating === 4 &&
+      Date.parse(entry.prediction.recordedAt) < Date.parse(entry.measurement.recordedAt),
+    'journal export retains the recipe, immutable forecast, later observation and personal rating',
+  );
+  await page.reload();
+  await page.getByRole('tab', { name: 'Dial-in' }).click();
+  await dial.getByLabel('Bag and setup name').fill('Browser smoke bag');
+  await dial.getByRole('table', { name: 'Shot journal' }).waitFor({ timeout: 30_000 });
+  check(
+    await dial.getByRole('rowheader', { name: /Prospective browser shot/ }).isVisible(),
+    'native IndexedDB transaction survives page reload',
+  );
+  await dial.getByLabel('Import journal or shot log').setInputFiles({
+    name: 'journal.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(backup.text),
+  });
+  await dial.getByText(/Import complete/).waitFor();
+  check(
+    (await dial.getByRole('table', { name: 'Shot journal' }).getByRole('row').count()) === 2,
+    'reimporting an exported journal is idempotent',
+  );
+  await dial.getByLabel('Import journal or shot log').setInputFiles({
+    name: 'shots.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(
+      'time_s,yield_g,dose_g,setting,tds_percent,rating,notes\n32,36,18,170,10,3,first\n28,36,18,190,10,4,second\n24,36,18,210,10,4,third\n',
+    ),
+  });
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('#panel-dial-in table[aria-label="Shot journal"] tbody tr')
+        .length === 4,
+  );
+  check(
+    await dial.getByText(/V9 remains open/).isVisible(),
+    'imported and uncalibrated shots cannot establish prospective V9 accuracy',
+  );
+  const staleTab = await page.context().newPage();
+  try {
+    await staleTab.goto(page.url());
+    await staleTab.getByRole('tab', { name: 'Dial-in' }).click();
+    await staleTab.getByText(/Journal saved on this device in IndexedDB/).waitFor();
+    await staleTab.getByLabel('Bag and setup name').fill('Browser smoke bag');
+    await dial.getByRole('button', { name: 'Predict and save before pulling' }).click();
+    await dial.getByRole('button', { name: 'Save measurements' }).waitFor({ timeout: 60_000 });
+    await staleTab.getByRole('button', { name: 'Predict and save before pulling' }).click();
+    await staleTab.getByText(/Journal changed in another tab/).waitFor({ timeout: 60_000 });
+    check(true, 'a stale tab cannot overwrite a newer committed journal');
+  } finally {
+    await staleTab.close();
+  }
+  await page.screenshot({ path: shotPath('e2e-dial-in'), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  check(overflow <= 0, `Dial-in fits a 390 px viewport (overflow ${overflow} px)`);
+  await page.screenshot({ path: shotPath('e2e-dial-in-phone'), fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 900 });
+}
+
 async function shotLabChecks(page, pkg, shot) {
   const lab = page.locator('#lab-panel-shot');
   const status = page.locator('#shot-status');
@@ -738,9 +827,13 @@ async function main() {
 
     // Tabs.
     await page.getByRole('tab', { name: 'Dial-in' }).click();
-    check(await page.getByText('Coming in M4').isVisible(), 'Dial-in shows its M4 placeholder');
+    check(
+      await page.getByRole('heading', { name: 'Dial-in', exact: true }).isVisible(),
+      'Dial-in opens its local journal and calibration workflow',
+    );
     await page.keyboard.press('ArrowLeft');
     check(await page.getByText('Coming in M5').isVisible(), 'arrow keys move to Explore (M5)');
+    await dialInChecks(page, shotPath);
     await page.getByRole('tab', { name: 'Lab' }).click();
     await page.getByRole('tab', { name: 'Shot lab', exact: true }).click();
 

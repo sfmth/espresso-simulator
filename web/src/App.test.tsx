@@ -348,7 +348,7 @@ describe('App', () => {
   it('switches modes with the mouse and the keyboard', () => {
     renderApp(deferredEngine().engine);
     fireEvent.click(screen.getByRole('tab', { name: 'Dial-in' }));
-    expect(screen.getByText('Coming in M4')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Dial-in' })).toBeTruthy();
     expect(screen.getByRole('tabpanel').getAttribute('id')).toBe('panel-dial-in');
 
     const dialIn = screen.getByRole('tab', { name: 'Dial-in' });

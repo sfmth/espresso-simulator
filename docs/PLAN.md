@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.7.0 · Last updated 2026-10-18 · Status: M2 integrated; M3 input uncertainty and taste v1 implemented. Scientific validation exit criteria remain open (see §12 and §15).*
+*Version 0.8.0 · Last updated 2026-10-18 · Status: M2 integrated; M3 input uncertainty/taste and M4 experimental Dial-in implemented. Scientific validation exit criteria remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -669,6 +669,25 @@ Size M.
 - **Inverse solver and advice:** the inverse solver (3 modes), next-shot advice, and a predict-then-pull scorecard.
 - **Imports and learning:** shot-log importers and personal taste learning.
 - **Exit:** V9 met on your shots.
+
+**Implementation in 0.8.0 (owner selected 2026-10-18).** The browser provides
+the shared recipe controls, IndexedDB journal with backup and CSV/DE1 import,
+immutable forecast-before-observation records, local finite-grid Bayesian
+calibration, identifiability diagnostics, three bounded inverse modes with
+Tier 1 verification, personal Bayesian rating estimates and a prospective
+scorecard. The first local fit supports a bag permeability multiplier and an
+optional particle-size scale. Grinder zero, heterogeneity and machine offsets
+remain fixed and explicitly unidentifiable in this version. Bounded multistart
+coordinate search replaces the proposed continuous optimizer to respect actual
+equipment steps; the calibration grid is quadrature, not MCMC or Laplace.
+See [ADR 0014](decisions/0014-local-dial-in.md), the
+[contract](model/m4-dial-in.md) and [verification](validation/m4-validation.md).
+
+**V9 remains open.** Synthetic parameter recovery verifies plumbing, not
+real-world accuracy. Only future local shots predicted after calibration and
+before measurement can establish the personal target; no measurements are
+required from the owner. Existing scientific targets and source splits remain
+unchanged.
 
 ### M5: Explore mode
 Size L.
