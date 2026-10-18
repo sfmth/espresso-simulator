@@ -23,7 +23,7 @@
 // Screenshots go to web/test-results/. Set CHROME_PATH to use another browser
 // binary; by default Playwright's "chrome" channel finds Google Chrome.
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -737,6 +737,152 @@ async function verificationChecks(page, reference) {
   );
 }
 
+async function exploreChecks(page, shotPath) {
+  const panel = page.locator('.explore');
+  await panel.getByLabel('Teaching scenario').selectOption('reference');
+  await panel.getByRole('button', { name: 'Load scenario', exact: true }).click();
+  await page.waitForFunction(
+    () => document.querySelectorAll('.explore-section select')[1]?.options.length === 4,
+  );
+  await panel.getByLabel('Column', { exact: true }).selectOption('3');
+  await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
+  await panel.locator('.particle-inspector').waitFor({ timeout: 60_000 });
+  await panel.getByText('Surface-pool content remaining:', { exact: false }).waitFor();
+  check(
+    Number(await panel.locator('.explore-metrics dd').nth(2).textContent()) < 1e-5,
+    'micro-view weighted extraction agrees within 0.00001 percentage points',
+  );
+  check(
+    (await panel.getByLabel('Depth cell', { exact: true }).getAttribute('max')) === '30',
+    'standard Explore uses 30 depth cells',
+  );
+  check(
+    (await panel.getByLabel('Column', { exact: true }).inputValue()) === '7',
+    'Tier 0 edge selection maps to the Tier 1 edge annulus',
+  );
+  const slider = panel.getByLabel('Shot time', { exact: true });
+  await slider.focus();
+  await page.keyboard.press('Home');
+  check(
+    (await slider.inputValue()) === '0',
+    'Explore timeline scrubs to the first actual stored snapshot',
+  );
+  await page.keyboard.press('End');
+  const before = await panel.getByLabel('Depth cell', { exact: true }).inputValue();
+  await panel.locator('.explore-section-svg').focus();
+  await page.keyboard.press('ArrowDown');
+  check(
+    Number(await panel.getByLabel('Depth cell', { exact: true }).inputValue()) ===
+      Number(before) + 1,
+    'cross-section supports keyboard cell selection',
+  );
+  check(
+    await panel.getByText('Select the cell exported by Run Explore', { exact: false }).isVisible(),
+    'inspector withholds data when another cell is selected',
+  );
+  await page.keyboard.press('ArrowUp');
+  const measurements = [];
+  for (const count of ['30000', '150000', '5000', '25000']) {
+    if (count === '5000') await page.setViewportSize({ width: 390, height: 844 });
+    await panel.getByLabel('Displayed particles').selectOption(count);
+    const canvas = panel.locator('.puck-canvas');
+    await canvas.waitFor({ state: 'visible', timeout: 30_000 });
+    await page.waitForFunction(
+      (n) =>
+        document
+          .querySelector('.puck-canvas')
+          ?.getAttribute('aria-label')
+          ?.includes(Number(n).toLocaleString()),
+      count,
+    );
+    await panel.getByRole('button', { name: 'Measure frame rate', exact: true }).click();
+    await panel
+      .getByRole('button', { name: 'Measure frame rate', exact: true })
+      .waitFor({ timeout: 20_000 });
+    const output = await panel.locator('.explore-render-status output').textContent();
+    check(/\d+\.\d fps/.test(output ?? ''), `measured ${count} particles: ${output}`);
+    measurements.push({
+      count: Number(count),
+      width: count === '5000' || count === '25000' ? 390 : 1280,
+      result: output,
+    });
+    if (count === '30000' || count === '25000')
+      await panel.locator('.explore-volume').screenshot({ path: shotPath(`e2e-explore-${count}`) });
+  }
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  check(overflow <= 0, `Explore fits a 390px viewport (overflow ${overflow}px)`);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await panel.getByLabel('Simulation resolution').selectOption('high');
+  await panel.getByLabel('Displayed particles').selectOption('5000');
+  await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
+  await page.waitForFunction(
+    () => document.querySelector('.explore input[type="number"][max="150"]'),
+    undefined,
+    { timeout: 120_000 },
+  );
+  await panel
+    .getByText('Surface-pool content remaining:', { exact: false })
+    .waitFor({ timeout: 30_000 });
+  check(
+    (await panel.getByLabel('Depth cell', { exact: true }).getAttribute('max')) === '150',
+    'high resolution computes 5× the standard depth cells',
+  );
+  check(
+    Number(await panel.locator('.explore-metrics dd').nth(2).textContent()) < 0.5,
+    'refined-grid micro extraction agrees within 0.5 percentage points',
+  );
+  await panel.getByLabel('Illustrative pore network').check();
+  await panel.getByLabel('Cutaway plane').focus();
+  await page.keyboard.press('Home');
+  await page.keyboard.press('End');
+  await panel.locator('.explore-volume').screenshot({ path: shotPath('e2e-explore-refined') });
+  writeFileSync(
+    new URL('../test-results/explore-frame-rates.json', import.meta.url),
+    JSON.stringify(
+      {
+        browser: page.context().browser().version(),
+        renderer:
+          'headless Chrome, ANGLE SwiftShader software rendering; not target-device validation',
+        measurements,
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  // Loss of a WebGL context must leave the exact numeric inspection available.
+  await panel
+    .locator('.puck-canvas')
+    .evaluate((canvas) =>
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true })),
+    );
+  check(
+    await panel
+      .getByText('3D rendering is unavailable in this browser.', { exact: false })
+      .isVisible(),
+    'WebGL loss exposes the front-projection fallback',
+  );
+  check(
+    await panel.getByText('Surface-pool content remaining:', { exact: false }).isVisible(),
+    'exact particle inspection survives loss of WebGL',
+  );
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+      return type === 'webgl2' ? null : original.call(this, type, ...args);
+    };
+  });
+  await page.reload();
+  await page.getByRole('tab', { name: 'Explore', exact: true }).click();
+  await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
+  await panel.locator('.puck-fallback').waitFor({ timeout: 60_000 });
+  check(
+    await panel.getByText('Surface-pool content remaining:', { exact: false }).isVisible(),
+    'startup without WebGL2 preserves exact cell and particle inspection',
+  );
+}
+
 async function main() {
   if (!existsSync(new URL('../dist/index.html', import.meta.url))) {
     throw new Error(
@@ -772,7 +918,7 @@ async function main() {
       headless: true,
       // Without a GPU (containers, sandboxed shells) Chrome's GPU process can stall the
       // renderer. The charts draw on a 2D canvas, which software rendering handles.
-      args: ['--disable-gpu'],
+      args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
       ...(executablePath ? { executablePath } : { channel: 'chrome' }),
     });
     const context = await browser.newContext({
@@ -877,6 +1023,7 @@ async function main() {
     check(
       [
         '## react - ',
+        '## three - ',
         '## uplot - ',
         '# Rust crates in the WebAssembly engine',
         '## wasm-bindgen - ',
@@ -894,7 +1041,11 @@ async function main() {
       'Dial-in opens its local journal and calibration workflow',
     );
     await page.keyboard.press('ArrowLeft');
-    check(await page.getByText('Coming in M5').isVisible(), 'arrow keys move to Explore (M5)');
+    check(
+      await page.getByRole('heading', { name: 'Explore', exact: true }).isVisible(),
+      'arrow keys move to Explore (M5)',
+    );
+    await exploreChecks(page, shotPath);
     await dialInChecks(page, shotPath);
     await page.getByRole('tab', { name: 'Lab' }).click();
     await page.getByRole('tab', { name: 'Shot lab', exact: true }).click();
@@ -915,9 +1066,9 @@ async function main() {
     // requests too (the worker scripts and the WebAssembly they fetch).
     check(
       workers.length >= 1 &&
-        workers.every((u) => /\/assets\/engine\.worker-[^/]*\.js$/.test(u)) &&
+        workers.every((u) => /\/assets\/(?:engine|microstructure)\.worker-[^/]*\.js$/.test(u)) &&
         requests.some((u) => /\/assets\/puckcore_bg-[^/]*\.wasm$/.test(u)),
-      `the audit includes the ${workers.length} engine workers and the WebAssembly they fetch`,
+      `the audit includes the ${workers.length} engine/packing workers and the WebAssembly`,
     );
     const foreign = requests.filter((u) => !u.startsWith(`${origin}/`) && !u.startsWith('blob:'));
     check(

@@ -50,6 +50,8 @@ const MAX_SNAPSHOTS: usize = 1000;
 const MAX_STATE: f64 = 1e7;
 /// Bound on the snapshot data: snapshots × columns × cells.
 const MAX_SNAPSHOT_CELLS: f64 = 1e6;
+/// Selected-cell detail values, including up to 4n candidates, n returned clones and final copies.
+const MAX_EXPLORE_VALUES: f64 = 1e6;
 /// Bound on the series data: output points × (15 + species), including
 /// the five carrier-volume inventory channels even at zero compliance.
 const MAX_SERIES_VALUES: f64 = 1e7;
@@ -655,6 +657,44 @@ fn numerics(spec: &ShotSpec, warnings: &mut Vec<String>) -> Check {
             &format!("must be between 2 and {MAX_KERNEL_SHELLS}"),
         ));
     }
+    if let Some(selected) = n.explore_cell {
+        if n.tier != 1 {
+            return Err(err(
+                "numerics.explore_cell",
+                "selected particle export requires tier 1",
+            ));
+        }
+        if selected.column >= spec.bed.heterogeneity.columns {
+            return Err(err(
+                "numerics.explore_cell.column",
+                "must index a resolved column",
+            ));
+        }
+        if selected.cell >= n.depth_cells {
+            return Err(err(
+                "numerics.explore_cell.cell",
+                "must index a resolved depth cell",
+            ));
+        }
+        if n.snapshot_count == 0 {
+            return Err(err(
+                "numerics.explore_cell",
+                "requires at least one spatial snapshot",
+            ));
+        }
+        // Conservative bound includes no-kernel classes as full kernels and the
+        // Option<f64> pool fraction as two values. It cannot overflow usize.
+        let values = (5.0 * n.snapshot_count as f64 + 2.0)
+            * (spec.bed.size_classes.len() as f64 * (n.kernel_shells as f64 + 3.0)
+                + spec.bed.heterogeneity.columns as f64
+                + 1.0);
+        if values > MAX_EXPLORE_VALUES {
+            return Err(err(
+                "numerics.explore_cell",
+                "particle snapshot export exceeds the 1e6-value memory budget; reduce snapshots, size classes or kernel shells",
+            ));
+        }
+    }
     // A bounded state (memory, and work per step).
     let (cols, cells, classes, shells) = if n.tier == 0 {
         TIER0_SIZE
@@ -666,13 +706,41 @@ fn numerics(spec: &ShotSpec, warnings: &mut Vec<String>) -> Check {
             n.kernel_shells as f64,
         )
     };
-    let state = cols * cells * classes * (shells + 1.0) * (1.0 + n_species);
+    // High Explore refines the same depth model. Its exact transport-group
+    // count is used for resource accounting: Model solves each distinct
+    // (diffusivity, partition, surface fraction) tuple once, not each passenger
+    // species. Keep legacy normal/standard accounting and warning text intact.
+    let refined_explore = n
+        .explore_cell
+        .is_some_and(|request| request.resolution == ExploreResolution::High);
+    let transported = if refined_explore {
+        spec.solubles
+            .species
+            .iter()
+            .map(|species| {
+                (
+                    species.kernel_diffusivity_m2_s.to_bits(),
+                    species.partition_coefficient.to_bits(),
+                    species.surface_fraction_scale.to_bits(),
+                )
+            })
+            .collect::<std::collections::BTreeSet<_>>()
+            .len() as f64
+    } else {
+        n_species
+    };
+    let state = cols * cells * classes * (shells + 1.0) * (1.0 + transported);
     if state > MAX_STATE {
         return Err(err(
             "numerics.depth_cells",
             &format!(
                 "the model would hold {state:.3e} values (columns × depth cells × size classes \
-                 × (kernel shells + 1) × (1 + species)), more than {MAX_STATE:e}"
+                 × (kernel shells + 1) × (1 + {})), more than {MAX_STATE:e}",
+                if refined_explore {
+                    "transport groups"
+                } else {
+                    "species"
+                }
             ),
         ));
     }

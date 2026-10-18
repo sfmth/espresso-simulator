@@ -18,6 +18,7 @@ Implementation decisions for Puckworks, one short file per decision. Product dec
 | [0012](0012-m2-chemistry-and-phase-accounting.md) | M2 chemistry and phase accounting | Accepted, experimental |
 | [0013](0013-m3-scenario-bands-and-taste.md) | Input scenario bands and explainable taste | Accepted, experimental |
 | [0014](0014-local-dial-in.md) | Local journal, calibration and constrained advice | Accepted, experimental |
+| [0015](0015-explore-state-and-refinement.md) | Coupled Explore state and explicit depth refinement | Accepted, experimental |
 
 ## Format
 

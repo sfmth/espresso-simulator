@@ -113,6 +113,8 @@ export interface PuckcoreModule {
   simulateShot(specJson: string): string;
   /** Recipe JSON → `{build: {spec, derived}, result}` JSON. */
   simulateRecipe(recipeJson: string): string;
+  /** Optional additive selected-cell Tier 1 export; absent on older generated cores. */
+  simulateExplore?(recipeJson: string, requestJson: string): string;
   /** Recipe JSON + uncertainty options JSON → M3 Tier-0 scenario bands JSON. */
   simulateUncertainty(recipeJson: string, optionsJson: string): string;
   /**

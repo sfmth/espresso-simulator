@@ -14,6 +14,8 @@
  * fields marked optional here may be missing from older cores.
  */
 
+import type { ExploreRequest, MicroMetadata, MicroSnapshot } from './exploreTypes';
+
 export const RECIPE_SCHEMA = 'puckworks.recipe/1';
 export const SHOT_SPEC_SCHEMA = 'puckworks.shot-spec/1';
 export const SHOT_RESULT_SCHEMA = 'puckworks.shot-result/1';
@@ -403,6 +405,8 @@ export interface NumericsSpec {
   snapshot_count: number;
   /** Radial shells per kernel (added by the M1 solver). */
   kernel_shells?: number;
+  /** Opt-in exact particle state for one resolved Tier 1 cell. */
+  explore_cell?: ExploreRequest | null;
 }
 
 // ---------------------------------------------------------------- ShotResult (SI)
@@ -584,6 +588,7 @@ export interface Spatial {
   columns: ColumnInfo[];
   snapshots: Snapshot[];
   class_ey: ClassEy[];
+  micro?: MicroMetadata | null;
 }
 
 export interface ColumnInfo {
@@ -607,6 +612,11 @@ export interface Snapshot {
   liquid_conc_kg_m3: number[][];
   /** Wetted share of each cell: 0 dry, 1 wet, in between at the wetting front (newer cores). */
   wetted_fraction?: number[][];
+  micro?: MicroSnapshot | null;
+  /** Column carrier flow; no pore-resolved velocity field is solved. */
+  column_flow_m3_s?: number[] | null;
+  /** One shared bed thermal node. */
+  bed_temperature_c?: number | null;
 }
 
 export interface ClassEy {

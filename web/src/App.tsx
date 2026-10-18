@@ -6,6 +6,8 @@ import { APP_VERSION, LICENSES_FILE, SOURCE_URL } from './config';
 import { SphereVerificationPanel } from './lab/SphereVerificationPanel';
 import { DialIn } from './dialin/DialIn';
 import { ShotLab } from './shot/ShotLab';
+import { ShotRunProvider } from './shot/ShotRunContext';
+import { Explore } from './explore/Explore';
 import { useAppStore, type LabView, type Mode } from './store';
 
 function TabPanel({ mode, active, children }: { mode: Mode; active: Mode; children: ReactNode }) {
@@ -21,24 +23,6 @@ function TabPanel({ mode, active, children }: { mode: Mode; active: Mode; childr
     >
       {children}
     </section>
-  );
-}
-
-function ComingSoon({
-  title,
-  milestone,
-  children,
-}: {
-  title: string;
-  milestone: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="coming-soon">
-      <h2>{title}</h2>
-      <p className="coming-soon-milestone">Coming in {milestone}</p>
-      <p>{children}</p>
-    </div>
   );
 }
 
@@ -81,19 +65,19 @@ export function App() {
         <ModeTabs mode={mode} onChange={setMode} />
       </header>
 
-      <main id="main" className="app-main" tabIndex={-1}>
-        <TabPanel mode="dial-in" active={mode}>
-          <DialIn />
-        </TabPanel>
-        <TabPanel mode="lab" active={mode}>
-          <Lab />
-        </TabPanel>
-        <TabPanel mode="explore" active={mode}>
-          <ComingSoon title="Explore" milestone="M5">
-            Look inside the puck: a 3D view of particles, flow and extraction over the shot.
-          </ComingSoon>
-        </TabPanel>
-      </main>
+      <ShotRunProvider>
+        <main id="main" className="app-main" tabIndex={-1}>
+          <TabPanel mode="dial-in" active={mode}>
+            <DialIn />
+          </TabPanel>
+          <TabPanel mode="lab" active={mode}>
+            <Lab />
+          </TabPanel>
+          <TabPanel mode="explore" active={mode}>
+            <Explore active={mode === 'explore'} />
+          </TabPanel>
+        </main>
+      </ShotRunProvider>
 
       <footer className="app-footer">
         <span>GPL-2.0-or-later</span>

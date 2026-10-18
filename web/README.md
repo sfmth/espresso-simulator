@@ -10,14 +10,24 @@ recipes use `localStorage`; the Dial-in journal and local fits use IndexedDB.
 Unavailable storage is visibly labelled as session-only. Export a backup to
 preserve journal data when clearing browser storage.
 
-The header has three modes, **Dial-in**, **Lab** and **Explore** (Explore
-arrives in M5). The Lab has two views:
+The header has three modes, **Dial-in**, **Lab** and **Explore**. The Lab has two views:
 
 - **Shot lab**, the M1 lab view described below;
 - **Kernel verification**, the M0 demo: diffusion out of a sphere into a
   perfect sink, solved by puckcore and compared with Crank's analytic solution.
 
-Version 0.8.0 adds the experimental Dial-in workflow. Basic controls edit the
+Version 0.9.0 adds experimental Explore: a representative 3D particle volume,
+cross-section and shell inspector tied to the same selected snapshot and cell.
+**Run Explore** exports exact Tier 1 particle state. **High resolution** refines
+depth from 30 to 150 cells; visual detail can increase from 30,000 to 150,000
+particles (5,000 to 25,000 on mobile). This refines the existing parallel 1D
+solver; the future 2D Tier 2 model remains separate. Packing runs in a worker;
+WebGL2 renders the volume with SVG/data fallbacks. The lattice flow is
+illustrative, and target-device frame-rate validation remains open.
+See the [M5 contract](../docs/model/m5-explore.md) and
+[verification record](../docs/validation/m5-validation.md).
+
+Version 0.8.0 added the experimental Dial-in workflow. Basic controls edit the
 shared Lab recipe. Save a Tier 1 forecast before pulling, attach measurements,
 fit local permeability (optionally particle size), and search recipe, cup or
 next-shot targets with equipment constraints and Tier 1 rechecks. A journal
