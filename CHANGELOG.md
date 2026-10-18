@@ -2,6 +2,61 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.6.5] — 2026-10-17
+
+Correct the within-cell wetting-age bias exposed by the 5×/10× refinement study,
+and tune a candidate on the corrected solver with normalized optimizer coordinates.
+
+- Integrate inverse hydraulic mobility over each cell's reconstructed wetting
+  ages, with exact geometric weights, front entry/exit times and persistent
+  pause boundaries. Predictors and rejected steps preserve the same history.
+  Independent analytic tests cover steady advance, soaking, infinitesimal
+  restart and steep pore-air closures; adaptive subdivision detects unresolved
+  narrow endpoint layers.
+- In the [fixed-v5 hydraulic ablation](docs/validation/m11-wet-age.md), the two
+  sensitive cases' 30-to-300-layer conductance discrepancies fall from
+  7.15–7.51% to 0.51–0.53%. At 150 versus 300 layers they are below 0.075%,
+  with pressure-trajectory differences of 0.150 and 0.027 bar. The pump cap
+  still masks errors near poroelastic saturation; this does not validate
+  the startup or extraction-peak physics.
+- Optimize parameters in coordinates normalized to their bounds, so mixed
+  physical units cannot trigger premature step termination. Keep returned
+  Jacobians in the original physical/log coordinates. A rescaled synthetic
+  problem verifies invariance under a billion-fold change of units.
+- Reject truncated calibration shots and incomplete source-fraction predictions
+  instead of fitting their available subset. Preserve the original observation
+  weights, priors, training/held-out split and effective 22-parameter structure.
+- Fit on 150 depth layers with 25 ms maximum timesteps. Against frozen v5 on
+  that same build and grid, weighted training cost falls from 694.431 to 560.217
+  (19.33%). Rates within ±10% increase from 50/60 to 52/60, while cup masses
+  decrease from 180/180 to 174/180. The refined fit completes 3,485 simulations
+  without failure; seven coefficients remain near bounds, and first-order
+  optimality 215.54 prevents a stationarity claim despite step/cost termination.
+- Freeze those coefficients for 129 training shots at 300 layers, half the
+  refined timestep, and the app's default 30-layer/50 ms grid. At 300 versus
+  150 layers, maximum changes are 0.2083% in extraction rates, 0.0617% in cup
+  masses and 0.0449 bar in pour peaks. Halving the timestep gives 0.1551%,
+  0.0543% and 0.0422 bar; default-grid changes reach 0.7172%, 0.3048% and
+  0.3692 bar. All comparisons retain 52/60 rates and 174/180 cups within ±10%,
+  with complete predictions and no simulation failures.
+- Complete a 972-shot training-only derivative audit without failures. Half/quarter
+  finite-difference gradients have cosine 0.577 and relative difference 0.817;
+  all four proposed descent steps increase cost (best change +0.0270). Most
+  disagreement lies in V1 extraction predictions. The predeclared rule for one
+  further bounded polish is not met; the candidate has no demonstrated local
+  stationarity. Preserve exact coefficients, original artifact fingerprints and
+  all observations in the [refined-tuning record](docs/validation/m11-refined-tuning.md).
+- Complete 138 matched baseline/candidate holdout shots at 30/150/300 layers,
+  plus 94 full-validation simulations, without failure. At 150 layers, V3 time
+  RMS changes from 6.956 to 7.282 s, V5 from 22.866 to 23.253 s, and V4 first
+  drops from 6.261 to 6.094 s against 12.762 s measured. These small adverse
+  shifts preserve the existing held-out pass/fail statuses. Retain the exact
+  candidate for research and leave active v5 coefficients unchanged; fresh
+  leave-one-out and sensitivity refits remain prerequisites for promotion.
+- Pass 231 Rust tests (one existing exhaustive test ignored), 550 Python tests,
+  448 web tests and the browser end-to-end checks. Native/WebAssembly shot
+  fixtures agree exactly; the sphere results remain numerically unchanged.
+
 ## [0.6.4] — 2026-10-17
 
 Add a reproducible [mesh-refinement study](docs/validation/m11-mesh-refinement.md)

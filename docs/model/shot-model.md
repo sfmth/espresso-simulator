@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 # Shot model: from first water to the cup
 
-*puckcore 0.6.0 · Milestones M1 and M1.1 · Last updated 2026-10-16.*
+*puckcore 0.6.5 · Milestones M1 and M1.1 · Last updated 2026-10-17.*
 
 This is the specification of `puckcore::shot::simulate_shot`, the M1 shot solver behind `simulateShot` (JavaScript) and `puckcore.simulate_shot` (Python). It implements §4 of the [M1 contract](m1-contract.md) for both fidelity tiers, as modules H and X of [PLAN §7.3](../PLAN.md#73-modules).
 
@@ -145,17 +145,19 @@ Both are exact; the second also holds for r_a = r_b. Cells are equal in thicknes
 
 The wetted part of column i has the resistance
 
-$$R_i=\int_0^{z_f}\frac{\mu(z)\,dz}{\kappa_i(z)A_i(z)}=\sum_j\frac{\mu_j\,g_j}{f_i\,\kappa_{ij}},\qquad g_j=\int_\text{cell j}\frac{dz}{A}.$$
+$$R_i=\sum_j\frac{\mu_j}{f_i\,\kappa^0_{ij}}\int_{\text{wetted cell }j}\frac{dz}{A(z)\,f_t(t-t_w(z))},\qquad \kappa^0_{ij}=\kappa_0 m_i\frac{\mathrm{KC}(\varepsilon_{ij})}{\mathrm{KC}(\varepsilon_0)}.$$
 
-The front cell contributes its exact partial integral, from its top to the front. A column that drips adds the fines layer R_f (§4.3). The viscosity μ_j is the local one (§4.4), so the resistance varies along the column.
+Here f_t is the product of the swelling, CO₂ and pore-air factors below. Poroelastic compaction is applied through Φ(ΔP), outside this resistance integral.
+
+The front cell contributes the partial geometric integral from its top to the front. Geometry is integrated exactly for the piecewise-linear basket wall. Within each cell, viscosity and porosity are cell averages, while the time-dependent permeability factors are evaluated at the reconstructed local wetting age (§4.2). Resistance integrates the **inverse** of their product, with positive quadrature weights proportional to dz/A. A column that drips adds the fines layer R_f (§4.3).
 
 ### 4.2 Permeability closure
 
-$$\kappa_{ij}=\kappa_0\;m_i\;\frac{\mathrm{KC}(\varepsilon_{ij})}{\mathrm{KC}(\varepsilon_0)}\;f_\text{sw}(t-t_{w,ij})\;f_\text{gas}(t-t_{w,ij})\;f_\text{air}(t-t_{w,ij})\;f_\text{poro}(\Delta P_i),\qquad \mathrm{KC}(\varepsilon)=\frac{\varepsilon^3}{(1-\varepsilon)^2}.$$
+$$\kappa_i(z,t)=\kappa_0\;m_i\;\frac{\mathrm{KC}(\varepsilon_{ij})}{\mathrm{KC}(\varepsilon_0)}\;f_\text{sw}(t-t_w(z))\;f_\text{gas}(t-t_w(z))\;f_\text{air}(t-t_w(z))\;f_\text{poro}(\Delta P_i),\qquad \mathrm{KC}(\varepsilon)=\frac{\varepsilon^3}{(1-\varepsilon)^2}.$$
 
 - **κ₀** is calibrated, never predicted from the size distribution (PLAN §6 #2).
 - **Kozeny–Carman** enters only as a relative factor, through the local porosity of §5.5. With the default θ = 0 the porosity does not change, so the factor stays 1; `dissolution_kozeny_carman = false` turns it off for any θ.
-- **Swelling and gas** depend on the time since the cell wetted, t_w:
+- **Swelling and gas** depend on the time since each location wetted, t_w(z):
   - swelling: f_sw = 1 − A_sw(1 − e^{−t/τ_sw});
   - gas: f_gas = 1 − A_g e^{−t/τ_g}.
 
@@ -166,6 +168,10 @@ $$\kappa_{ij}=\kappa_0\;m_i\;\frac{\mathrm{KC}(\varepsilon_{ij})}{\mathrm{KC}(\v
 
   A_air ∈ [0,1), n_air ∈ [1,10]; A_air = 0 or τ_air = 0 disables the penalty. Dry cells do not age merely because the pump clock runs. Wet cells continue to relax during a soak. This factor describes hydraulic connectivity, **not a literal gas saturation**; it neither creates water nor subtracts pore volume. Its eventual value is 1, so it does not change the bare late-time permeability. Recipe defaults and their broad priors are in `data/params/startup.yaml`. The diffusion-time mapping from moisture diffusivity and a representative particle radius is an estimate; no startup coefficient was selected against the held-out flow curves.
 - **Why swelling defaults to 0.** The registry's swelling is a diameter increase (`hydraulics.swelling.diameter_increase`, 0–15%), not a permeability factor. In a confined bed, Kozeny–Carman turns even a 2% diameter increase (ε 0.17 → 0.12) into a 70% permeability loss, so mapping one onto the other needs a confined-swelling closure that no data constrain. The amplitude is a calibration parameter.
+
+**Wetting-age reconstruction (0.6.5).** Each cell records front entry and exit times. Arrival time varies linearly with swept bed volume between those endpoints; a partially wet cell ends at the last front advance. A pause adds a persistent breakpoint, so restarting does not make already wetted material young again. The hydraulic predictor extends the same construction into newly wetted material, and rejected steps restore the complete arrival history. This replaces assigning the oldest age to the whole cell, which systematically underestimated resistance on coarse grids. The [wetting-age study](../validation/m11-wet-age.md) separates this bias from concentration-dependent viscosity.
+
+Three-point positive quadrature integrates the inverse time factor, preserving the exact Darcy integral for a constant factor. Steep closures trigger adaptive subdivision; agreement between quadrature rules is accepted only when an endpoint variation bound also rules out an unresolved narrow layer. The solver warns if it exhausts the bounded subdivision. These are numerical approximations to the existing closure, not new fitted physics. Linear arrival reconstruction within an uninterrupted segment still approximates a varying front speed.
 
 **Poroelastic factor (Waszkiewicz et al. 2026).** The flow through a bed with pressure drop ΔP is Q = Φ(ΔP)/R, where R is the Darcy resistance without compaction and
 
@@ -359,6 +365,8 @@ $$\big(C+\rho_wc_w\,\phi_T\textstyle\sum_iW_i\big)\frac{dT}{dt}=\rho_wc_wQ_\text
 | 0 | 3 conditional-mean strata (1 without spread) plus the edge annulus | 8 | 2: fines (< 100 µm) and coarse, each at its Sauter radius | coarse: two equal-volume shells; fines: linear driving force (one shell) |
 
 **Current-calibration refinement.** The [fixed-v5 mesh study](../validation/m11-mesh-refinement.md), measured on 0.6.3, runs 24 conditions on ten grids/timestep combinations. Refining 30 → 150 → 300 depth layers raises native runtime about 5×/10× and changes final cup EY by at most 0.143/0.170 percentage points, but shifts two pour-pressure predictions to the 12-bar pump cap. Separate 40/64-column and 40/64-shell runs, a joint refinement, and 16 short pressure windows test the other axes and smaller timesteps. The historical M1 convergence table in §8 is not an accuracy bound for these calibrated startup transients. Default resolution and v5 coefficients remain unchanged; the report retains the inputs and distinguishes grid sensitivity from physical validity.
+
+The 0.6.5 [wetting-age correction](../validation/m11-wet-age.md) reduces the two sensitive cases' 30-to-300-layer conductance differences from about 7% to 0.52%. At 150 versus 300 layers they are below 0.075%. Pressure remains unusually sensitive close to poroelastic flow saturation, where dΦ/dP approaches zero: agreement at the pump's pressure cap alone is insufficient evidence of convergence. Report both the pressure trajectory and hydraulic capacity when testing these conditions.
 
 The original tier 0 used one column at the area-mean multiplier with linear-driving-force kernels. It ignored the spread (EY +24.9% against tier 1 at σ = 0.7) and its single-shell kernel missed −7.3% at coarse grind. With three strata and two-shell coarse kernels, the M1 legacy-closure verification found agreement within 2.9% on EY and TDS and 0.6% on shot time across twelve cases, within the 10 ms benchmark budget (§8). Those historical figures do not establish M1.1 recipe accuracy or runtime; the current validation report compares the tiers with the active closure.
 
@@ -560,7 +568,7 @@ Using the back-calculated value as κ₀ counts these effects twice. κ₀ defau
 
 - **Flow geometry.** The columns are 1D stream tubes without cross-flow. In a tapered basket each keeps its share of the cross-section; there is no radial redistribution or 2D flow (that is Tier 2). Edge and hole-pattern effects enter only through the edge multiplier and the outlet orifices.
 - **Wetting.** The front is sharp, without capillary pressure or a resolved saturation field. M1.1 adds a time-dependent effective relative-permeability factor for pore-air connectivity, but its amplitude, power and moisture-to-mobility timescale mapping are estimated. It does not solve two-phase flow, gas transport or finite-rate particle hydration. Headspace filling still precedes infiltration. The optional upstream hydraulic compliance stores water after headspace filling; it does not model simultaneous compressible headspace/puck infiltration.
-- **The front cell.** The front cell holds the wetted share of its liquid, its faces carry flow only after the front has passed them, and only its wetted share of particles exchanges, so solute and water stay in step. The wetted share is mixed into one cell average (newly wetted and earlier wetted particles are not told apart), and a cell activated part-way through a step exchanges from the step's start. This smears particle exchange over one cell and one step (resistance and front position stay exact).
+- **The front cell.** The front cell holds the wetted share of its liquid, its faces carry flow only after the front has passed them, and only its wetted share of particles exchanges, so solute and water stay in step. The wetted share is mixed into one cell average for transport, and a cell activated part-way through a step exchanges from the step's start. This smears particle exchange over one cell and one step. Hydraulic wetting age is separately reconstructed within the cell (§4.2); geometry is exact, while constitutive integration and front advancement remain numerical approximations.
 - **Water inventory and exchange.** Selected particle pore water contributes to the hydraulic and thermal budgets; its solute belongs to particle loading. Newly filled water carries local mobile solute into each wet particle population through an implicit uniform source. The model does not identify finite-rate internal-water exchange, detailed hydration or a saturation field. u_w retains its reference loading role and selects water uptake only when no explicit fraction is supplied. The hydraulic residual excludes dissolved-solids displacement, thermal expansion and additional holdup from nonzero dissolution porosity; it is not an exact solvent-mass balance.
 - **Particle geometry.** Particles do not change size: swelling acts through permeability only, and porosity growth (§5.5, off by default) through holdup and Kozeny–Carman only.
 - **Exchange closures.**
