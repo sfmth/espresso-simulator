@@ -5,11 +5,11 @@
   "dataset": "gloess2013-espresso-chemistry",
   "solver_identity": {
     "puckcore_version": "0.7.0",
-    "extension_sha256": "5d6330d5ab46f429",
-    "extension_built": "2026-10-18T03:37:43-03:00",
+    "extension_sha256": "0dcf8cf05c149050",
+    "extension_built": "2026-10-18T03:52:07-03:00",
     "sources_sha256": {
-      "crates/puckcore/src": "1b627954b6c4be55",
-      "crates/puckmodel/src": "6e49c8895fd74722",
+      "crates/puckcore/src": "786578c5e04bb35e",
+      "crates/puckmodel/src": "150b0b7fdd56cdd3",
       "crates/puckmodel/generated": "bfda72656ff6ad56",
       "crates/puckcore-py": "d3b7d64063e12e34",
       "data/chemistry": "6dd11d8f1a08ce38"
