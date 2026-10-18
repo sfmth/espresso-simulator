@@ -16,7 +16,8 @@ describe('model status note', () => {
     expect(text).toMatch(/^Calibrated against published experiments \(Schmieder 2023, /);
     expect(text).toContain('errors in startup flow and extraction');
     expect(text).toContain('Startup assumptions are estimated');
-    expect(text).toContain('No uncertainty bands yet.');
+    expect(text).toContain('input-scenario bands exclude model error');
+    expect(text).toContain('not sensory validated');
     expect(text).not.toMatch(/uncalibrated|before calibration/i);
   });
 

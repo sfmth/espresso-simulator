@@ -100,6 +100,9 @@ fn puckcore_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(build_shot_spec, m)?)?;
     m.add_function(wrap_pyfunction!(simulate_shot, m)?)?;
     m.add_function(wrap_pyfunction!(simulate_recipe, m)?)?;
+    m.add_function(wrap_pyfunction!(simulate_uncertainty, m)?)?;
+    m.add_function(wrap_pyfunction!(estimate_taste, m)?)?;
+    m.add_function(wrap_pyfunction!(analyze_taste, m)?)?;
     Ok(())
 }
 
@@ -155,5 +158,61 @@ fn simulate_recipe<'py>(
     recipe: &Bound<'py, PyAny>,
 ) -> PyResult<Bound<'py, PyAny>> {
     let out = puckmodel::api::simulate_recipe_json(&json_text(py, recipe)?).map_err(api_error)?;
+    json_value(py, &out)
+}
+
+/// Seeded Tier 0 input scenarios. Inputs are dictionaries or JSON strings.
+#[pyfunction]
+#[pyo3(signature = (recipe, options = None))]
+fn simulate_uncertainty<'py>(
+    py: Python<'py>,
+    recipe: &Bound<'py, PyAny>,
+    options: Option<&Bound<'py, PyAny>>,
+) -> PyResult<Bound<'py, PyAny>> {
+    let options_json = options
+        .map(|v| json_text(py, v))
+        .transpose()?
+        .unwrap_or_else(|| "{}".into());
+    let out = puckmodel::api::simulate_uncertainty_json(&json_text(py, recipe)?, &options_json)
+        .map_err(api_error)?;
+    json_value(py, &out)
+}
+
+/// Explain taste proxies from an existing simulated result.
+#[pyfunction]
+#[pyo3(signature = (recipe, result, conditions = None))]
+fn estimate_taste<'py>(
+    py: Python<'py>,
+    recipe: &Bound<'py, PyAny>,
+    result: &Bound<'py, PyAny>,
+    conditions: Option<&Bound<'py, PyAny>>,
+) -> PyResult<Bound<'py, PyAny>> {
+    let conditions_json = conditions
+        .map(|v| json_text(py, v))
+        .transpose()?
+        .unwrap_or_else(|| "{}".into());
+    let out = puckmodel::api::estimate_taste_json(
+        &json_text(py, recipe)?,
+        &json_text(py, result)?,
+        &conditions_json,
+    )
+    .map_err(api_error)?;
+    json_value(py, &out)
+}
+
+/// Build, simulate and explain taste proxies for a recipe.
+#[pyfunction]
+#[pyo3(signature = (recipe, conditions = None))]
+fn analyze_taste<'py>(
+    py: Python<'py>,
+    recipe: &Bound<'py, PyAny>,
+    conditions: Option<&Bound<'py, PyAny>>,
+) -> PyResult<Bound<'py, PyAny>> {
+    let conditions_json = conditions
+        .map(|v| json_text(py, v))
+        .transpose()?
+        .unwrap_or_else(|| "{}".into());
+    let out = puckmodel::api::analyze_taste_json(&json_text(py, recipe)?, &conditions_json)
+        .map_err(api_error)?;
     json_value(py, &out)
 }

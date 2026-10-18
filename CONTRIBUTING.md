@@ -48,6 +48,8 @@ Shell sessions that haven't run the `export` line need `$HOME/.cargo/bin` on `PA
 | Validate the parameter registry | `.venv/bin/puckworks-tools validate-registry` |
 | Check the golden fixture | `.venv/bin/puckworks-tools fixtures --check` |
 | Regenerate the kernel verification report | `.venv/bin/puckworks-tools verify` |
+| Regenerate the M3 scenario and taste checks | `.venv/bin/puckworks-tools m3-validate` |
+| Benchmark repeated simulations (release build) | `cargo run --release -p puckcore --example shot_benchmark -- 11` |
 | Check that all versions agree | `.venv/bin/puckworks-tools check-versions` |
 | Run the Python tests | `.venv/bin/pytest python/tests` |
 | Compare the original community shots locally | `.venv/bin/puckworks-tools community --archive /path/to/shotfiles_Mar2_2021.zip --log /path/to/measurement-log.csv` ([source downloads and assumptions](python/README.md#reproduce-the-community-comparison)) |

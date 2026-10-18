@@ -33,6 +33,8 @@ export interface LineChartProps {
   data: uPlot.AlignedData;
   /** Must be a stable value (a constant or memoised): a new array rebuilds the chart. */
   series: readonly ChartSeriesSpec[];
+  /** One-based series indices: upper and lower bounds of a shaded interval. */
+  bands?: readonly { upper: number; lower: number }[];
   xLabel: string;
   yLabel: string;
   /** Fixed y range; otherwise the range follows the data. */
@@ -134,6 +136,10 @@ function buildOptions(
       x: xLog ? { time: false, distr: 3, log: 10 } : { time: false },
       y: yScale,
     },
+    bands: props.bands?.map((band) => ({
+      series: [band.upper, band.lower],
+      fill: theme.dark ? 'rgba(57, 135, 229, 0.20)' : 'rgba(42, 120, 214, 0.15)',
+    })),
     cursor: {
       // A vertical crosshair finds the x; charts sharing a sync key move together.
       y: false,
@@ -215,6 +221,7 @@ export function LineChart({ data, summary, ...config }: LineChartProps) {
   const latestSummary = useRef(summary);
   const { xLabel, yLabel, yRange, yFromZero, xLog, baseline } = config;
   const { formatX, formatY, formatTick, height, syncKey } = config;
+  const bands = config.bands;
   const series = useStableSeries(config.series);
 
   // (Re)build the chart when its configuration or the theme changes.
@@ -236,6 +243,7 @@ export function LineChart({ data, summary, ...config }: LineChartProps) {
         formatTick,
         height,
         syncKey,
+        bands,
       },
       theme,
       width,
@@ -267,6 +275,7 @@ export function LineChart({ data, summary, ...config }: LineChartProps) {
     formatTick,
     height,
     syncKey,
+    bands,
   ]);
 
   useEffect(() => {

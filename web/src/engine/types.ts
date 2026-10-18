@@ -113,6 +113,8 @@ export interface PuckcoreModule {
   simulateShot(specJson: string): string;
   /** Recipe JSON → `{build: {spec, derived}, result}` JSON. */
   simulateRecipe(recipeJson: string): string;
+  /** Recipe JSON + uncertainty options JSON → M3 Tier-0 scenario bands JSON. */
+  simulateUncertainty(recipeJson: string, optionsJson: string): string;
   /**
    * The message of the most recent Rust panic, or "" (read after a trap, from the
    * same instance, before the worker is replaced). Newer cores only.

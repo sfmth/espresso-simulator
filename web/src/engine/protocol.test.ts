@@ -66,6 +66,7 @@ function fakeCore(handle = fakeHandle(PARAMS.nShells, PARAMS.nSteps)) {
     buildShotSpec: vi.fn(() => '{}'),
     simulateShot: vi.fn(() => '{}'),
     simulateRecipe: vi.fn(() => '{}'),
+    simulateUncertainty: vi.fn(() => '{}'),
   };
   return { core, handle };
 }

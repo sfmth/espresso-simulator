@@ -1452,6 +1452,69 @@ code {
 
 /* Sweeps and pins */
 
+.uncertainty-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.uncertainty-form fieldset {
+  min-width: 0;
+  border: 1px solid var(--field-border);
+  border-radius: 8px;
+  padding: 0.9rem;
+}
+
+.uncertainty-form legend {
+  padding: 0 0.4rem;
+  font-weight: 650;
+}
+
+.scenario-interval {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}
+
+.taste-attribute {
+  border: 1px solid var(--field-border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.taste-attribute-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.taste-attribute-heading h4 {
+  margin: 0;
+}
+
+.taste-attribute-heading p {
+  margin: 0;
+}
+
+.taste-index {
+  font-size: 1.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.taste-assumptions,
+.taste-sources,
+.compact-list {
+  padding-left: 1.2rem;
+}
+
+.taste-sources li + li {
+  margin-top: 0.75rem;
+}
+
+.taste-panel code,
+.uncertainty-panel code {
+  overflow-wrap: anywhere;
+}
+
 .sweep-form {
   display: grid;
   gap: 0.75rem;

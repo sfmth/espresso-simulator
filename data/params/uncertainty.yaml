@@ -1,0 +1,325 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+schema: puckworks.parameters/1
+description: M3 deliberately illustrative input scenario supports. These are not fitted
+  distributions or calibrated confidence intervals.
+parameters:
+- id: uncertainty.unknown.psd_scale_relative
+  name: Unknown psd scale relative
+  description: Common multiplicative particle diameter half-width; all PSD bins share
+    one factor. Scenario support is a modelling judgement, not an empirical confidence
+    interval.
+  units: '1'
+  value: 0.25
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.measured.psd_scale_relative
+  name: Measured psd scale relative
+  description: Common multiplicative particle diameter half-width; all PSD bins share
+    one factor. Scenario support is a modelling judgement, not an empirical confidence
+    interval.
+  units: '1'
+  value: 0.03
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.unknown.psd_fines_relative
+  name: Unknown psd fines relative
+  description: Common relative reweighting half-width for original PSD bins at or
+    below 100 micrometres; normalized after perturbation. Scenario support is a modelling
+    judgement, not an empirical confidence interval.
+  units: '1'
+  value: 0.35
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.measured.psd_fines_relative
+  name: Measured psd fines relative
+  description: Common relative reweighting half-width for original PSD bins at or
+    below 100 micrometres; normalized after perturbation. Scenario support is a modelling
+    judgement, not an empirical confidence interval.
+  units: '1'
+  value: 0.08
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.unknown.age_relative
+  name: Unknown age relative
+  description: Relative roast-age half-width; combined with the absolute age half-width
+    by taking their maximum. Scenario support is a modelling judgement, not an empirical
+    confidence interval.
+  units: '1'
+  value: 0.5
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.measured.age_relative
+  name: Measured age relative
+  description: Relative roast-age half-width; combined with the absolute age half-width
+    by taking their maximum. Scenario support is a modelling judgement, not an empirical
+    confidence interval.
+  units: '1'
+  value: 0.0
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.unknown.age_absolute
+  name: Unknown age absolute
+  description: Absolute roast-age half-width, truncated to admissible days after roast.
+    Scenario support is a modelling judgement, not an empirical confidence interval.
+  units: d
+  value: 7.0
+  range:
+    min: 0
+    max: 365
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.measured.age_absolute
+  name: Measured age absolute
+  description: Absolute roast-age half-width, truncated to admissible days after roast.
+    Scenario support is a modelling judgement, not an empirical confidence interval.
+  units: d
+  value: 1.0
+  range:
+    min: 0
+    max: 365
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.unknown.composition_relative
+  name: Unknown composition relative
+  description: Shared relative half-width for unresolved dry-bean compound inventories;
+    existing registry overrides stay fixed. Scenario support is a modelling judgement,
+    not an empirical confidence interval.
+  units: '1'
+  value: 0.35
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.measured.composition_relative
+  name: Measured composition relative
+  description: Shared relative half-width for unresolved dry-bean compound inventories;
+    existing registry overrides stay fixed. Scenario support is a modelling judgement,
+    not an empirical confidence interval.
+  units: '1'
+  value: 0.08
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.unknown.water_relative
+  name: Unknown water relative
+  description: One common multiplicative half-width for minerals, hardness, alkalinity
+    and TDS; preserves their baseline ratios. Scenario support is a modelling judgement,
+    not an empirical confidence interval.
+  units: '1'
+  value: 0.5
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.measured.water_relative
+  name: Measured water relative
+  description: One common multiplicative half-width for minerals, hardness, alkalinity
+    and TDS; preserves their baseline ratios. Scenario support is a modelling judgement,
+    not an empirical confidence interval.
+  units: '1'
+  value: 0.05
+  range:
+    min: 0
+    max: 0.95
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.unknown.water_ph
+  name: Unknown water ph
+  description: Additive source-water pH half-width, independent of mineral concentration
+    factor; clipped support within pH 0 to 14. Scenario support is a modelling judgement,
+    not an empirical confidence interval.
+  units: '1'
+  value: 0.5
+  range:
+    min: 0
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.
+- id: uncertainty.measured.water_ph
+  name: Measured water ph
+  description: Additive source-water pH half-width, independent of mineral concentration
+    factor; clipped support within pH 0 to 14. Scenario support is a modelling judgement,
+    not an empirical confidence interval.
+  units: '1'
+  value: 0.1
+  range:
+    min: 0
+    max: 2
+  tag: estimated
+  evidence_grade: D
+  sources:
+  - citation: Puckworks M3 input uncertainty scenario assumptions (2026), docs/model/m3-uncertainty.md;
+      illustrative supports, not calibrated coverage.
+    url: https://github.com/sfmth/espresso-simulator/blob/main/docs/model/m3-uncertainty.md
+  research_note_ref: 02 Open questions
+  used_by:
+  - T
+  status: draft
+  conditions: Bounded independent uniform latent draws except the explicitly shared
+    PSD and water factors; unknown and measured describe knowledge states selected
+    by the user.

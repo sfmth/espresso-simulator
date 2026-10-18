@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.6.0 · Last updated 2026-10-17 · Status: M2 development selected and implemented; [M0](#m0-foundations) complete; [M1](#m1-validated-core-and-lab-view) delivered; M1.1 startup, community comparisons and optional pressure storage added. Scientific validation exit criteria remain open (see §12 and §15).*
+*Version 0.7.0 · Last updated 2026-10-18 · Status: M2 integrated; M3 input uncertainty and taste v1 implemented. Scientific validation exit criteria remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -396,7 +396,7 @@ Solid arrows carry simulation state. Dotted arrows are supporting services.
 **U · Uncertainty.**
 - *Priors* come from the registry, with width set by evidence grade.
 - *Offline,* hierarchical Bayesian calibration on literature data produces posterior draws (e.g., 64) that ship with the site.
-- *Online,* ensembles run on Tier 0 to produce the bands, with Tier-1 spot checks.
+- *Online,* ensembles run on Tier 0 to produce the bands, with Tier-1 spot checks. M3 v1 supplies input scenarios and a central Tier 1 comparison; posterior draws, calibrated predictive coverage and systematic Tier 1 spot checks remain future work.
 
 **R · Parameter registry.**
 - *Record.* One record per parameter:
@@ -652,7 +652,11 @@ See the [M2 implementation contract](model/m2-chemistry.md) and [current M2 repo
 - **Exit:** compound table complete with tags; TDS equals the sum of species within ±5%; V7 within target.
 
 ### M3: Taste and uncertainty
-Size M.
+Size M. **Selected by the owner on 2026-10-17 after M2 integration; development available in 0.7.0.**
+
+Implemented in the requested order: solver performance, input scenario uncertainty, then explainable taste. See the [uncertainty contract](model/m3-uncertainty.md), [taste contract](model/m3-taste.md) and [M3 verification report](validation/m3-validation.md). Unknown/measured/fixed input groups cover grinder/PSD, roast age, composition and water. Seeded Tier 0 ensembles supply scenario percentiles, with central Tier 1 results retained separately. Taste v1 exposes chemistry drivers, assumptions and low trust.
+
+The ranges are conditional scenarios, not calibrated predictive intervals. Scientific exit criteria remain open: omitted kinetic/structural/sensory model errors are not bounded; observed espresso sensory-map accuracy and general empirical coverage have not been established. A directional implementation check is separate from reproducing measured drip response surfaces.
 - **Taste:** taste model v1 with trust labels.
 - **Uncertainty:** ensemble bands on all outputs.
 - **Science page:** assumptions and references.
@@ -746,7 +750,7 @@ These are optional experiments for the future local personalization feature (V9/
 - **Data requests:** too early. No outreach to data holders for now.
 - **Repository:** created by the owner; assistant git operations authorized 2026-10-15 (§16).
 - **Basket (2026-10-15):** 58 mm single-wall. The AMZCHEF preset uses the plain 58 mm stock double; its detailed dimensions remain estimates.
-- **Current milestone (2026-10-17):** M2 chemistry, beans and water, selected by the owner after the novel-shot review. Remaining M1 accuracy work is retained without blocking M2 development.
+- **Current milestone (2026-10-17):** M3, in the order performance → input uncertainty → taste, selected by the owner after M2 integration. Remaining M1/M2 accuracy work is retained without blocking development.
 - **Calibration source (2026-10-15):** online data, including community archives and hobbyist experiments; no dependency on measurements from the owner's setup (D15).
 
 **Still open**

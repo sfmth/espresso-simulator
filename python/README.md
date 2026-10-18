@@ -38,6 +38,7 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 | `puckworks-tools verify` | Writes `docs/validation/m0-kernel-verification.md` and `.json`. `--quick` runs small series (smoke test); `--output-dir` writes elsewhere |
 | `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out), `--prune` (fix weakly identified shared parameters and refit), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`. Refuses to write `data/calibration` while the solver is a placeholder |
 | `puckworks-tools validate` | Writes the M1 validation report `docs/validation/m1-validation.md` (figures in `docs/validation/m1/`, numbers in `.json`): calibration fit quality and the held-out checks of PLAN §10. `--quick` (tier 0), `--jobs N`, `--calibration FILE`, `--output-dir`, `--from-json FILE` (re-render without simulating). `python/scripts/m1-pipeline.sh [JOBS]` runs the whole M1 pipeline (rebuild, calibrate, export, rebuild, validate, shot fixture, checks) |
+| `puckworks-tools m3-validate` | Writes `docs/validation/m3-validation.md` and `.json`: seeded scenario replay, fixed-input collapse, unknown-input ranges, solver-tier discrepancy and mechanistic taste directions. `--seed UINT32`, `--samples 8..64`, `--output-dir`. No sensory fitting or empirical coverage claim |
 | `puckworks-tools community --archive ZIP --log CSV` | Imports the pinned original Gagné experiment and runs exploratory model comparisons with fixed assumptions. No download, fitting or admission to the calibration inventory. `--tier 0` is a coarse smoke run; the default is tier 1. Detailed output goes to `.local/community/gagne2021`; `--output-dir` must be outside a Git worktree or ignored |
 | `puckworks-tools export [--check]` | Forwards to `puckworks_tools.export.main` (workstream D): writes, or checks, `crates/puckmodel/generated/presets.json` and `registry.json` from `data/presets`, `data/params` and `data/calibration/current.yaml`. Run it after any change to those |
 | `puckworks-tools check-versions` | Checks that `Cargo.toml` (`[workspace.package]`), `web/package.json` (if present), `python/pyproject.toml` and `puckcore.__version__` agree. `--release` also requires a `## [<version>]` heading in `CHANGELOG.md` |
@@ -296,3 +297,25 @@ and JSON from the audited Gloess subset using fixed assumptions. It does
 not fit coefficients or declare independent V7 accuracy. Source import:
 `python -m puckworks_tools.sources.gloess2013 --help`. M1 case builders
 disable M2 explicitly; the M2 comparison enables chemistry.
+
+## M3 scenario and taste verification
+
+```sh
+puckworks-tools m3-validate --seed 20261018 --samples 16
+```
+
+The report checks the shared Rust engine through its public Python API. It records
+an ordinary fixed 18 g recipe, three input knowledge states (fixed, measured,
+unknown), exact seeded replay hashes, member failures, scalar and trajectory
+quantile accounting, central Tier 0 versus Tier 1 discrepancies, and local runtime.
+Taste checks require explainable drivers and limited trust labels, verify the four
+index directions under pure dilution, check the acidity direction under changed
+source alkalinity, and require unavailable indices when chemistry or beverage is
+missing. The existing M1 fitted values and calibration file are checked for
+preservation without refitting.
+
+These are software and mechanistic direction checks. The estimated input supports
+do not establish empirical interval coverage; taste directions do not establish
+espresso sensory accuracy. The report keeps the unresolved M1/M2 scientific gates
+and omitted model errors visible. The seed reproduces scientific outputs on the
+same build; creation dates, build identity and measured runtime may differ.

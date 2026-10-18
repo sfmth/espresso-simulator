@@ -187,6 +187,52 @@ async function shotLabChecks(page, pkg, shot) {
   );
   await chemistryPanel.screenshot({ path: shot.path('e2e-cup-chemistry') });
 
+  // M3 runs independently of the central Tier 1 shot. The exported seeded
+  // ensemble must equal the same shared Rust API called from Node.
+  await lab.getByRole('tab', { name: 'Uncertainty', exact: true }).click();
+  const uncertainty = lab.locator('.uncertainty-panel');
+  await uncertainty.getByLabel('Scenario count', { exact: true }).selectOption('8');
+  await uncertainty.getByLabel('Random seed', { exact: true }).fill('1729');
+  await uncertainty.getByRole('button', { name: 'Run uncertainty (Tier 0)', exact: true }).click();
+  await uncertainty
+    .getByRole('status')
+    .filter({ hasText: '8 of 8 scenarios completed' })
+    .waitFor({ timeout: 60_000 });
+  const scenarioDownload = await downloadText(page, () =>
+    uncertainty
+      .getByRole('button', { name: 'Download uncertainty report JSON', exact: true })
+      .click(),
+  );
+  const scenarios = JSON.parse(scenarioDownload.text);
+  const nativeScenarios = JSON.parse(
+    pkg.simulateUncertainty(JSON.stringify(scenarios.recipe), JSON.stringify(scenarios.options)),
+  );
+  check(
+    scenarios.result.schema === 'puckworks.uncertainty/1' &&
+      JSON.stringify(scenarios.result) === JSON.stringify(nativeScenarios),
+    'the browser exports seeded uncertainty identical to the shared WASM API in Node',
+  );
+  check(
+    scenarios.result.bands['/summary/ey'].p05 <= scenarios.result.bands['/summary/ey'].p95 &&
+      (await uncertainty.locator('[data-chart^="uncertainty-"] canvas').count()) >= 4,
+    'scenario intervals and progress-normalized trajectories render',
+  );
+  check(
+    (await uncertainty.textContent()).includes('model error excluded'),
+    'scenario ranges explicitly exclude model error',
+  );
+  await uncertainty.screenshot({ path: shot.path('e2e-uncertainty') });
+
+  await lab.getByRole('tab', { name: 'Taste estimates', exact: true }).click();
+  const taste = lab.locator('.taste-panel');
+  await taste.waitFor();
+  check(
+    /low trust/i.test((await taste.textContent()) ?? '') &&
+      /bitterness/i.test((await taste.textContent()) ?? ''),
+    'taste exposes its low-trust label and chemistry-based attributes',
+  );
+  await taste.screenshot({ path: shot.path('e2e-taste') });
+
   // Cross-section: cells on the basket, a scrubber, keyboard read-out.
   await lab.getByRole('tab', { name: 'Cross-section', exact: true }).click();
   const cells = await lab.locator('.section-cell').count();

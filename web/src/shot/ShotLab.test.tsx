@@ -97,6 +97,7 @@ function shotEngine({
     simulateRecipe: (recipe, options) =>
       deferred(runs, recipe, options, (o) => fixtureRun(recipe, o)),
     simulateShot: () => new Promise(() => {}),
+    simulateUncertainty: () => new Promise(() => {}),
     sweepPoint: (recipe, options) =>
       deferred(points, recipe, options, (o) => {
         const result = fixtureResult(o);
