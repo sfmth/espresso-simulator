@@ -43,19 +43,23 @@ export function useJournal() {
       opened?.close();
     };
   }, []);
-  const update = useCallback((change: (current: JournalDocument) => JournalDocument) => {
-    const task = queue.current
-      .catch(() => {})
-      .then(async () => {
-        if (!backend.current) throw new Error('The journal is not ready.');
-        const next = change(latest.current);
-        await backend.current.save(next);
-        latest.current = next;
-        setDocument(next);
-        setError(null);
-      });
-    queue.current = task;
-    return task;
-  }, []);
+  const update = useCallback(
+    (change: (current: JournalDocument) => JournalDocument, signal?: AbortSignal) => {
+      const task = queue.current
+        .catch(() => {})
+        .then(async () => {
+          signal?.throwIfAborted();
+          if (!backend.current) throw new Error('The journal is not ready.');
+          const next = change(latest.current);
+          await backend.current.save(next, signal);
+          latest.current = next;
+          setDocument(next);
+          setError(null);
+        });
+      queue.current = task;
+      return task;
+    },
+    [],
+  );
   return { document, ready, persistent, error, update };
 }

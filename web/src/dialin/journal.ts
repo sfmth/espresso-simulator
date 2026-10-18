@@ -109,7 +109,7 @@ function assertSnapshots(current: JournalDocument, next: JournalDocument): void 
 
 export interface JournalStore {
   load(): Promise<JournalDocument>;
-  save(doc: JournalDocument): Promise<void>;
+  save(doc: JournalDocument, signal?: AbortSignal): Promise<void>;
   persistent: boolean;
   close(): void;
 }
@@ -133,14 +133,16 @@ function memoryJournal(): JournalStore {
   return {
     persistent: false,
     load: () => enqueue(() => cloneDocument(doc)),
-    save: (value) => {
+    save: (value, signal) => {
       let snapshot: JournalDocument;
       try {
+        signal?.throwIfAborted();
         snapshot = cloneDocument(value);
       } catch (error) {
         return Promise.reject(error instanceof Error ? error : new Error(String(error)));
       }
       return enqueue(() => {
+        signal?.throwIfAborted();
         assertSnapshots(doc, snapshot);
         doc = snapshot;
       });
@@ -205,15 +207,32 @@ export async function openJournal(): Promise<JournalStore> {
   const transaction = (
     mode: IDBTransactionMode,
     next?: JournalDocument,
+    signal?: AbortSignal,
   ): Promise<JournalDocument> =>
     new Promise((resolve, reject) => {
+      signal?.throwIfAborted();
       const tx = db.transaction('documents', mode),
         store = tx.objectStore('documents');
       let result = emptyJournal(),
         validationError: unknown;
+      const cancel = () => {
+        const reason: unknown = signal?.reason;
+        validationError =
+          reason instanceof Error
+            ? reason
+            : new DOMException('Journal save cancelled', 'AbortError');
+        try {
+          tx.abort();
+        } catch {
+          /* A transaction past its commit boundary cannot be undone. */
+        }
+      };
+      const cleanup = () => signal?.removeEventListener('abort', cancel);
+      signal?.addEventListener('abort', cancel, { once: true });
       const request = store.get('journal');
       request.onsuccess = () => {
         try {
+          signal?.throwIfAborted();
           result =
             request.result === undefined
               ? emptyJournal()
@@ -233,28 +252,32 @@ export async function openJournal(): Promise<JournalStore> {
         }
       };
       tx.oncomplete = () => {
+        cleanup();
         lastSeen = cloneDocument(result);
         resolve(cloneDocument(result));
       };
-      tx.onerror = tx.onabort = () =>
+      tx.onerror = tx.onabort = () => {
+        cleanup();
         reject(
           validationError instanceof Error
             ? validationError
             : (tx.error ?? new Error('Journal transaction failed; changes were not saved')),
         );
+      };
     });
   return {
     persistent: true,
     load: () => enqueue(() => transaction('readonly')),
-    save: (value) => {
+    save: (value, signal) => {
       let snapshot: JournalDocument;
       try {
+        signal?.throwIfAborted();
         snapshot = cloneDocument(value);
       } catch (error) {
         return Promise.reject(error instanceof Error ? error : new Error(String(error)));
       }
       return enqueue(async () => {
-        await transaction('readwrite', snapshot);
+        await transaction('readwrite', snapshot, signal);
       });
     },
     close: () => {

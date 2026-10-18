@@ -22,11 +22,18 @@ percent, a 1–5 rating and notes. EY percentage points are
 
 An IndexedDB write resolves after transaction completion. Concurrent stale tabs
 are rejected with a reload instruction. Failed writes do not appear as saved.
+Cancellation drops queued updates before their mutation runs and aborts active
+native write transactions. A transaction already committed cannot be undone;
+cancelled operations do not publish a later success message.
 Unavailable/blocked storage falls back to a session journal with a visible
 export reminder. Export/import uses JSON; duplicate identical records are
 idempotent, conflicting IDs are rejected. External forecasts become imported
 and cannot attest prospective order. Browser storage deletion is permanent
 without an exported backup.
+
+Records imported from older backups do not become the latest shot or fit merely
+by being appended. Next-shot advice uses the newest observation timestamp;
+the active compatible fit uses the newest fit timestamp, with stable ID ties.
 
 JSON is limited to 10 MB and 10,000 entries. Imports validate recipe schema,
 finite numbers, observation ranges, IDs, dates and bounded structure before a
@@ -97,6 +104,10 @@ and deterministic, quantizes grinder steps, intersects dose/machine limits with
 presets and uses the builder for feasibility. Dose and temperature stay fixed
 unless enabled. A measured PSD fixes grind. A temperature search with a local
 fit is refused; the user can disable that fit for a separate model search.
+Machine-default baskets follow the same precedence as the core. Custom baskets
+use the recipe schema's 1–60 g plausibility range, with geometry/capacity checked
+by the core; a generic espresso dose range does not restrict a custom basket.
+Requested engine versions must match the current catalog before a fit is used.
 
 The search uses Tier 0 multistart coordinate refinement with a finite call
 budget. Finalists receive independent Tier 1 rechecks and are reranked. Failed,
@@ -118,6 +129,9 @@ and clip the displayed range to 1–5. Chemistry indices themselves never change
 and are never summed into universal taste quality. Optional preference ranking
 requires at least five varied compatible rated shots; sparse or out-of-domain
 ratings remain uncertain.
+Displayed personal estimates and ranking use the same current recipe scope and
+engine version. When ranking returns a personal posterior, the interface shows
+that exact estimate and training count.
 
 ## Prospective scorecard
 

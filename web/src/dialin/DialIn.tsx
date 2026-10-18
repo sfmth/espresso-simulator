@@ -193,13 +193,25 @@ export function DialIn() {
       profile.scopeKey === scope &&
       profile.coreVersion === catalog?.coreVersion,
   );
-  const activeProfile = useLocal ? compatible.at(-1) : undefined;
+  const latestProfile = compatible.sort(
+    (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id),
+  )[0];
+  const activeProfile = useLocal ? latestProfile : undefined;
   const training = entries.filter(
     (entry) => !!entry.measurement && scopeKey(entry.recipe) === scope,
   );
   const card = scorecard(entries, journal.document.calibrations);
-  const learning = learnTaste(journal.document.entries, setupId);
-  const lastShot = [...training].reverse().find((entry) => entry.measurement);
+  const learningEntries = entries.filter(
+    (entry) =>
+      scopeKey(entry.recipe) === scope && entry.prediction?.coreVersion === catalog?.coreVersion,
+  );
+  const learning = learnTaste(learningEntries, setupId);
+  const lastShot = [...training].sort(
+    (a, b) =>
+      Date.parse(b.measurement!.recordedAt) - Date.parse(a.measurement!.recordedAt) ||
+      Date.parse(b.createdAt) - Date.parse(a.createdAt) ||
+      b.id.localeCompare(a.id),
+  )[0];
   const adviceKey = JSON.stringify({
     recipeKey,
     setupId,
@@ -302,7 +314,8 @@ export function DialIn() {
         ...(activeProfile ? { calibrationId: activeProfile.id } : {}),
       },
     };
-    await journal.update((doc) => ({ ...doc, entries: [...doc.entries, entry] }));
+    await journal.update((doc) => ({ ...doc, entries: [...doc.entries, entry] }), signal);
+    signal.throwIfAborted();
     if (mounted.current) {
       setSelectedEntry(entry.id);
       setStatus('Prediction saved. Pull the shot, then record what happened.');
@@ -528,17 +541,21 @@ export function DialIn() {
                   },
                 );
                 signal.throwIfAborted();
-                await journal.update((doc) => ({
-                  ...doc,
-                  calibrations: [...doc.calibrations, profile],
-                }));
+                await journal.update(
+                  (doc) => ({
+                    ...doc,
+                    calibrations: [...doc.calibrations, profile],
+                  }),
+                  signal,
+                );
+                signal.throwIfAborted();
                 setStatus('Local fit saved. Training checks do not establish future accuracy.');
               });
             }}
           >
             Fit local calibration
           </button>
-          {compatible.at(-1) && (
+          {latestProfile && (
             <div className="dial-fit">
               <h4>Identifiability and training checks</h4>
               <table>
@@ -551,7 +568,7 @@ export function DialIn() {
                   </tr>
                 </thead>
                 <tbody>
-                  {compatible.at(-1)!.parameters.map((p) => (
+                  {latestProfile.parameters.map((p) => (
                     <tr key={p.id}>
                       <th scope="row">{p.label}</th>
                       <td>{f(p.map, 2)}×</td>
@@ -566,16 +583,16 @@ export function DialIn() {
               <details>
                 <summary>Fit assumptions and Tier 1 checks</summary>
                 <ul>
-                  {compatible.at(-1)!.notes.map((note, i) => (
+                  {latestProfile.notes.map((note, i) => (
                     <li key={i}>{note}</li>
                   ))}
                 </ul>
                 <p>
-                  {compatible.at(-1)!.checks.length} training shots rechecked on Tier 1. These are
+                  {latestProfile.checks.length} training shots rechecked on Tier 1. These are
                   training residuals.
                 </p>
                 <ul>
-                  {compatible.at(-1)!.checks.map((c) => (
+                  {latestProfile.checks.map((c) => (
                     <li key={c.entryId}>
                       Time error {f(c.timeErrorS)} s;{' '}
                       {c.eyErrorPoints === null
@@ -625,7 +642,7 @@ export function DialIn() {
                     signal.throwIfAborted();
                     if (isJournal) {
                       const incoming = parseJournal(text);
-                      await journal.update((doc) => mergeJournal(doc, incoming));
+                      await journal.update((doc) => mergeJournal(doc, incoming), signal);
                     } else {
                       if (!recipe)
                         throw new Error('Choose a valid base recipe before importing a shot log.');
@@ -635,11 +652,15 @@ export function DialIn() {
                         recipe,
                         setupId,
                       );
-                      await journal.update((doc) => ({
-                        ...doc,
-                        entries: [...doc.entries, ...incoming],
-                      }));
+                      await journal.update(
+                        (doc) => ({
+                          ...doc,
+                          entries: [...doc.entries, ...incoming],
+                        }),
+                        signal,
+                      );
                     }
+                    signal.throwIfAborted();
                     setStatus(
                       'Import complete. Imported shots can train local models; they do not count as prospective predictions.',
                     );
@@ -758,7 +779,7 @@ export function DialIn() {
                     entry.id === pending.id ? { ...entry, measurement } : entry,
                   ),
                 }));
-                setSelectedEntry(null);
+                setSelectedEntry((selected) => (selected === pending.id ? null : selected));
                 setStatus('Measured shot saved.');
               }}
             />
@@ -961,7 +982,7 @@ export function DialIn() {
                 coreVersion: catalog.coreVersion,
                 calibration: activeProfile,
                 lastShot,
-                ratedShots: journal.document.entries,
+                ratedShots: learningEntries,
                 preferenceWeight: mode === 'next' && preferRatings ? 0.5 : 0,
                 controls: {
                   ...(controlsGrinder ? { grinder: controlsGrinder } : {}),
@@ -1039,11 +1060,9 @@ export function DialIn() {
             )}
             <div className="dial-candidates">
               {suggestions.result.candidates.map((candidate, i) => {
-                const personal = learnTaste(
-                  journal.document.entries,
-                  setupId,
-                  candidate.verified.taste,
-                );
+                const personal = candidate.learnedRating
+                  ? { prediction: candidate.learnedRating, count: candidate.learnedRating.count }
+                  : learnTaste(learningEntries, setupId, candidate.verified.taste);
                 return (
                   <article className="dial-candidate" key={i}>
                     <h4>Candidate {i + 1}</h4>
@@ -1133,9 +1152,9 @@ export function DialIn() {
             : 'V9 remains open. Calibration training shots, imported predictions and shots without measured TDS cannot establish the complete target.'}
         </p>
         <p className="note">
-          {learning.count} rated shots inform your local preference model. Ratings stay separate
-          from the chemistry’s relative taste indices; sparse ratings do not establish a reliable
-          preference predictor.
+          {learning.count} compatible rated shots inform your local preference model. Ratings stay
+          separate from the chemistry’s relative taste indices; sparse ratings do not establish a
+          reliable preference predictor.
         </p>
       </section>
       {busy && (

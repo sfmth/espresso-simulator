@@ -160,6 +160,122 @@ describe('bounded recipe inverse search', () => {
     }
   });
 
+  it('accepts a fixed 30 g custom basket and gives custom geometry precedence over its preset', async () => {
+    const base = structuredClone(BASE);
+    base.basket.custom = {
+      profile_mm: [
+        [0, 58],
+        [60, 58],
+      ],
+      perforated_diameter_mm: 50,
+    };
+    base.prep.dose_g = 30;
+    const { engine, calls } = fakeEngine();
+    const result = await searchRecipes(engine, base, catalog, recipeOptions);
+    expect(result.candidates.length).toBeGreaterThan(0);
+    expect(calls.every((r) => r.prep.dose_g === 30 && !!r.basket.custom)).toBe(true);
+  });
+
+  it('clips custom-basket dose controls to schema plausibility bounds and lets the builder reject capacity', async () => {
+    const base = structuredClone(BASE);
+    base.basket = {
+      custom: {
+        profile_mm: [
+          [0, 58],
+          [60, 58],
+        ],
+        perforated_diameter_mm: 50,
+      },
+    };
+    const { engine, calls } = fakeEngine({ fail: (r) => r.prep.dose_g > 32 });
+    const result = await searchRecipes(engine, base, catalog, {
+      ...recipeOptions,
+      controls: { grinder: { min: 150, max: 170, step: 10 }, dose: { min: 0, max: 100, step: 1 } },
+    });
+    expect(result.candidates.length).toBeGreaterThan(0);
+    expect(calls.every((r) => r.prep.dose_g >= 1 && r.prep.dose_g <= 60)).toBe(true);
+    expect(calls.some((r) => r.prep.dose_g > 32)).toBe(true);
+    expect(result.candidates.every((c) => c.recipe.prep.dose_g <= 32)).toBe(true);
+  });
+
+  it('resolves the machine default basket when the recipe leaves its preset implicit', async () => {
+    const base = { ...structuredClone(BASE), basket: {} };
+    const implicitCatalog = structuredClone(catalog);
+    implicitCatalog.presets.machines[0].default_basket = 'basket';
+    const { engine, calls } = fakeEngine();
+    await searchRecipes(engine, base, implicitCatalog, {
+      ...recipeOptions,
+      controls: { grinder: { min: 150, max: 170, step: 10 }, dose: { min: 7, max: 25, step: 1 } },
+    });
+    expect(calls.every((r) => r.prep.dose_g >= 16 && r.prep.dose_g <= 20)).toBe(true);
+    const invalid = { ...base, prep: { dose_g: 24 } };
+    await expect(searchRecipes(engine, invalid, implicitCatalog, recipeOptions)).rejects.toThrow(
+      '16–20 g',
+    );
+  });
+
+  it('uses an explicit basket instead of the machine default, and leaves unknown gear to the builder', async () => {
+    const explicitCatalog = structuredClone(catalog);
+    explicitCatalog.presets.machines[0].default_basket = 'other-basket';
+    explicitCatalog.presets.baskets.push({
+      ...explicitCatalog.presets.baskets[0],
+      id: 'other-basket',
+      dose_range_g: [7, 10],
+    });
+    const { engine, calls } = fakeEngine();
+    await searchRecipes(engine, BASE, explicitCatalog, recipeOptions);
+    expect(calls.every((r) => r.prep.dose_g === 18)).toBe(true);
+    const unknown = {
+      ...structuredClone(BASE),
+      basket: { preset: 'unknown' },
+      prep: { dose_g: 30 },
+    };
+    const unsupported = fakeEngine({ fail: (r) => r.basket.preset === 'unknown' });
+    const result = await searchRecipes(unsupported.engine, unknown, explicitCatalog, recipeOptions);
+    expect(unsupported.calls.length).toBeGreaterThan(0);
+    expect(result.candidates).toEqual([]);
+  });
+
+  it('allows explicit positive gaps below 5 µm and excludes zero from the hardware grid', async () => {
+    const base = { ...structuredClone(BASE), grinder: { family: 'flat', gap_um: 2 } };
+    const { engine, calls } = fakeEngine({
+      change: (_r, result) => {
+        result.shot_time_s = 28;
+        result.ey = 0.2;
+        result.tds = 0.1;
+      },
+    });
+    const result = await searchRecipes(engine, base, catalog, {
+      ...recipeOptions,
+      controls: { grinder: { min: 0, max: 4, step: 0.5 } },
+    });
+    expect(result.candidates.length).toBeGreaterThan(0);
+    expect(calls.every((r) => r.grinder.gap_um! > 0 && r.grinder.gap_um! <= 4)).toBe(true);
+    expect(calls.some((r) => r.grinder.gap_um === 0.5)).toBe(true);
+  });
+
+  it('does not invent a dial range for a custom family mapping', async () => {
+    const base = {
+      ...structuredClone(BASE),
+      grinder: { family: 'flat', setting: 2_000_000, gap_at_ref_um: 0, gap_per_unit_um: 0.0001 },
+    };
+    const { engine, calls } = fakeEngine({
+      change: (_r, result) => {
+        result.shot_time_s = 28;
+        result.ey = 0.2;
+        result.tds = 0.1;
+      },
+    });
+    const result = await searchRecipes(engine, base, catalog, {
+      ...recipeOptions,
+      controls: { grinder: { min: 1_999_999, max: 2_000_001, step: 0.25 } },
+    });
+    expect(result.candidates.length).toBeGreaterThan(0);
+    expect(
+      calls.every((r) => r.grinder.setting! >= 1_999_999 && r.grinder.setting! <= 2_000_001),
+    ).toBe(true);
+  });
+
   it('reranks by verified residuals instead of presenting the preview winner as best', async () => {
     const { engine } = fakeEngine({
       change: (recipe, result) => {
@@ -344,6 +460,38 @@ describe('bounded recipe inverse search', () => {
     expect(
       calls.every((r) => r.grinder.gap_um === undefined && r.grinder.gap_at_ref_um === 50),
     ).toBe(true);
+  });
+
+  it('rejects a stale requested core version even when the supplied calibration agrees with it', async () => {
+    const staleProfile: CalibrationProfile = {
+      id: 'stale-profile',
+      createdAt: '2026-10-18T00:00:00Z',
+      coreVersion: 'old',
+      setupId: 'setup',
+      scopeKey: scopeKey(BASE),
+      trainingIds: [],
+      parameters: [],
+      permeability: 1,
+      grinderScale: 1,
+      referencePermeability: 6e-15,
+      timeSigmaS: 3,
+      tdsSigmaPercent: 0.5,
+      posterior: [{ permeability: 1, grinderScale: 1, weight: 1 }],
+      checks: [],
+      notes: [],
+    };
+    const { engine, calls } = fakeEngine();
+    await expect(
+      searchRecipes(engine, BASE, catalog, { ...recipeOptions, coreVersion: 'old' }),
+    ).rejects.toThrow('current catalog');
+    await expect(
+      searchRecipes(engine, BASE, catalog, {
+        ...recipeOptions,
+        coreVersion: 'old',
+        calibration: staleProfile,
+      }),
+    ).rejects.toThrow('current catalog');
+    expect(calls).toEqual([]);
   });
 
   it('rejects a grinder search when a measured PSD fixes the distribution', async () => {

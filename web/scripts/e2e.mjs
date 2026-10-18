@@ -167,6 +167,68 @@ async function dialInChecks(page, shotPath) {
   } finally {
     await staleTab.close();
   }
+  // Keep a native write transaction open so the app's save must wait. Cancelling
+  // then aborts that queued transaction before it can modify the document.
+  await dial.getByLabel('Shot name', { exact: true }).fill('Cancelled browser shot');
+  await page.evaluate(
+    () =>
+      new Promise((resolve, reject) => {
+        const barrier = { release: false, queued: false, finished: false };
+        window.__m4JournalBarrier = barrier;
+        const request = indexedDB.open('puckworks-journal', 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result;
+          const hold = db.transaction('documents', 'readwrite');
+          const store = hold.objectStore('documents');
+          const original = IDBDatabase.prototype.transaction;
+          IDBDatabase.prototype.transaction = function (...args) {
+            const transaction = original.apply(this, args);
+            if (this.name === 'puckworks-journal' && args[1] === 'readwrite') barrier.queued = true;
+            return transaction;
+          };
+          const finished = () => {
+            IDBDatabase.prototype.transaction = original;
+            db.close();
+            barrier.finished = true;
+          };
+          hold.oncomplete = hold.onabort = finished;
+          let started = false;
+          const keepAlive = () => {
+            if (barrier.release) return;
+            const reading = store.get('journal');
+            reading.onsuccess = () => {
+              if (!started) {
+                started = true;
+                resolve();
+              }
+              keepAlive();
+            };
+            reading.onerror = () => reject(reading.error);
+          };
+          keepAlive();
+        };
+      }),
+  );
+  try {
+    await dial.getByRole('button', { name: 'Predict and save before pulling' }).click();
+    await page.waitForFunction(() => window.__m4JournalBarrier.queued, null, { timeout: 60_000 });
+    await dial.getByRole('button', { name: 'Cancel dial-in task' }).click();
+  } finally {
+    await page.evaluate(() => {
+      window.__m4JournalBarrier.release = true;
+    });
+  }
+  await page.waitForFunction(() => window.__m4JournalBarrier.finished);
+  const afterCancel = await downloadText(page, () =>
+    dial.getByRole('button', { name: 'Export journal' }).click(),
+  );
+  check(
+    !JSON.parse(afterCancel.text).entries.some(
+      (entry) => entry.label === 'Cancelled browser shot',
+    ) && (await dial.getByText('Cancelled.', { exact: true }).isVisible()),
+    'cancelling an IndexedDB save queued behind another transaction preserves the journal and cancellation status',
+  );
   await page.screenshot({ path: shotPath('e2e-dial-in'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   const overflow = await page.evaluate(

@@ -32,19 +32,20 @@ learning and confirms training/imported records cannot establish V9.
 
 ## Verification results
 
-The complete web suite passes **569 tests**. M4 adds 99 checks:
+The complete web suite passes **583 tests**. M4 adds 113 checks:
 
 | Area | Checks | Coverage |
 |---|---:|---|
-| Journal, imports, personal learning and scoring | 48 | Immutable records, transactions/session fallback, input limits/schema, conflicts, quoted CSV, inert DE1, physical observations, rating uncertainty and prospective exclusions |
+| Journal, imports, personal learning and scoring | 49 | Immutable records, transactions/session fallback, input limits/schema, conflicts, quoted CSV, inert DE1, physical observations, rating uncertainty and prospective exclusions |
 | Local calibration | 16 | Synthetic recovery, replay, scope/version refusal, prior dominance/confounding, ignored dial precedence, cancellation, numerical failure exclusion and Tier 1 rejection |
-| Inverse search | 30 | All modes, legal hardware lattice and equipment bounds, actual-call budget, final-cup/drip correction, failed Tier 1 exclusion, next-shot reference conditions, optional personal ranking and cancellation |
-| Interface | 4 | Commit before measurement, trimmed setup names, invalid observation refusal, cancelling/undoing edits and ignoring late advice after target changes |
+| Inverse search | 37 | All modes, legal hardware lattice and equipment bounds, actual-call budget, final-cup/drip correction, failed Tier 1 exclusion, next-shot reference conditions, optional personal ranking and cancellation |
+| Interface and queued writes | 10 | Commit before measurement, trimmed setup names, invalid observation refusal, cancelling/undoing edits and ignoring late advice after target changes, scope/version-consistent rating displays, observation/fit chronology and cancelled saves |
 | Actual-WASM integration | 1 | End-to-end synthetic local workflow described above |
 
 The production browser smoke checks include save-before-measurement, export,
 native IndexedDB persistence across reload, idempotent backup import, CSV import,
-stale-tab refusal, phone-width layout and same-origin/no-console-error audits.
+stale-tab refusal, cancellation of a save blocked by another native transaction,
+phone-width layout and same-origin/no-console-error audits.
 Screenshots are generated locally under `web/test-results/` by the test script.
 
 Rust formatting, strict clippy and the existing Rust suite pass. Python has

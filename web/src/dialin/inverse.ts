@@ -3,6 +3,7 @@
 import { isAbortError, type Engine } from '../engine/engine';
 import type { TasteEstimate } from '../engine/m3Types';
 import type { Diagnostics, Catalog, Recipe, Summary } from '../engine/shotTypes';
+import { FIELDS } from '../shot/recipeFields';
 import { applyCalibration, scopeKey } from './calibration';
 import { learnTaste } from './learning';
 import type { CalibrationProfile, JournalEntry } from './types';
@@ -118,7 +119,13 @@ function validateTarget(value: number | undefined, label: string, min: number, m
   }
 }
 
-function axis(control: Control, bounds: Bounds, initial: number, limits: [number, number]): Axis {
+function axis(
+  control: Control,
+  bounds: Bounds,
+  initial: number,
+  limits: [number, number],
+  minExclusive = false,
+): Axis {
   if (
     ![bounds.min, bounds.max, bounds.step, initial, ...limits].every(finite) ||
     bounds.min > bounds.max ||
@@ -133,6 +140,7 @@ function axis(control: Control, bounds: Bounds, initial: number, limits: [number
   // value when an extreme hardware step magnifies that tolerance.
   const grid = (index: number) => bounds.min + index * bounds.step;
   if (grid(first) < Math.max(bounds.min, limits[0]) - 1e-9) first++;
+  if (minExclusive && grid(first) <= limits[0]) first++;
   if (grid(last) > Math.min(bounds.max, limits[1]) + 1e-9) last--;
   if (first > last || ![grid(first), grid(last)].every(finite))
     throw new Error(`No ${control} values fit the equipment limits.`);
@@ -145,6 +153,13 @@ function axis(control: Control, bounds: Bounds, initial: number, limits: [number
   };
 }
 
+function recipeLimits(path: string): [number, number] {
+  const { min, max } = FIELDS[path];
+  if (min === undefined || max === undefined)
+    throw new Error(`Missing recipe schema bounds for ${path}.`);
+  return [min, max];
+}
+
 function valueAt(a: Axis, coordinate: number): number {
   // Round floating point noise, preserving practical hardware step sizes.
   return Number((a.bounds.min + coordinate * a.bounds.step).toPrecision(13));
@@ -154,8 +169,10 @@ function prepare(base: Recipe, catalog: Catalog, options: InverseOptions) {
   const recipe = clone(base);
   const controls = options.controls ?? {};
   const grinder = catalog.presets.grinders.find((g) => g.id === base.grinder.preset);
-  const basket = catalog.presets.baskets.find((b) => b.id === base.basket.preset);
   const machine = catalog.presets.machines.find((m) => m.id === base.machine.preset);
+  const basket = base.basket.custom
+    ? undefined
+    : catalog.presets.baskets.find((b) => b.id === (base.basket.preset ?? machine?.default_basket));
   const gapMode = base.grinder.gap_um != null || (!grinder && base.grinder.setting == null);
   const currentGrind = gapMode
     ? base.grinder.gap_um
@@ -166,10 +183,10 @@ function prepare(base: Recipe, catalog: Catalog, options: InverseOptions) {
       throw new Error('A measured PSD fixes the grind; remove it before varying grinder settings.');
   } else if (currentGrind != null) {
     const limits: [number, number] = gapMode
-      ? [5, 3000]
+      ? recipeLimits('grinder.gap_um')
       : grinder
         ? [grinder.dial.min, grinder.dial.max]
-        : [-1_000_000, 1_000_000];
+        : [-Number.MAX_VALUE, Number.MAX_VALUE];
     const bounds =
       controls.grinder ??
       (gapMode
@@ -181,14 +198,24 @@ function prepare(base: Recipe, catalog: Catalog, options: InverseOptions) {
         : grinder
           ? { min: limits[0], max: limits[1], step: Math.max(0.01, (limits[1] - limits[0]) / 80) }
           : { min: currentGrind - 10, max: currentGrind + 10, step: 0.25 });
-    axes.push(axis('grinder', bounds, currentGrind, limits));
+    axes.push(
+      axis(
+        'grinder',
+        bounds,
+        currentGrind,
+        limits,
+        gapMode && FIELDS['grinder.gap_um'].minExclusive,
+      ),
+    );
   } else if (controls.grinder) {
     throw new Error(
       'Select a grinder preset or supply a burr gap before searching grind settings.',
     );
   }
-  const doseLimits: [number, number] =
-    basket && !base.basket.custom ? basket.dose_range_g : [7, 25];
+  // Custom baskets have no nominal dose range: the shared builder checks their
+  // actual geometric capacity for each candidate. Unknown presets also reach
+  // the builder, which reports the unsupported gear rather than inventing a range.
+  const doseLimits = basket?.dose_range_g ?? recipeLimits('prep.dose_g');
   if (controls.dose) axes.push(axis('dose', controls.dose, recipe.prep.dose_g, doseLimits));
   else if (recipe.prep.dose_g < doseLimits[0] || recipe.prep.dose_g > doseLimits[1]) {
     throw new Error(`Dose must fit the basket's ${doseLimits[0]}–${doseLimits[1]} g range.`);
@@ -399,11 +426,15 @@ export async function searchRecipes(
   const budget = options.maxEvaluations ?? 96;
   if (!Number.isInteger(budget) || budget < 12 || budget > 240)
     throw new Error('Search evaluations must be an integer from 12 to 240.');
+  if (options.coreVersion !== undefined && options.coreVersion !== catalog.coreVersion)
+    throw new Error(
+      'The requested core version differs from the current catalog; reload before searching.',
+    );
   const { recipe, axes, gapMode, pumpStop } = prepare(base, catalog, options);
   if (
     options.calibration &&
     (options.calibration.scopeKey !== scopeKey(base) ||
-      options.calibration.coreVersion !== (options.coreVersion ?? catalog.coreVersion))
+      options.calibration.coreVersion !== catalog.coreVersion)
   ) {
     throw new Error('The calibration does not match this setup and core version.');
   }
@@ -412,7 +443,7 @@ export async function searchRecipes(
       'Temperature changes exceed this local calibration scope. Uncheck local calibration before varying temperature.',
     );
   }
-  const preference = preferenceData(base, options, options.coreVersion ?? catalog.coreVersion);
+  const preference = preferenceData(base, options, catalog.coreVersion);
   if (options.mode === 'next' && !options.lastShot?.measurement && !preference.diverse) {
     throw new Error(
       'Next-shot mode needs a measured last shot or at least five varied rated shots for this setup.',
@@ -433,7 +464,7 @@ export async function searchRecipes(
   };
   const execute = (r: Recipe, tier: 0 | 1): Recipe => {
     const applied = options.calibration
-      ? applyCalibration(r, options.calibration, options.coreVersion ?? catalog.coreVersion)
+      ? applyCalibration(r, options.calibration, catalog.coreVersion)
       : clone(r);
     return { ...applied, numerics: { ...applied.numerics, tier } };
   };

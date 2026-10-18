@@ -21,6 +21,10 @@ optional; the prospective V9 accuracy target remains open.
   independent Tier 1 verification, local sensitivity envelopes and stale-result
   protection. A Bayesian personal rating layer supports optional preference
   ranking without changing the chemistry's taste indices.
+- Cancellation reaches queued journal updates and native transactions; imported
+  record order does not override the newest observation or compatible fit.
+  Personal rating displays use the same scope/version as ranking, and custom
+  hardware constraints follow the recipe schema and machine basket defaults.
 - Timing-only and complete time/EY prospective scorecards, excluding imported,
   backfilled and calibration-training forecasts.
 - [M4 contract](docs/model/m4-dial-in.md),
@@ -28,7 +32,7 @@ optional; the prospective V9 accuracy target remains open.
   [verification record](docs/validation/m4-validation.md).
 
 ### Verification
-- All 569 web tests pass, including 99 M4 checks. A real-WASM synthetic workflow
+- All 583 web tests pass, including 113 M4 checks. A real-WASM synthetic workflow
   recovers a known permeability multiplier and exercises all three inverse
   modes; these generated observations do not establish V9.
 - Rust formatting, strict clippy and tests pass. All 437 Python tests are

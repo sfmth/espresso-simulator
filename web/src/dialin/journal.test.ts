@@ -183,6 +183,21 @@ describe('journal boundary', () => {
 });
 
 describe('volatile journal and snapshots', () => {
+  it('drops aborted queued writes without changing the journal and continues accepting later writes', async () => {
+    vi.stubGlobal('indexedDB', undefined);
+    const store = await openJournal();
+    const control = new AbortController();
+    const pending = store.save(document(), control.signal);
+    control.abort();
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    expect((await store.load()).entries).toEqual([]);
+    await expect(store.save(document(), control.signal)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    await store.save(document());
+    expect((await store.load()).entries).toHaveLength(1);
+    store.close();
+  });
   it('explicitly falls back, serializes operations, and returns independent snapshots', async () => {
     vi.stubGlobal('indexedDB', undefined);
     const store = await openJournal();
