@@ -1226,8 +1226,14 @@ async function exploreChecks(page, shotPath) {
   await page.getByRole('tab', { name: 'Explore', exact: true }).click();
   await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
   await panel.locator('.puck-fallback').waitFor({ timeout: 60_000 });
+  // The projection can appear from the preview before the explicit Tier 1 run
+  // completes. Wait for coupled particle state independently of renderer startup.
+  await panel
+    .getByText('Surface-pool content remaining:', { exact: false })
+    .waitFor({ timeout: 60_000 });
   check(
-    await panel.getByText('Surface-pool content remaining:', { exact: false }).isVisible(),
+    (await panel.locator('.puck-fallback').isVisible()) &&
+      (await panel.getByText('Surface-pool content remaining:', { exact: false }).isVisible()),
     'startup without WebGL2 preserves exact cell and particle inspection',
   );
 }
