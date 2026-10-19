@@ -4,6 +4,7 @@ import { ModeTabs, panelId, tabId } from './components/ModeTabs';
 import { Tabs } from './components/Tabs';
 import { APP_VERSION, LICENSES_FILE, SOURCE_URL } from './config';
 import { SphereVerificationPanel } from './lab/SphereVerificationPanel';
+import { DialIn } from './dialin/DialIn';
 import { ShotLab } from './shot/ShotLab';
 import { useAppStore, type LabView, type Mode } from './store';
 
@@ -75,17 +76,14 @@ export function App() {
       <header className="app-header">
         <div className="brand">
           <h1>Puckworks</h1>
-          <p className="tagline">Espresso simulator · M1.1 preview</p>
+          <p className="tagline">Espresso simulator · experimental dial-in</p>
         </div>
         <ModeTabs mode={mode} onChange={setMode} />
       </header>
 
       <main id="main" className="app-main" tabIndex={-1}>
         <TabPanel mode="dial-in" active={mode}>
-          <ComingSoon title="Dial-in" milestone="M4">
-            Describe your beans, grinder, puck and machine to get a predicted shot, then calibrate
-            the model to your own setup.
-          </ComingSoon>
+          <DialIn />
         </TabPanel>
         <TabPanel mode="lab" active={mode}>
           <Lab />

@@ -5,16 +5,33 @@
 The browser front end of Puckworks: a static site (Vite, React 19, TypeScript)
 that runs the Rust core `puckcore` as WebAssembly in Web Workers. Nothing you
 enter leaves the browser: no backend, no analytics, no cookies, no third-party
-requests (see [docs/PLAN.md §7.7](../docs/PLAN.md)). The only thing it stores is
-your own recipe draft and the recipes you save, in this browser's
-`localStorage`; it works without storage too.
+requests (see [docs/PLAN.md §7.7](../docs/PLAN.md)). Recipe drafts and named
+recipes use `localStorage`; the Dial-in journal and local fits use IndexedDB.
+Unavailable storage is visibly labelled as session-only. Export a backup to
+preserve journal data when clearing browser storage.
 
-The header has the three modes, **Dial-in**, **Lab** and **Explore** (Dial-in
-arrives in M4, Explore in M5). The Lab has two views:
+The header has three modes, **Dial-in**, **Lab** and **Explore** (Explore
+arrives in M5). The Lab has two views:
 
 - **Shot lab**, the M1 lab view described below;
 - **Kernel verification**, the M0 demo: diffusion out of a sphere into a
   perfect sink, solved by puckcore and compared with Crank's analytic solution.
+
+Version 0.8.0 adds the experimental Dial-in workflow. Basic controls edit the
+shared Lab recipe. Save a Tier 1 forecast before pulling, attach measurements,
+fit local permeability (optionally particle size), and search recipe, cup or
+next-shot targets with equipment constraints and Tier 1 rechecks. A journal
+backup round-trips JSON; measured logs import canonical CSV or inert DE1 `.shot`
+text. Personal rating estimates remain separate from the core taste indices.
+The [M4 contract](../docs/model/m4-dial-in.md) specifies assumptions, limits,
+prospective score rules and the distinction between synthetic verification
+and V9 accuracy, which remains open.
+
+Local services live in `src/dialin/`: `journal.ts`/`journalValidation.ts` own
+transactional persistence and boundaries, `imports.ts` reads shot logs,
+`calibration.ts`/`inverse.ts` orchestrate the existing engine worker, and
+`learning.ts` fits personal ratings. `DialIn.tsx` renders the workflow;
+`useJournal.ts` publishes state only after a committed save.
 
 Version 0.6.0 adds M2 cup chemistry: the compound catalogue, bean storage and
 origin descriptors, brew-water analysis, and separate acidity, aroma, phase and
