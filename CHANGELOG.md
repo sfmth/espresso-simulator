@@ -16,6 +16,8 @@ M5 rendering performance measurements and sphere rendering improvements.
   30 submissions before a five-second orbit. Reports include median/p95 frame
   intervals, CPU submissions, optional asynchronous GPU timing, actual backend,
   pixel dimensions, quality and cancellation status, with local JSON export.
+  Repeated RAF timestamps are omitted before rendering/counting and reported;
+  backward or persistently stalled clocks cancel cleanly instead of freezing.
 - A fail-closed normalizer instruments the frozen M5 production build with the
   same measurement protocol without changing its renderer. A local Chrome
   driver repeats measurements at the four standard display counts.

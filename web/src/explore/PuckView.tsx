@@ -25,6 +25,7 @@ interface RenderBenchmarkResult extends BenchmarkResult {
     containedParticleCount: number;
     containmentBuildMs: number;
     containmentMarginMm: number;
+    duplicateRafCallbacks: number;
     clockFailure?: string;
   };
 }
@@ -326,6 +327,8 @@ export function PuckView(props: PuckViewProps) {
     let gpuSamples: number[] = [];
     let clockFailure: string | undefined;
     let lastRafClock: number | null = null;
+    let duplicateRafCallbacks = 0;
+    let consecutiveDuplicateRafCallbacks = 0;
     const initialPosition = [edge * 1.35, edge * 0.9, edge * 1.6] as const;
     const targetPosition = [0, 0, 0] as const;
     let measuredConfiguration: {
@@ -426,6 +429,7 @@ export function PuckView(props: PuckViewProps) {
             containedParticleCount: containment.containedCount,
             containmentBuildMs,
             containmentMarginMm: containment.marginMm,
+            duplicateRafCallbacks,
             ...(clockFailure ? { clockFailure } : {}),
           },
         });
@@ -442,6 +446,16 @@ export function PuckView(props: PuckViewProps) {
         return;
       }
       if (benchmark.progress().phase === 'idle') benchmark.start(now);
+      // Some Chromium startup callbacks share the previous frame timestamp.
+      // Do not submit or count a second render without a new clock observation.
+      if (lastRafClock !== null && now === lastRafClock) {
+        duplicateRafCallbacks++;
+        consecutiveDuplicateRafCallbacks++;
+        if (consecutiveDuplicateRafCallbacks < 60) {
+          frame = requestAnimationFrame(tick);
+          return;
+        }
+      }
       if (lastRafClock !== null && now <= lastRafClock) {
         // Preserve the helper's diagnostic without submitting another frame or
         // moving the orbit with a timestamp that predates the previous frame.
@@ -454,6 +468,7 @@ export function PuckView(props: PuckViewProps) {
         return;
       }
       lastRafClock = now;
+      consecutiveDuplicateRafCallbacks = 0;
       const phase = benchmark.progress().phase;
       const startsSample = benchmark.willStartSample(now);
       if (startsSample) sampleOrbitStart = now;
@@ -531,6 +546,8 @@ export function PuckView(props: PuckViewProps) {
       gpuFrame = 0;
       clockFailure = undefined;
       lastRafClock = null;
+      duplicateRafCallbacks = 0;
+      consecutiveDuplicateRafCallbacks = 0;
       setReport(null);
       setBenchmarkPhase('warmup');
       setMeasuring(true);

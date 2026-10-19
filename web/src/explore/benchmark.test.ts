@@ -53,7 +53,7 @@ describe('render benchmark cadence', () => {
     benchmark.start(0);
     benchmark.recordFrame(10, 1);
     benchmark.recordFrame(20, 2);
-    expect(() => benchmark.recordFrame(20, 999)).toThrow('"relation":"duplicate"');
+    expect(() => benchmark.recordFrame(19, 999)).toThrow('"relation":"regression"');
     benchmark.cancel('clock-discontinuity');
     expect(benchmark.finish()).toMatchObject({
       status: 'cancelled',

@@ -226,12 +226,14 @@ geometric safeguards, rather than device performance or empirical espresso accur
 
 A full-flow browser run exposed a clock-ordering exception that previously
 left measurement active. First-frame startup now uses the RAF clock;
-later duplicates/regressions cancel with `clock-discontinuity`, preserve only the
-valid earlier intervals and expose numeric diagnostics in the local report. No
-timestamps are clamped, synthesized or counted twice. The rejected-clock path is
-covered separately from successful measurement, including an injected duplicate
-callback followed by a successful native-clock retry in Chrome. The archived
-valid captures precede the extra failure diagnostics/recovery and minor UI-copy
+identical later timestamps are skipped before drawing or counting, and the report
+records `duplicateRafCallbacks`. CI captured two startup callbacks at exactly
+25519.694 ms. A backward clock or 60 consecutive non-advancing callbacks cancels
+with `clock-discontinuity`, preserves valid earlier intervals and exposes numeric
+diagnostics. No timestamps are clamped, synthesized or counted twice. Chrome
+checks inject both a duplicate (successful completion with the omitted callback
+reported) and a regression (clean cancellation followed by a native-clock retry).
+The archived valid captures precede the extra failure diagnostics/recovery and minor UI-copy
 cleanup; shaders, accepted-clock statistics and camera protocol remain unchanged.
 
 | Gate | Required evidence | Current status |

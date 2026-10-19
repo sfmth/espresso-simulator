@@ -193,7 +193,7 @@ async function renderBenchmarkChecks(page, panel, count) {
   return report;
 }
 
-/** One deliberately duplicated benchmark clock must cancel without freezing the view. */
+/** Duplicate RAF callbacks are skipped; a regressing clock must cancel and recover. */
 async function renderClockRecoveryChecks(page, { requests, workers, errors }) {
   const faultPage = await page.context().newPage();
   const faultErrors = [];
@@ -215,41 +215,48 @@ async function renderClockRecoveryChecks(page, { requests, workers, errors }) {
   try {
     await faultPage.addInitScript(() => {
       const nativeRaf = window.requestAnimationFrame.bind(window);
-      const fault = {
-        armed: false,
-        injected: false,
-        matchedFrames: 0,
-        nativeClocks: [],
-        deliveredClocks: [],
-      };
-      window.__renderClockFault = fault;
-      let benchmarkCallback = null;
-      let previousNow = null;
+      const state = { nextMode: 'duplicate', runs: [] };
+      window.__renderClockFault = state;
+      let activeRun = null;
       document.addEventListener(
         'click',
         (event) => {
           const button = event.target instanceof Element ? event.target.closest('button') : null;
-          if (!fault.injected && button?.textContent?.trim() === 'Measure frame rate')
-            fault.armed = true;
+          if (state.nextMode && button?.textContent?.trim() === 'Measure frame rate') {
+            const fault = {
+              mode: state.nextMode,
+              armed: true,
+              injected: false,
+              matchedFrames: 0,
+              nativeClocks: [],
+              deliveredClocks: [],
+            };
+            state.nextMode = null;
+            state.runs.push(fault);
+            activeRun = { fault, benchmarkCallback: null, previousNow: null };
+          }
         },
         true,
       );
       window.requestAnimationFrame = (callback) => {
-        if (!fault.armed || fault.injected) return nativeRaf(callback);
-        benchmarkCallback ??= callback;
-        if (callback !== benchmarkCallback) return nativeRaf(callback);
+        const run = activeRun;
+        if (!run || !run.fault.armed || run.fault.injected) return nativeRaf(callback);
+        run.benchmarkCallback ??= callback;
+        if (callback !== run.benchmarkCallback) return nativeRaf(callback);
         // Bind the wrapper when scheduled: only the repeating benchmark callback
         // receives the fault; React/charts/other RAF work keeps the native clock.
         return nativeRaf((now) => {
+          const { fault } = run;
           fault.matchedFrames++;
           fault.nativeClocks.push(now);
           if (fault.matchedFrames === 2) {
             fault.injected = true;
             fault.armed = false;
-            fault.deliveredClocks.push(previousNow);
-            callback(previousNow);
+            const delivered = run.previousNow - (fault.mode === 'regression' ? 1 : 0);
+            fault.deliveredClocks.push(delivered);
+            callback(delivered);
           } else {
-            previousNow = now;
+            run.previousNow = now;
             fault.deliveredClocks.push(now);
             callback(now);
           }
@@ -274,6 +281,25 @@ async function renderClockRecoveryChecks(page, { requests, workers, errors }) {
     );
     const measure = panel.getByRole('button', { name: 'Measure frame rate', exact: true });
     await measure.click();
+    await measure.waitFor({ timeout: 180_000 });
+    const duplicateReport = await renderBenchmarkChecks(faultPage, panel, 5000);
+    const duplicateInjection = await faultPage.evaluate(() => window.__renderClockFault.runs[0]);
+    check(
+      duplicateInjection.mode === 'duplicate' &&
+        duplicateInjection.injected &&
+        duplicateInjection.matchedFrames === 2 &&
+        duplicateInjection.deliveredClocks[1] === duplicateInjection.deliveredClocks[0] &&
+        Number.isInteger(duplicateReport.renderObservations.duplicateRafCallbacks) &&
+        duplicateReport.renderObservations.duplicateRafCallbacks >= 1 &&
+        !duplicateReport.renderObservations.clockFailure &&
+        duplicateReport.stats.frameIntervalMs.min > 0 &&
+        faultErrors.length === 0,
+      'an equal second RAF clock is counted and skipped while the full 5k protocol completes with positive intervals and no errors',
+    );
+    await faultPage.evaluate(() => {
+      window.__renderClockFault.nextMode = 'regression';
+    });
+    await measure.click();
     await faultPage.waitForFunction(
       () => {
         const json = document.querySelector('.puck-view')?.getAttribute('data-render-benchmark');
@@ -285,14 +311,23 @@ async function renderClockRecoveryChecks(page, { requests, workers, errors }) {
     const cancelled = JSON.parse(
       await panel.locator('.puck-view').getAttribute('data-render-benchmark'),
     );
-    const injection = await faultPage.evaluate(() => window.__renderClockFault);
+    const regressionInjection = await faultPage.evaluate(() => window.__renderClockFault.runs[1]);
+    const clockFailure = cancelled.renderObservations.clockFailure;
+    const diagnostic = JSON.parse(clockFailure.slice(clockFailure.indexOf('{')));
     check(
-      injection.injected &&
-        injection.matchedFrames === 2 &&
-        injection.nativeClocks.length === 2 &&
-        injection.deliveredClocks.length === 2 &&
-        injection.deliveredClocks[1] === injection.deliveredClocks[0],
-      'clock fault duplicates only the second submission of the armed benchmark callback',
+      regressionInjection.mode === 'regression' &&
+        regressionInjection.injected &&
+        regressionInjection.matchedFrames === 2 &&
+        regressionInjection.nativeClocks.length === 2 &&
+        regressionInjection.deliveredClocks.length === 2 &&
+        regressionInjection.deliveredClocks[1] === regressionInjection.deliveredClocks[0] - 1 &&
+        ['before-start', 'regression'].includes(diagnostic.relation) &&
+        diagnostic.nowMs === diagnostic.previousFrameMs - 1 &&
+        diagnostic.deltaFromPreviousMs === -1 &&
+        diagnostic.phase === 'warmup' &&
+        diagnostic.warmupFrames === 1 &&
+        diagnostic.sampleFrames === 0,
+      'clock regression affects only the second matching callback and retains its numeric before-start/regression diagnostic',
     );
     check(
       cancelled.status === 'cancelled' &&
@@ -301,26 +336,41 @@ async function renderClockRecoveryChecks(page, { requests, workers, errors }) {
         cancelled.intervalCount === 0 &&
         cancelled.actualSampleMs === 0 &&
         cancelled.stats.meanFps === null &&
-        /strictly increase/.test(cancelled.renderObservations.clockFailure) &&
+        /strictly increase/.test(clockFailure) &&
         (await measure.isEnabled()) &&
         (await panel
           .getByText('Benchmark cancelled: browser clock changed; measure again', { exact: true })
           .isVisible()) &&
         faultErrors.length === 0,
-      'a duplicate RAF clock cancels before sampling, preserves its diagnostic and restores controls without console errors',
+      'a regressing RAF clock cancels before sampling, preserves its diagnostic and restores controls without console errors',
     );
     await measure.click();
     await measure.waitFor({ timeout: 180_000 });
     const recovered = await renderBenchmarkChecks(faultPage, panel, 5000);
     check(
-      (await faultPage.evaluate(() => window.__renderClockFault.matchedFrames)) === 2 &&
+      (await faultPage.evaluate(
+        () =>
+          window.__renderClockFault.runs.length === 2 &&
+          window.__renderClockFault.nextMode === null,
+      )) &&
         faultErrors.length === 0 &&
         (await measure.isEnabled()),
-      'a fresh 5k benchmark completes after the one-shot clock fault with native timestamps and no errors',
+      'a fresh 5k benchmark completes after clock regression with native timestamps and no errors',
     );
     writeFileSync(
       new URL('../test-results/explore-clock-recovery.json', import.meta.url),
-      JSON.stringify({ injection, cancelled, recovered }, null, 2) + '\n',
+      JSON.stringify(
+        {
+          duplicateInjection,
+          duplicateReport,
+          regressionInjection,
+          diagnostic,
+          cancelled,
+          recovered,
+        },
+        null,
+        2,
+      ) + '\n',
     );
   } finally {
     await faultPage.close();
