@@ -1032,7 +1032,8 @@ async function exploreChecks(page, shotPath) {
   await panel.getByLabel('Teaching scenario').selectOption('reference');
   await panel.getByRole('button', { name: 'Load scenario', exact: true }).click();
   await page.waitForFunction(
-    () => document.querySelectorAll('.explore-section select')[1]?.options.length === 4,
+    () =>
+      document.querySelector('.explore-section select[aria-label="Column"]')?.options.length === 4,
   );
   await panel.getByLabel('Column', { exact: true }).selectOption('3');
   await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
@@ -1045,6 +1046,10 @@ async function exploreChecks(page, shotPath) {
   check(
     (await panel.getByLabel('Depth cell', { exact: true }).getAttribute('max')) === '30',
     'standard Explore uses 30 depth cells',
+  );
+  check(
+    (await panel.locator('.explore-cell').count()) === 8 * 30 * 2,
+    'standard cross-section draws every mirrored solver cell',
   );
   check(
     (await panel.getByLabel('Column', { exact: true }).inputValue()) === '7',
@@ -1162,6 +1167,12 @@ async function exploreChecks(page, shotPath) {
   check(overflow <= 0, `Explore fits a 390px viewport (overflow ${overflow}px)`);
   await page.setViewportSize({ width: 1280, height: 900 });
   await panel.getByLabel('Simulation resolution').selectOption('high');
+  check(
+    (await panel.locator('.explore-resolution-notice').textContent()).includes(
+      'still shows 30 depth cells',
+    ) && (await panel.locator('.explore-cell').count()) === 8 * 30 * 2,
+    'selecting high identifies the previous grid until Run Explore computes the new one',
+  );
   await panel.getByLabel('Displayed particles').selectOption('5000');
   await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
   await page.waitForFunction(
@@ -1176,6 +1187,67 @@ async function exploreChecks(page, shotPath) {
     (await panel.getByLabel('Depth cell', { exact: true }).getAttribute('max')) === '150',
     'high resolution computes 5× the standard depth cells',
   );
+  const refinedCell = await panel.getByLabel('Depth cell', { exact: true }).inputValue();
+  check(
+    (await panel.locator('.explore-cell').count()) === 8 * 150 * 2 &&
+      (await panel.getByLabel('Depth view', { exact: true }).inputValue()) === 'detail' &&
+      (await panel.getByLabel('Cell boundaries', { exact: true }).isChecked()) &&
+      (await panel.locator('.explore-resolution-notice').count()) === 0,
+    'refined cross-section opens its complete 150-row grid in cell detail with boundaries',
+  );
+  const cellHeight = () =>
+    panel
+      .locator('.explore-cell')
+      .first()
+      .evaluate((cell) => cell.getBoundingClientRect().height);
+  const desktopCellHeight = await cellHeight();
+  check(
+    desktopCellHeight >= 3,
+    `refined desktop rows are readable (${desktopCellHeight.toFixed(2)}px)`,
+  );
+  await panel.getByLabel('Depth view', { exact: true }).selectOption('overview');
+  const overviewCellHeight = await cellHeight();
+  check(
+    overviewCellHeight < desktopCellHeight,
+    'overview fits the full basket at its original scale',
+  );
+  await panel.getByLabel('Depth view', { exact: true }).selectOption('detail');
+  const section = panel.locator('.explore-section');
+  await section.screenshot({ path: shotPath('e2e-cross-section-refined-desktop') });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileCellHeight = await cellHeight();
+  check(
+    mobileCellHeight >= 3,
+    `refined phone rows are readable (${mobileCellHeight.toFixed(2)}px)`,
+  );
+  await panel.getByLabel('Depth cell', { exact: true }).fill('150');
+  await page.waitForFunction(() => {
+    const viewport = document.querySelector('.explore-section-viewport');
+    const selected = document.querySelector('.explore-cell.selected');
+    if (!viewport || !selected) return false;
+    const outer = viewport.getBoundingClientRect();
+    const cell = selected.getBoundingClientRect();
+    return cell.top >= outer.top && cell.bottom <= outer.bottom;
+  });
+  check(
+    (await panel.getByLabel('Depth cell', { exact: true }).inputValue()) === '150' &&
+      (await panel.locator('.explore-section-viewport').evaluate((el) => el.scrollTop)) > 0 &&
+      (await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)),
+    'depth cell 150 scrolls into view on a phone without page overflow',
+  );
+  await section.screenshot({ path: shotPath('e2e-cross-section-refined-mobile') });
+  await panel.getByLabel('Cell boundaries', { exact: true }).uncheck();
+  check(
+    await panel
+      .locator('.explore-cell')
+      .first()
+      .evaluate((cell) => getComputedStyle(cell).stroke === 'none'),
+    'cell boundaries can be hidden without changing field values',
+  );
+  await panel.getByLabel('Cell boundaries', { exact: true }).check();
+  // Return to the exported cell so the coupled-state check below keeps its meaning.
+  await panel.getByLabel('Depth cell', { exact: true }).fill(refinedCell);
+  await page.setViewportSize({ width: 1280, height: 900 });
   check(
     Number(await panel.locator('.explore-metrics dd').nth(2).textContent()) < 0.5,
     'refined-grid micro extraction agrees within 0.5 percentage points',

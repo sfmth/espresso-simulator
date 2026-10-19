@@ -51,6 +51,9 @@ export function Explore({ active }: { active: boolean }) {
   );
   const micro = outcome?.result.spatial.micro;
   const stale = outcome && outcome.key !== controls.key;
+  const requestedDepthCells = resolution === 'high' ? 150 : 30;
+  const resolutionPending =
+    outcome && outcome.result.spatial.depth_m.length !== requestedDepthCells;
   const start = () => {
     const target =
       check?.key === controls.key && check.build ? check.build.spec : outcome?.build.spec;
@@ -132,6 +135,14 @@ export function Explore({ active }: { active: boolean }) {
         </p>
         {!controls.validation.ok && (
           <p role="alert">The shared recipe needs attention in Lab before it can run.</p>
+        )}
+        {resolutionPending && (
+          <p role="status" className="explore-resolution-notice">
+            The cross-section still shows {outcome.result.spatial.depth_m.length} depth cells.{' '}
+            {run.fullRunning
+              ? 'A run is in progress; the displayed grid will update when it finishes.'
+              : `Press Run Explore to compute and display the selected ${requestedDepthCells}-cell grid.`}
+          </p>
         )}
         {run.error && (
           <p role="alert">

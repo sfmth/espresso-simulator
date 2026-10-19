@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.9.2] - 2026-10-19
+
+### Fixed
+- High-resolution Explore cross-sections expose all 150 depth cells in a
+  scrollable cell detail view, with visible boundaries and the actual grid
+  dimensions. Overview remains available, and cell selection stays in view.
+  Local Chrome measurements increased refined row height from 1.21 px to
+  4.01 px on desktop; cell detail also retains 4.01 px rows at phone width.
+- Changing resolution now identifies the previous grid until Run Explore
+  computes its replacement. Display particle count remains independent of the
+  solver grid; refinement changes depth, not the number of radial columns.
+- Physics and golden numerical outputs remain unchanged.
+
 ## [0.9.1] - 2026-10-19
 
 M5 rendering performance measurements and sphere rendering improvements.
