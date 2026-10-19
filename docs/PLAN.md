@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.9.0 · Last updated 2026-10-18 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
+*Version 0.9.1 · Last updated 2026-10-19 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -720,7 +720,7 @@ plan still requires measured frame rates on a mid-range laptop and recent phone;
 software/browser smoke checks and the current-device measurement tool do not
 establish those hardware gates. Original scientific targets, fitted parameters
 and source splits remain unchanged. See [ADR 0015](decisions/0015-explore-state-and-refinement.md),
-the [Explore contract](model/m5-explore.md) and [M5 verification](validation/m5-validation.md).
+the [Explore contract](model/m5-explore.md), [M5 verification](validation/m5-validation.md) and [rendering performance follow-up](validation/m5-rendering-performance.md).
 
 ### M6: Speed, polish and public launch
 Size M.
@@ -795,7 +795,7 @@ These are optional experiments for the future local personalization feature (V9/
 - **Data requests:** too early. No outreach to data holders for now.
 - **Repository:** created by the owner; assistant git operations authorized 2026-10-15 (§16).
 - **Basket (2026-10-15):** 58 mm single-wall. The AMZCHEF preset uses the plain 58 mm stock double; its detailed dimensions remain estimates.
-- **Current milestone (2026-10-17):** M3, in the order performance → input uncertainty → taste, selected by the owner after M2 integration. Remaining M1/M2 accuracy work is retained without blocking development.
+- **Current milestone (2026-10-19):** M5 Explore is implemented; the owner selected its rendering performance follow-up. Version 0.9.1 records reproducible exact-sphere measurements and conservative culling. Midrange laptop/physical phone G5 validation and existing scientific accuracy work remain open; see [rendering evidence](validation/m5-rendering-performance.md).
 - **Calibration source (2026-10-15):** online data, including community archives and hobbyist experiments; no dependency on measurements from the owner's setup (D15).
 
 **Still open**

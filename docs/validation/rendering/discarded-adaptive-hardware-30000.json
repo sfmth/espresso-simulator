@@ -1,0 +1,140 @@
+{
+  "schema": "puckworks.render-benchmark/1",
+  "status": "complete",
+  "reason": "sample-complete",
+  "environment": {
+    "particleCount": 30000,
+    "renderPath": "adaptive-native-mesh-and-analytic",
+    "sphereQuality": "all physical radii retained; native mesh projected Hausdorff bound <=0.25 drawing-buffer pixels; exact analytic remainder",
+    "networkVisible": false,
+    "cutFraction": 1,
+    "cssWidthPx": 761.78125,
+    "cssHeightPx": 576,
+    "drawingBufferWidthPx": 761,
+    "drawingBufferHeightPx": 576,
+    "devicePixelRatio": 1,
+    "rendererPixelRatio": 1,
+    "camera": {
+      "position": [
+        1.9638045477327215,
+        1.3092030318218144,
+        2.3274720565721143
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "verticalFovDeg": 40,
+      "orbitRadiansPerSecond": 0.36
+    },
+    "webgl": {
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "vendor": "WebKit",
+      "renderer": "WebKit WebGL",
+      "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+      "unmaskedVendor": "Google Inc. (NVIDIA Corporation)",
+      "unmaskedRenderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 4080 Laptop GPU/PCIe/SSE2, OpenGL 4.5.0)",
+      "contextAttributes": {
+        "alpha": false,
+        "antialias": false,
+        "depth": true,
+        "desynchronized": false,
+        "failIfMajorPerformanceCaveat": false,
+        "powerPreference": "high-performance",
+        "premultipliedAlpha": true,
+        "preserveDrawingBuffer": false,
+        "stencil": false,
+        "xrCompatible": false
+      },
+      "contextLost": false
+    },
+    "extraQuality": {
+      "meshMaxErrorPx": 0.25,
+      "mesh16CountAtStart": 0,
+      "mesh32CountAtStart": 171,
+      "mesh64CountAtStart": 84,
+      "mesh128CountAtStart": 5,
+      "mesh256CountAtStart": 0,
+      "analyticCountAtStart": 29740,
+      "markerParticle": 0,
+      "modelSeed": 20261018,
+      "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+      "viewportWidthPx": 1280,
+      "viewportHeightPx": 900
+    }
+  },
+  "protocol": {
+    "targetFps": 60,
+    "warmupMs": 1500,
+    "sampleMs": 5000,
+    "minWarmupFrames": 30,
+    "budgetToleranceMs": 0.5
+  },
+  "warmupElapsedMs": 1504,
+  "warmupFrames": 318,
+  "actualSampleMs": 5003.19999999553,
+  "sampleFrames": 1199,
+  "intervalCount": 1198,
+  "stats": {
+    "meanFps": 239.44675407760442,
+    "frameIntervalMs": {
+      "min": 4,
+      "max": 8.400000005960464,
+      "mean": 4.176293823034666,
+      "median": 4.199999995529652,
+      "p95": 4.200000002980232
+    },
+    "cpuRenderMs": {
+      "min": 0,
+      "max": 0.40000009536743164,
+      "mean": 0.1788990881365473,
+      "median": 0.19999980926513672,
+      "p95": 0.3000001907348633
+    },
+    "targetFrameBudgetMs": 16.666666666666668,
+    "overBudgetFrames": 0,
+    "overBudgetFraction": 0,
+    "estimatedDroppedFrames": 0,
+    "estimatedDropFraction": 0
+  },
+  "gpuTiming": {
+    "supported": true,
+    "disjoint": false,
+    "queryEveryFrames": 4,
+    "validSampleCount": 299,
+    "discardedSampleCount": 0,
+    "pendingQueries": 1,
+    "elapsedMs": {
+      "min": 0.128,
+      "max": 1.21344,
+      "mean": 0.39930862876254203,
+      "median": 0.34304,
+      "p95": 0.7121919999999998
+    }
+  },
+  "quantileMethod": "linear_interpolation_n_minus_1",
+  "measurementLimits": [
+    "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+    "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+    "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+    "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+    "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+  ],
+  "renderObservations": {
+    "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, optional bounded native mesh LOD",
+    "peakMeshErrorBoundPx": 0.24999784080286824,
+    "maxLodParticleCounts": [
+      0,
+      182,
+      86,
+      6,
+      0
+    ]
+  },
+  "archive": {
+    "label": "discarded-adaptive-hardware-30000",
+    "capture": "in-app Chromium 155, actual RTX 4080 Laptop GPU; 1280x900 viewport, DPR1",
+    "scope": "preliminary single trial; final exact-only renderer measured separately"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "schema": "puckworks.render-benchmark/1",
+  "status": "complete",
+  "reason": "sample-complete",
+  "environment": {
+    "particleCount": 150000,
+    "renderPath": "analytic-exact",
+    "sphereQuality": "exact sphere silhouette and surface depth",
+    "networkVisible": false,
+    "cutFraction": 1,
+    "cssWidthPx": 761.78125,
+    "cssHeightPx": 576,
+    "drawingBufferWidthPx": 761,
+    "drawingBufferHeightPx": 576,
+    "devicePixelRatio": 1,
+    "rendererPixelRatio": 1,
+    "camera": {
+      "position": [
+        2.6539677091038354,
+        1.7693118060692234,
+        3.1454432107897308
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "verticalFovDeg": 40,
+      "orbitRadiansPerSecond": 0.36
+    },
+    "webgl": {
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "vendor": "WebKit",
+      "renderer": "WebKit WebGL",
+      "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+      "unmaskedVendor": "Google Inc. (NVIDIA Corporation)",
+      "unmaskedRenderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 4080 Laptop GPU/PCIe/SSE2, OpenGL 4.5.0)",
+      "contextAttributes": {
+        "alpha": false,
+        "antialias": false,
+        "depth": true,
+        "desynchronized": false,
+        "failIfMajorPerformanceCaveat": false,
+        "powerPreference": "high-performance",
+        "premultipliedAlpha": true,
+        "preserveDrawingBuffer": false,
+        "stencil": false,
+        "xrCompatible": false
+      },
+      "contextLost": false
+    },
+    "extraQuality": {
+      "markerParticle": 0,
+      "modelSeed": 20261018,
+      "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+      "viewportWidthPx": 1280,
+      "viewportHeightPx": 900
+    }
+  },
+  "protocol": {
+    "targetFps": 60,
+    "warmupMs": 1500,
+    "sampleMs": 5000,
+    "minWarmupFrames": 30,
+    "budgetToleranceMs": 0.5
+  },
+  "warmupElapsedMs": 1503.8999999999942,
+  "warmupFrames": 330,
+  "actualSampleMs": 5003.399999999994,
+  "sampleFrames": 1201,
+  "intervalCount": 1200,
+  "stats": {
+    "meanFps": 239.83691090058787,
+    "frameIntervalMs": {
+      "min": 4,
+      "max": 8.39999999999418,
+      "mean": 4.169499999999995,
+      "median": 4.199999999982538,
+      "p95": 4.2000000000116415
+    },
+    "cpuRenderMs": {
+      "min": 0,
+      "max": 0.7000002861022949,
+      "mean": 0.035886762541200004,
+      "median": 0,
+      "p95": 0.10000038146972656
+    },
+    "targetFrameBudgetMs": 16.666666666666668,
+    "overBudgetFrames": 0,
+    "overBudgetFraction": 0,
+    "estimatedDroppedFrames": 0,
+    "estimatedDropFraction": 0
+  },
+  "gpuTiming": {
+    "supported": true,
+    "disjoint": false,
+    "queryEveryFrames": 4,
+    "validSampleCount": 300,
+    "discardedSampleCount": 0,
+    "pendingQueries": 1,
+    "elapsedMs": {
+      "min": 0.197632,
+      "max": 1.128448,
+      "mean": 0.5002786133333336,
+      "median": 0.5176320000000001,
+      "p95": 0.56832
+    }
+  },
+  "quantileMethod": "linear_interpolation_n_minus_1",
+  "measurementLimits": [
+    "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+    "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+    "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+    "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+    "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+  ],
+  "renderObservations": {
+    "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+    "containmentCandidateCount": 32,
+    "containedParticleCount": 24273,
+    "containmentBuildMs": 81.40000009536743,
+    "containmentMarginMm": 3.9318040134871635e-05
+  },
+  "archive": {
+    "label": "final-150000-1",
+    "capture": "in-app Chromium155, actual RTX4080 Laptop GPU;1280x900 viewport,DPR1"
+  }
+}

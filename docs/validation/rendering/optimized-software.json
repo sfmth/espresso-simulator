@@ -1,0 +1,1620 @@
+{
+  "schema": "puckworks.render-benchmark-suite/1",
+  "startedAt": "2026-10-19T17:35:42.287Z",
+  "finishedAt": "2026-10-19T17:40:30.546Z",
+  "label": "optimized-contained",
+  "browser": "131.0.6778.139",
+  "host": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 9 7945HX with Radeon Graphics"
+  },
+  "requested": {
+    "backend": "software",
+    "quality": "exact",
+    "counts": [
+      30000,
+      150000,
+      5000,
+      25000
+    ],
+    "trials": 3,
+    "dpr": 1
+  },
+  "hardwareGate": "unverified: viewport emulation is not actual phone hardware; device class and presentation require separate evidence",
+  "records": [
+    {
+      "trial": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 30000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 771.421875,
+          "cssHeightPx": 576,
+          "drawingBufferWidthPx": 771,
+          "drawingBufferHeightPx": 576,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.9638045477327215,
+              1.3092030318218144,
+              2.3274720565721143
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 1280,
+            "viewportHeightPx": 900
+          }
+        },
+        "protocol": {
+          "targetFps": 60,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 8366.334,
+        "warmupFrames": 30,
+        "actualSampleMs": 5016.4,
+        "sampleFrames": 19,
+        "intervalCount": 18,
+        "stats": {
+          "meanFps": 3.588230603620126,
+          "frameIntervalMs": {
+            "min": 16.700000000000728,
+            "max": 583.2999999999993,
+            "mean": 278.68888888888887,
+            "median": 266.6999999999998,
+            "p95": 554.9949999999999
+          },
+          "cpuRenderMs": {
+            "min": 0.09999990463256836,
+            "max": 0.3000001907348633,
+            "mean": 0.1947368822599712,
+            "median": 0.19999980926513672,
+            "p95": 0.3000001907348633
+          },
+          "targetFrameBudgetMs": 16.666666666666668,
+          "overBudgetFrames": 16,
+          "overBudgetFraction": 0.8888888888888888,
+          "estimatedDroppedFrames": 283,
+          "estimatedDropFraction": 0.9401993355481728
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 5,
+          "discardedSampleCount": 0,
+          "pendingQueries": 0,
+          "elapsedMs": {
+            "min": 252.089776,
+            "max": 295.95615,
+            "mean": 278.7923898,
+            "median": 291.998845,
+            "p95": 295.17584999999997
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 7006,
+          "containmentBuildMs": 5.900000095367432,
+          "containmentMarginMm": 0.00002909340070715143
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 150000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 771.421875,
+          "cssHeightPx": 576,
+          "drawingBufferWidthPx": 771,
+          "drawingBufferHeightPx": 576,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              2.6539677091038354,
+              1.7693118060692234,
+              3.1454432107897308
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 1280,
+            "viewportHeightPx": 900
+          }
+        },
+        "protocol": {
+          "targetFps": 60,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 39731.734,
+        "warmupFrames": 30,
+        "actualSampleMs": 5416.4000000000015,
+        "sampleFrames": 5,
+        "intervalCount": 4,
+        "stats": {
+          "meanFps": 0.7384978952809983,
+          "frameIntervalMs": {
+            "min": 1233.2000000000044,
+            "max": 1483.300000000003,
+            "mean": 1354.1000000000004,
+            "median": 1349.949999999997,
+            "p95": 1468.3150000000016
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.20000028610229492,
+            "mean": 0.13999996185302735,
+            "median": 0.19999980926513672,
+            "p95": 0.20000019073486328
+          },
+          "targetFrameBudgetMs": 16.666666666666668,
+          "overBudgetFrames": 4,
+          "overBudgetFraction": 1,
+          "estimatedDroppedFrames": 321,
+          "estimatedDropFraction": 0.9876923076923076
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 1,
+          "discardedSampleCount": 0,
+          "pendingQueries": 1,
+          "elapsedMs": {
+            "min": 1322.816066,
+            "max": 1322.816066,
+            "mean": 1322.816066,
+            "median": 1322.816066,
+            "p95": 1322.816066
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 24273,
+          "containmentBuildMs": 34.700000286102295,
+          "containmentMarginMm": 0.000039318040134871635
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 5000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 358,
+          "cssHeightPx": 384,
+          "drawingBufferWidthPx": 358,
+          "drawingBufferHeightPx": 384,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.764568227499025,
+              1.1763788183326833,
+              2.091340121480326
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 390,
+            "viewportHeightPx": 844
+          }
+        },
+        "protocol": {
+          "targetFps": 30,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 1516.5339999999997,
+        "warmupFrames": 33,
+        "actualSampleMs": 5016.5,
+        "sampleFrames": 101,
+        "intervalCount": 100,
+        "stats": {
+          "meanFps": 19.93421708362404,
+          "frameIntervalMs": {
+            "min": 16.59999999999127,
+            "max": 100,
+            "mean": 50.165,
+            "median": 50,
+            "p95": 67.62500000000213
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.5999999046325684,
+            "mean": 0.09108914007054697,
+            "median": 0.09999990463256836,
+            "p95": 0.20000028610229492
+          },
+          "targetFrameBudgetMs": 33.333333333333336,
+          "overBudgetFrames": 86,
+          "overBudgetFraction": 0.86,
+          "estimatedDroppedFrames": 91,
+          "estimatedDropFraction": 0.47643979057591623
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 25,
+          "discardedSampleCount": 0,
+          "pendingQueries": 1,
+          "elapsedMs": {
+            "min": 42.276571,
+            "max": 100.439361,
+            "mean": 51.07060231999999,
+            "median": 49.754255,
+            "p95": 55.296383999999996
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 297,
+          "containmentBuildMs": 5.300000190734863,
+          "containmentMarginMm": 0.000026141751518504073
+        }
+      }
+    },
+    {
+      "trial": 1,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 25000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 358,
+          "cssHeightPx": 384,
+          "drawingBufferWidthPx": 358,
+          "drawingBufferHeightPx": 384,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.9326701296589186,
+              1.2884467531059456,
+              2.2905720055216814
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 390,
+            "viewportHeightPx": 844
+          }
+        },
+        "protocol": {
+          "targetFps": 30,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 7033,
+        "warmupFrames": 30,
+        "actualSampleMs": 5116.5,
+        "sampleFrames": 23,
+        "intervalCount": 22,
+        "stats": {
+          "meanFps": 4.2998143261995505,
+          "frameIntervalMs": {
+            "min": 16.60000000000582,
+            "max": 416.6999999999971,
+            "mean": 232.5681818181818,
+            "median": 249.89999999999418,
+            "p95": 415.8649999999972
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.20000028610229492,
+            "mean": 0.12173909726350204,
+            "median": 0.09999990463256836,
+            "p95": 0.20000028610229492
+          },
+          "targetFrameBudgetMs": 33.333333333333336,
+          "overBudgetFrames": 19,
+          "overBudgetFraction": 0.8636363636363636,
+          "estimatedDroppedFrames": 139,
+          "estimatedDropFraction": 0.8633540372670807
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 6,
+          "discardedSampleCount": 0,
+          "pendingQueries": 0,
+          "elapsedMs": {
+            "min": 210.20624,
+            "max": 249.876668,
+            "mean": 237.0598453333333,
+            "median": 242.5456165,
+            "p95": 248.87428075
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 5510,
+          "containmentBuildMs": 12.899999618530273,
+          "containmentMarginMm": 0.000028632150069021015
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 30000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 771.421875,
+          "cssHeightPx": 576,
+          "drawingBufferWidthPx": 771,
+          "drawingBufferHeightPx": 576,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.9638045477327215,
+              1.3092030318218144,
+              2.3274720565721143
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 1280,
+            "viewportHeightPx": 900
+          }
+        },
+        "protocol": {
+          "targetFps": 60,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 8482.833999999999,
+        "warmupFrames": 30,
+        "actualSampleMs": 5016.500000000002,
+        "sampleFrames": 19,
+        "intervalCount": 18,
+        "stats": {
+          "meanFps": 3.5881590750523262,
+          "frameIntervalMs": {
+            "min": 16.600000000000364,
+            "max": 550,
+            "mean": 278.69444444444457,
+            "median": 283.34999999999945,
+            "p95": 521.6950000000006
+          },
+          "cpuRenderMs": {
+            "min": 0.09999990463256836,
+            "max": 0.3000001907348633,
+            "mean": 0.21052634088616623,
+            "median": 0.19999980926513672,
+            "p95": 0.3000001907348633
+          },
+          "targetFrameBudgetMs": 16.666666666666668,
+          "overBudgetFrames": 15,
+          "overBudgetFraction": 0.8333333333333334,
+          "estimatedDroppedFrames": 283,
+          "estimatedDropFraction": 0.9401993355481728
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 5,
+          "discardedSampleCount": 0,
+          "pendingQueries": 0,
+          "elapsedMs": {
+            "min": 265.545615,
+            "max": 551.647141,
+            "mean": 339.118276,
+            "median": 294.588424,
+            "p95": 501.4692506
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 7006,
+          "containmentBuildMs": 6.099999904632568,
+          "containmentMarginMm": 0.00002909340070715143
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 150000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 771.421875,
+          "cssHeightPx": 576,
+          "drawingBufferWidthPx": 771,
+          "drawingBufferHeightPx": 576,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              2.6539677091038354,
+              1.7693118060692234,
+              3.1454432107897308
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 1280,
+            "viewportHeightPx": 900
+          }
+        },
+        "protocol": {
+          "targetFps": 60,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 42048.299999999996,
+        "warmupFrames": 30,
+        "actualSampleMs": 6949.800000000003,
+        "sampleFrames": 6,
+        "intervalCount": 5,
+        "stats": {
+          "meanFps": 0.719445163889608,
+          "frameIntervalMs": {
+            "min": 16.60000000000582,
+            "max": 2749.899999999994,
+            "mean": 1389.9600000000005,
+            "median": 1466.699999999997,
+            "p95": 2739.899999999994
+          },
+          "cpuRenderMs": {
+            "min": 0.09999990463256836,
+            "max": 0.19999980926513672,
+            "mean": 0.14999993642171225,
+            "median": 0.15000009536743164,
+            "p95": 0.19999980926513672
+          },
+          "targetFrameBudgetMs": 16.666666666666668,
+          "overBudgetFrames": 3,
+          "overBudgetFraction": 0.6,
+          "estimatedDroppedFrames": 412,
+          "estimatedDropFraction": 0.988009592326139
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 1,
+          "discardedSampleCount": 0,
+          "pendingQueries": 1,
+          "elapsedMs": {
+            "min": 2767.913712,
+            "max": 2767.913712,
+            "mean": 2767.913712,
+            "median": 2767.913712,
+            "p95": 2767.913712
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 24273,
+          "containmentBuildMs": 35.200000286102295,
+          "containmentMarginMm": 0.000039318040134871635
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 5000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 358,
+          "cssHeightPx": 384,
+          "drawingBufferWidthPx": 358,
+          "drawingBufferHeightPx": 384,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.764568227499025,
+              1.1763788183326833,
+              2.091340121480326
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 390,
+            "viewportHeightPx": 844
+          }
+        },
+        "protocol": {
+          "targetFps": 30,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 1533.2000000000116,
+        "warmupFrames": 30,
+        "actualSampleMs": 5033.199999999997,
+        "sampleFrames": 101,
+        "intervalCount": 100,
+        "stats": {
+          "meanFps": 19.86807597552254,
+          "frameIntervalMs": {
+            "min": 16.60000000000582,
+            "max": 100,
+            "mean": 50.33199999999997,
+            "median": 50,
+            "p95": 83.30000000000291
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.3000001907348633,
+            "mean": 0.08514849974377321,
+            "median": 0.09999990463256836,
+            "p95": 0.19999980926513672
+          },
+          "targetFrameBudgetMs": 33.333333333333336,
+          "overBudgetFrames": 85,
+          "overBudgetFraction": 0.85,
+          "estimatedDroppedFrames": 92,
+          "estimatedDropFraction": 0.4791666666666667
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 25,
+          "discardedSampleCount": 0,
+          "pendingQueries": 1,
+          "elapsedMs": {
+            "min": 42.617337,
+            "max": 102.995658,
+            "mean": 51.142751520000004,
+            "median": 50.163885,
+            "p95": 52.0277256
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 297,
+          "containmentBuildMs": 5.199999809265137,
+          "containmentMarginMm": 0.000026141751518504073
+        }
+      }
+    },
+    {
+      "trial": 2,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 25000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 358,
+          "cssHeightPx": 384,
+          "drawingBufferWidthPx": 358,
+          "drawingBufferHeightPx": 384,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.9326701296589186,
+              1.2884467531059456,
+              2.2905720055216814
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 390,
+            "viewportHeightPx": 844
+          }
+        },
+        "protocol": {
+          "targetFps": 30,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 6783,
+        "warmupFrames": 30,
+        "actualSampleMs": 5199.900000000009,
+        "sampleFrames": 24,
+        "intervalCount": 23,
+        "stats": {
+          "meanFps": 4.423161983884298,
+          "frameIntervalMs": {
+            "min": 16.69999999999709,
+            "max": 449.8999999999942,
+            "mean": 226.08260869565257,
+            "median": 216.6999999999971,
+            "p95": 401.70000000000994
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.20000028610229492,
+            "mean": 0.14166673024495444,
+            "median": 0.10000038146972656,
+            "p95": 0.20000028610229492
+          },
+          "targetFrameBudgetMs": 33.333333333333336,
+          "overBudgetFrames": 21,
+          "overBudgetFraction": 0.9130434782608695,
+          "estimatedDroppedFrames": 141,
+          "estimatedDropFraction": 0.8597560975609756
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 6,
+          "discardedSampleCount": 0,
+          "pendingQueries": 0,
+          "elapsedMs": {
+            "min": 208.333884,
+            "max": 240.957627,
+            "mean": 220.36154183333335,
+            "median": 218.6249015,
+            "p95": 236.25172
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 5510,
+          "containmentBuildMs": 12.399999618530273,
+          "containmentMarginMm": 0.000028632150069021015
+        }
+      }
+    },
+    {
+      "trial": 3,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 30000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 771.421875,
+          "cssHeightPx": 576,
+          "drawingBufferWidthPx": 771,
+          "drawingBufferHeightPx": 576,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.9638045477327215,
+              1.3092030318218144,
+              2.3274720565721143
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 1280,
+            "viewportHeightPx": 900
+          }
+        },
+        "protocol": {
+          "targetFps": 60,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 8266.300000000001,
+        "warmupFrames": 30,
+        "actualSampleMs": 5033.200000000001,
+        "sampleFrames": 20,
+        "intervalCount": 19,
+        "stats": {
+          "meanFps": 3.77493443534928,
+          "frameIntervalMs": {
+            "min": 16.599999999998545,
+            "max": 566.7000000000007,
+            "mean": 264.90526315789475,
+            "median": 250.10000000000218,
+            "p95": 551.6700000000001
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.3000001907348633,
+            "mean": 0.20000004768371582,
+            "median": 0.20000004768371582,
+            "p95": 0.3000001907348633
+          },
+          "targetFrameBudgetMs": 16.666666666666668,
+          "overBudgetFrames": 17,
+          "overBudgetFraction": 0.8947368421052632,
+          "estimatedDroppedFrames": 283,
+          "estimatedDropFraction": 0.9370860927152318
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 5,
+          "discardedSampleCount": 0,
+          "pendingQueries": 0,
+          "elapsedMs": {
+            "min": 241.519231,
+            "max": 566.661957,
+            "mean": 317.6783408,
+            "median": 258.815977,
+            "p95": 507.47474379999994
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 7006,
+          "containmentBuildMs": 6.200000286102295,
+          "containmentMarginMm": 0.00002909340070715143
+        }
+      }
+    },
+    {
+      "trial": 3,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 150000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 771.421875,
+          "cssHeightPx": 576,
+          "drawingBufferWidthPx": 771,
+          "drawingBufferHeightPx": 576,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              2.6539677091038354,
+              1.7693118060692234,
+              3.1454432107897308
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 1280,
+            "viewportHeightPx": 900
+          }
+        },
+        "protocol": {
+          "targetFps": 60,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 40065.034,
+        "warmupFrames": 30,
+        "actualSampleMs": 5599.799999999996,
+        "sampleFrames": 5,
+        "intervalCount": 4,
+        "stats": {
+          "meanFps": 0.7143112254009077,
+          "frameIntervalMs": {
+            "min": 16.69999999999709,
+            "max": 2633.2000000000044,
+            "mean": 1399.949999999999,
+            "median": 1474.949999999997,
+            "p95": 2460.715000000004
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.19999980926513672,
+            "mean": 0.09999990463256836,
+            "median": 0.09999990463256836,
+            "p95": 0.17999982833862305
+          },
+          "targetFrameBudgetMs": 16.666666666666668,
+          "overBudgetFrames": 3,
+          "overBudgetFraction": 0.75,
+          "estimatedDroppedFrames": 332,
+          "estimatedDropFraction": 0.9880952380952381
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 1,
+          "discardedSampleCount": 0,
+          "pendingQueries": 1,
+          "elapsedMs": {
+            "min": 1473.121728,
+            "max": 1473.121728,
+            "mean": 1473.121728,
+            "median": 1473.121728,
+            "p95": 1473.121728
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 24273,
+          "containmentBuildMs": 33.799999713897705,
+          "containmentMarginMm": 0.000039318040134871635
+        }
+      }
+    },
+    {
+      "trial": 3,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 5000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 358,
+          "cssHeightPx": 384,
+          "drawingBufferWidthPx": 358,
+          "drawingBufferHeightPx": 384,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.764568227499025,
+              1.1763788183326833,
+              2.091340121480326
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 390,
+            "viewportHeightPx": 844
+          }
+        },
+        "protocol": {
+          "targetFps": 30,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 1516.6000000000058,
+        "warmupFrames": 32,
+        "actualSampleMs": 5049.899999999994,
+        "sampleFrames": 104,
+        "intervalCount": 103,
+        "stats": {
+          "meanFps": 20.396443493930597,
+          "frameIntervalMs": {
+            "min": 16.60000000000582,
+            "max": 83.39999999999418,
+            "mean": 49.02815533980577,
+            "median": 50,
+            "p95": 66.69999999999709
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.40000009536743164,
+            "mean": 0.08653847529337956,
+            "median": 0.09999990463256836,
+            "p95": 0.20000028610229492
+          },
+          "targetFrameBudgetMs": 33.333333333333336,
+          "overBudgetFrames": 88,
+          "overBudgetFraction": 0.8543689320388349,
+          "estimatedDroppedFrames": 91,
+          "estimatedDropFraction": 0.4690721649484536
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 26,
+          "discardedSampleCount": 0,
+          "pendingQueries": 0,
+          "elapsedMs": {
+            "min": 41.534515,
+            "max": 94.723675,
+            "mean": 51.81877503846153,
+            "median": 50.257689,
+            "p95": 78.65163975
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 297,
+          "containmentBuildMs": 5.5,
+          "containmentMarginMm": 0.000026141751518504073
+        }
+      }
+    },
+    {
+      "trial": 3,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 25000,
+          "renderPath": "analytic-exact",
+          "sphereQuality": "exact sphere silhouette and surface depth",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 358,
+          "cssHeightPx": 384,
+          "drawingBufferWidthPx": 358,
+          "drawingBufferHeightPx": 384,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.9326701296589186,
+              1.2884467531059456,
+              2.2905720055216814
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 390,
+            "viewportHeightPx": 844
+          }
+        },
+        "protocol": {
+          "targetFps": 30,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 7133.034,
+        "warmupFrames": 30,
+        "actualSampleMs": 5133.099999999991,
+        "sampleFrames": 24,
+        "intervalCount": 23,
+        "stats": {
+          "meanFps": 4.480723149753568,
+          "frameIntervalMs": {
+            "min": 16.60000000000582,
+            "max": 483.3000000000029,
+            "mean": 223.17826086956484,
+            "median": 216.59999999999127,
+            "p95": 431.72999999999445
+          },
+          "cpuRenderMs": {
+            "min": 0,
+            "max": 0.3000001907348633,
+            "mean": 0.12083325783411662,
+            "median": 0.09999990463256836,
+            "p95": 0.20000021457672118
+          },
+          "targetFrameBudgetMs": 33.333333333333336,
+          "overBudgetFrames": 20,
+          "overBudgetFraction": 0.8695652173913043,
+          "estimatedDroppedFrames": 138,
+          "estimatedDropFraction": 0.8571428571428571
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 6,
+          "discardedSampleCount": 0,
+          "pendingQueries": 0,
+          "elapsedMs": {
+            "min": 199.900441,
+            "max": 496.471747,
+            "mean": 263.3994191666667,
+            "median": 215.97544499999998,
+            "p95": 434.9987165
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "implementation": "tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling",
+          "containmentCandidateCount": 32,
+          "containedParticleCount": 5510,
+          "containmentBuildMs": 17.40000009536743,
+          "containmentMarginMm": 0.000028632150069021015
+        }
+      }
+    }
+  ],
+  "failures": [],
+  "requests": [
+    "http://127.0.0.1:4175/",
+    "http://127.0.0.1:4175/assets/index-CiTlhu0z.js",
+    "http://127.0.0.1:4175/assets/index-BjKcQLUE.css",
+    "http://127.0.0.1:4175/favicon.svg",
+    "http://127.0.0.1:4175/assets/puckcore_bg-BqTO0m2x.wasm",
+    "http://127.0.0.1:4175/assets/PuckView-DH_zCO0c.js"
+  ]
+}

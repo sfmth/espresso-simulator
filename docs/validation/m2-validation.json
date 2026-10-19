@@ -1,21 +1,21 @@
 {
   "schema": "puckworks.m2-validation/1",
   "created": "2026-10-18",
-  "core_version": "0.9.0",
+  "core_version": "0.9.1",
   "dataset": "gloess2013-espresso-chemistry",
   "solver_identity": {
-    "puckcore_version": "0.9.0",
-    "extension_sha256": "b54cff74e5aafd9f",
-    "extension_built": "2026-10-18T15:26:18-07:00",
+    "puckcore_version": "0.9.1",
+    "extension_sha256": "a2101f771d0f9a11",
+    "extension_built": "2026-10-18T23:56:32-07:00",
     "sources_sha256": {
-      "crates/puckcore/src": "e75dc2f0dabf56fc",
+      "crates/puckcore/src": "d57f6df152239716",
       "crates/puckmodel/src": "2bd9747974cfd7fb",
       "crates/puckmodel/generated": "bfda72656ff6ad56",
       "crates/puckcore-py": "621b3994f7c74a58",
       "data/chemistry": "6dd11d8f1a08ce38"
     },
     "files_sha256": {
-      "Cargo.lock": "bb33645110e4681f"
+      "Cargo.lock": "0aa4f10eb6a926c6"
     },
     "python": {
       "version": "3.14.7",

@@ -1,6 +1,6 @@
 {
   "name": "puckworks-web",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "description": "Puckworks in the browser: an open-source espresso simulator that runs entirely client-side.",
   "license": "GPL-2.0-or-later",
@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "npm run build && node scripts/e2e.mjs",
+    "bench:render": "npm run build && node scripts/render-benchmark.mjs",
     "lint": "node scripts/check-engine.mjs && eslint .",
     "typecheck": "node scripts/check-engine.mjs && tsc -b",
     "format": "prettier --write .",

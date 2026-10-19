@@ -102,3 +102,12 @@ unchanged. Existing M1/M2/M3/M4 empirical validation limitations remain open.
   only core-version strings change. M0/M1/M2/M3 report refreshes preserve all
   non-timing numbers, including existing failed empirical targets.
 - Version manifests and native binding agree at 0.9.0.
+
+## Rendering performance follow-up (0.9.1)
+
+The [0.9.1 rendering performance report](m5-rendering-performance.md) supersedes
+the preliminary frame-rate samples above for rendering comparisons. It records
+the fixed timing protocol, actual backend and pixel dimensions, repeated software
+measurements and available hardware evidence. Physical midrange laptop and phone
+G5 validation remains open. The coupled numerical and scientific limits above
+remain unchanged.

@@ -1,0 +1,83 @@
+{
+  "schema": "puckworks.render-baseline-provenance/1",
+  "source": "/tmp/espresso-m5-baseline-dist",
+  "output": "/tmp/espresso-m5-baseline-bench-dist",
+  "sourceFiles": [
+    {
+      "path": "assets/engine.worker-ZQBnSW_a.js",
+      "sha256": "fa3f01796ba803031536b06722bd10384f9a9b6e9cd29375bbc839b7a2ba5f0f"
+    },
+    {
+      "path": "assets/index-BjKcQLUE.css",
+      "sha256": "d4bae328bd91a0c713805c2f7ee1f26807e82d31f195d91841ded80c7c9ffb99"
+    },
+    {
+      "path": "assets/index-C5j34d9z.js",
+      "sha256": "04ae8b78cbb5af7511880fa0f2d456597d59404d8b2d7f035ebd9e487c699df6"
+    },
+    {
+      "path": "assets/microstructure.worker-D5kHCbpK.js",
+      "sha256": "5804a9997ef5412e029346463c585e96ceb54508337dc45714b753cac926c4db"
+    },
+    {
+      "path": "assets/puckcore_bg-DJ7TOm5b.wasm",
+      "sha256": "73d831762ef0337ec0f5632fdc0a56caae7f893a038b3703a78cf8edf005ceec"
+    },
+    {
+      "path": "assets/PuckView-BwAkJHbz.js",
+      "sha256": "9765c4a206c46fe693e8929b8a81ab48720780fec34de6bc7ae74a82d565ab26"
+    },
+    {
+      "path": "device.html",
+      "sha256": "b7141d95888ae8e66e94c2415f8559f39e8fcdec7f05883296c21b25238c1e94"
+    },
+    {
+      "path": "device.js",
+      "sha256": "42080c485b12c88173e4bf3ff6cf91cd181bfdb0a95db122667187092139ecfd"
+    },
+    {
+      "path": "favicon.svg",
+      "sha256": "8bf3a266239a17b40422b8284c997914c70c2aa6f4948e9df6a36e868410aeac"
+    },
+    {
+      "path": "index.html",
+      "sha256": "8605c68e3cba69b8b41b44588ed8acb932ca24fc4d0b4407f8547c6ed9dbcf94"
+    },
+    {
+      "path": "third-party-licenses.md",
+      "sha256": "59b0876626da105caa4efaacba6245296ea2fb7da74efc1b9ac940f30808ec4d"
+    }
+  ],
+  "originalAsset": {
+    "path": "assets/PuckView-BwAkJHbz.js",
+    "sha256": "9765c4a206c46fe693e8929b8a81ab48720780fec34de6bc7ae74a82d565ab26"
+  },
+  "instrumentedAssetSha256": "452618cfa76e3f3af3a5c23d95f1d4f427ce2fa46a75404ac119a0037ec6d8bb",
+  "helperSourceSha256": "f8e9f8634f436e920faaa84aaa9717f4007b30b121233584ffcb23007435aa1a",
+  "helperModuleSha256": "cb876172b27339e13b3aa1fec76ca461bf014289b327f344c00329e9be8cc24d",
+  "protocol": {
+    "targetFps": {
+      "desktop": 60,
+      "viewportAtMost700Px": 30
+    },
+    "warmupMs": 1500,
+    "minWarmupFrames": 30,
+    "sampleMs": 5000,
+    "orbitRadiansPerSecond": 0.36,
+    "gpuQueryEveryFrames": 4
+  },
+  "changes": [
+    "benchmark timing and result export",
+    "fixed initial-pose wall-clock camera trajectory, reset at sample transition",
+    "optional nonblocking GPU timer queries every fourth sampled submission"
+  ],
+  "unchanged": [
+    "renderer implementation",
+    "shaders",
+    "geometry",
+    "particle count",
+    "DPR policy",
+    "physics and model"
+  ],
+  "resultSelector": ".puck-view[data-render-benchmark]"
+}

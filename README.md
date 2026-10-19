@@ -2,7 +2,7 @@
 
 An open-source espresso simulator that runs entirely in the browser. It models a shot from bean and grinder, through the puck and the flow, to the cup. The goal is to follow the ~55 compounds that dissolve and to end with an explainable taste estimate, giving every number a source and an uncertainty band. The status below says what exists today.
 
-**Status:** version 0.9.0 adds **M5: experimental Explore**. Inspect a representative particle volume, the puck cross-section and actual selected-cell kernel shells on one shared shot timeline. Standard and 5× depth refinement use the same Tier 1 parallel 1D physics; displayed particle counts change visual detail independently. Three.js WebGL2 rendering has SVG/table fallbacks and needs no WebGPU. Packing and its optional pore lattice are illustrative and do not feed back into extraction. [Explore contract](docs/model/m5-explore.md) · [M5 verification](docs/validation/m5-validation.md). **Hardware G5 gates remain open pending measured laptop and phone validation.**
+**Status:** version 0.9.1 includes **M5: experimental Explore**, with exact sphere rendering and a reproducible rendering benchmark. Inspect a representative particle volume, the puck cross-section and actual selected-cell kernel shells on one shared shot timeline. Standard and 5× depth refinement use the same Tier 1 parallel 1D physics; displayed particle counts change visual detail independently. Three.js WebGL2 rendering has SVG/table fallbacks and needs no WebGPU. Packing and its optional pore lattice are illustrative and do not feed back into extraction. [Explore contract](docs/model/m5-explore.md) · [M5 verification](docs/validation/m5-validation.md) · [Rendering performance](docs/validation/m5-rendering-performance.md). **Hardware G5 gates remain open pending measured midrange laptop and physical phone validation.**
 
 M4 experimental Dial-in remains available: forecast-before-observation records in IndexedDB, finite-grid local calibration, bounded advice with Tier 1 rechecks, shot-log imports, personal ratings and prospective scoring. [Dial-in contract](docs/model/m4-dial-in.md) · [M4 verification](docs/validation/m4-validation.md). Personal accuracy target V9 remains open; synthetic checks do not establish it.
 
@@ -51,6 +51,7 @@ Calibration source selection includes online community shot archives and control
 - [M3 uncertainty](docs/model/m3-uncertainty.md), [taste](docs/model/m3-taste.md) and [verification report](docs/validation/m3-validation.md): scenario ranges, explainable indices and the distinction between numerical checks and sensory validation.
 - [M4 Dial-in](docs/model/m4-dial-in.md): local records, calibration, inverse advice, preference learning and prospective scoring.
 - [M5 Explore](docs/model/m5-explore.md): coupled particle state, depth refinement, representative graphics and open hardware performance gates.
+- [M5 rendering performance](docs/validation/m5-rendering-performance.md): benchmark protocol, rendering quality and device evidence.
 - [Shot model](docs/model/shot-model.md): the shot solver's physics and numerics, with verification results.
 - [Input models](docs/model/input-models.md): from a recipe to the physics, including the presets.
 - [Particle kernel](docs/model/particle-kernel.md): the diffusion solver, with measured verification results.
@@ -74,6 +75,18 @@ You need Rust (via rustup), Node 22 or later, and Python 3.10 or later. Full set
 scripts/build_wasm.sh                 # build the WebAssembly engine
 cd web && npm ci && npm run dev       # run the web app locally
 ```
+
+## Rendering benchmark
+
+Build the production app, then measure all four display populations with three trials:
+
+```bash
+cd web
+npm run build
+node scripts/render-benchmark.mjs --backend auto --quality exact --counts 30000,150000,5000,25000 --trials 3 --dpr 1
+```
+
+Use `--backend software` for explicit SwiftShader measurements. `--quality exact` requires exact sphere quality; `--quality current` accepts the build's recorded rendering path, including the frozen reference. The benchmark retains the requested particle count and DPR, reports actual canvas dimensions and WebGL backend, warms up for at least 1.5 seconds and 30 submissions, and samples a fixed five-second camera orbit. JSON includes frame interval median/p95, CPU submission times and optional asynchronous GPU timing. RAF cadence does not establish GPU completion or compositor presentation. The detected RTX 4080 Laptop GPU is high end hardware; midrange laptop and physical phone G5 gates remain open. See [reproduction and comparison rules](CONTRIBUTING.md#rendering-performance-measurements) and the [performance report](docs/validation/m5-rendering-performance.md).
 
 ## Principles
 

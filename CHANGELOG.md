@@ -2,6 +2,34 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.9.1] - 2026-10-19
+
+M5 rendering performance measurements and sphere rendering improvements.
+
+### Changed
+- Tighter projected sphere bounds and vertex rejection avoid shading outside
+  exact sphere coverage or the selected cut/frustum. Conservative enclosed-sphere
+  rejection skips redundant opaque rendering with cut, camera, clipping and
+  depth-precision guards. Particle counts, radii,
+  picking and coupled extraction remain unchanged.
+- A reproducible fixed-camera benchmark warms up for at least 1.5 seconds and
+  30 submissions before a five-second orbit. Reports include median/p95 frame
+  intervals, CPU submissions, optional asynchronous GPU timing, actual backend,
+  pixel dimensions, quality and cancellation status, with local JSON export.
+- A fail-closed normalizer instruments the frozen M5 production build with the
+  same measurement protocol without changing its renderer. A local Chrome
+  driver repeats measurements at the four standard display counts.
+- See the [rendering performance evidence](docs/validation/m5-rendering-performance.md)
+  for measured results and quality comparisons: median software cadence changes
+  by +6.6% at 30k and +8.8% at 25k, but p95 worsens; 5k regresses by 4.1%.
+  The available high-end GPU retains roughly 239 fps RAF cadence at 30k/150k.
+  These are local observations, not general speedup or presentation guarantees.
+  Midrange laptop and physical
+  phone G5 validation remains open; high-end GPU or phone-size viewport results
+  do not establish those gates.
+- Versioned fixtures and verification reports retain every golden numerical
+  value. Physics, parameters, calibration and source splits are unchanged.
+
 ## [0.9.0] - 2026-10-18
 
 M5 experimental Explore, including the requested 5× resolution option.

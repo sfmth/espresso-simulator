@@ -3,9 +3,31 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { datedName, downloadJson } from '../shot/download';
+import {
+  createBenchmark,
+  createGpuTimer,
+  orbitPoseAt,
+  readWebGLInfo,
+  type BenchmarkAccumulator,
+  type BenchmarkCancelReason,
+  type BenchmarkResult,
+  type GpuTimer,
+} from './benchmark';
 import type { buildMicrostructure } from './microstructure';
+import { buildContainmentIndex, containmentDepthFactor } from './renderMath';
 
 type Model = ReturnType<typeof buildMicrostructure>;
+interface RenderBenchmarkResult extends BenchmarkResult {
+  renderObservations: {
+    implementation: string;
+    containmentCandidateCount: number;
+    containedParticleCount: number;
+    containmentBuildMs: number;
+    containmentMarginMm: number;
+    clockFailure?: string;
+  };
+}
 export interface PuckViewProps {
   model: Model;
   particleEy: Float32Array | null;
@@ -20,35 +42,59 @@ const vertexShader = `
 attribute vec3 centre;
 attribute float radius;
 attribute vec3 tint;
+attribute vec4 containingSphere;
 uniform float cutZ;
 uniform mat4 projectionInverse;
+uniform vec2 cameraRange;
+uniform float occlusionDepthFactor;
+uniform float containmentMargin;
 varying vec3 viewCentre;
 varying vec3 rayPoint;
 varying float particleRadius;
 varying vec3 color;
-varying float visible;
 void main() {
   color = tint;
-  visible = step(centre.z, cutZ);
   vec4 view = modelViewMatrix * vec4(centre, 1.0);
   viewCentre = view.xyz;
   particleRadius = radius;
-  if (view.z - radius >= 0.0) {
-    // Entirely behind the eye: collapse outside the clip volume.
+  float d = -view.z;
+  bool occluded = false;
+  if (containingSphere.w > 0.0 && containingSphere.z <= cutZ) {
+    vec3 parentView = (modelViewMatrix * vec4(containingSphere.xyz, 1.0)).xyz;
+    float parentRadius = containingSphere.w;
+    float parentDepth = -parentView.z;
+    float gap = parentRadius - radius - length(centre - containingSphere.xyz);
+    float depthSafety = occlusionDepthFactor * (parentDepth + parentRadius) * (parentDepth + parentRadius);
+    occluded = dot(parentView, parentView) > parentRadius * parentRadius
+      && parentDepth - parentRadius > cameraRange.x + containmentMargin
+      && parentDepth + parentRadius < cameraRange.y - containmentMargin
+      && gap > containmentMargin + depthSafety;
+  }
+  if (occluded || centre.z > cutZ || d + radius < cameraRange.x || d - radius > cameraRange.y) {
     rayPoint = vec3(0.0, 0.0, -1.0);
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-  } else if (view.z + radius >= -0.001) {
-    // A sphere crossing the eye/near plane needs a conservative full-screen
-    // quad; the exact fragment intersection rejects its unused pixels.
-    vec4 nearPoint = projectionInverse * vec4(position.xy, -1.0, 1.0);
-    rayPoint = nearPoint.xyz / nearPoint.w;
-    gl_Position = vec4(position.xy, 0.0, 1.0);
   } else {
-    // Projecting a sphere's enclosing cube onto its centre plane gives this
-    // conservative bound, including the off-axis perspective displacement.
-    float extent = radius * (-view.z + length(view.xy)) / (-view.z - radius);
-    rayPoint = view.xyz + vec3(position.xy * extent, 0.0);
-    gl_Position = projectionMatrix * vec4(rayPoint, 1.0);
+    vec2 lo = vec2(-1.0);
+    vec2 hi = vec2(1.0);
+    if (d > radius) {
+      // Axis-aligned tangent bounds of the projected sphere, not its much
+      // larger enclosing cube. Keep a small Float32 rounding margin.
+      float denominator = d * d - radius * radius;
+      vec2 tangent = radius * sqrt(view.xy * view.xy + vec2(denominator));
+      vec2 scale = vec2(projectionMatrix[0][0], projectionMatrix[1][1]);
+      vec2 offset = projectionMatrix[2].xy;
+      lo = scale * (view.xy * d - tangent) / denominator - offset - vec2(0.000002);
+      hi = scale * (view.xy * d + tangent) / denominator - offset + vec2(0.000002);
+    }
+    if (lo.x > 1.0 || hi.x < -1.0 || lo.y > 1.0 || hi.y < -1.0) {
+      rayPoint = vec3(0.0, 0.0, -1.0);
+      gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    } else {
+      vec2 ndc = mix(max(lo, vec2(-1.0)), min(hi, vec2(1.0)), position.xy * 0.5 + 0.5);
+      vec4 nearPoint = projectionInverse * vec4(ndc, -1.0, 1.0);
+      rayPoint = nearPoint.xyz / nearPoint.w;
+      gl_Position = vec4(ndc, 0.0, 1.0);
+    }
   }
 }`;
 const fragmentShader = `
@@ -58,9 +104,7 @@ varying vec3 viewCentre;
 varying vec3 rayPoint;
 varying float particleRadius;
 varying vec3 color;
-varying float visible;
 void main() {
-  if (visible < 0.5) discard;
   vec3 direction = normalize(rayPoint);
   float b = dot(direction, viewCentre);
   // This form avoids subtracting two bed-scale squares for a tiny fine.
@@ -97,9 +141,9 @@ export function PuckView(props: PuckViewProps) {
   const update = useRef<(() => void) | null>(null);
   const measure = useRef<(() => void) | null>(null);
   const [fallback, setFallback] = useState(false);
-  const [fps, setFps] = useState<number | null>(null);
+  const [report, setReport] = useState<RenderBenchmarkResult | null>(null);
+  const [benchmarkPhase, setBenchmarkPhase] = useState<'warmup' | 'sample'>('warmup');
   const [measuring, setMeasuring] = useState(false);
-
   useEffect(() => {
     latest.current = props;
     update.current?.();
@@ -134,7 +178,7 @@ export function PuckView(props: PuckViewProps) {
       return;
     }
     setFallback(false);
-    setFps(null);
+    setReport(null);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#111a24');
     const edge = model.domainMm;
@@ -152,6 +196,14 @@ export function PuckView(props: PuckViewProps) {
     geometry.setIndex([0, 1, 2, 0, 2, 3]);
     geometry.setAttribute('centre', new THREE.InstancedBufferAttribute(model.positionsMm, 3));
     geometry.setAttribute('radius', new THREE.InstancedBufferAttribute(model.radiiMm, 1));
+    const containmentStart = performance.now();
+    const containment = buildContainmentIndex(model.positionsMm, model.radiiMm, edge);
+    const containmentBuildMs = performance.now() - containmentStart;
+    geometry.setAttribute(
+      'containingSphere',
+      new THREE.InstancedBufferAttribute(containment.parentSphere, 4),
+    );
+    const depthBits = Number(renderer.getContext().getParameter(renderer.getContext().DEPTH_BITS));
     const colors = new Float32Array(model.radiiMm.length * 3);
     const tint = new THREE.InstancedBufferAttribute(colors, 3).setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('tint', tint);
@@ -163,11 +215,16 @@ export function PuckView(props: PuckViewProps) {
         cutZ: { value: edge / 2 },
         cameraProjection: { value: camera.projectionMatrix },
         projectionInverse: { value: camera.projectionMatrixInverse },
+        cameraRange: { value: new THREE.Vector2(camera.near, camera.far) },
+        containmentMargin: { value: containment.marginMm },
+        occlusionDepthFactor: { value: 1e20 },
       },
     });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.frustumCulled = false;
+    mesh.renderOrder = 1;
     scene.add(mesh);
+    const bufferSize = new THREE.Vector2();
     const boxSource = new THREE.BoxGeometry(edge, edge, edge);
     const boxGeometry = new THREE.EdgesGeometry(boxSource);
     boxSource.dispose();
@@ -260,8 +317,23 @@ export function PuckView(props: PuckViewProps) {
     scene.add(marker);
     let disposed = false;
     let frame = 0;
-    let benchmarkStart = 0;
-    let benchmarkFrames = 0;
+    let benchmark: BenchmarkAccumulator | null = null;
+    let gpuTimer: GpuTimer | null = null;
+    let sampleOrbitStart = 0;
+    let gpuFrame = 0;
+    let gpuDisjoint = false;
+    let gpuPending = 0;
+    let gpuSamples: number[] = [];
+    let clockFailure: string | undefined;
+    let lastRafClock: number | null = null;
+    const initialPosition = [edge * 1.35, edge * 0.9, edge * 1.6] as const;
+    const targetPosition = [0, 0, 0] as const;
+    let measuredConfiguration: {
+      ey: Float32Array | null;
+      selection: number;
+      cut: number;
+      network: boolean;
+    } | null = null;
     let previousEy: Float32Array | null | undefined;
     let previousSelection = -1;
     const draw = () => {
@@ -270,6 +342,15 @@ export function PuckView(props: PuckViewProps) {
     };
     const sync = () => {
       const p = latest.current;
+      if (
+        benchmark &&
+        measuredConfiguration &&
+        (measuredConfiguration.ey !== p.particleEy ||
+          measuredConfiguration.selection !== p.selectedParticle ||
+          measuredConfiguration.cut !== p.cut ||
+          measuredConfiguration.network !== p.showNetwork)
+      )
+        stopBenchmark('configuration-changed');
       material.uniforms.cutZ.value = (p.cut - 0.5) * edge;
       network.visible = p.showNetwork;
       arrows.visible = p.showNetwork;
@@ -294,44 +375,169 @@ export function PuckView(props: PuckViewProps) {
     const resize = () => {
       const { width, height } = canvas.getBoundingClientRect();
       if (!width || !height) return;
+      if (benchmark) stopBenchmark('configuration-changed');
       // Crisp on HiDPI screens without multiplying a 150k view by 9× pixels.
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      material.uniforms.occlusionDepthFactor.value = containmentDepthFactor(
+        {
+          scaleX: camera.projectionMatrix.elements[0],
+          scaleY: camera.projectionMatrix.elements[5],
+          near: camera.near,
+          far: camera.far,
+        },
+        depthBits,
+      );
       draw();
     };
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
-    controls.addEventListener('change', draw);
-    const stopBenchmark = () => {
+    const controlledDraw = () => {
+      if (benchmark) stopBenchmark('interrupted');
+      draw();
+    };
+    controls.addEventListener('change', controlledDraw);
+    const pollGpu = () => {
+      if (!gpuTimer) return;
+      const status = gpuTimer.poll();
+      gpuSamples.push(...status.samples.map((sample) => sample.elapsedMs));
+      gpuDisjoint ||= status.disjoint;
+      gpuPending = status.pending;
+    };
+    const stopBenchmark = (reason?: BenchmarkCancelReason) => {
       cancelAnimationFrame(frame);
-      if (benchmarkStart)
-        setFps((benchmarkFrames * 1000) / Math.max(1, performance.now() - benchmarkStart));
-      benchmarkStart = 0;
+      if (benchmark) {
+        if (reason) benchmark.cancel(reason);
+        pollGpu();
+        setReport({
+          ...benchmark.finish({
+            supported: gpuTimer?.supported ?? false,
+            disjoint: gpuDisjoint,
+            everyFrames: gpuTimer?.everyFrames ?? 4,
+            samplesMs: gpuSamples,
+            pending: gpuPending,
+          }),
+          renderObservations: {
+            implementation:
+              'tight analytic tangent bounds, vertex cut/frustum culling, conservative fully contained-sphere culling',
+            containmentCandidateCount: containment.candidateCount,
+            containedParticleCount: containment.containedCount,
+            containmentBuildMs,
+            containmentMarginMm: containment.marginMm,
+            ...(clockFailure ? { clockFailure } : {}),
+          },
+        });
+      }
+      benchmark = null;
+      gpuTimer?.dispose();
+      gpuTimer = null;
+      measuredConfiguration = null;
       setMeasuring(false);
     };
     const tick = (now: number) => {
-      if (disposed || document.hidden) {
-        stopBenchmark();
+      if (!benchmark || disposed || document.hidden) {
+        stopBenchmark(disposed ? 'disposed' : 'tab-hidden');
         return;
       }
-      if (!benchmarkStart) benchmarkStart = now;
-      camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.006);
+      if (benchmark.progress().phase === 'idle') benchmark.start(now);
+      if (lastRafClock !== null && now <= lastRafClock) {
+        // Preserve the helper's diagnostic without submitting another frame or
+        // moving the orbit with a timestamp that predates the previous frame.
+        try {
+          benchmark.recordFrame(now);
+        } catch (error) {
+          clockFailure = error instanceof Error ? error.message : String(error);
+        }
+        stopBenchmark('clock-discontinuity');
+        return;
+      }
+      lastRafClock = now;
+      const phase = benchmark.progress().phase;
+      const startsSample = benchmark.willStartSample(now);
+      if (startsSample) sampleOrbitStart = now;
+      camera.position.fromArray(
+        phase === 'sample' || startsSample
+          ? orbitPoseAt(initialPosition, targetPosition, now - sampleOrbitStart)
+          : initialPosition,
+      );
       camera.lookAt(controls.target);
+      pollGpu();
+      const queried =
+        (phase === 'sample' || startsSample) && (gpuTimer?.begin(gpuFrame++) ?? false);
+      const cpuStart = performance.now();
       draw();
-      benchmarkFrames++;
-      if (now - benchmarkStart < 3000) frame = requestAnimationFrame(tick);
+      const cpuRenderMs = performance.now() - cpuStart;
+      if (queried) gpuTimer?.end();
+      const progress = benchmark.recordFrame(now, cpuRenderMs);
+      if (progress.phase === 'sample' && phase !== 'sample') {
+        sampleOrbitStart = now;
+        setBenchmarkPhase('sample');
+      }
+      if (progress.phase !== 'complete') frame = requestAnimationFrame(tick);
       else stopBenchmark();
     };
     measure.current = () => {
-      if (benchmarkStart || document.hidden) return;
-      benchmarkFrames = 0;
+      if (benchmark || document.hidden) return;
+      camera.position.fromArray(initialPosition);
+      controls.target.fromArray(targetPosition);
+      camera.lookAt(controls.target);
+      controls.update();
+      draw();
+      const rect = canvas.getBoundingClientRect();
+      renderer.getDrawingBufferSize(bufferSize);
+      const p = latest.current;
+      measuredConfiguration = {
+        ey: p.particleEy,
+        selection: p.selectedParticle,
+        cut: p.cut,
+        network: p.showNetwork,
+      };
+      const environment = {
+        particleCount: model.radiiMm.length,
+        renderPath: 'analytic-exact',
+        sphereQuality: 'exact sphere silhouette and surface depth',
+        networkVisible: p.showNetwork,
+        cutFraction: p.cut,
+        cssWidthPx: rect.width,
+        cssHeightPx: rect.height,
+        drawingBufferWidthPx: bufferSize.x,
+        drawingBufferHeightPx: bufferSize.y,
+        devicePixelRatio: window.devicePixelRatio || 1,
+        rendererPixelRatio: renderer.getPixelRatio(),
+        camera: {
+          position: initialPosition,
+          target: targetPosition,
+          verticalFovDeg: camera.fov,
+          orbitRadiansPerSecond: 0.36,
+        },
+        webgl: readWebGLInfo(renderer.getContext()),
+        extraQuality: {
+          markerParticle: p.selectedParticle,
+          modelSeed: model.seed,
+          warmupCamera: 'fixed canonical pose; sampled orbit starts at zero',
+          viewportWidthPx: window.innerWidth,
+          viewportHeightPx: window.innerHeight,
+        },
+      };
+      benchmark = createBenchmark({ environment, targetFps: window.innerWidth <= 700 ? 30 : 60 });
+      gpuTimer = createGpuTimer(renderer.getContext() as WebGL2RenderingContext, {
+        everyFrames: 4,
+      });
+      gpuSamples = [];
+      gpuDisjoint = false;
+      gpuPending = 0;
+      gpuFrame = 0;
+      clockFailure = undefined;
+      lastRafClock = null;
+      setReport(null);
+      setBenchmarkPhase('warmup');
       setMeasuring(true);
       frame = requestAnimationFrame(tick);
     };
     const visibility = () => {
-      if (document.hidden) stopBenchmark();
+      if (document.hidden) stopBenchmark('tab-hidden');
       else resize();
     };
     document.addEventListener('visibilitychange', visibility);
@@ -375,7 +581,7 @@ export function PuckView(props: PuckViewProps) {
     const lost = (event: Event) => {
       event.preventDefault();
       setFallback(true);
-      stopBenchmark();
+      stopBenchmark('context-lost');
     };
     canvas.addEventListener('pointerdown', down);
     canvas.addEventListener('pointerup', up);
@@ -384,7 +590,7 @@ export function PuckView(props: PuckViewProps) {
     sync();
     return () => {
       disposed = true;
-      stopBenchmark();
+      stopBenchmark('disposed');
       observer.disconnect();
       controls.dispose();
       document.removeEventListener('visibilitychange', visibility);
@@ -409,7 +615,7 @@ export function PuckView(props: PuckViewProps) {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
-    <div className="puck-view">
+    <div className="puck-view" data-render-benchmark={report ? JSON.stringify(report) : undefined}>
       <canvas
         ref={canvasRef}
         className="puck-canvas"
@@ -454,14 +660,60 @@ export function PuckView(props: PuckViewProps) {
           onClick={() => measure.current?.()}
           disabled={fallback || measuring || !active}
         >
-          {measuring ? 'Measuring…' : 'Measure frame rate'}
+          {measuring
+            ? benchmarkPhase === 'warmup'
+              ? 'Warming up…'
+              : 'Measuring…'
+            : 'Measure frame rate'}
         </button>
-        <output aria-live="polite">
-          {fps === null
+        <output aria-live="polite" data-benchmark={report ? JSON.stringify(report) : undefined}>
+          {report === null
             ? 'WebGL2 · WebGPU not required'
-            : `${fps.toFixed(1)} fps · this device, current view`}
+            : report.status === 'complete' && report.stats.meanFps !== null
+              ? `${report.stats.meanFps.toFixed(1)} fps · median ${report.stats.frameIntervalMs?.median.toFixed(1)} ms · p95 ${report.stats.frameIntervalMs?.p95.toFixed(1)} ms · RAF cadence proxy`
+              : `Benchmark ${report.status}: ${report.reason === 'clock-discontinuity' ? 'browser clock changed; measure again' : report.reason}`}
         </output>
       </div>
+      <p className="note">
+        The benchmark uses a fixed camera pose for warmup (at least 1.5 s and 30 frames), then the
+        same time-based 5 s orbit. RAF intervals are a scheduling proxy; GPU timer queries are
+        reported when available. Neither proves compositor presentation.
+      </p>
+      {report && (
+        <details className="spec-json">
+          <summary>
+            Frame timing report ·{' '}
+            {report.environment.webgl.unmaskedRenderer ??
+              report.environment.webgl.renderer ??
+              'renderer unavailable'}
+          </summary>
+          <p>
+            {report.environment.particleCount.toLocaleString()} particles ·{' '}
+            {report.environment.drawingBufferWidthPx} × {report.environment.drawingBufferHeightPx}{' '}
+            drawing-buffer pixels · DPR {report.environment.devicePixelRatio} / renderer{' '}
+            {report.environment.rendererPixelRatio} · {report.environment.renderPath}
+          </p>
+          <p>
+            GPU timing:{' '}
+            {report.gpuTiming.elapsedMs
+              ? `median ${report.gpuTiming.elapsedMs.median.toFixed(2)} ms, p95 ${report.gpuTiming.elapsedMs.p95.toFixed(2)} ms (${report.gpuTiming.validSampleCount} valid samples)`
+              : report.gpuTiming.supported
+                ? 'no resolved, non-disjoint samples'
+                : 'unavailable'}
+            ; {report.gpuTiming.pendingQueries} pending. Estimated missed target-budget slots:{' '}
+            {report.stats.estimatedDroppedFrames}; observed over-budget intervals:{' '}
+            {report.stats.overBudgetFrames}.
+          </p>
+          <button
+            type="button"
+            className="button"
+            onClick={() => downloadJson(datedName('render-benchmark', 'json'), report)}
+          >
+            Download benchmark JSON
+          </button>
+          <pre data-testid="render-benchmark-json">{JSON.stringify(report, null, 2)}</pre>
+        </details>
+      )}
       <p className="note">
         Drag to orbit · scroll or pinch to zoom · click to inspect. Gold = more extracted (0–30%
         scale); brown = no coupled data. Sphere shading is illustrative. The cutaway hides particle

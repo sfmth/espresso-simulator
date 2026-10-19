@@ -56,6 +56,26 @@ Shell sessions that haven't run the `export` line need `$HOME/.cargo/bin` on `PA
 | Start the web dev server | `cd web && npm run dev` |
 | Run the web checks | `cd web && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build && npm run licenses` |
 | Run the browser end-to-end test (uses the installed Google Chrome) | `cd web && npm run e2e` |
+| Measure production Explore rendering (build first) | `cd web && node scripts/render-benchmark.mjs --backend auto --quality exact --counts 30000,150000,5000,25000 --trials 3 --dpr 1` |
+
+## Rendering performance measurements
+
+Version 0.9.1 provides a repeatable production-view benchmark. From `web/`, build once, then run:
+
+```bash
+npm run build
+node scripts/render-benchmark.mjs --backend auto --quality exact --counts 30000,150000,5000,25000 --trials 3 --dpr 1 --output test-results/render-exact.json
+```
+
+The script uses installed Chrome, or the executable specified by `CHROME_PATH`. `--backend auto` uses the browser's available backend and records its actual WebGL strings; `--backend software` explicitly selects SwiftShader. `--quality exact` requires analytic sphere silhouettes and surface depth; `--quality current` accepts the build's recorded rendering path, including the frozen reference. Physical radii and the full requested particle population are preserved. The recorded environment identifies the rendering implementation and exact sphere quality.
+
+Each count uses a fixed viewport: 1280×900 for 30,000/150,000 particles and 390×844 for 5,000/25,000 particles. `--dpr` defaults to 1; the renderer's existing DPR cap is recorded separately. The benchmark does not reduce counts or DPR to improve results. Compare matching populations, viewport and drawing-buffer dimensions, DPR, camera path, cut, network visibility and sphere quality. `--trials 3` repeats from fresh browser contexts. An alternate production directory can be selected with `--dist PATH`, or a running local server with `--url URL`.
+
+The browser warms up at a fixed camera pose for at least 1.5 seconds **and** 30 successful render submissions, then resets the orbit to zero and samples a deterministic five-second trajectory. Reports retain actual warmup/sample durations, interval counts, median/p95 frame intervals, CPU submission durations, target-budget missed-slot estimates and any available non-disjoint asynchronous GPU timer results. Hidden tabs, lost contexts and changed configurations cancel the measurement. Frame intervals describe RAF scheduling around CPU submissions; they do not count GPU-completed or compositor-presented frames. GPU queries measure selected render commands, report unresolved queries, and never force a per-frame `gl.finish` or readback. The UI exposes the same structured JSON and a local **Download benchmark JSON** button.
+
+For the original frozen M5 baseline, `scripts/normalize-render-baseline.mjs` accepts only the pinned build hashes and writes a separate instrumented directory. It preserves the renderer, shaders, geometry, counts and DPR policy while applying the same camera and timing protocol. It records a provenance sidecar, leaves the source untouched and refuses to replace an existing output. Run that instrumented directory with `--quality current`; a generic or unknown baseline build is rejected.
+
+The RTX 4080 Laptop GPU identified in the in-app browser is high end hardware. Desktop viewport emulation is not physical phone evidence, and software rendering is not a hardware G5 result. The midrange laptop and physical phone gates remain open. Record results and limitations in [M5 rendering performance](docs/validation/m5-rendering-performance.md); the broader [M5 verification report](docs/validation/m5-validation.md) tracks the remaining gates.
 
 ## When the core numerics change
 

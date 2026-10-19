@@ -1,6 +1,6 @@
 # M5: experimental Explore contract
 
-Version 0.9.0 · 2026-10-18. Browser implementation: `web/src/explore/`.
+Version 0.9.1 · 2026-10-19. Browser implementation: `web/src/explore/`.
 Explore displays the shared shot model's state. It does not add a second
 extraction model, infer a scanned puck, or change the published calibration.
 Numerical consistency and actual device performance are separate checks.
@@ -133,8 +133,11 @@ missing physical fields stay unavailable.
 ## Rendering and fallbacks
 
 The 3D renderer uses Three.js with **WebGL2 instanced sphere impostors**. Each
-particle uses a small billboard with spherical shading rather than a separate
-high-detail sphere mesh. Orbit/zoom, particle picking, a cutaway and optional
+particle uses a tightly bounded billboard with exact ray/sphere intersection
+and surface depth. Conservative vertex rejection avoids work outside the cut
+and view; spheres fully contained by a visible enclosing sphere can be skipped
+when the camera and clip planes guarantee occlusion. The model retains all
+particle identities and radii; changing the cut or camera can reveal them again. Orbit/zoom, particle picking, a cutaway and optional
 network edges support inspection. The cutaway hides particle centres beyond
 the chosen plane; it does not compute sliced particle interiors.
 
@@ -144,12 +147,21 @@ timeline and particle/profile tables. Selection also has a numeric control;
 inspection does not require pointer picking. Packing runs outside the UI thread,
 and hidden Explore views stop their playback/render work.
 
-The optional **Measure frame rate** action measures a brief rotating view on
-that device at the current count and viewport. It is not a benchmark of all
-recipes, hardware, thermal conditions or interaction patterns. G5 still requires
-measured evidence for the plan's mid-range laptop target (60 fps around 30,000
-particles) and recent-phone target (30 fps at 5,000–10,000 particles). The
-150,000/25,000 display options do not relax those gates or establish them.
+The optional **Measure frame rate** action resets to a canonical camera pose,
+warms up for at least 1.5 seconds and 30 submitted frames, then measures a
+five-second orbit driven by elapsed time. It records actual count, cut, network,
+canvas dimensions, DPR, WebGL backend, frame-interval median/p95 and CPU
+submission time. Optional asynchronous, non-disjoint GPU timer queries measure
+sampled render commands. Hidden tabs, changed configuration, context loss and
+interaction cancel a measurement. JSON downloads stay local.
+
+RAF intervals measure scheduling between CPU submissions; they do not establish
+GPU completion or compositor presentation. The [performance report](../validation/m5-rendering-performance.md)
+records a frozen-renderer baseline, reproducible protocol and backend-specific
+results. G5 still requires measured evidence for the plan's mid-range laptop
+(60 fps around 30,000 particles) and recent physical phone (30 fps at
+5,000–10,000). A high-end laptop GPU or phone-size desktop viewport does not
+establish those gates. The 150,000/25,000 options retain their full populations.
 
 ## Guided scenarios and verification
 
