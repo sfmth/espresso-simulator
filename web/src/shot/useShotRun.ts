@@ -23,6 +23,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { EngineError, isAbortError } from '../engine/engine';
 import { useEngine } from '../engine/EngineContext';
 import type { Recipe } from '../engine/shotTypes';
+import type { ExploreRequest } from '../engine/exploreTypes';
 import {
   builderErrorPath,
   formToRecipe,
@@ -41,6 +42,8 @@ export interface ShotRunControls {
   key: string | null;
   /** Starts a full run of the current recipe now. */
   run: () => void;
+  /** Runs Tier 1 with particle data for one continuum cell, on the same full-run channel. */
+  runExplore: (request: ExploreRequest) => void;
   /** Stops the full run, the automatic run and any pending automatic run. */
   cancel: () => void;
   /** Repeats the run that failed in the engine (its worker has been replaced). */
@@ -90,7 +93,8 @@ export function useShotRun(): ShotRunControls {
   /** The inputs on screen, for results that arrive later. */
   const currentKey = useRef<string | null>(key);
   /** What failed in the engine last, for Retry. */
-  const lastFailure = useRef<RunKind | 'build' | null>(null);
+  const lastFailure = useRef<RunKind | 'build' | 'explore' | null>(null);
+  const lastExploreRequest = useRef<ExploreRequest | null>(null);
   useEffect(() => {
     currentKey.current = key;
   }, [key]);
@@ -109,13 +113,29 @@ export function useShotRun(): ShotRunControls {
   }, []);
 
   const simulate = useCallback(
-    (kind: RunKind, recipe: Recipe, controller: AbortController, owner: typeof runController) => {
+    (
+      kind: RunKind,
+      recipe: Recipe,
+      controller: AbortController,
+      owner: typeof runController,
+      explore?: ExploreRequest,
+    ) => {
       const store = useShotStore.getState();
       if (kind === 'full') store.fullStarted();
       else store.previewStarted();
       const key = physicalKey(recipe);
       const tier = recipe.numerics?.tier === 0 ? 0 : 1;
-      engine.simulateRecipe(recipe, { signal: controller.signal }).then(
+      const call = explore
+        ? engine.simulateExplore
+          ? engine.simulateExplore(recipe, explore, { signal: controller.signal })
+          : Promise.reject(
+              new EngineError(
+                'unsupported',
+                'Explore particle data are unavailable in this engine. Reload the app to update it.',
+              ),
+            )
+        : engine.simulateRecipe(recipe, { signal: controller.signal });
+      call.then(
         ({ result, runtimeMs }) => {
           if (owner.current !== controller) return; // superseded or cancelled
           owner.current = null;
@@ -146,7 +166,7 @@ export function useShotRun(): ShotRunControls {
             useShotStore.getState().previewStopped();
             return;
           }
-          lastFailure.current = check.errorKind === 'engine' ? kind : null;
+          lastFailure.current = check.errorKind === 'engine' ? (explore ? 'explore' : kind) : null;
           useShotStore.getState().runFailed(kind, check);
         },
       );
@@ -206,6 +226,22 @@ export function useShotRun(): ShotRunControls {
     simulate('full', validation.recipe, controller, runController);
   }, [validation, clearTimer, stopAuto, simulate]);
 
+  const runExplore = useCallback(
+    (request: ExploreRequest) => {
+      if (!validation.ok) return;
+      clearTimer();
+      stopAuto();
+      runController.current?.abort();
+      const controller = new AbortController();
+      runController.current = controller;
+      started.current = true;
+      const selection = { ...request };
+      lastExploreRequest.current = selection;
+      simulate('full', withTier(validation.recipe, 1), controller, runController, selection);
+    },
+    [validation, clearTimer, stopAuto, simulate],
+  );
+
   const cancel = useCallback(() => {
     const pending = timer.current !== null;
     clearTimer();
@@ -221,9 +257,10 @@ export function useShotRun(): ShotRunControls {
     if (!validation.ok) return;
     const failed = lastFailure.current;
     lastFailure.current = null;
-    if (failed === 'full') run();
+    if (failed === 'explore' && lastExploreRequest.current) runExplore(lastExploreRequest.current);
+    else if (failed === 'full') run();
     else startAuto(validation.recipe, livePreview);
-  }, [validation, livePreview, run, startAuto]);
+  }, [validation, livePreview, run, runExplore, startAuto]);
 
   useEffect(() => {
     if (recipeJson === null || catalog === null) {
@@ -272,5 +309,5 @@ export function useShotRun(): ShotRunControls {
     [],
   );
 
-  return { validation, key, run, cancel, retry };
+  return { validation, key, run, runExplore, cancel, retry };
 }

@@ -6,11 +6,10 @@
  * compounds with provenance, the puck cross-section, sweeps, pinned runs and
  * exports. Everything runs in the browser's engine workers.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Tabs } from '../components/Tabs';
 import { checkShotResult } from '../engine/shotCheck';
-import { useEngine } from '../engine/EngineContext';
 import { toJsonResult } from '../engine/shotData';
 import { CompoundTable } from './CompoundTable';
 import { CupChemistryPanel } from './CupChemistryPanel';
@@ -35,7 +34,9 @@ import { MAX_PINS, useShotStore, type OutputTab } from './shotStore';
 import { browserStorage, saveDraft } from './storage';
 import { SummaryTiles } from './SummaryTiles';
 import { SweepPanel } from './SweepPanel';
-import { useShotRun } from './useShotRun';
+import { useShotRun, type ShotRunControls } from './useShotRun';
+import { useShotCatalog } from './useShotCatalog';
+import { useOptionalSharedShotRun } from './ShotRunContext';
 import { useUncertainty } from './useUncertainty';
 import { UncertaintyPanel } from './UncertaintyPanel';
 import { TastePanel } from './TastePanel';
@@ -43,42 +44,30 @@ import { TastePanel } from './TastePanel';
 /** Quiet time before the draft is saved to this browser's storage. */
 const DRAFT_SAVE_MS = 500;
 
-function messageOf(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+/** Standalone mounting retains the component's test/embedding contract. */
+function StandaloneShotLab() {
+  const { retry } = useShotCatalog();
+  const controls = useShotRun();
+  return <ShotLabView controls={controls} retryCatalog={retry} />;
 }
-
-function useCatalog(): { retry: () => void } {
-  const engine = useEngine();
-  const catalog = useShotStore((s) => s.catalog);
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    if (catalog) return;
-    let active = true;
-    engine.catalog().then(
-      ({ result }) => {
-        if (active) useShotStore.getState().setCatalog(result);
-      },
-      (error: unknown) => {
-        if (active) useShotStore.getState().setCatalogError(messageOf(error));
-      },
-    );
-    return () => {
-      active = false;
-    };
-  }, [engine, catalog, attempt]);
-  return {
-    retry: () => {
-      useShotStore.getState().setCatalogError(null);
-      setAttempt((a) => a + 1);
-    },
-  };
-}
-
 export function ShotLab() {
-  const { retry } = useCatalog();
+  const shared = useOptionalSharedShotRun();
+  return shared ? (
+    <ShotLabView controls={shared} retryCatalog={shared.retryCatalog} />
+  ) : (
+    <StandaloneShotLab />
+  );
+}
+function ShotLabView({
+  controls,
+  retryCatalog: retry,
+}: {
+  controls: ShotRunControls;
+  retryCatalog: () => void;
+}) {
   const catalog = useShotStore((s) => s.catalog);
   const catalogError = useShotStore((s) => s.catalogError);
-  const { validation, key, run, cancel, retry: retryRun } = useShotRun();
+  const { validation, key, run, cancel, retry: retryRun } = controls;
   const uncertainty = useUncertainty(validation.ok ? validation.recipe : null);
   const notices = useShotStore((s) => s.notices);
   const dismissNotices = useShotStore((s) => s.dismissNotices);

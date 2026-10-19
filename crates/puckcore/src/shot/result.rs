@@ -155,6 +155,9 @@ pub struct Spatial {
     pub snapshots: Vec<Snapshot>,
     /// Extraction yield of each size class at the end.
     pub class_ey: Vec<ClassEy>,
+    /// Selected-cell metadata for an opt-in Explore solve; absent on normal shots.
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    pub micro: Option<MicroMetadata>,
 }
 
 /// One parallel column (radial annulus or permeability stratum). Column i
@@ -192,6 +195,64 @@ pub struct Snapshot {
     /// Wetted share of each cell: 0 dry, 1 wet, in between where the wetting
     /// front is.
     pub wetted_fraction: Vec<Vec<f64>>,
+    /// Exact selected-cell particle states at this stored snapshot time.
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    pub micro: Option<MicroSnapshot>,
+    /// Instantaneous carrier flow entering each 1D column, m³/s; not pore velocity.
+    /// At event timestamps this is the operating point when the snapshot was captured.
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    pub column_flow_m3_s: Option<Vec<f64>>,
+    /// The shared lumped bed thermal node, °C; no spatial temperature gradients are solved.
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    pub bed_temperature_c: Option<f64>,
+}
+
+/// Geometry of one resolved particle-size class. A particle consists of a fast
+/// broken-cell surface pool and an intact spherical kernel; shell coordinates
+/// cover the kernel radius, not the full particle radius.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct MicroClass {
+    pub radius_m: f64,
+    pub kernel_radius_m: f64,
+    /// Share of total particle-envelope volume (and dry mass under the common density).
+    pub volume_fraction: f64,
+    /// Broken-cell volume share of the full particle envelope.
+    pub pool_fraction: f64,
+    /// Equal-volume kernel-shell outer faces, m; empty for an all-surface class.
+    pub shell_outer_radii_m: Vec<f64>,
+    /// Initial concentration-equivalent kernel loading, kg/m³ of reference capacity.
+    /// This is not a separate physical pore-liquid concentration or water inventory.
+    pub initial_kernel_conc_kg_m3: f64,
+}
+
+/// Which resolved cell was exported, and the unchanged model's class geometry.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct MicroMetadata {
+    pub column: usize,
+    pub cell: usize,
+    pub classes: Vec<MicroClass>,
+    /// Requested API refinement, with actual grid size below to prevent a tier-2 claim.
+    pub resolution: super::ExploreResolution,
+    pub depth_cells: usize,
+}
+
+/// Read-only projection of the coupled shot state at one snapshot.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct MicroSnapshot {
+    /// Per-class net soluble loss divided by that class's dry mass in the selected cell.
+    /// The volume-fraction-weighted mean equals the cell's local extraction yield.
+    pub class_ey: Vec<f64>,
+    /// [class][shell] exact concentration-equivalent soluble loading, kg/m³ of
+    /// reference capacity. Copied without extra normalization or interpolation.
+    pub kernel_conc_kg_m3: Vec<Vec<f64>>,
+    /// Surface-pool mass / its initial mass, per class. None means no surface pool.
+    pub surface_remaining_fraction: Vec<Option<f64>>,
 }
 
 /// Extraction yield of one size class: mass that left its particles over

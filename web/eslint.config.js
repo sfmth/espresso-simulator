@@ -46,7 +46,7 @@ export default defineConfig([
   },
   {
     // Callbacks passed to page.evaluate/waitForFunction run inside the browser.
-    files: ['scripts/e2e.mjs'],
+    files: ['scripts/e2e.mjs', 'scripts/render-benchmark.mjs'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 ]);

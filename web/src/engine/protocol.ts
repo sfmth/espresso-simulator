@@ -25,6 +25,7 @@
 import { thinSphereResult } from './decimate';
 import { RECYCLE_MEMORY_BYTES } from './memory';
 import type { TasteEstimate, UncertaintyOptions, UncertaintyResult } from './m3Types';
+import type { ExploreRequest } from './exploreTypes';
 import {
   shotTransferables,
   toShotRunData,
@@ -51,6 +52,7 @@ export interface EngineMethods {
   buildShotSpec: { params: { recipe: Recipe }; result: BuiltSpec };
   /** Recipe → build and result. */
   simulateRecipe: { params: { recipe: Recipe }; result: RecipeRunData };
+  simulateExplore: { params: { recipe: Recipe; request: ExploreRequest }; result: RecipeRunData };
   /** ShotSpec → result. */
   simulateShot: { params: { spec: ShotSpec }; result: ShotRunData };
   /** Recipe → the result's summary and diagnostics only (one point of a sweep). */
@@ -70,6 +72,7 @@ export const ENGINE_METHODS: readonly EngineMethod[] = [
   'catalog',
   'buildShotSpec',
   'simulateRecipe',
+  'simulateExplore',
   'simulateShot',
   'sweepPoint',
   'simulateUncertainty',
@@ -255,10 +258,24 @@ export function handleRequest(
         const result = parseCoreOutput<BuiltSpec>(text, 'buildShotSpec');
         return success(request.id, request.method, result, []);
       }
-      case 'simulateRecipe': {
+      case 'simulateRecipe':
+      case 'simulateExplore': {
         const json = JSON.stringify(request.params.recipe);
+        if (request.method === 'simulateExplore' && !core.simulateExplore) {
+          return fail(
+            request.id,
+            request.method,
+            'invalid-params',
+            new Error(
+              'This core does not support Explore particle snapshots; rebuild or update the engine.',
+            ),
+          );
+        }
         const coreStart = now();
-        const text = core.simulateRecipe(json);
+        const text =
+          request.method === 'simulateExplore'
+            ? core.simulateExplore!(json, JSON.stringify(request.params.request))
+            : core.simulateRecipe(json);
         const coreMs = now() - coreStart;
         const run = parseCoreOutput<{ build: BuiltSpec; result: unknown; taste?: TasteEstimate }>(
           text,
@@ -387,6 +404,32 @@ export function parseRequest(message: unknown): ParsedRequest {
     return { ok: true, request: { id, method, params: null } };
   }
   const params = message.params;
+  if (method === 'simulateExplore') {
+    if (!isRecord(params) || !isRecord(params.recipe) || !isRecord(params.request))
+      return bad('simulateExplore needs params.recipe and params.request objects');
+    const selection = params.request;
+    if (
+      Object.keys(selection).some((key) => !['column', 'cell', 'resolution'].includes(key)) ||
+      !Number.isSafeInteger(selection.column) ||
+      (selection.column as number) < 0 ||
+      !Number.isSafeInteger(selection.cell) ||
+      (selection.cell as number) < 0 ||
+      (selection.resolution !== undefined &&
+        selection.resolution !== 'standard' &&
+        selection.resolution !== 'high')
+    )
+      return bad(
+        'Explore selection needs non-negative integer column/cell indices and optional standard/high resolution',
+      );
+    return {
+      ok: true,
+      request: {
+        id,
+        method,
+        params: params as unknown as EngineMethods['simulateExplore']['params'],
+      },
+    };
+  }
   if (method === 'simulateUncertainty') {
     if (
       !isRecord(params) ||

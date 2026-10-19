@@ -2,6 +2,77 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.9.1] - 2026-10-19
+
+M5 rendering performance measurements and sphere rendering improvements.
+
+### Changed
+- Tighter projected sphere bounds and vertex rejection avoid shading outside
+  exact sphere coverage or the selected cut/frustum. Conservative enclosed-sphere
+  rejection skips redundant opaque rendering with cut, camera, clipping and
+  depth-precision guards. Particle counts, radii,
+  picking and coupled extraction remain unchanged.
+- A reproducible fixed-camera benchmark warms up for at least 1.5 seconds and
+  30 submissions before a five-second orbit. Reports include median/p95 frame
+  intervals, CPU submissions, optional asynchronous GPU timing, actual backend,
+  pixel dimensions, quality and cancellation status, with local JSON export.
+  Repeated RAF timestamps are omitted before rendering/counting and reported;
+  backward or persistently stalled clocks cancel cleanly instead of freezing.
+- A fail-closed normalizer instruments the frozen M5 production build with the
+  same measurement protocol without changing its renderer. A local Chrome
+  driver repeats measurements at the four standard display counts.
+- See the [rendering performance evidence](docs/validation/m5-rendering-performance.md)
+  for measured results and quality comparisons: median software cadence changes
+  by +6.6% at 30k and +8.8% at 25k, but p95 worsens; 5k regresses by 4.1%.
+  The available high-end GPU retains roughly 239 fps RAF cadence at 30k/150k.
+  These are local observations, not general speedup or presentation guarantees.
+  Midrange laptop and physical
+  phone G5 validation remains open; high-end GPU or phone-size viewport results
+  do not establish those gates.
+- Versioned fixtures and verification reports retain every golden numerical
+  value. Physics, parameters, calibration and source splits are unchanged.
+
+## [0.9.0] - 2026-10-18
+
+M5 experimental Explore, including the requested 5× resolution option.
+
+### Added
+- A representative 3D particle volume, orbit/zoom and cutaway, particle picking,
+  exact coupled kernel-shell inspection, a synchronized puck cross-section and
+  stored-snapshot playback. Seven guided scenarios share Lab's recipe and
+  controller, support Undo, and retain their assumptions.
+- Optional selected-cell exports copy actual Tier 1 shell concentrations,
+  surface-pool fractions and class extraction. Statistical particle weights
+  reproduce the selected continuum cell's local EY; missing or inconsistent
+  coupled data stays unavailable.
+- High resolution refines depth from 30 to 150 cells with the same parallel 1D
+  model. Independent display options increase desktop particles from 30,000 to
+  150,000, or mobile particles from 5,000 to 25,000. This is depth refinement;
+  the future 2D Tier 2 model remains deferred.
+- Deterministic worker-based approximate packing and an illustrative
+  clearance-based pore lattice with CG diagnostics. The geometry does not
+  predict absolute permeability or change the continuum simulation.
+- Lazy-loaded MIT-licensed Three.js/WebGL2 rendering, current-device frame-rate
+  measurement and an SVG/data fallback when 3D is unavailable. WebGPU is not
+  required. [M5 contract](docs/model/m5-explore.md),
+  [ADR 0015](docs/decisions/0015-explore-state-and-refinement.md) and
+  [verification record](docs/validation/m5-validation.md).
+
+### Verification
+- All 641 web, 439 Python and 272 Rust tests pass; one existing opt-in Rust
+  preset sweep remains ignored. Chrome checks both resolution grids, all four
+  particle counts and inspection fallbacks, with no foreign requests or console errors.
+- Standard opt-in export preserves every existing numeric output exactly.
+  Native and actual-WASM checks verify weighted class/cell consistency and the
+  fivefold refined depth grid. Full default refined runs retain finite bounded
+  concentrations and hydraulic/solute residuals below 1e-9.
+- A native default-recipe measurement took 0.951 s standard and 4.866 s refined;
+  these are local samples, not target-device performance guarantees. Software
+  renderer measurements and remaining hardware G5 gates are recorded in the
+  M5 verification record. Existing empirical accuracy gates remain open.
+- Default golden fixtures retain every numeric value; only core-version metadata
+  changes. No physical parameters, calibration coefficients or data splits change.
+
 ## [0.8.0] - 2026-10-18
 
 M4 experimental Dial-in, selected by the owner. Personal measurements remain

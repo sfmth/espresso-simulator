@@ -28,6 +28,7 @@ import type { RecipeRunData, ShotRunData, SweepPointData } from './shotData';
 import type { BuiltSpec, Catalog, Recipe, ShotSpec } from './shotTypes';
 import type { UncertaintyOptions, UncertaintyResult } from './m3Types';
 import type { SphereReleaseParams, SphereRunData } from './types';
+import type { ExploreRequest } from './exploreTypes';
 
 /** A result and the time the worker spent producing it, in milliseconds. */
 export interface Timed<T> {
@@ -60,6 +61,12 @@ export interface Engine {
   buildShotSpec(recipe: Recipe, options?: CallOptions): Promise<Timed<BuiltSpec>>;
   /** Builds and simulates a recipe; errors as for `buildShotSpec`. */
   simulateRecipe(recipe: Recipe, options?: CallOptions): Promise<Timed<RecipeRunData>>;
+  /** Optional for older engines/fakes; production exports one exact Tier 1 cell. */
+  simulateExplore?(
+    recipe: Recipe,
+    request: ExploreRequest,
+    options?: CallOptions,
+  ): Promise<Timed<RecipeRunData>>;
   /** Simulates a physical spec. */
   simulateShot(spec: ShotSpec, options?: CallOptions): Promise<Timed<ShotRunData>>;
   /** Builds and simulates a recipe, returning only its scalar outputs (sweeps). */
@@ -178,6 +185,14 @@ export class EngineClient implements Engine {
 
   simulateRecipe(recipe: Recipe, options?: CallOptions): Promise<Timed<RecipeRunData>> {
     return this.#call('simulateRecipe', { recipe }, options);
+  }
+
+  simulateExplore(
+    recipe: Recipe,
+    request: ExploreRequest,
+    options?: CallOptions,
+  ): Promise<Timed<RecipeRunData>> {
+    return this.#call('simulateExplore', { recipe, request }, options);
   }
 
   simulateShot(spec: ShotSpec, options?: CallOptions): Promise<Timed<ShotRunData>> {

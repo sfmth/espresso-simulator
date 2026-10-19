@@ -302,6 +302,9 @@
           "items": {
             "$ref": "#/$defs/ClassEy"
           }
+        },
+        "micro": {
+          "$ref": "#/$defs/MicroMetadata"
         }
       }
     },
@@ -364,6 +367,26 @@
               "type": "number"
             }
           }
+        },
+        "micro": {
+          "$ref": "#/$defs/MicroSnapshot"
+        },
+        "column_flow_m3_s": {
+          "description": "Opt-in instantaneous carrier flow entering each parallel 1D column; not pore-resolved velocity. At event timestamps it is the operating point when the snapshot was captured.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "bed_temperature_c": {
+          "description": "Opt-in shared lumped bed thermal node, °C. No local temperature gradients are solved.",
+          "type": [
+            "number",
+            "null"
+          ]
         }
       }
     },
@@ -671,6 +694,102 @@
         "relative_transport_closure_error": {
           "type": "number",
           "description": "|transported species − lumped| / lumped (0 when both are zero)."
+        }
+      }
+    },
+    "MicroMetadata": {
+      "description": "Optional selected-cell geometry for exact coupled Tier 1 particle snapshots.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "column": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cell": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "classes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MicroClass"
+          }
+        },
+        "resolution": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "high"
+          ]
+        },
+        "depth_cells": {
+          "type": "integer",
+          "minimum": 2
+        }
+      }
+    },
+    "MicroClass": {
+      "description": "Particle-envelope and intact-kernel geometry in resolved class order. Kernel shells cover a−δ, not the full particle radius.",
+      "type": "object",
+      "properties": {
+        "radius_m": {
+          "type": "number"
+        },
+        "kernel_radius_m": {
+          "type": "number"
+        },
+        "volume_fraction": {
+          "type": "number"
+        },
+        "pool_fraction": {
+          "type": "number"
+        },
+        "shell_outer_radii_m": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "initial_kernel_conc_kg_m3": {
+          "description": "Initial concentration-equivalent kernel loading, kg/m³ of model reference capacity; not a separate physical water inventory.",
+          "type": "number"
+        }
+      }
+    },
+    "MicroSnapshot": {
+      "description": "Read-only exact particle state in the selected cell; no interpolation or independent sphere re-solve.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "class_ey": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "kernel_conc_kg_m3": {
+          "description": "Exact concentration-equivalent shell loadings, kg/m³ of model reference capacity. These are effective particle states, not free-liquid concentrations.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "surface_remaining_fraction": {
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
         }
       }
     }

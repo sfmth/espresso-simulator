@@ -83,6 +83,59 @@ pub fn simulate_recipe_json(recipe_json: &str) -> Result<String, ApiError> {
     })
 }
 
+/// Builds and runs the same Tier 1 shot while exporting one selected cell's
+/// actual particle states. High resolution refines depth by five times; it is
+/// still the parallel 1D model, with unchanged columns, classes and kernels.
+pub fn simulate_explore_json(recipe_json: &str, request_json: &str) -> Result<String, ApiError> {
+    #[derive(Serialize)]
+    struct ExploreRun {
+        build: Built,
+        result: ShotResult,
+        taste: crate::taste::TasteEstimate,
+    }
+    let recipe = parse_recipe(recipe_json)?;
+    let request: puckcore::shot::ExploreRequest = serde_json::from_str(request_json)
+        .map_err(|e| ApiError(format!("invalid Explore request: {e}")))?;
+    let mut built = builder::build(&recipe)?;
+    built.spec.numerics.tier = 1;
+    if request.resolution == puckcore::shot::ExploreResolution::High {
+        built.spec.numerics.depth_cells = built
+            .spec
+            .numerics
+            .depth_cells
+            .checked_mul(5)
+            .ok_or_else(|| {
+                ApiError("Explore depth refinement exceeds the supported grid".into())
+            })?;
+        built.derived.provenance.insert(
+            "numerics.depth_cells".into(),
+            "model:Explore depth refinement ×5 (parallel 1D)".into(),
+        );
+    }
+    built.spec.numerics.explore_cell = Some(request);
+    built.derived.provenance.insert(
+        "numerics.tier".into(),
+        "model:Explore requires tier 1".into(),
+    );
+    built.derived.provenance.insert(
+        "numerics.explore_cell".into(),
+        "request:Explore selected cell".into(),
+    );
+    built.derived.notes.push(format!("Explore exports actual coupled particle states for column {}, depth cell {} on {} depth cells; packing and pore-network geometry are not resolved by this parallel 1D model.", request.column, request.cell, built.spec.numerics.depth_cells));
+    let result = simulate_shot(&built.spec).map_err(|e| ApiError(e.to_string()))?;
+    let taste = crate::taste::estimate(
+        &recipe,
+        &built,
+        &result,
+        &crate::taste::TasteConditions::default(),
+    )?;
+    to_json(&ExploreRun {
+        build: built,
+        result,
+        taste,
+    })
+}
+
 /// Bounded seeded Tier 0 input scenarios; see `docs/model/m3-uncertainty.md`.
 pub fn simulate_uncertainty_json(
     recipe_json: &str,

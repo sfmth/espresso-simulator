@@ -1657,6 +1657,92 @@ impl<'a> Sim<'a> {
             local_ey,
             liquid_conc_kg_m3: conc,
             wetted_fraction: wetted,
+            micro: self
+                .spec
+                .numerics
+                .explore_cell
+                .map(|selected| self.micro_snapshot(selected)),
+            column_flow_m3_s: self
+                .spec
+                .numerics
+                .explore_cell
+                .map(|_| self.hydro.col_flow.clone()),
+            bed_temperature_c: self.spec.numerics.explore_cell.map(|_| self.state.temp),
+        }
+    }
+
+    /// Copies the selected cell's actual coupled particle state without advancing it.
+    fn micro_snapshot(&self, selected: ExploreRequest) -> MicroSnapshot {
+        let m = self.model;
+        let nc = m.n_cells();
+        let nk = m.n_classes();
+        let cell = selected.column * nc + selected.cell;
+        let vol = m.columns[selected.column].share * m.cells[selected.cell].volume;
+        let mut out = MicroSnapshot::default();
+        for (k, class) in m.classes.iter().enumerate() {
+            let pool = cell * nk + k;
+            let mut held = self.state.pool[pool];
+            if class.grid.is_some() {
+                held += class.sigma
+                    * vol
+                    * kernel_mass(m, &self.state.u, selected.column, selected.cell, class);
+            }
+            let dry = self.state.dry[cell] * class.fraction;
+            out.class_ey.push(if dry > 0.0 {
+                (m.s0 * class.phi * vol - held) / dry
+            } else {
+                0.0
+            });
+            out.kernel_conc_kg_m3.push(
+                (0..class.shells())
+                    .map(|l| {
+                        self.state.u
+                            [kernel_index(m, selected.column, class.offset + l, selected.cell)]
+                    })
+                    .collect(),
+            );
+            out.surface_remaining_fraction
+                .push(if self.state.pool0[pool] > 0.0 {
+                    Some(self.state.pool[pool] / self.state.pool0[pool])
+                } else {
+                    None
+                });
+        }
+        out
+    }
+
+    fn micro_metadata(&self, selected: ExploreRequest) -> MicroMetadata {
+        MicroMetadata {
+            column: selected.column,
+            cell: selected.cell,
+            resolution: selected.resolution,
+            depth_cells: self.model.n_cells(),
+            classes: self
+                .model
+                .classes
+                .iter()
+                .map(|class| MicroClass {
+                    radius_m: class.radius,
+                    kernel_radius_m: class.kernel_radius,
+                    volume_fraction: class.fraction,
+                    pool_fraction: class.pool_fraction,
+                    shell_outer_radii_m: (0..class.shells())
+                        .map(|l| {
+                            if l + 1 == class.shells() {
+                                class.kernel_radius
+                            } else {
+                                class.kernel_radius
+                                    * math::cbrt((l + 1) as f64 / class.shells() as f64)
+                            }
+                        })
+                        .collect(),
+                    initial_kernel_conc_kg_m3: if class.grid.is_some() {
+                        self.model.u0
+                    } else {
+                        0.0
+                    },
+                })
+                .collect(),
         }
     }
 
@@ -1878,6 +1964,10 @@ impl<'a> Sim<'a> {
                 permeability_multiplier: c.multiplier,
             })
             .collect();
+        let micro = spec
+            .numerics
+            .explore_cell
+            .map(|selected| self.micro_metadata(selected));
         let mut result = ShotResult {
             schema: SHOT_RESULT_SCHEMA.to_string(),
             core_version: crate::VERSION.to_string(),
@@ -1909,6 +1999,7 @@ impl<'a> Sim<'a> {
                 columns,
                 snapshots,
                 class_ey,
+                micro,
             },
             diagnostics: Diagnostics {
                 hydraulic_volume_balance_error,
@@ -2083,3 +2174,7 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "m5_explore_tests.rs"]
+mod m5_explore_tests;

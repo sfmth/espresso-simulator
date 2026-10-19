@@ -61,16 +61,16 @@ Tier 0 preview discrepancies are shown separately from the input ranges; neither
 
 | Run | Elapsed seconds |
 |---|---:|
-| central_tier1 | 0.832022 |
-| central_tier0 | 0.0168741 |
-| ensemble_unknown | 0.218925 |
-| ensemble_fixed | 0.265968 |
-| ensemble_measured | 0.22833 |
-| ensemble_unknown_replay | 0.225401 |
-| chemistry_disabled | 0.410811 |
-| no_beverage | 0.00613723 |
-| alkalinity_low | 0.815164 |
-| alkalinity_high | 0.828584 |
+| central_tier1 | 0.763938 |
+| central_tier0 | 0.0157817 |
+| ensemble_unknown | 0.20687 |
+| ensemble_fixed | 0.2099 |
+| ensemble_measured | 0.207992 |
+| ensemble_unknown_replay | 0.208506 |
+| chemistry_disabled | 0.377914 |
+| no_beverage | 0.00557324 |
+| alkalinity_low | 0.754649 |
+| alkalinity_high | 0.755795 |
 
 ## Preserved M1 fit
 

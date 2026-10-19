@@ -1,0 +1,175 @@
+{
+  "schema": "puckworks.render-benchmark-suite/1",
+  "startedAt": "2026-10-19T07:06:39.444Z",
+  "finishedAt": "2026-10-19T07:06:59.347Z",
+  "label": "optimized-preliminary",
+  "browser": "131.0.6778.139",
+  "host": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 9 7945HX with Radeon Graphics"
+  },
+  "requested": {
+    "backend": "software",
+    "quality": "current",
+    "counts": [
+      30000
+    ],
+    "trials": 1,
+    "dpr": 1
+  },
+  "hardwareGate": "unverified: viewport emulation is not actual phone hardware; device class and presentation require separate evidence",
+  "records": [
+    {
+      "trial": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "consistencyErrorPoints": 0,
+      "result": {
+        "schema": "puckworks.render-benchmark/1",
+        "status": "complete",
+        "reason": "sample-complete",
+        "environment": {
+          "particleCount": 30000,
+          "renderPath": "adaptive-native-mesh-and-analytic",
+          "sphereQuality": "all physical radii retained; native mesh projected Hausdorff bound <=0.25 drawing-buffer pixels; exact analytic remainder",
+          "networkVisible": false,
+          "cutFraction": 1,
+          "cssWidthPx": 771.421875,
+          "cssHeightPx": 576,
+          "drawingBufferWidthPx": 771,
+          "drawingBufferHeightPx": 576,
+          "devicePixelRatio": 1,
+          "rendererPixelRatio": 1,
+          "camera": {
+            "position": [
+              1.9638045477327215,
+              1.3092030318218144,
+              2.3274720565721143
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "verticalFovDeg": 40,
+            "orbitRadiansPerSecond": 0.36
+          },
+          "webgl": {
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "vendor": "WebKit",
+            "renderer": "WebKit WebGL",
+            "shadingLanguageVersion": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "unmaskedVendor": "Google Inc. (Google)",
+            "unmaskedRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+            "contextAttributes": {
+              "alpha": false,
+              "antialias": false,
+              "depth": true,
+              "desynchronized": false,
+              "failIfMajorPerformanceCaveat": false,
+              "powerPreference": "high-performance",
+              "premultipliedAlpha": true,
+              "preserveDrawingBuffer": false,
+              "stencil": false,
+              "xrCompatible": false
+            },
+            "contextLost": false
+          },
+          "extraQuality": {
+            "meshMaxErrorPx": 0.25,
+            "mesh16CountAtStart": 0,
+            "mesh32CountAtStart": 171,
+            "mesh64CountAtStart": 84,
+            "mesh128CountAtStart": 5,
+            "mesh256CountAtStart": 0,
+            "analyticCountAtStart": 29740,
+            "markerParticle": 0,
+            "modelSeed": 20261018,
+            "warmupCamera": "fixed canonical pose; sampled orbit starts at zero",
+            "viewportWidthPx": 1280,
+            "viewportHeightPx": 900
+          }
+        },
+        "protocol": {
+          "targetFps": 60,
+          "warmupMs": 1500,
+          "sampleMs": 5000,
+          "minWarmupFrames": 30,
+          "budgetToleranceMs": 0.5
+        },
+        "warmupElapsedMs": 9861.39999961853,
+        "warmupFrames": 30,
+        "actualSampleMs": 5083.0999999999985,
+        "sampleFrames": 17,
+        "intervalCount": 16,
+        "stats": {
+          "meanFps": 3.147685467529658,
+          "frameIntervalMs": {
+            "min": 16.600000000000364,
+            "max": 366.7000000000007,
+            "mean": 317.6937499999999,
+            "median": 349.9999999999991,
+            "p95": 366.6249999999991
+          },
+          "cpuRenderMs": {
+            "min": 0.5,
+            "max": 1,
+            "mean": 0.7176470476038316,
+            "median": 0.6999998092651367,
+            "p95": 0.9200000762939452
+          },
+          "targetFrameBudgetMs": 16.666666666666668,
+          "overBudgetFrames": 15,
+          "overBudgetFraction": 0.9375,
+          "estimatedDroppedFrames": 289,
+          "estimatedDropFraction": 0.9475409836065574
+        },
+        "gpuTiming": {
+          "supported": true,
+          "disjoint": false,
+          "queryEveryFrames": 4,
+          "validSampleCount": 4,
+          "discardedSampleCount": 0,
+          "pendingQueries": 1,
+          "elapsedMs": {
+            "min": 317.764968,
+            "max": 676.163302,
+            "mean": 424.71265900000003,
+            "median": 352.461183,
+            "p95": 629.0191337499999
+          }
+        },
+        "quantileMethod": "linear_interpolation_n_minus_1",
+        "measurementLimits": [
+          "Frame intervals measure requestAnimationFrame scheduling between successful CPU render submissions, not GPU completion or compositor presentation.",
+          "Browser command queues can outlive a render call. No per-frame gl.finish or readback is used; this is a cadence proxy, not a GPU-completed-frame count.",
+          "Estimated dropped frames count missed target-budget slots with the reported tolerance, not directly observed display refreshes or dropped presentations.",
+          "WebGL renderer strings can be masked. Hardware class and laptop/phone G5 eligibility require separate evidence; this result alone does not establish G5.",
+          "Optional available, non-disjoint GPU timer queries measure execution of sampled render commands. They do not measure compositor presentation, and unresolved queries are reported."
+        ],
+        "renderObservations": {
+          "peakMeshErrorBoundPx": 0.24994487808627966,
+          "maxLodParticleCounts": [
+            0,
+            182,
+            85,
+            6,
+            0
+          ]
+        }
+      }
+    }
+  ],
+  "failures": [],
+  "requests": [
+    "http://127.0.0.1:4175/",
+    "http://127.0.0.1:4175/assets/index-D92fck3M.js",
+    "http://127.0.0.1:4175/assets/index-BjKcQLUE.css",
+    "http://127.0.0.1:4175/favicon.svg",
+    "http://127.0.0.1:4175/assets/puckcore_bg-BqTO0m2x.wasm",
+    "http://127.0.0.1:4175/assets/PuckView-D6HGssT_.js"
+  ]
+}

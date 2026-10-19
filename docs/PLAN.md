@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.8.0 · Last updated 2026-10-18 · Status: M2 integrated; M3 input uncertainty/taste and M4 experimental Dial-in implemented. Scientific validation exit criteria remain open (see §12 and §15).*
+*Version 0.9.1 · Last updated 2026-10-19 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -696,6 +696,32 @@ Size L.
 - **Guided scenarios.**
 - **Exit:** G4 consistency and G5 frame rates met; works without WebGPU via fallbacks.
 
+**Implementation in 0.9.0.** Explore exports actual selected-cell kernel-shell,
+surface-pool and class extraction state from the shared Tier 1 shot. A single
+recipe/run controller and stored-snapshot timeline drive the cross-section,
+representative particles and inspector. Standard and high-resolution modes use
+the same parallel 1D equations; high refines depth by 5×, normally 30 → 150 cells.
+The future 2D axisymmetric Tier 2 model remains deferred.
+
+Deterministic module-worker packing uses seed 20261018 and statistical class
+weights that preserve local continuum EY. The bounded soft-sphere relaxation
+reports residual overlaps. Its optional clearance-based lattice uses a CG solve
+for an illustrative dimensionless potential/flow view; neither geometry nor
+lattice flux feeds back into the shot model. Three.js WebGL2 instanced sphere
+impostors support 5,000/25,000 mobile and 30,000/150,000 desktop display presets,
+with SVG/cross-section/table fallbacks and no WebGPU requirement. Display counts
+change visual detail, independently of extraction resolution. Seven explicit
+guided recipe loads retain Undo and evidence labels.
+
+**G4 has numerical representation checks; G5 remains open.** Exact coupled-state
+copies and statistically weighted local EY are tested independently of rendering.
+They do not validate an observed microstructure or a pore-scale mechanism. The
+plan still requires measured frame rates on a mid-range laptop and recent phone;
+software/browser smoke checks and the current-device measurement tool do not
+establish those hardware gates. Original scientific targets, fitted parameters
+and source splits remain unchanged. See [ADR 0015](decisions/0015-explore-state-and-refinement.md),
+the [Explore contract](model/m5-explore.md), [M5 verification](validation/m5-validation.md) and [rendering performance follow-up](validation/m5-rendering-performance.md).
+
 ### M6: Speed, polish and public launch
 Size M.
 - **Speed:** ML surrogates with out-of-domain fallback.
@@ -769,7 +795,7 @@ These are optional experiments for the future local personalization feature (V9/
 - **Data requests:** too early. No outreach to data holders for now.
 - **Repository:** created by the owner; assistant git operations authorized 2026-10-15 (§16).
 - **Basket (2026-10-15):** 58 mm single-wall. The AMZCHEF preset uses the plain 58 mm stock double; its detailed dimensions remain estimates.
-- **Current milestone (2026-10-17):** M3, in the order performance → input uncertainty → taste, selected by the owner after M2 integration. Remaining M1/M2 accuracy work is retained without blocking development.
+- **Current milestone (2026-10-19):** M5 Explore is implemented; the owner selected its rendering performance follow-up. Version 0.9.1 records reproducible exact-sphere measurements and conservative culling. Midrange laptop/physical phone G5 validation and existing scientific accuracy work remain open; see [rendering evidence](validation/m5-rendering-performance.md).
 - **Calibration source (2026-10-15):** online data, including community archives and hobbyist experiments; no dependency on measurements from the owner's setup (D15).
 
 **Still open**

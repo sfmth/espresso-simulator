@@ -100,6 +100,7 @@ fn puckcore_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(build_shot_spec, m)?)?;
     m.add_function(wrap_pyfunction!(simulate_shot, m)?)?;
     m.add_function(wrap_pyfunction!(simulate_recipe, m)?)?;
+    m.add_function(wrap_pyfunction!(simulate_explore, m)?)?;
     m.add_function(wrap_pyfunction!(simulate_uncertainty, m)?)?;
     m.add_function(wrap_pyfunction!(estimate_taste, m)?)?;
     m.add_function(wrap_pyfunction!(analyze_taste, m)?)?;
@@ -158,6 +159,20 @@ fn simulate_recipe<'py>(
     recipe: &Bound<'py, PyAny>,
 ) -> PyResult<Bound<'py, PyAny>> {
     let out = puckmodel::api::simulate_recipe_json(&json_text(py, recipe)?).map_err(api_error)?;
+    json_value(py, &out)
+}
+
+/// Same Tier 1 shot with selected-cell radial states. High resolution refines
+/// the 1D depth grid by five times; it does not invoke a different physical model.
+#[pyfunction]
+fn simulate_explore<'py>(
+    py: Python<'py>,
+    recipe: &Bound<'py, PyAny>,
+    request: &Bound<'py, PyAny>,
+) -> PyResult<Bound<'py, PyAny>> {
+    let out =
+        puckmodel::api::simulate_explore_json(&json_text(py, recipe)?, &json_text(py, request)?)
+            .map_err(api_error)?;
     json_value(py, &out)
 }
 

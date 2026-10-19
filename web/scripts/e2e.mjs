@@ -17,13 +17,15 @@
 //   warn about memory, come back thinned, and can be cancelled;
 // - the tabs, validation, charts, hover read-out and footer links work, in
 //   light and dark themes and at phone width;
+// - Explore reports consistent exact-sphere render timing and workload metadata,
+//   exports its full report, and cancels a changed configuration;
 // - the page and its workers make no request to any other origin and log no
 //   errors (the build's Content-Security-Policy reports page violations as errors).
 //
 // Screenshots go to web/test-results/. Set CHROME_PATH to use another browser
 // binary; by default Playwright's "chrome" channel finds Google Chrome.
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -86,6 +88,294 @@ async function downloadText(page, action) {
   const [download] = await Promise.all([page.waitForEvent('download'), action()]);
   const path = await download.path();
   return { name: download.suggestedFilename(), text: readFileSync(path, 'utf8') };
+}
+
+function orderedDistribution(value, positive = false) {
+  const tolerance = 1e-8 * Math.max(1, value?.max ?? 0);
+  return (
+    value &&
+    ['min', 'max', 'mean', 'median', 'p95'].every((key) => Number.isFinite(value[key])) &&
+    (positive ? value.min > 0 : value.min >= 0) &&
+    value.min <= value.median &&
+    value.median <= value.p95 &&
+    value.p95 <= value.max &&
+    value.min - tolerance <= value.mean &&
+    value.mean <= value.max + tolerance
+  );
+}
+
+/** Verify report arithmetic and workload identity, without a software-renderer FPS gate. */
+async function renderBenchmarkChecks(page, panel, count) {
+  const report = JSON.parse(
+    await panel.locator('.puck-view').getAttribute('data-render-benchmark'),
+  );
+  if (!report) throw new Error('Explore did not publish a structured render benchmark.');
+  const { environment, protocol, stats, gpuTiming } = report;
+  const actual = await panel.locator('.puck-canvas').evaluate((canvas) => {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      cssWidth: rect.width,
+      cssHeight: rect.height,
+      dpr: window.devicePixelRatio,
+    };
+  });
+  const viewport = page.viewportSize();
+  const label = `${count} exact spheres`;
+  check(
+    report.schema === 'puckworks.render-benchmark/1' &&
+      report.status === 'complete' &&
+      report.reason === 'sample-complete' &&
+      report.quantileMethod === 'linear_interpolation_n_minus_1',
+    `${label}: completed structured report names its quantile method`,
+  );
+  check(
+    environment.particleCount === count &&
+      environment.renderPath === 'analytic-exact' &&
+      environment.sphereQuality === 'exact sphere silhouette and surface depth' &&
+      environment.drawingBufferWidthPx === actual.width &&
+      environment.drawingBufferHeightPx === actual.height &&
+      Math.abs(environment.cssWidthPx - actual.cssWidth) < 0.1 &&
+      Math.abs(environment.cssHeightPx - actual.cssHeight) < 0.1 &&
+      environment.devicePixelRatio === actual.dpr &&
+      environment.rendererPixelRatio === Math.min(actual.dpr, 2) &&
+      actual.width > 0 &&
+      actual.height > 0 &&
+      typeof environment.webgl.version === 'string' &&
+      !environment.webgl.contextLost,
+    `${label}: report matches the actual particle population, rendering path, buffer and DPR`,
+  );
+  check(
+    protocol.targetFps === (viewport.width <= 700 ? 30 : 60) &&
+      protocol.warmupMs === 1500 &&
+      protocol.minWarmupFrames === 30 &&
+      protocol.sampleMs === 5000 &&
+      report.warmupElapsedMs >= protocol.warmupMs &&
+      report.warmupFrames >= protocol.minWarmupFrames &&
+      report.actualSampleMs >= protocol.sampleMs &&
+      report.sampleFrames >= 2 &&
+      report.intervalCount === report.sampleFrames - 1,
+    `${label}: warmup and sample meet the declared clock and frame protocol`,
+  );
+  const close = (a, b) => Number.isFinite(a) && Math.abs(a - b) <= 1e-8 * Math.max(1, Math.abs(b));
+  check(
+    orderedDistribution(stats.frameIntervalMs, true) &&
+      orderedDistribution(stats.cpuRenderMs) &&
+      close(stats.meanFps, (report.intervalCount * 1000) / report.actualSampleMs) &&
+      close(stats.frameIntervalMs.mean, report.actualSampleMs / report.intervalCount) &&
+      close(stats.targetFrameBudgetMs, 1000 / protocol.targetFps) &&
+      Number.isInteger(stats.overBudgetFrames) &&
+      stats.overBudgetFrames >= 0 &&
+      stats.overBudgetFrames <= report.intervalCount &&
+      close(stats.overBudgetFraction, stats.overBudgetFrames / report.intervalCount) &&
+      Number.isInteger(stats.estimatedDroppedFrames) &&
+      stats.estimatedDroppedFrames >= 0 &&
+      close(
+        stats.estimatedDropFraction,
+        stats.estimatedDroppedFrames / (report.intervalCount + stats.estimatedDroppedFrames),
+      ),
+    `${label}: FPS, distributions and missed-budget statistics are internally consistent`,
+  );
+  check(
+    typeof gpuTiming.supported === 'boolean' &&
+      typeof gpuTiming.disjoint === 'boolean' &&
+      gpuTiming.queryEveryFrames === 4 &&
+      ['validSampleCount', 'discardedSampleCount', 'pendingQueries'].every(
+        (key) => Number.isInteger(gpuTiming[key]) && gpuTiming[key] >= 0,
+      ) &&
+      (gpuTiming.validSampleCount === 0
+        ? gpuTiming.elapsedMs === null
+        : gpuTiming.supported && !gpuTiming.disjoint && orderedDistribution(gpuTiming.elapsedMs)) &&
+      report.measurementLimits.some((limit) => limit.includes('compositor presentation')),
+    `${label}: optional GPU timing and presentation limitations remain explicit`,
+  );
+  return report;
+}
+
+/** Duplicate RAF callbacks are skipped; a regressing clock must cancel and recover. */
+async function renderClockRecoveryChecks(page, { requests, workers, errors }) {
+  const faultPage = await page.context().newPage();
+  const faultErrors = [];
+  faultPage.on('worker', (worker) => {
+    workers.push(worker.url());
+    requests.push(worker.url());
+  });
+  faultPage.on('console', (message) => {
+    if (message.type() !== 'error') return;
+    faultErrors.push(message.text());
+    errors.push(message.text());
+    console.error(`clock recovery browser console: ${message.text()}`);
+  });
+  faultPage.on('pageerror', (error) => {
+    faultErrors.push(error.message);
+    errors.push(error.message);
+    console.error(`clock recovery browser page error: ${error.message}`);
+  });
+  try {
+    await faultPage.addInitScript(() => {
+      const nativeRaf = window.requestAnimationFrame.bind(window);
+      const state = { nextMode: 'duplicate', runs: [] };
+      window.__renderClockFault = state;
+      let activeRun = null;
+      document.addEventListener(
+        'click',
+        (event) => {
+          const button = event.target instanceof Element ? event.target.closest('button') : null;
+          if (state.nextMode && button?.textContent?.trim() === 'Measure frame rate') {
+            const fault = {
+              mode: state.nextMode,
+              armed: true,
+              injected: false,
+              matchedFrames: 0,
+              nativeClocks: [],
+              deliveredClocks: [],
+            };
+            state.nextMode = null;
+            state.runs.push(fault);
+            activeRun = { fault, benchmarkCallback: null, previousNow: null };
+          }
+        },
+        true,
+      );
+      window.requestAnimationFrame = (callback) => {
+        const run = activeRun;
+        if (!run || !run.fault.armed || run.fault.injected) return nativeRaf(callback);
+        run.benchmarkCallback ??= callback;
+        if (callback !== run.benchmarkCallback) return nativeRaf(callback);
+        // Bind the wrapper when scheduled: only the repeating benchmark callback
+        // receives the fault; React/charts/other RAF work keeps the native clock.
+        return nativeRaf((now) => {
+          const { fault } = run;
+          fault.matchedFrames++;
+          fault.nativeClocks.push(now);
+          if (fault.matchedFrames === 2) {
+            fault.injected = true;
+            fault.armed = false;
+            const delivered = run.previousNow - (fault.mode === 'regression' ? 1 : 0);
+            fault.deliveredClocks.push(delivered);
+            callback(delivered);
+          } else {
+            run.previousNow = now;
+            fault.deliveredClocks.push(now);
+            callback(now);
+          }
+        });
+      };
+    });
+    await faultPage.goto(page.url());
+    await faultPage.getByRole('tab', { name: 'Explore', exact: true }).click();
+    const panel = faultPage.locator('.explore');
+    await panel.getByLabel('Teaching scenario').selectOption('reference');
+    await panel.getByRole('button', { name: 'Load scenario', exact: true }).click();
+    await panel.getByLabel('Displayed particles').selectOption('5000');
+    await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
+    await panel
+      .getByText('Surface-pool content remaining:', { exact: false })
+      .waitFor({ timeout: 60_000 });
+    await faultPage.waitForFunction(() =>
+      document
+        .querySelector('.puck-canvas')
+        ?.getAttribute('aria-label')
+        ?.includes('with 5,000 particles.'),
+    );
+    const measure = panel.getByRole('button', { name: 'Measure frame rate', exact: true });
+    await measure.click();
+    await measure.waitFor({ timeout: 180_000 });
+    const duplicateReport = await renderBenchmarkChecks(faultPage, panel, 5000);
+    const duplicateInjection = await faultPage.evaluate(() => window.__renderClockFault.runs[0]);
+    check(
+      duplicateInjection.mode === 'duplicate' &&
+        duplicateInjection.injected &&
+        duplicateInjection.matchedFrames === 2 &&
+        duplicateInjection.deliveredClocks[1] === duplicateInjection.deliveredClocks[0] &&
+        Number.isInteger(duplicateReport.renderObservations.duplicateRafCallbacks) &&
+        duplicateReport.renderObservations.duplicateRafCallbacks >= 1 &&
+        !duplicateReport.renderObservations.clockFailure &&
+        duplicateReport.stats.frameIntervalMs.min > 0 &&
+        faultErrors.length === 0,
+      'an equal second RAF clock is counted and skipped while the full 5k protocol completes with positive intervals and no errors',
+    );
+    await faultPage.evaluate(() => {
+      window.__renderClockFault.nextMode = 'regression';
+    });
+    await measure.click();
+    await faultPage.waitForFunction(
+      () => {
+        const json = document.querySelector('.puck-view')?.getAttribute('data-render-benchmark');
+        return json && JSON.parse(json).reason === 'clock-discontinuity';
+      },
+      undefined,
+      { timeout: 30_000 },
+    );
+    const cancelled = JSON.parse(
+      await panel.locator('.puck-view').getAttribute('data-render-benchmark'),
+    );
+    const regressionInjection = await faultPage.evaluate(() => window.__renderClockFault.runs[1]);
+    const clockFailure = cancelled.renderObservations.clockFailure;
+    const diagnostic = JSON.parse(clockFailure.slice(clockFailure.indexOf('{')));
+    check(
+      regressionInjection.mode === 'regression' &&
+        regressionInjection.injected &&
+        regressionInjection.matchedFrames === 2 &&
+        regressionInjection.nativeClocks.length === 2 &&
+        regressionInjection.deliveredClocks.length === 2 &&
+        regressionInjection.deliveredClocks[1] === regressionInjection.deliveredClocks[0] - 1 &&
+        ['before-start', 'regression'].includes(diagnostic.relation) &&
+        diagnostic.nowMs === diagnostic.previousFrameMs - 1 &&
+        diagnostic.deltaFromPreviousMs === -1 &&
+        diagnostic.phase === 'warmup' &&
+        diagnostic.warmupFrames === 1 &&
+        diagnostic.sampleFrames === 0,
+      'clock regression affects only the second matching callback and retains its numeric before-start/regression diagnostic',
+    );
+    check(
+      cancelled.status === 'cancelled' &&
+        cancelled.reason === 'clock-discontinuity' &&
+        cancelled.sampleFrames === 0 &&
+        cancelled.intervalCount === 0 &&
+        cancelled.actualSampleMs === 0 &&
+        cancelled.stats.meanFps === null &&
+        /strictly increase/.test(clockFailure) &&
+        (await measure.isEnabled()) &&
+        (await panel
+          .getByText('Benchmark cancelled: browser clock changed; measure again', { exact: true })
+          .isVisible()) &&
+        faultErrors.length === 0,
+      'a regressing RAF clock cancels before sampling, preserves its diagnostic and restores controls without console errors',
+    );
+    await measure.click();
+    await measure.waitFor({ timeout: 180_000 });
+    const recovered = await renderBenchmarkChecks(faultPage, panel, 5000);
+    check(
+      (await faultPage.evaluate(
+        () =>
+          window.__renderClockFault.runs.length === 2 &&
+          window.__renderClockFault.nextMode === null,
+      )) &&
+        faultErrors.length === 0 &&
+        (await measure.isEnabled()),
+      'a fresh 5k benchmark completes after clock regression with native timestamps and no errors',
+    );
+    writeFileSync(
+      new URL('../test-results/explore-clock-recovery.json', import.meta.url),
+      JSON.stringify(
+        {
+          duplicateInjection,
+          duplicateReport,
+          regressionInjection,
+          diagnostic,
+          cancelled,
+          recovered,
+        },
+        null,
+        2,
+      ) + '\n',
+    );
+  } finally {
+    await faultPage.close();
+    await page.bringToFront();
+  }
 }
 
 async function dialInChecks(page, shotPath) {
@@ -737,6 +1027,217 @@ async function verificationChecks(page, reference) {
   );
 }
 
+async function exploreChecks(page, shotPath) {
+  const panel = page.locator('.explore');
+  await panel.getByLabel('Teaching scenario').selectOption('reference');
+  await panel.getByRole('button', { name: 'Load scenario', exact: true }).click();
+  await page.waitForFunction(
+    () => document.querySelectorAll('.explore-section select')[1]?.options.length === 4,
+  );
+  await panel.getByLabel('Column', { exact: true }).selectOption('3');
+  await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
+  await panel.locator('.particle-inspector').waitFor({ timeout: 60_000 });
+  await panel.getByText('Surface-pool content remaining:', { exact: false }).waitFor();
+  check(
+    Number(await panel.locator('.explore-metrics dd').nth(2).textContent()) < 1e-5,
+    'micro-view weighted extraction agrees within 0.00001 percentage points',
+  );
+  check(
+    (await panel.getByLabel('Depth cell', { exact: true }).getAttribute('max')) === '30',
+    'standard Explore uses 30 depth cells',
+  );
+  check(
+    (await panel.getByLabel('Column', { exact: true }).inputValue()) === '7',
+    'Tier 0 edge selection maps to the Tier 1 edge annulus',
+  );
+  const slider = panel.getByLabel('Shot time', { exact: true });
+  await slider.focus();
+  await page.keyboard.press('Home');
+  check(
+    (await slider.inputValue()) === '0',
+    'Explore timeline scrubs to the first actual stored snapshot',
+  );
+  await page.keyboard.press('End');
+  const before = await panel.getByLabel('Depth cell', { exact: true }).inputValue();
+  await panel.locator('.explore-section-svg').focus();
+  await page.keyboard.press('ArrowDown');
+  check(
+    Number(await panel.getByLabel('Depth cell', { exact: true }).inputValue()) ===
+      Number(before) + 1,
+    'cross-section supports keyboard cell selection',
+  );
+  check(
+    await panel.getByText('Select the cell exported by Run Explore', { exact: false }).isVisible(),
+    'inspector withholds data when another cell is selected',
+  );
+  await page.keyboard.press('ArrowUp');
+  const measurements = [];
+  const cancellations = [];
+  const measure = panel.getByRole('button', { name: 'Measure frame rate', exact: true });
+  const completedBenchmark = async (count) => {
+    await measure.click();
+    await measure.waitFor({ timeout: 180_000 });
+    const output = await panel.locator('.explore-render-status output').textContent();
+    check(/\d+\.\d fps/.test(output ?? ''), `measured ${count} particles: ${output}`);
+    const report = await renderBenchmarkChecks(page, panel, Number(count));
+    measurements.push({
+      count: Number(count),
+      width: page.viewportSize().width,
+      result: output,
+      report,
+    });
+    return report;
+  };
+  for (const count of ['30000', '150000', '5000', '25000']) {
+    if (count === '5000') await page.setViewportSize({ width: 390, height: 844 });
+    await panel.getByLabel('Displayed particles').selectOption(count);
+    const canvas = panel.locator('.puck-canvas');
+    await canvas.waitFor({ state: 'visible', timeout: 30_000 });
+    await page.waitForFunction(
+      (n) =>
+        document
+          .querySelector('.puck-canvas')
+          ?.getAttribute('aria-label')
+          ?.includes(`with ${Number(n).toLocaleString()} particles.`),
+      count,
+    );
+    const report = await completedBenchmark(count);
+    if (count === '5000') {
+      const details = panel.locator('details').filter({
+        has: page.locator('summary').filter({ hasText: 'Frame timing report' }),
+      });
+      await details.locator('summary').click();
+      const displayed = JSON.parse(
+        await details.getByTestId('render-benchmark-json').textContent(),
+      );
+      const downloaded = await downloadText(page, () =>
+        details.getByRole('button', { name: 'Download benchmark JSON', exact: true }).click(),
+      );
+      check(
+        /^puckworks-render-benchmark-\d{4}-\d{2}-\d{2}\.json$/.test(downloaded.name) &&
+          JSON.stringify(displayed) === JSON.stringify(report) &&
+          JSON.stringify(JSON.parse(downloaded.text)) === JSON.stringify(report),
+        'benchmark details and downloaded JSON preserve the complete measured report',
+      );
+      await details.locator('summary').click();
+      const cut = panel.getByLabel('Cutaway plane', { exact: true });
+      await cut.focus();
+      await page.keyboard.press('End');
+      const initialCut = Number(await cut.inputValue());
+      await measure.click();
+      const warmingUp = panel.getByRole('button', { name: 'Warming up…', exact: true });
+      await warmingUp.waitFor();
+      check(await warmingUp.isDisabled(), 'a running benchmark cannot be started a second time');
+      await cut.focus();
+      await page.keyboard.press('Home');
+      await page.waitForFunction(
+        () => {
+          const json = document.querySelector('.puck-view')?.getAttribute('data-render-benchmark');
+          return json && JSON.parse(json).status === 'cancelled';
+        },
+        undefined,
+        { timeout: 30_000 },
+      );
+      const cancelled = JSON.parse(
+        await panel.locator('.puck-view').getAttribute('data-render-benchmark'),
+      );
+      check(
+        cancelled.reason === 'configuration-changed' &&
+          cancelled.environment.cutFraction === initialCut &&
+          Number(await cut.inputValue()) !== initialCut &&
+          (await measure.isEnabled()),
+        'changing the cutaway cancels measurement, retains its original configuration and allows another benchmark',
+      );
+      cancellations.push(cancelled);
+      // Restore the measured cut before the following population is generated.
+      await cut.focus();
+      await page.keyboard.press('End');
+    }
+    if (count === '30000' || count === '25000')
+      await panel.locator('.explore-volume').screenshot({ path: shotPath(`e2e-explore-${count}`) });
+  }
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  check(overflow <= 0, `Explore fits a 390px viewport (overflow ${overflow}px)`);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await panel.getByLabel('Simulation resolution').selectOption('high');
+  await panel.getByLabel('Displayed particles').selectOption('5000');
+  await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
+  await page.waitForFunction(
+    () => document.querySelector('.explore input[type="number"][max="150"]'),
+    undefined,
+    { timeout: 120_000 },
+  );
+  await panel
+    .getByText('Surface-pool content remaining:', { exact: false })
+    .waitFor({ timeout: 30_000 });
+  check(
+    (await panel.getByLabel('Depth cell', { exact: true }).getAttribute('max')) === '150',
+    'high resolution computes 5× the standard depth cells',
+  );
+  check(
+    Number(await panel.locator('.explore-metrics dd').nth(2).textContent()) < 0.5,
+    'refined-grid micro extraction agrees within 0.5 percentage points',
+  );
+  await panel.getByLabel('Illustrative pore network').check();
+  await panel.getByLabel('Cutaway plane').focus();
+  await page.keyboard.press('Home');
+  await page.keyboard.press('End');
+  await panel.locator('.explore-volume').screenshot({ path: shotPath('e2e-explore-refined') });
+  writeFileSync(
+    new URL('../test-results/explore-frame-rates.json', import.meta.url),
+    JSON.stringify(
+      {
+        schema: 'puckworks.render-smoke/1',
+        browser: page.context().browser().version(),
+        renderer:
+          'headless Chrome, ANGLE SwiftShader software rendering; not target-device validation',
+        measurements,
+        cancellations,
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  // Loss of a WebGL context must leave the exact numeric inspection available.
+  await panel
+    .locator('.puck-canvas')
+    .evaluate((canvas) =>
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true })),
+    );
+  check(
+    await panel
+      .getByText('3D rendering is unavailable in this browser.', { exact: false })
+      .isVisible(),
+    'WebGL loss exposes the front-projection fallback',
+  );
+  check(
+    await panel.getByText('Surface-pool content remaining:', { exact: false }).isVisible(),
+    'exact particle inspection survives loss of WebGL',
+  );
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+      return type === 'webgl2' ? null : original.call(this, type, ...args);
+    };
+  });
+  await page.reload();
+  await page.getByRole('tab', { name: 'Explore', exact: true }).click();
+  await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
+  await panel.locator('.puck-fallback').waitFor({ timeout: 60_000 });
+  // The projection can appear from the preview before the explicit Tier 1 run
+  // completes. Wait for coupled particle state independently of renderer startup.
+  await panel
+    .getByText('Surface-pool content remaining:', { exact: false })
+    .waitFor({ timeout: 60_000 });
+  check(
+    (await panel.locator('.puck-fallback').isVisible()) &&
+      (await panel.getByText('Surface-pool content remaining:', { exact: false }).isVisible()),
+    'startup without WebGL2 preserves exact cell and particle inspection',
+  );
+}
+
 async function main() {
   if (!existsSync(new URL('../dist/index.html', import.meta.url))) {
     throw new Error(
@@ -772,7 +1273,7 @@ async function main() {
       headless: true,
       // Without a GPU (containers, sandboxed shells) Chrome's GPU process can stall the
       // renderer. The charts draw on a 2D canvas, which software rendering handles.
-      args: ['--disable-gpu'],
+      args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
       ...(executablePath ? { executablePath } : { channel: 'chrome' }),
     });
     const context = await browser.newContext({
@@ -877,6 +1378,7 @@ async function main() {
     check(
       [
         '## react - ',
+        '## three - ',
         '## uplot - ',
         '# Rust crates in the WebAssembly engine',
         '## wasm-bindgen - ',
@@ -894,7 +1396,12 @@ async function main() {
       'Dial-in opens its local journal and calibration workflow',
     );
     await page.keyboard.press('ArrowLeft');
-    check(await page.getByText('Coming in M5').isVisible(), 'arrow keys move to Explore (M5)');
+    check(
+      await page.getByRole('heading', { name: 'Explore', exact: true }).isVisible(),
+      'arrow keys move to Explore (M5)',
+    );
+    await exploreChecks(page, shotPath);
+    await renderClockRecoveryChecks(page, { requests, workers, errors });
     await dialInChecks(page, shotPath);
     await page.getByRole('tab', { name: 'Lab' }).click();
     await page.getByRole('tab', { name: 'Shot lab', exact: true }).click();
@@ -915,9 +1422,9 @@ async function main() {
     // requests too (the worker scripts and the WebAssembly they fetch).
     check(
       workers.length >= 1 &&
-        workers.every((u) => /\/assets\/engine\.worker-[^/]*\.js$/.test(u)) &&
+        workers.every((u) => /\/assets\/(?:engine|microstructure)\.worker-[^/]*\.js$/.test(u)) &&
         requests.some((u) => /\/assets\/puckcore_bg-[^/]*\.wasm$/.test(u)),
-      `the audit includes the ${workers.length} engine workers and the WebAssembly they fetch`,
+      `the audit includes the ${workers.length} engine/packing workers and the WebAssembly`,
     );
     const foreign = requests.filter((u) => !u.startsWith(`${origin}/`) && !u.startsWith('blob:'));
     check(
