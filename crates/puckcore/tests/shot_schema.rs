@@ -151,9 +151,22 @@ impl<'de> de::Deserializer<'de> for Value {
             other => other.deserialize_any(v),
         }
     }
+    fn deserialize_enum<V: Visitor<'de>>(
+        self,
+        _name: &'static str,
+        _variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Error> {
+        match self {
+            Value::Str(value) => {
+                visitor.visit_enum(de::value::StringDeserializer::<Error>::new(value))
+            }
+            other => other.deserialize_any(visitor),
+        }
+    }
     serde::forward_to_deserialize_any! {
         bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 char str string bytes byte_buf
-        unit unit_struct newtype_struct seq tuple tuple_struct map struct enum identifier
+        unit unit_struct newtype_struct seq tuple tuple_struct map struct identifier
         ignored_any
     }
 }
@@ -801,7 +814,14 @@ fn spec_instances() -> Vec<ShotSpec> {
     v.machine.stop.time_s = Some(30.0);
     v.machine.hydraulic_compliance_m3_pa = 1e-11;
     v.chemistry = Some(common::chemistry_spec());
-    vec![ShotSpec::default(), v]
+    let mut explore = v.clone();
+    explore.numerics.depth_cells *= 5;
+    explore.numerics.explore_cell = Some(ExploreRequest {
+        column: 0,
+        cell: 74,
+        resolution: ExploreResolution::High,
+    });
+    vec![ShotSpec::default(), v, explore]
 }
 
 #[test]

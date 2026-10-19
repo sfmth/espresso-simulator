@@ -200,6 +200,16 @@ pub fn simulate_recipe(recipe_json: &str) -> Result<String, JsError> {
     Ok(puckmodel::api::simulate_recipe_json(recipe_json)?)
 }
 
+/// Tier 1 shot with actual selected-cell particle snapshots; optional high
+/// resolution refines the same 1D depth mesh by five times.
+#[wasm_bindgen(js_name = simulateExplore)]
+pub fn simulate_explore(recipe_json: &str, request_json: &str) -> Result<String, JsError> {
+    Ok(puckmodel::api::simulate_explore_json(
+        recipe_json,
+        request_json,
+    )?)
+}
+
 /// Seeded Tier 0 input scenarios; returns `puckworks.uncertainty/1` JSON.
 #[wasm_bindgen(js_name = simulateUncertainty)]
 pub fn simulate_uncertainty(recipe_json: &str, options_json: &str) -> Result<String, JsError> {

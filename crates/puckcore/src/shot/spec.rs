@@ -666,6 +666,39 @@ impl Default for StopRule {
     }
 }
 
+/// A selected Tier 1 bed cell whose exact particle states are exported for Explore.
+/// Indices address the resolved spatial columns and depth cells, starting at zero.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub struct ExploreRequest {
+    pub column: usize,
+    pub cell: usize,
+    /// The API's requested refinement. High uses five times the builder's depth cells;
+    /// the physical solver is still the same parallel 1D Tier 1 model.
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "ExploreResolution::is_standard")
+    )]
+    pub resolution: ExploreResolution,
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum ExploreResolution {
+    #[default]
+    Standard,
+    High,
+}
+
+impl ExploreResolution {
+    #[cfg(feature = "serde")]
+    fn is_standard(&self) -> bool {
+        *self == Self::Standard
+    }
+}
+
 /// Numerical settings (PLAN §7.2 fidelity tiers).
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(deny_unknown_fields, default))]
@@ -690,6 +723,10 @@ pub struct NumericsSpec {
     /// Tier 0 uses two for coarse classes and one (the linear driving force)
     /// for fines.
     pub kernel_shells: usize,
+    /// Optional read-only particle export for one resolved Tier 1 cell.
+    /// Omitting it preserves the normal shot output and numerical evolution.
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    pub explore_cell: Option<ExploreRequest>,
 }
 
 impl Default for NumericsSpec {
@@ -702,6 +739,7 @@ impl Default for NumericsSpec {
             output_interval_s: 0.1,
             snapshot_count: 12,
             kernel_shells: 8,
+            explore_cell: None,
         }
     }
 }

@@ -356,7 +356,7 @@ describe('App', () => {
     const explore = screen.getByRole('tab', { name: 'Explore' });
     expect(explore.getAttribute('aria-selected')).toBe('true');
     expect(document.activeElement).toBe(explore);
-    expect(screen.getByText('Coming in M5')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Explore' })).toBeTruthy();
 
     fireEvent.keyDown(explore, { key: 'Home' });
     expect(screen.getByRole('tab', { name: 'Dial-in' }).getAttribute('aria-selected')).toBe('true');

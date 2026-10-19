@@ -1716,3 +1716,145 @@ code {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.explore {
+  max-width: 95rem;
+  margin: auto;
+}
+.explore-heading,
+.explore-controls,
+.explore-render-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+.explore-heading {
+  justify-content: space-between;
+}
+.explore-controls label,
+.explore-timeline label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.explore-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(18rem, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.explore-grid > * {
+  min-width: 0;
+}
+.explore-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+.explore-timeline label {
+  flex: 1;
+  min-width: 10rem;
+}
+.explore-timeline .note {
+  flex-basis: 100%;
+  margin: 0;
+}
+.explore-checkbox {
+  display: flex !important;
+  align-items: center;
+}
+.puck-canvas {
+  display: block;
+  width: 100%;
+  height: clamp(20rem, 45vw, 36rem);
+  background: #111a24;
+  border-radius: var(--radius);
+  touch-action: none;
+}
+.explore-render-status {
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+.puck-fallback {
+  min-height: 18rem;
+  background: var(--page);
+  padding: 1rem;
+}
+.puck-fallback svg {
+  display: block;
+  max-height: 20rem;
+  width: 100%;
+}
+.explore-section-svg {
+  width: 100%;
+  max-height: 28rem;
+}
+.explore-cell {
+  cursor: pointer;
+}
+.explore-cell.selected {
+  stroke: var(--ink);
+  stroke-width: 0.6;
+  stroke-dasharray: 1 0.5;
+}
+.explore-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+}
+.explore-metrics dt {
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+.explore-metrics dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.2rem;
+}
+.particle-profile {
+  display: block;
+  width: 100%;
+  max-width: 46rem;
+  max-height: 24rem;
+  overflow: visible;
+}
+.particle-profile line {
+  stroke: var(--ink-2);
+  stroke-width: 1;
+}
+.particle-profile polyline {
+  stroke: var(--series-1);
+  stroke-width: 2;
+  fill: none;
+}
+.particle-profile circle {
+  fill: var(--series-1);
+}
+.particle-profile text {
+  fill: var(--ink);
+  font-size: 11px;
+}
+.explore input[type='number'] {
+  max-width: 12rem;
+}
+.explore select {
+  max-width: 100%;
+}
+@media (max-width: 800px) {
+  .explore-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .puck-canvas {
+    height: 24rem;
+  }
+}
+@media (forced-colors: active) {
+  .explore-cell.selected {
+    stroke: Highlight;
+  }
+  .particle-profile polyline {
+    stroke: CanvasText;
+  }
+}

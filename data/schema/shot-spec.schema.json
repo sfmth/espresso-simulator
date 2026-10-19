@@ -841,6 +841,36 @@
           "type": "integer",
           "minimum": 2,
           "maximum": 64
+        },
+        "explore_cell": {
+          "description": "Optional bounded read-only export of exact particle states from one selected Tier 1 cell. Does not change the shot physics. High resolution is applied by the Explore recipe API as a fivefold depth refinement.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "column",
+            "cell"
+          ],
+          "properties": {
+            "column": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cell": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "resolution": {
+              "type": "string",
+              "enum": [
+                "standard",
+                "high"
+              ],
+              "default": "standard"
+            }
+          }
         }
       }
     },
