@@ -10,6 +10,7 @@ import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 import { writeOfflineBuild } from './offline-build.mjs';
+import { completeInitialSetup } from './setup-helper.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const report = [];
@@ -352,6 +353,7 @@ async function main() {
     await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
     const url = `${origin}/puckworks-offline/`;
     await page.goto(url);
+    await completeInitialSetup(page);
     const a = await waitReady(page);
     check(a.buildId === releaseA.buildId, 'page and saved release agree on content identity');
     check(
@@ -444,6 +446,7 @@ async function main() {
     audit(rootContext);
     const rootPage = await rootContext.newPage();
     await rootPage.goto(`${origin}/`);
+    await completeInitialSetup(rootPage);
     check(
       (await waitReady(rootPage)).buildId === releaseB.buildId,
       'root deployment also installs correctly',

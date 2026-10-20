@@ -409,7 +409,16 @@ C = 4.186 J/(g K) × (`model.thermal.hardware_water_equivalent` 30 g + dose × `
 
 ### 8.5 Stop rule
 
-Beverage mass (≤ 500 g) and/or time (≤ 600 s) from the recipe; with neither, `model.stop.default_ratio` (2, C) × dose, with a note. The hard stop `numerics.max_duration_s` is the largest of 120 s, the stop time + 30 s and the program's timed phases and ramps + 60 s, capped at 1200 s (with a note). The beverage mass includes the post-stop drip of the headspace water, so without a three-way valve a shot stopped at 36 g ends about 2 g heavier (generic recipe: 38.3 g); with one it ends at 36 g.
+Beverage mass (≤ 500 g) and/or time (≤ 600 s) from the recipe; with neither, `model.stop.default_ratio` (2, C) × dose, with a note. The hard stop `numerics.max_duration_s` is the largest of 120 s, the stop time + 30 s and the program's timed phases and ramps + 60 s, capped at 1200 s (with a note). The mass stop turns off the pump; the reported beverage mass includes subsequent drip. An unvented generic Tier 1 example stops pumping at 36 g but finishes at 56.812 g, including 20.812 g of estimated drip. This tail is a model assumption, not validated universal machine behavior.
+
+The browser's new/reset recipe explicitly sets `machine.vent_headspace: true`,
+so its standard 36 g stop finishes at 36.00 g with no drip on both tiers. This
+starting preference does not alter the builder's recipe > preset > false
+precedence, machine preset data or the low-level stop default. Importing or
+restoring a saved recipe preserves its own fields, including explicit false or
+an omitted value that inherits from the preset. Choosing another machine preset
+returns venting to that preset's behavior. The Machine checkbox can turn venting
+off; the original unvented drainage remains available.
 
 ### 8.6 Machine presets
 
@@ -506,7 +515,7 @@ All optional (contract §6); listed in `recipe.rs` and the recipe schema.
 
 - **Calibration first.** The reference permeability, the gas and swelling mappings, the prep coefficients and the grinder dial mappings are placeholders for calibration (PLAN §7.3 K, §13 E1). The AMZCHEF presets in particular need the owner's shots.
 - **Untested mechanisms.** The taper term of the edge multiplier, the CO₂ → permeability mapping and the confined-swelling closure have no direct data (grade D).
-- **Drip.** The solver drains only the water above the puck after the stop (about 2 g for the generic recipe); a machine with a three-way valve (`machine.vent_headspace`) has none. Which presets have a valve is known only for E61 groups and levers.
+- **Drip.** With zero compliance and no vent, the legacy solver can drain retained water above the puck after the stop; the generic Tier 1 example adds about 20.8 g. This estimated tail is not a calibrated machine prediction. The browser's starting recipe enables venting and adds no drip. Which presets have a valve is known only for E61 groups and levers.
 - **PSD at the fine end and its basis.** Below X50 ≈ 220 µm no grinder's X50/gap relation was measured; the fines relation is supported down to X50 ≈ 60 µm. The model's Sauter diameter is 6–12% below measured dry laser values in the espresso range. The published espresso grinds (Smrke, Cameron, Corrochano ΨB–ΨE, Schmieder) have dry D32 ≈ 80–145 µm; Waszkiewicz 2026's 30 s grind has 47–50 µm and no particles above 182 µm. A reference permeability pooled from both kinds of evidence cannot make both give 30 s shots; which basis the permeability calibration should use is open (§5.2).
 - **No measurement model** for PSD methods (wet vs dry laser, image, sieve): measured PSDs are used as given, with a caveat.
 - **Not modelled in v1:** temperature narrowing of the PSD, static clumping and RDT (an in-puck aggregation state, 03 Implications A), process and staling effects, burr diameter and rpm, tamp force, a top paper, fines migration (switched off), PSD effects on ε.

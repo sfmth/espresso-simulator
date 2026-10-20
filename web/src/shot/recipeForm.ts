@@ -222,7 +222,9 @@ export const DEFAULT_RECIPE: Recipe = {
   grinder: { preset: 'generic-flat-traditional-64', setting: 190 },
   basket: { preset: '58-precision-18g' },
   prep: { dose_g: 18, distribution: 'wdt' },
-  machine: { preset: 'flat-9-bar' },
+  // The starting recipe vents after pump stop; another machine preset keeps
+  // its own valve assumption, and imported recipes retain their choice.
+  machine: { preset: 'flat-9-bar', vent_headspace: true },
   stop: { beverage_g: 36 },
   numerics: { tier: 1 },
 };

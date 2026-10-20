@@ -146,6 +146,7 @@ const ROUND_TRIP: Recipe[] = [
 describe('recipe form', () => {
   it('starts from the default recipe, which uses no one’s own gear', () => {
     expect(recipeOf(defaultForm())).toEqual(DEFAULT_RECIPE);
+    expect(recipeOf(defaultForm()).machine.vent_headspace).toBe(true);
     const presets = fixtureCatalog().presets;
     const flagged = [
       presets.beans.find((p) => p.id === DEFAULT_RECIPE.bean.preset),
@@ -502,15 +503,21 @@ describe('gear changes clear what belonged to the old gear', () => {
   it('lets a new machine preset bring its own program and pump, saying when it dropped one', () => {
     const machine = { ...defaultForm().machine, customProgram: true, pumpMode: 'ideal' as const };
     expect(changeMachinePreset(machine, 'turbo-6-bar')).toEqual({
-      machine: { ...machine, preset: 'turbo-6-bar', customProgram: false, pumpMode: 'preset' },
+      machine: {
+        ...machine,
+        preset: 'turbo-6-bar',
+        customProgram: false,
+        pumpMode: 'preset',
+        vent_headspace: '',
+      },
       discarded: true,
     });
     expect(changeMachinePreset(defaultForm().machine, 'turbo-6-bar').discarded).toBe(false);
     expect(changeMachinePreset(machine, '').machine.customProgram).toBe(true);
   });
 
-  it('sends the vent only when chosen, reads it back, and lets a new preset reset it', () => {
-    expect(recipeOf(defaultForm()).machine).not.toHaveProperty('vent_headspace');
+  it('preserves imported vent choices and inheritance while the fresh default vents', () => {
+    expect(recipeOf(defaultForm()).machine.vent_headspace).toBe(true);
     for (const vent of [true, false]) {
       const form = formOf({
         ...DEFAULT_RECIPE,
@@ -527,6 +534,7 @@ describe('gear changes clear what belonged to the old gear', () => {
       });
       if (!result.ok) throw new Error(result.error);
       expect(result.form.machine.vent_headspace).toBe('');
+      expect(recipeOf(result.form).machine).not.toHaveProperty('vent_headspace');
       expect(result.warnings.some((w) => w.includes('machine.vent_headspace'))).toBe(
         vent === 'yes',
       );
@@ -535,6 +543,15 @@ describe('gear changes clear what belonged to the old gear', () => {
     expect(changeMachinePreset(chosen, 'turbo-6-bar').machine.vent_headspace).toBe('');
     // With no preset, the choice is the only source: it stays.
     expect(changeMachinePreset(chosen, '').machine.vent_headspace).toBe('yes');
+  });
+
+  it('clears the starting vent choice when selecting a machine with no valve', () => {
+    const form = defaultForm();
+    const preset = catalog.presets.machines.find((machine) => machine.id === 'vibratory-pump');
+    expect(preset?.vent_headspace).toBe(false);
+    form.machine = changeMachinePreset(form.machine, 'vibratory-pump').machine;
+    expect(form.machine.vent_headspace).toBe('');
+    expect(recipeOf(form).machine).toEqual({ preset: 'vibratory-pump' });
   });
 
   it('drops overrides of registry ids this version does not have', () => {

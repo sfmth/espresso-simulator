@@ -9,6 +9,7 @@ import { ShotLab } from './shot/ShotLab';
 import { ShotRunProvider } from './shot/ShotRunContext';
 import { Explore } from './explore/Explore';
 import { OfflineStatus } from './offline/OfflineStatus';
+import { EquipmentSetupGate } from './setup/EquipmentSetup';
 import { useAppStore, type LabView, type Mode } from './store';
 
 function TabPanel({ mode, active, children }: { mode: Mode; active: Mode; children: ReactNode }) {
@@ -69,21 +70,23 @@ export function App() {
 
       <ShotRunProvider>
         <main id="main" className="app-main" tabIndex={-1}>
-          <TabPanel mode="dial-in" active={mode}>
-            <DialIn />
-          </TabPanel>
-          <TabPanel mode="lab" active={mode}>
-            <Lab />
-          </TabPanel>
-          <TabPanel mode="explore" active={mode}>
-            <Explore active={mode === 'explore'} />
-          </TabPanel>
+          <EquipmentSetupGate>
+            <TabPanel mode="dial-in" active={mode}>
+              <DialIn />
+            </TabPanel>
+            <TabPanel mode="lab" active={mode}>
+              <Lab />
+            </TabPanel>
+            <TabPanel mode="explore" active={mode}>
+              <Explore active={mode === 'explore'} />
+            </TabPanel>
+          </EquipmentSetupGate>
         </main>
       </ShotRunProvider>
 
       <footer className="app-footer">
         <span>GPL-2.0-or-later</span>
-        <span>Nothing you enter leaves your browser</span>
+        <span>Recipes and journals stay in your browser</span>
         <a href="./privacy.html">Privacy and browser storage</a>
         {SOURCE_URL ? (
           <a href={SOURCE_URL}>Source code</a>

@@ -11,6 +11,8 @@
 - ``calibrate``: the M1 calibration harness;
 - ``validate``: the M1 validation report;
 - ``community``: exploratory comparisons against locally supplied community shot logs;
+- ``surrogate_data``, ``surrogate_train``, ``surrogate_infer``: offline scalar
+  teacher sampling, neural fitting/evaluation and guarded Tier 1 fallback;
 - ``sources``: importers that regenerate dataset CSV files from the original downloads;
 - ``export``: presets and registry JSON for the model crate (workstream D);
 - ``versions``: the version-consistency check.

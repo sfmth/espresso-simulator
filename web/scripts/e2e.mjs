@@ -29,6 +29,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
+import { completeInitialSetup } from './setup-helper.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const SUB_PATH = '/puckworks-e2e/';
@@ -547,6 +548,43 @@ async function shotLabChecks(page, pkg, shot) {
   const previewMs = await tileNumber('runtime');
   check(Number.isFinite(previewMs), `tier-0 preview: ${previewMs.toFixed(1)} ms in the worker`);
   shot.tier0Ms = previewMs;
+  const equipment = lab.locator('.equipment-diagram');
+  check(
+    (await equipment.getByRole('button', { expanded: false }).count()) === 6 &&
+      (await equipment.locator('[data-equipment-leader]').count()) === 6,
+    'equipment callouts connect all six parts to their settings',
+  );
+  const puckCallout = equipment.locator('[data-equipment-callout="prep"]');
+  await puckCallout.click();
+  await equipment.getByLabel('Diagram dry dose (g)', { exact: true }).fill('19');
+  await equipment.getByRole('button', { name: 'More puck / dose settings', exact: false }).click();
+  const doseField = page.locator('#rf-prep-dose_g');
+  await page.waitForFunction(() => document.activeElement?.id === 'rf-prep-dose_g', undefined, {
+    timeout: 5000,
+  });
+  check(
+    (await doseField.inputValue()) === '19',
+    'a callout edit reaches the full recipe field and More settings moves keyboard focus',
+  );
+  await doseField.fill('18');
+  await waitForStatus('Preview (tier 0)');
+  await page.locator('#section-prep > summary').click();
+  const grinderCallout = equipment.locator('[data-equipment-callout="grinder"]');
+  await grinderCallout.click();
+  await equipment
+    .locator('#equipment-settings')
+    .screenshot({ path: shot.path('e2e-equipment-panel') });
+  await equipment.screenshot({ path: shot.path('e2e-equipment-desktop') });
+  await page.keyboard.press('Escape');
+  check(
+    (await grinderCallout.getAttribute('aria-expanded')) === 'false' &&
+      (await grinderCallout.evaluate((element) => document.activeElement === element)),
+    'Escape closes equipment settings and restores the callout focus',
+  );
+  check(
+    Math.abs((await tileNumber('beverage')) - 0.036) < 1e-6,
+    'the starting tier-0 recipe finishes at 36 g',
+  );
   check(
     (await lab.locator('.chart-grid .chart-canvas canvas').count()) >= 6,
     'the shot graph draws its small multiples',
@@ -558,6 +596,10 @@ async function shotLabChecks(page, pkg, shot) {
   );
   const recipe = JSON.parse(exported.text);
   check(
+    recipe.machine.vent_headspace === true,
+    'the starting browser recipe explicitly enables group venting',
+  );
+  check(
     recipe.schema === 'puckworks.recipe/1' && /^puckworks-recipe-.*\.json$/.test(exported.name),
     `the recipe downloads as ${exported.name}`,
   );
@@ -567,6 +609,11 @@ async function shotLabChecks(page, pkg, shot) {
   await waitForStatus('Up to date: tier 1', 60_000);
   const referenceResult = JSON.parse(pkg.simulateRecipe(JSON.stringify(recipe))).result;
   const reference = referenceResult.summary;
+  check(
+    reference.drip_mass_kg === 0 &&
+      Math.abs(reference.beverage_mass_kg - recipe.stop.beverage_g / 1000) < 1e-6,
+    'the starting Tier 1 recipe finishes at the 36 g stop with zero drip',
+  );
   const shown = {
     ey: await tileNumber('ey'),
     tds: await tileNumber('tds'),
@@ -790,13 +837,31 @@ async function shotLabChecks(page, pkg, shot) {
   );
   check((await status.textContent()).startsWith('Up to date'), 'and the status says so');
 
-  // A three-way valve vents the group at the stop: no drip, so the cup holds
-  // the stop mass. The tier-0 preview is compared with the same recipe in Node.
+  // Venting starts enabled. Turning it off restores modeled drip; turning it
+  // back on restores the original cached Tier 1 result.
   if ((await page.locator('#section-machine').getAttribute('open')) === null) {
     await page.locator('#section-machine > summary').click();
   }
-  await lab.getByLabel('Vents the group after the shot (three-way valve)', { exact: true }).check();
+  const ventControl = lab.getByLabel('Vents the group after the shot (three-way valve)', {
+    exact: true,
+  });
+  await ventControl.uncheck();
   await waitForStatus('Preview (tier 0)');
+  const unvented = JSON.parse(
+    pkg.simulateRecipe(
+      JSON.stringify({
+        ...recipe,
+        machine: { ...recipe.machine, vent_headspace: false },
+        numerics: { ...recipe.numerics, tier: 0 },
+      }),
+    ),
+  ).result.summary;
+  check(
+    unvented.drip_mass_kg > 0 && Object.is(await tileNumber('beverage'), unvented.beverage_mass_kg),
+    'turning off default venting preserves the unvented physics preview',
+  );
+  await ventControl.check();
+  await waitForStatus('Up to date: tier 1');
   const ventedRecipe = JSON.parse(
     (
       await downloadText(page, () =>
@@ -806,7 +871,7 @@ async function shotLabChecks(page, pkg, shot) {
   );
   const vented = JSON.parse(
     pkg.simulateRecipe(
-      JSON.stringify({ ...ventedRecipe, numerics: { ...ventedRecipe.numerics, tier: 0 } }),
+      JSON.stringify({ ...ventedRecipe, numerics: { ...ventedRecipe.numerics, tier: 1 } }),
     ),
   ).result.summary;
   const cup = await tileNumber('beverage');
@@ -817,7 +882,7 @@ async function shotLabChecks(page, pkg, shot) {
       vented.drip_mass_kg === 0 &&
       Math.abs(cup - stopKg) < 1e-6,
     `with the group vented the cup holds the stop mass: ${(cup * 1000).toFixed(4)} g of ` +
-      `${ventedRecipe.stop.beverage_g} g, no drip (tier 0, as in Node)`,
+      `${ventedRecipe.stop.beverage_g} g, no drip (tier 1, as in Node)`,
   );
 
   await fromScratchChecks(page, pkg);
@@ -1392,6 +1457,34 @@ async function main() {
 
     console.log(`e2e: ${url} in ${browser.browserType().name()} ${browser.version()}`);
     const initialResponse = await page.goto(url);
+    const setup = page.getByRole('dialog', { name: 'Set up your equipment', exact: true });
+    await setup.waitFor({ state: 'visible', timeout: 30000 });
+    await setup.getByRole('combobox', { name: 'Your machine', exact: true }).waitFor();
+    const untouchedMachine = await setup
+      .getByRole('combobox', { name: 'Your machine', exact: true })
+      .inputValue();
+    await setup.getByRole('button', { name: 'Next: starting shot', exact: true }).click();
+    check(
+      untouchedMachine === '' &&
+        (await setup.getByRole('heading', { name: /Step 1 of 3/ }).isVisible()) &&
+        (await setup.getByRole('alert').isVisible()),
+      'first visit requires explicit equipment choices',
+    );
+    await page.keyboard.press('Escape');
+    check(await setup.isVisible(), 'Escape cannot bypass required first-visit setup');
+    await setup.screenshot({ path: shotPath('e2e-setup-first-visit') });
+    await completeInitialSetup(page);
+    const setupCookies = (await context.cookies(url)).filter(
+      (cookie) => cookie.name === 'puckworks_setup_v1',
+    );
+    check(
+      setupCookies.length === 1 &&
+        setupCookies[0].value === 'done' &&
+        setupCookies[0].path === SUB_PATH &&
+        setupCookies[0].sameSite === 'Strict',
+      'setup cookie stores only a fixed completion marker scoped to this app',
+    );
+    await page.reload();
     if (process.env.E2E_DEBUG) {
       console.log(`initial response: ${initialResponse?.status()} ${page.url()}`);
       console.log(`initial body: ${(await page.locator('body').innerText()).slice(0, 2000)}`);

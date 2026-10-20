@@ -87,6 +87,10 @@ jobs:
         if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
         run: puckworks-tools validate --check
 
+      - name: Replay the offline surrogate evaluation and check its teacher identity
+        if: ${{ !cancelled() && steps.core.outcome == 'success' && steps.tools.outcome == 'success' }}
+        run: puckworks-tools surrogate-check --model models/scalar-v1.json --dataset data/surrogates/scalar-v1.json
+
       - name: Run the tests
         if: ${{ !cancelled() && steps.core.outcome == 'success' && steps.tools.outcome == 'success' }}
         run: python -m pytest python/tests

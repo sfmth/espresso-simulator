@@ -24,6 +24,7 @@ import {
 } from './editor/summaries';
 import { sectionOf, type RecipeForm } from './recipeForm';
 import { useShotStore } from './shotStore';
+import { EquipmentDiagram } from './EquipmentDiagram';
 
 type SectionId =
   'bean' | 'water' | 'chemistry' | 'grinder' | 'basket' | 'prep' | 'machine' | 'stop' | 'overrides';
@@ -179,6 +180,7 @@ export function RecipeEditor({
           onSubmit();
         }}
       >
+        <EquipmentDiagram />
         {SECTIONS.map((spec) => (
           <Section
             key={spec.id}

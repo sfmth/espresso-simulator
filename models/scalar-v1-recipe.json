@@ -1,0 +1,28 @@
+{
+  "basket": {
+    "preset": "58-precision-18g"
+  },
+  "bean": {
+    "preset": "medium-washed-arabica"
+  },
+  "grinder": {
+    "preset": "generic-flat-traditional-64",
+    "setting": 190.0
+  },
+  "machine": {
+    "preset": "flat-9-bar",
+    "temperature_c": 93.0
+  },
+  "numerics": {
+    "tier": 1
+  },
+  "prep": {
+    "distribution": "wdt",
+    "dose_g": 18.0
+  },
+  "schema": "puckworks.recipe/1",
+  "stop": {
+    "beverage_g": 36.0,
+    "time_s": 60.0
+  }
+}

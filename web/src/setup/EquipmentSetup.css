@@ -1,0 +1,87 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+.equipment-setup-dialog {
+  width: min(44rem, calc(100% - 1rem));
+  max-width: calc(100% - 1rem);
+  max-height: calc(100dvh - 1rem);
+  overflow: auto;
+  padding: clamp(0.75rem, 3vw, 1.75rem);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+}
+.equipment-setup-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+.equipment-setup-content {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+}
+.equipment-setup-content h2,
+.equipment-setup-content h3 {
+  margin: 0;
+}
+.equipment-setup-fields {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.equipment-setup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.equipment-setup-grid label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.equipment-setup-grid select,
+.equipment-setup-grid input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+}
+.equipment-setup-dialog form,
+.equipment-setup-review {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+}
+.equipment-setup-fields > .note {
+  margin-top: 1rem;
+}
+.equipment-setup-review > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.equipment-setup-review dt {
+  color: var(--ink-2);
+}
+.equipment-setup-review dd {
+  margin: 0;
+}
+.equipment-setup-actions,
+.equipment-setup-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.equipment-setup-bar {
+  padding: 0.75rem 1rem;
+}
+.equipment-setup-error {
+  margin: 0;
+  color: var(--danger);
+}
+@media (max-width: 480px) {
+  .equipment-setup-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .equipment-setup-actions > .button {
+    flex: 1 1 auto;
+  }
+}

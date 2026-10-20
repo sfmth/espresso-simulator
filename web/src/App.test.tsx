@@ -9,6 +9,13 @@ import { EngineContext } from './engine/EngineContext';
 import type { SphereReleaseParams, SphereRunData } from './engine/types';
 import { TAU_MESSAGE } from './lab/sphereForm';
 import { resetAppStore } from './store';
+import type { ReactNode } from 'react';
+
+// These exercise the kernel/navigation lifecycle; the real setup gate has its
+// own tests and production browser coverage.
+vi.mock('./setup/EquipmentSetup', () => ({
+  EquipmentSetupGate: ({ children }: { children: ReactNode }) => children,
+}));
 
 // jsdom has no canvas: replace uPlot with a stand-in.
 vi.mock('uplot', () => ({
@@ -139,7 +146,7 @@ describe('App', () => {
       screen.getByRole('heading', { level: 2, name: 'Particle kernel verification' }),
     ).toBeTruthy();
     expect(screen.getByText('GPL-2.0-or-later')).toBeTruthy();
-    expect(screen.getByText('Nothing you enter leaves your browser')).toBeTruthy();
+    expect(screen.getByText('Recipes and journals stay in your browser')).toBeTruthy();
     if (SOURCE_URL) {
       expect(screen.getByRole('link', { name: 'Source code' }).getAttribute('href')).toBe(
         SOURCE_URL,

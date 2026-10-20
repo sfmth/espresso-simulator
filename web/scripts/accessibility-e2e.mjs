@@ -11,6 +11,7 @@ import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import axe from 'axe-core';
 import { chromium } from 'playwright-core';
+import { completeInitialSetup } from './setup-helper.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const dist = resolve(webDir, 'dist');
@@ -129,6 +130,16 @@ try {
   const page = await context.newPage();
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(origin + prefix);
+  await audit(page, 'Required equipment setup · light');
+  await page.setViewportSize({ width: 320, height: 760 });
+  await noOverflow(page, 'Required equipment setup at 320px');
+  await audit(page, 'Required equipment setup · phone');
+  await page.screenshot({ path: resolve(output, 'equipment-setup-phone.png'), fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await completeInitialSetup(page, {
+    onStep: (step) => audit(page, `Required equipment setup step ${step} · light`),
+  });
+  await page.reload();
   await page.waitForFunction(
     () => document.getElementById('shot-status')?.textContent?.startsWith('Preview'),
     undefined,
@@ -142,6 +153,11 @@ try {
   await page.keyboard.press('Enter');
   check(await focused(page.locator('#main')), 'Skip to content moves keyboard focus to main');
   await audit(page, 'Lab preview · light');
+  for (const part of ['bean', 'grinder', 'machine', 'basket', 'prep', 'stop']) {
+    await activate(page.locator(`[data-equipment-callout="${part}"]`));
+    await audit(page, `Expanded equipment ${part} · light`);
+  }
+  await page.keyboard.press('Escape');
 
   for (const id of [
     'bean',
@@ -191,6 +207,9 @@ try {
   await audit(page, 'Chart sample and pinned overlay · light');
   await page.emulateMedia({ colorScheme: 'dark' });
   await audit(page, 'Expanded Lab and chart readout · dark');
+  await activate(page.locator('[data-equipment-callout="machine"]'));
+  await audit(page, 'Expanded equipment machine · dark');
+  await page.keyboard.press('Escape');
 
   const labTab = page.getByRole('tab', { name: 'Lab', exact: true });
   await labTab.focus();
@@ -354,6 +373,13 @@ try {
   await activate(labTab);
   await activate(page.getByRole('tab', { name: 'Shot lab', exact: true }));
   await noOverflow(page, 'Lab at 320px');
+  await activate(page.locator('[data-equipment-callout="grinder"]'));
+  await noOverflow(page, 'Expanded equipment settings at 320px');
+  await audit(page, 'Expanded equipment grinder · phone');
+  await page
+    .locator('.equipment-diagram')
+    .screenshot({ path: resolve(output, 'equipment-phone.png') });
+  await page.keyboard.press('Escape');
   await activate(page.getByRole('tab', { name: 'Explore', exact: true }));
   await noOverflow(page, 'Explore at 320px');
 

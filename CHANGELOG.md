@@ -2,6 +2,46 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.11.0] - 2026-10-19
+
+M6 offline scalar surrogate tooling. The browser continues to use physics; the
+first neural baseline fails its declared accuracy target and is retained as an
+experimental result. Physics, calibration and all 218,221 golden numerical
+values remain unchanged.
+
+### Fixed
+- New/reset browser recipes enable group venting by default. The standard 36 g
+  recipe finishes at 36.000000014 g on Tier 1 (36.000000018 g on Tier 0), with
+  zero modeled drip, instead of 56.812 g on unvented Tier 1. Explicit settings,
+  imported/saved recipes and machine preset precedence remain intact. Solver
+  defaults and the frozen unvented surrogate experiment are unchanged.
+
+### Added
+- A scalable machine/grinder/portafilter drawing with six connected, expandable
+  setting bubbles. Quick controls share the full recipe editor's state, preset
+  rules and validation; keyboard users can expand, close and move to full controls.
+- Required first-visit equipment and starting-shot setup, native builder checks,
+  editable local profiles and graceful session-only use when storage is blocked.
+  A fixed first-party completion cookie contains no equipment values or identifier.
+  This owner-requested exception to the no-cookie policy is documented in D9 and
+  the privacy page; settings remain in local browser storage.
+- Reproducible native Tier 1 sampling: 256 training, 64 residual-calibration,
+  128 final-test and 16 boundary rows, with no failed/capped samples. Generation
+  took 99.20 seconds with four local workers; this is not a device performance gate.
+- A fixed three-member 4 → 16 tanh → 3 ensemble using existing NumPy/SciPy
+  dependencies. Time, final cup mass and EY are learned; derived TDS preserves
+  the final-mass identity, including post-stop drip.
+- Frozen evaluation, separate approximation-error bands and explicit failed
+  qualification. Maximum test/boundary mass errors are 1.287/3.837 g; all three
+  fits reached the fixed 2,000-iteration limit. The full
+  [evaluation](docs/validation/m6-surrogate-validation.md) records every output
+  and coverage result. No settings were tuned after viewing held-out errors.
+- Bounded JSON artifacts, strict recipe-domain and current-teacher checks,
+  replay of sampling/scales/metrics from saved data and weights, cancellation
+  checkpoints and actual Tier 1 fallback. CI replays the committed evaluation;
+  models stay outside the production app. Scientific, personal accuracy,
+  hardware performance and M6 launch gates remain open.
+
 ## [0.10.1] - 2026-10-19
 
 M6 accessibility fixes. Physics, calibration and all 218,221 golden numerical values

@@ -19,11 +19,17 @@
       <a href="./">← Back to Puckworks</a>
       <h1>Privacy and browser storage</h1>
       <p>
-        Puckworks runs simulations on your device. There are no accounts, analytics, advertising,
-        cookies or telemetry. The app does not upload your recipes, imported files, journal, ratings
-        or calibration.
+        Puckworks runs simulations on your device. There are no accounts, analytics, advertising or
+        telemetry. The app does not upload your recipes, imported files, journal, ratings or
+        calibration.
       </p>
       <h2>What stays in this browser</h2>
+      <p>
+        On your first visit, choose your machine, grinder, basket, coffee and starting recipe.
+        Equipment setup and valid recipe drafts are saved in local browser storage. Use
+        <strong>Equipment setup</strong> to review them later. The cookie described below contains
+        no equipment details, recipe values or personal identifier.
+      </p>
       <p>
         Saved journal records, observations, ratings and calibration use the browser’s local
         database. Imports are parsed locally. Downloads and backups leave the app only when you
@@ -34,6 +40,20 @@
         Browser storage can be cleared or evicted, and private browsing may remove it when the
         session closes. Keep a journal backup somewhere you control; browser storage is not a
         backup.
+      </p>
+      <h2>Setup cookie</h2>
+      <p>
+        One first-party cookie, <code>puckworks_setup_v1=done</code>, remembers that setup has
+        completed for up to one year. It is limited to this app's path, uses SameSite=Strict, and
+        uses Secure on HTTPS. It has the same fixed value for every user and contains no machine,
+        grinder, recipe, journal or tracking identifier.
+      </p>
+      <p>
+        Browsers automatically include this completion marker in matching requests to the host.
+        Equipment settings remain in local browser storage. If cookies are blocked, saved local
+        setup can still be restored. If all storage is blocked, setup works for the current session
+        and will be requested again on a later visit. You can remove the cookie and saved setup
+        through your browser's site-data controls.
       </p>
       <h2>Downloaded app files</h2>
       <p>

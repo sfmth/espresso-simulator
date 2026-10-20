@@ -4,7 +4,8 @@
 Offline Python tools for Puckworks. They check the parameter registry and the datasets, write the
 golden fixtures shared with the web tests, produce the kernel verification report, calibrate the M1
 model against the literature datasets and write the M1 validation report, export presets and registry
-for the model crate, compare community shot logs under explicit assumptions, and check that versions agree across the repository. Version 0.5.0,
+for the model crate, compare community shot logs under explicit assumptions, verify M3 scenarios and
+taste directions, run a small offline scalar surrogate experiment, and check that versions agree across the repository. Version 0.11.0,
 GPL-2.0-or-later.
 
 ## Install
@@ -21,8 +22,9 @@ python -m venv .venv
 Python 3.10 or newer. Runtime dependencies: PyYAML, jsonschema, NumPy, SciPy (and tomli on Python
 3.10); pytest for the `dev` extra. Optional extras: `report` (matplotlib, for the validation report's
 figures; the report is written without them otherwise) and `sources` (Pillow, for the importers that
-digitise raster figures). All are MIT, BSD, PSF-style or HPND licensed. `validate-registry` and
-`export` work without `puckcore`; the other commands need it.
+digitise raster figures). All are MIT, BSD, PSF-style or HPND licensed. `validate-registry`,
+`export` and `surrogate-train` work without `puckcore`; generating surrogate data,
+checking current teacher compatibility and predicting with physics fallback require the extension.
 
 ## Commands
 
@@ -39,11 +41,81 @@ failed, 2 a setup problem (for example, `puckcore` is not installed).
 | `puckworks-tools calibrate` | Fits the M1 calibration (`data/calibration/config.yaml`; [docs/validation/calibration.md](../docs/validation/calibration.md)) and writes `data/calibration/<label>.yaml` and `current.yaml`. Options: `--dry-run` (with a check that each override parameter lists every block it changes), `--blocks V1,V4`, `--tier`, `--jobs N`, `--max-nfev`, `--loo` (V1 leave-one-out), `--prune` (fix weakly identified shared parameters and refit), `--sensitivity` (V1 refits under changed case assumptions), `--pool-only` (re-pool `hydraulics.permeability.reference` with the current builder, no refit), `--out-dir`, `--no-current`. Refuses to write `data/calibration` while the solver is a placeholder |
 | `puckworks-tools validate` | Writes the M1 validation report `docs/validation/m1-validation.md` (figures in `docs/validation/m1/`, numbers in `.json`): calibration fit quality and the held-out checks of PLAN §10. `--quick` (tier 0), `--jobs N`, `--calibration FILE`, `--output-dir`, `--from-json FILE` (re-render without simulating). `python/scripts/m1-pipeline.sh [JOBS]` runs the whole M1 pipeline (rebuild, calibrate, export, rebuild, validate, shot fixture, checks) |
 | `puckworks-tools m3-validate` | Writes `docs/validation/m3-validation.md` and `.json`: seeded scenario replay, fixed-input collapse, unknown-input ranges, solver-tier discrepancy and mechanistic taste directions. `--seed UINT32`, `--samples 8..64`, `--output-dir`. No sensory fitting or empirical coverage claim |
+| `puckworks-tools surrogate-generate --output FILE` | Generates fixed-scope Tier-1 synthetic scalar data with separate training, calibration, test and boundary splits. Defaults: `--train 256 --calibration 64 --test 128 --jobs 4 --seed 20261020`. Failed or capped shots remain recorded; generation exits 1 when any occur |
+| `puckworks-tools surrogate-train --dataset FILE --model FILE --report-dir DIR` | Fits three small neural networks using training rows only, calibrates approximation residuals separately, and reports untouched test/boundary errors. `--seed`, `--max-iter` (default 2000). A failed accuracy gate remains a valid reported experimental result |
+| `puckworks-tools surrogate-check --model FILE [--dataset FILE]` | Checks structure, digests and the current native teacher identity. With `--dataset`, replays model predictions and verifies the recorded metrics and qualification. `--require-qualified` additionally exits 1 for an unqualified model |
+| `puckworks-tools surrogate-predict --model FILE --recipe FILE` | Returns a guarded offline scalar prediction or actual Tier-1 fallback, with explicit mode and reasons. `--output FILE` saves the JSON locally; physical overrides are preserved on fallback |
 | `puckworks-tools community --archive ZIP --log CSV` | Imports the pinned original Gagné experiment and runs exploratory model comparisons with fixed assumptions. No download, fitting or admission to the calibration inventory. `--tier 0` is a coarse smoke run; the default is tier 1. Detailed output goes to `.local/community/gagne2021`; `--output-dir` must be outside a Git worktree or ignored |
 | `puckworks-tools export [--check]` | Forwards to `puckworks_tools.export.main` (workstream D): writes, or checks, `crates/puckmodel/generated/presets.json` and `registry.json` from `data/presets`, `data/params` and `data/calibration/current.yaml`. Run it after any change to those |
 | `puckworks-tools check-versions` | Checks that `Cargo.toml` (`[workspace.package]`), `web/package.json` (if present), `python/pyproject.toml` and `puckcore.__version__` agree. `--release` also requires a `## [<version>]` heading in `CHANGELOG.md` |
 
 `python -m puckworks_tools …` works too.
+
+## Reproduce the offline scalar experiment
+
+Version 0.11.0 supplies a reproducible synthetic baseline. Its supported family
+fixes the default bean, generic flat grinder, 58 mm precision basket, WDT,
+flat-9-bar program and 60-second time cap. Only grinder setting (170–230), dose
+(16–20 g), requested beverage-stop ratio (1.5–2.5) and temperature (90–96 °C)
+vary. Use `surrogate_data.recipe_for_features` to construct the exact supported
+recipe representation; extra inputs are conservatively outside this scope.
+The [contract](../docs/model/m6-surrogates.md) records all fixed inputs and guards.
+
+Rebuild the native extension after core, version or embedded-default changes.
+Then generate and fit into fresh local paths:
+
+```sh
+.venv/bin/puckworks-tools surrogate-generate \
+  --output .local/surrogates/dataset.json \
+  --train 256 --calibration 64 --test 128 --jobs 4 --seed 20261020
+.venv/bin/puckworks-tools surrogate-train \
+  --dataset .local/surrogates/dataset.json \
+  --model .local/surrogates/model.json \
+  --report-dir .local/surrogates/report --seed 20261020 --max-iter 2000
+.venv/bin/puckworks-tools surrogate-check \
+  --model .local/surrogates/model.json --dataset .local/surrogates/dataset.json
+```
+
+Generation runs the shared Rust Tier-1 solver through the Python binding, using
+one to four processes. It needs no measured shots or external downloads. The
+464 rows include 16 test-only domain corners. Independent seeded Sobol streams,
+replayed coordinates and content-addressed row IDs enforce the declared split
+membership. Failed and capped teacher runs are retained and block training.
+Outputs refuse replacement unless `--force` is explicitly supplied.
+
+Learned outputs are pump-stop time, final cup mass and cup EY; TDS is derived
+from EY, dose and final mass. Final mass includes post-stop drip and can exceed
+the requested beverage-stop setting. Scalar output does not include curves,
+chemistry, taste or spatial fields. The production browser keeps using physics
+and does not bundle these dataset or model files.
+
+Freeze the domain, split roles, seeds and training configuration before reading
+final test or boundary errors. Do not retune on those errors, move rows between
+splits or replace difficult samples. Preserve failed gates in the report; any
+later tuning experiment needs a separately declared untouched evaluation split.
+Output scaling and network fitting use training rows only; input scaling uses
+the declared support. The calibration split sets residual radii; test and boundary
+rows evaluate them without changing the model.
+
+The committed baseline fails its 1% error gate, so guarded predictions use
+physics fallback. Reproduce the CI integrity and metric replay without rewriting
+artifacts or requiring qualification:
+
+```sh
+.venv/bin/puckworks-tools surrogate-check \
+  --model models/scalar-v1.json --dataset data/surrogates/scalar-v1.json
+.venv/bin/puckworks-tools surrogate-predict \
+  --model models/scalar-v1.json --recipe models/scalar-v1-recipe.json
+```
+
+`--require-qualified` is an additional readiness check and exits 1 for this
+baseline. Synthetic held-out accuracy and residual coverage concern
+approximation of the simulator. They do not establish measured espresso
+accuracy, physical predictive coverage or browser acceleration. Cold teacher
+identity checks include three native behavior probes; report that cost separately
+from warm compatibility, neural inference and fallback. The
+[evaluation report](../docs/validation/m6-surrogate-validation.md) retains the
+observed errors, coverage and qualification result.
 
 ## Reproduce the community comparison
 
@@ -94,6 +166,11 @@ solver), flags unidentified parameters and writes documents the export accepts; 
 runs end to end; the shot fixture's format, coverage and `--check`; the importers' helpers; and the CLI
 wiring (export delegation). Tests that need `puckcore` are skipped when it is not installed.
 
+The scalar surrogate tests cover strict input scope, seeded split replay and
+failure accounting, portable teacher identities, real neural fitting with an
+independent gradient check, held-out isolation, residual calibration, malformed
+artifact rejection, scalar accounting and guarded physics fallback.
+
 `test_committed_fixture_matches_the_current_build` fails whenever the core's numbers change: after
 an intended solver change, regenerate the fixture with `puckworks-tools fixtures` and re-run
 `puckworks-tools verify`.
@@ -117,6 +194,10 @@ python/
 │   ├── calibrate.py   M1 calibration harness (scipy least squares)
 │   ├── validate.py    M1 validation report
 │   ├── community.py   exploratory comparisons with locally supplied community logs
+│   ├── surrogate.py   offline scalar command orchestration and replay checks
+│   ├── surrogate_data.py fixed-input domain, Tier-1 samples and portable provenance
+│   ├── surrogate_train.py small neural ensemble, residual calibration and evaluation
+│   ├── surrogate_infer.py guarded offline scalar prediction and physics fallback
 │   ├── sources/       importers that regenerate dataset CSVs from the original downloads
 │   ├── export.py      presets and registry JSON for the model crate (workstream D)
 │   ├── versions.py    version consistency

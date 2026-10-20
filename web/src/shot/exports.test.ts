@@ -145,6 +145,7 @@ describe('recipe differences', () => {
     const rows = diffRecipes([a, b, c], catalog);
     expect(rows.map((r) => [r.label, ...r.values])).toEqual([
       ['Dose', '18 g', '20 g', '18 g'],
+      ['Vents the group after the shot', 'yes', 'yes', '—'],
       ['Stop at time', '—', '30 s', '—'],
       ['Program phases', '—', '—', '1'],
       ['Phase 1 control', '—', '—', 'pressure'],
