@@ -1787,17 +1787,41 @@ code {
   max-height: 20rem;
   width: 100%;
 }
+.explore-section-viewport {
+  width: 100%;
+  max-height: 28rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 .explore-section-svg {
+  display: block;
   width: 100%;
   max-height: 28rem;
 }
+.explore-section-viewport.cell-detail .explore-section-svg {
+  max-height: none;
+}
+.explore-section-viewport.cell-detail .basket-label {
+  display: none;
+}
+.explore-section-grid-size {
+  margin: 0;
+}
 .explore-cell {
   cursor: pointer;
+  stroke: none;
+  vector-effect: non-scaling-stroke;
+}
+.show-cell-boundaries .explore-cell {
+  stroke: var(--ink);
+  stroke-width: 0.4px;
+  stroke-opacity: 0.4;
 }
 .explore-cell.selected {
   stroke: var(--ink);
-  stroke-width: 0.6;
-  stroke-dasharray: 1 0.5;
+  stroke-width: 1px;
+  stroke-opacity: 1;
+  stroke-dasharray: 3 2;
 }
 .explore-metrics {
   display: grid;

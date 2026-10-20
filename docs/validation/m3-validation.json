@@ -1,11 +1,11 @@
 {
   "schema": "puckworks.m3-validation/1",
-  "created": "2026-10-18",
-  "core_version": "0.9.1",
+  "created": "2026-10-19",
+  "core_version": "0.9.2",
   "solver_identity": {
-    "puckcore_version": "0.9.1",
-    "extension_sha256": "a2101f771d0f9a11",
-    "extension_built": "2026-10-18T23:56:32-07:00",
+    "puckcore_version": "0.9.2",
+    "extension_sha256": "7f84b93760b6b67c",
+    "extension_built": "2026-10-19T16:01:30-07:00",
     "sources_sha256": {
       "crates/puckcore/src": "d57f6df152239716",
       "crates/puckmodel/src": "2bd9747974cfd7fb",
@@ -14,7 +14,7 @@
       "data/chemistry": "6dd11d8f1a08ce38"
     },
     "files_sha256": {
-      "Cargo.lock": "0aa4f10eb6a926c6"
+      "Cargo.lock": "781cc2157feccf7c"
     },
     "python": {
       "version": "3.14.7",
@@ -260,7 +260,7 @@
         "file_unchanged": true,
         "shared_parameter_count": 9,
         "baseline_report": "docs/validation/m1-validation.json",
-        "baseline_report_sha256": "e3808d58535257c2",
+        "baseline_report_sha256": "1820a6a46b3a4465",
         "parameters_match_m1_report": true,
         "comparison_relative_tolerance": 1e-12,
         "parameter_mismatches": {},
@@ -279,16 +279,16 @@
     }
   ],
   "timing_s": {
-    "central_tier1": 0.7639375161379576,
-    "central_tier0": 0.015781742986291647,
-    "ensemble_unknown": 0.2068700110539794,
-    "ensemble_fixed": 0.2099000308662653,
-    "ensemble_measured": 0.20799202099442482,
-    "ensemble_unknown_replay": 0.20850612735375762,
-    "chemistry_disabled": 0.3779140901751816,
-    "no_beverage": 0.0055732401087880135,
-    "alkalinity_low": 0.754649180918932,
-    "alkalinity_high": 0.7557949358597398
+    "central_tier1": 0.8006823030300438,
+    "central_tier0": 0.01655589183792472,
+    "ensemble_unknown": 0.2134705577045679,
+    "ensemble_fixed": 0.2186163729056716,
+    "ensemble_measured": 0.22262830333784223,
+    "ensemble_unknown_replay": 0.21625005826354027,
+    "chemistry_disabled": 0.3978756950236857,
+    "no_beverage": 0.006829424295574427,
+    "alkalinity_low": 0.8212619950063527,
+    "alkalinity_high": 0.8138994672335684
   },
   "scenario_widths": [
     {
@@ -99832,7 +99832,7 @@
     "file_unchanged": true,
     "shared_parameter_count": 9,
     "baseline_report": "docs/validation/m1-validation.json",
-    "baseline_report_sha256": "e3808d58535257c2",
+    "baseline_report_sha256": "1820a6a46b3a4465",
     "parameters_match_m1_report": true,
     "comparison_relative_tolerance": 1e-12,
     "parameter_mismatches": {},

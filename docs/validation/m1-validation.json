@@ -1,12 +1,12 @@
 {
  "schema": "puckworks.validation-report/1",
- "created": "2026-10-18",
- "tools_version": "0.9.1",
- "core_version": "0.9.1",
+ "created": "2026-10-19",
+ "tools_version": "0.9.2",
+ "core_version": "0.9.2",
  "solver": {
-  "puckcore_version": "0.9.1",
-  "extension_sha256": "a2101f771d0f9a11",
-  "extension_built": "2026-10-18T23:56:32-07:00",
+  "puckcore_version": "0.9.2",
+  "extension_sha256": "7f84b93760b6b67c",
+  "extension_built": "2026-10-19T16:01:30-07:00",
   "sources_sha256": {
    "crates/puckcore/src": "d57f6df152239716",
    "crates/puckmodel/src": "2bd9747974cfd7fb",
@@ -15,7 +15,7 @@
    "data/chemistry": "6dd11d8f1a08ce38"
   },
   "files_sha256": {
-   "Cargo.lock": "0aa4f10eb6a926c6"
+   "Cargo.lock": "781cc2157feccf7c"
   },
   "python": {
    "version": "3.14.7",

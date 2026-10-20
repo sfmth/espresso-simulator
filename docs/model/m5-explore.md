@@ -1,6 +1,6 @@
 # M5: experimental Explore contract
 
-Version 0.9.1 · 2026-10-19. Browser implementation: `web/src/explore/`.
+Version 0.9.2 · 2026-10-19. Browser implementation: `web/src/explore/`.
 Explore displays the shared shot model's state. It does not add a second
 extraction model, infer a scanned puck, or change the published calibration.
 Numerical consistency and actual device performance are separate checks.
@@ -82,6 +82,14 @@ resolved basket holes, shower-screen jets or headspace geometry. The future
 record the actual grid; a selected physical depth is mapped to that grid by the
 interface. A refined result can differ numerically from the standard result and
 can take longer to compute.
+
+Selecting a resolution takes effect after **Run Explore** completes. Until then,
+a status message identifies the previous cross-section grid. The chart reports
+its actual column and depth-cell counts. Refined results open in **Cell detail**
+with cell boundaries visible, focusing the coffee bed in a scrollable viewport;
+selection scrolls to the inspected depth. **Overview** restores the full basket
+at height ×2. Both views draw every solver cell without binning or interpolating
+field values. Similar colours can still indicate a physically smooth field.
 
 The displayed particle-count control is independent of extraction resolution.
 Increasing it changes rendering and representative packing, not the continuum
