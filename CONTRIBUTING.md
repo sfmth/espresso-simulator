@@ -56,7 +56,22 @@ Shell sessions that haven't run the `export` line need `$HOME/.cargo/bin` on `PA
 | Start the web dev server | `cd web && npm run dev` |
 | Run the web checks | `cd web && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build && npm run licenses` |
 | Run the browser end-to-end test (uses the installed Google Chrome) | `cd web && npm run e2e` |
+| Check only offline installation and updates (production build) | `cd web && npm run e2e:offline` |
 | Measure production Explore rendering (build first) | `cd web && node scripts/render-benchmark.mjs --backend auto --quality exact --counts 30000,150000,5000,25000 --trials 3 --dpr 1` |
+
+## Offline builds
+
+Production builds generate `sw.js` and `offline-release.json` from the final output,
+including public files, module workers, the WASM engine and lazy chunks. Do not edit
+these generated files or deploy a subset of `dist/`. The relative manifest and worker
+scope support both root hosting and a GitHub Pages repository path. Development mode
+does not register a worker.
+
+`npm run e2e` includes the production offline/update suite. It uses real Chrome service
+workers with HTTP caching disabled and a server that sends `no-store`, then disconnects
+the browser. It checks fresh navigation, computation, unvisited Explore code, journal
+import/export, failed installation and explicit multi-tab updates. Build/worker policy
+and client lifecycle tests run in `npm test`. See [the offline contract](docs/model/m6-offline.md).
 
 ## Rendering performance measurements
 

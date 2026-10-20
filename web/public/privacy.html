@@ -1,0 +1,74 @@
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <title>Privacy and browser storage · Puckworks</title>
+    <link rel="stylesheet" href="./privacy.css" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  </head>
+  <body>
+    <main>
+      <a href="./">← Back to Puckworks</a>
+      <h1>Privacy and browser storage</h1>
+      <p>
+        Puckworks runs simulations on your device. There are no accounts, analytics, advertising,
+        cookies or telemetry. The app does not upload your recipes, imported files, journal, ratings
+        or calibration.
+      </p>
+      <h2>What stays in this browser</h2>
+      <p>
+        Saved journal records, observations, ratings and calibration use the browser’s local
+        database. Imports are parsed locally. Downloads and backups leave the app only when you
+        export a file. Current editor inputs and running simulations can reset when you reload, so
+        export a recipe or backup before updating if you want to keep them.
+      </p>
+      <p>
+        Browser storage can be cleared or evicted, and private browsing may remove it when the
+        session closes. Keep a journal backup somewhere you control; browser storage is not a
+        backup.
+      </p>
+      <h2>Downloaded app files</h2>
+      <p>
+        On supported browsers, Puckworks downloads its own app files, presets and simulation engine
+        for offline use. Wait for <strong>Ready for offline use</strong> before disconnecting. A
+        first visit needs a connection, and a browser may require a reload to enable its saved copy.
+        Installation on your home screen is optional and depends on your browser.
+      </p>
+      <p>
+        Updates download in the background. An available update waits until you choose
+        <strong>Reload to update</strong>; the app does not reload a running simulation
+        automatically. Older app downloads can stay while another tab still needs them.
+      </p>
+      <p>
+        Downloaded app files use a separate cache from your journal. Removing only those cached
+        files does not delete journal records. Clearing <strong>all site data</strong> can delete
+        both: export a journal backup first. Closing every Puckworks tab lets a subsequent update
+        discard unused older app copies.
+      </p>
+      <h2>Connections and hosting</h2>
+      <p>
+        The app and its workers request only files from this site’s own origin. Fonts, libraries and
+        model files are bundled locally. Links you choose to open, such as source code and research
+        references, go to their named sites.
+      </p>
+      <p>
+        The public site is hosted on GitHub Pages. GitHub may process normal hosting access logs,
+        including connection information such as IP addresses, under its own privacy terms. Those
+        hosting logs are outside Puckworks; the app has no access to them and does not use them to
+        learn from your shots.
+      </p>
+      <p>
+        Exports can contain recipes, observations, ratings and calibration records. Anyone you give
+        an exported file to can read the information it contains.
+      </p>
+    </main>
+  </body>
+</html>

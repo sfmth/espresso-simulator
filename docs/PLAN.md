@@ -730,6 +730,16 @@ Size M.
 - **Content:** expanded presets, documentation, privacy page.
 - **Exit:** all of G1–G7 met; public launch.
 
+**First slice in 0.10.0: offline app.** A complete same-origin production build is
+cached with a per-build identity and checked asset digests, including both workers,
+the WASM engine and lazy Explore code. Readiness and update controls preserve active
+sessions; a new release waits for an explicit reload. The install manifest and
+privacy/storage page work under repository subpaths. See [ADR 0016](decisions/0016-offline-release-cache.md),
+the [contract](model/m6-offline.md) and [verification](validation/m6-offline-validation.md).
+This advances G6 without declaring the full milestone complete. Surrogates,
+calibrated predictive coverage, scientific validation, prospective V9 accuracy and
+the specified hardware G5 measurements remain unfinished.
+
 ### M7: Research track
 Open-ended.
 - **Tier 2:** 2D axisymmetric model of basket holes, shower screen and headspace.

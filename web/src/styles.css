@@ -213,6 +213,18 @@ a {
   border-radius: var(--radius);
 }
 
+.offline-status {
+  margin: 0 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+}
+.offline-status p {
+  margin: 0.25rem 0;
+}
+.offline-status button {
+  margin-top: 0.35rem;
+}
 .app-footer {
   display: flex;
   flex-wrap: wrap;

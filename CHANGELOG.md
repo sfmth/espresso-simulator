@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.10.0] - 2026-10-19
+
+M6.1: offline support. The simulator remains experimental; this release does not
+close the scientific, prospective accuracy or device-performance gates.
+
+### Added
+- Installable app metadata and a complete offline copy of the production app,
+  including the WASM engine, both workers, lazy Explore renderer and notices.
+- Offline readiness and update controls. A new release waits for an explicit
+  reload, and older tabs retain their required assets. Failed downloads preserve
+  the previously installed release.
+- A local privacy and storage page covering browser databases, cached app files,
+  backup/export, reload behavior and GitHub Pages hosting logs.
+- Automated offline and update checks under a repository subpath, alongside
+  cache-policy and runtime lifecycle regressions.
+- Release metadata refreshes retain all 218,221 golden numerical values.
+
 ## [0.9.2] - 2026-10-19
 
 ### Fixed
