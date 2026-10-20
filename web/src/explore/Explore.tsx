@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useRef, useState } from 'react';
 import type { ExploreResolution } from '../engine/exploreTypes';
 import { useSharedShotRun } from '../shot/ShotRunContext';
 import { useShotStore } from '../shot/shotStore';
@@ -30,6 +30,7 @@ export function Explore({ active }: { active: boolean }) {
   const [particle, setParticle] = useState(0);
   const [cut, setCut] = useState(1);
   const [network, setNetwork] = useState(false);
+  const runButtonRef = useRef<HTMLButtonElement>(null);
   const packed = useMicrostructure(outcome, count, active);
   const selection = useMemo(
     () => ({
@@ -114,15 +115,26 @@ export function Explore({ active }: { active: boolean }) {
             </select>
           </label>
           <button
+            ref={runButtonRef}
             className="button primary"
             type="button"
-            disabled={!controls.validation.ok || !catalog || run.fullRunning}
-            onClick={start}
+            disabled={!controls.validation.ok || !catalog}
+            aria-disabled={run.fullRunning || undefined}
+            onClick={() => {
+              if (!run.fullRunning) start();
+            }}
           >
             {run.fullRunning ? 'Running…' : 'Run Explore'}
           </button>
           {run.fullRunning && (
-            <button className="button" type="button" onClick={controls.cancel}>
+            <button
+              className="button"
+              type="button"
+              onClick={() => {
+                controls.cancel();
+                runButtonRef.current?.focus();
+              }}
+            >
               Cancel
             </button>
           )}
@@ -194,6 +206,11 @@ export function Explore({ active }: { active: boolean }) {
                 min={0}
                 max={Math.max(0, view.frameCount - 1)}
                 value={view.snapshotIndex}
+                aria-valuetext={
+                  selectedSnapshot
+                    ? `${fmt(selectedSnapshot.t_s, 1)} seconds, snapshot ${view.snapshotIndex + 1} of ${view.frameCount}`
+                    : 'No stored snapshots'
+                }
                 onChange={(e) => view.selectSnapshot(Number(e.target.value))}
               />
             </label>
@@ -221,6 +238,7 @@ export function Explore({ active }: { active: boolean }) {
                     max={1}
                     step={0.01}
                     value={cut}
+                    aria-valuetext={`${Math.round(cut * 100)}% of cube depth`}
                     onChange={(e) => setCut(Number(e.target.value))}
                   />
                 </label>
@@ -324,6 +342,7 @@ export function Explore({ active }: { active: boolean }) {
               snapshotIndex={view.snapshotIndex}
               selected={view.selectedCell}
               onSelect={view.selectCell}
+              playing={view.playing}
             />
           </div>
           {packed.model && (
@@ -332,6 +351,8 @@ export function Explore({ active }: { active: boolean }) {
               index={index}
               count={count}
               onSelect={setParticle}
+              ey={frame?.particleEy?.[index] ?? null}
+              playing={view.playing}
             />
           )}
         </>

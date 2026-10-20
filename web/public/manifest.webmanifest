@@ -1,0 +1,33 @@
+{
+  "id": "./",
+  "name": "Puckworks",
+  "short_name": "Puckworks",
+  "description": "An open-source espresso simulator that runs entirely in your browser.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f9f9f7",
+  "theme_color": "#111a24",
+  "icons": [
+    { "src": "./icons/puckworks.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    {
+      "src": "./icons/puckworks-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/puckworks-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/puckworks-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

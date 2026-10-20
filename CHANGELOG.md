@@ -2,6 +2,48 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.10.1] - 2026-10-19
+
+M6 accessibility fixes. Physics, calibration and all 218,221 golden numerical values
+remain unchanged.
+
+### Fixed
+- Explore camera orbit, zoom and reset are available from the keyboard, with an
+  explicit way to cancel frame-rate measurement. The timeline announces actual
+  seconds; selected cells and particles expose the values used for their colours.
+- Chart text readers cover every plotted sample and pinned run, including values
+  absent from the existing 11-row current-run table.
+- Journal actions identify their shot, focus the measurement form when opened,
+  and restore focus after save/delete. Editing the full recipe focuses Lab.
+- Initially invalid recipe sections open, filtered compound groups can be
+  collapsed, parameter override names identify the parameter, and recipe heading
+  levels and preset evidence groups have consistent semantics.
+- Connection status reconciles browser changes that happen before startup
+  listeners attach. The offline browser suite tests native connection signals
+  separately from its blocked-transport/cache assertions across Chrome versions.
+- Production accessibility and keyboard regressions run alongside offline/update
+  checks in CI. Local Chrome audits pass 14 states with zero detected rule
+  violations and 30 keyboard/data/layout assertions; all 739 web tests pass.
+  Manual-review items remain in the report; assistive technology and
+  physical-device testing remain open.
+
+## [0.10.0] - 2026-10-19
+
+M6.1: offline support. The simulator remains experimental; this release does not
+close the scientific, prospective accuracy or device-performance gates.
+
+### Added
+- Installable app metadata and a complete offline copy of the production app,
+  including the WASM engine, both workers, lazy Explore renderer and notices.
+- Offline readiness and update controls. A new release waits for an explicit
+  reload, and older tabs retain their required assets. Failed downloads preserve
+  the previously installed release.
+- A local privacy and storage page covering browser databases, cached app files,
+  backup/export, reload behavior and GitHub Pages hosting logs.
+- Automated offline and update checks under a repository subpath, alongside
+  cache-policy and runtime lifecycle regressions.
+- Release metadata refreshes retain all 218,221 golden numerical values.
+
 ## [0.9.2] - 2026-10-19
 
 ### Fixed

@@ -213,6 +213,18 @@ a {
   border-radius: var(--radius);
 }
 
+.offline-status {
+  margin: 0 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+}
+.offline-status p {
+  margin: 0.25rem 0;
+}
+.offline-status button {
+  margin-top: 0.35rem;
+}
 .app-footer {
   display: flex;
   flex-wrap: wrap;
@@ -466,6 +478,35 @@ a {
 .chart-canvas {
   width: 100%;
   min-height: 180px;
+}
+
+.chart-readout {
+  margin-block: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.chart-readout summary {
+  cursor: pointer;
+  padding-block: 0.375rem;
+}
+
+.chart-readout label,
+.chart-readout input {
+  display: block;
+  width: 100%;
+}
+
+.chart-readout dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin-block: 0.25rem;
+}
+
+.chart-readout dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .note {
@@ -1792,6 +1833,10 @@ code {
   max-height: 28rem;
   overflow-y: auto;
   overflow-x: hidden;
+}
+.explore-section-viewport:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 .explore-section-svg {
   display: block;

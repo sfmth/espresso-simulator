@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { tabId } from '../components/ModeTabs';
 import { useEngine } from '../engine/EngineContext';
 import { isAbortError } from '../engine/engine';
 import type { Recipe } from '../engine/shotTypes';
@@ -32,6 +33,14 @@ function number(text: string, label: string, min: number, max: number): number {
   return value;
 }
 const f = (value: number, digits = 1) => value.toFixed(digits);
+/** Encode exact UTF-16 units, including lone surrogates from imported JSON, into safe IDREFs. */
+function shotDomId(id: string) {
+  return `dial-shot-${id
+    .split('')
+    .map((unit) => unit.charCodeAt(0).toString(16))
+    .join('-')}`;
+}
+const RECORD_PANEL_ID = 'dial-record-panel';
 
 function MeasureShot({
   entry,
@@ -77,6 +86,7 @@ function MeasureShot({
         <label>
           Measured time (s)
           <input
+            id={`${shotDomId(entry.id)}-time`}
             value={time}
             inputMode="decimal"
             onChange={(e) => setTime(e.target.value)}
@@ -148,6 +158,13 @@ export function DialIn() {
   const [timeSigma, setTimeSigma] = useState('3');
   const [tdsSigma, setTdsSigma] = useState('0.3');
   const [selectedEntry, setSelectedEntry] = useState<string | null>(null);
+  const selectedEntryRef = useRef<string | null>(null);
+  const requestedMeasurementFocus = useRef<string | null>(null);
+  const dialRef = useRef<HTMLElement>(null);
+  const selectEntry = (id: string | null) => {
+    selectedEntryRef.current = id;
+    setSelectedEntry(id);
+  };
   const [mode, setMode] = useState<InverseOptions['mode']>('recipe');
   const [targetTime, setTargetTime] = useState('28');
   const [targetYield, setTargetYield] = useState('36');
@@ -244,6 +261,25 @@ export function DialIn() {
   }, [operationKey]);
   const canRun = journal.ready && !!catalog && !!recipe && !!setupId.trim() && !busy;
   const pending = entries.find((entry) => entry.id === selectedEntry && !entry.measurement);
+  const journalRows = [...entries].reverse();
+  useLayoutEffect(() => {
+    if (pending && requestedMeasurementFocus.current === pending.id) {
+      requestedMeasurementFocus.current = null;
+      document.getElementById(`${shotDomId(pending.id)}-time`)?.focus();
+    }
+  }, [pending]);
+  const restoreJournalFocus = (ids: string[], removedRegion?: Element | null) => {
+    if (!mounted.current || !dialRef.current || dialRef.current.closest('[hidden]')) return;
+    const active = document.activeElement;
+    if (active !== document.body && !removedRegion?.contains(active)) return;
+    for (const id of [...ids, 'dial-journal-title']) {
+      const target = document.getElementById(id);
+      if (target) {
+        target.focus();
+        return;
+      }
+    }
+  };
   const staleSuggestions =
     suggestions && (suggestions.key !== adviceKey || suggestions.setup !== setupId);
 
@@ -280,6 +316,7 @@ export function DialIn() {
   function editInLab() {
     useAppStore.getState().setLabView('shot');
     useAppStore.getState().setMode('lab');
+    document.getElementById(tabId('lab'))?.focus();
   }
   async function predict(signal: AbortSignal) {
     if (!recipe || !catalog) return;
@@ -317,13 +354,13 @@ export function DialIn() {
     await journal.update((doc) => ({ ...doc, entries: [...doc.entries, entry] }), signal);
     signal.throwIfAborted();
     if (mounted.current) {
-      setSelectedEntry(entry.id);
+      selectEntry(entry.id);
       setStatus('Prediction saved. Pull the shot, then record what happened.');
     }
   }
 
   return (
-    <section className="dial-in panel-stack" aria-labelledby="dial-in-title">
+    <section ref={dialRef} className="dial-in panel-stack" aria-labelledby="dial-in-title">
       <div className="panel-header">
         <div>
           <h2 id="dial-in-title">Dial-in</h2>
@@ -609,7 +646,9 @@ export function DialIn() {
       </div>
       <section className="panel panel-stack" aria-labelledby="dial-journal-title">
         <div className="panel-header">
-          <h3 id="dial-journal-title">3. Shot journal</h3>
+          <h3 id="dial-journal-title" tabIndex={-1}>
+            3. Shot journal
+          </h3>
           <div className="button-row">
             <button
               className="button"
@@ -689,9 +728,10 @@ export function DialIn() {
                 </tr>
               </thead>
               <tbody>
-                {[...entries].reverse().map((entry) => (
+                {journalRows.map((entry, rowIndex) => (
                   <tr key={entry.id}>
                     <th scope="row">
+                      <span className="visually-hidden">Shot {rowIndex + 1}: </span>
                       {entry.label}
                       <small>
                         {new Date(entry.createdAt).toLocaleString()} · {entry.source}
@@ -729,15 +769,22 @@ export function DialIn() {
                           <button
                             className="button"
                             disabled={!!busy}
-                            onClick={() =>
-                              setSelectedEntry(selectedEntry === entry.id ? null : entry.id)
-                            }
+                            aria-label={`Record shot ${rowIndex + 1}: ${entry.label}`}
+                            aria-expanded={selectedEntry === entry.id}
+                            aria-controls={RECORD_PANEL_ID}
+                            onClick={() => {
+                              const next = selectedEntry === entry.id ? null : entry.id;
+                              requestedMeasurementFocus.current = next;
+                              selectEntry(next);
+                            }}
                           >
                             Record shot
                           </button>
                         )}
                         <button
+                          id={`${shotDomId(entry.id)}-use`}
                           className="button"
+                          aria-label={`Use recipe from shot ${rowIndex + 1}: ${entry.label}`}
                           disabled={!!busy}
                           onClick={() => loadRecipe(entry.recipe)}
                         >
@@ -745,13 +792,24 @@ export function DialIn() {
                         </button>
                         <button
                           className="button"
+                          aria-label={`Delete shot ${rowIndex + 1}: ${entry.label}`}
                           disabled={!!busy}
-                          onClick={() => {
+                          onClick={(event) => {
+                            const row = event.currentTarget.closest('tr');
+                            const neighbor = journalRows[rowIndex + 1] ?? journalRows[rowIndex - 1];
                             void journal
                               .update((doc) => ({
                                 ...doc,
                                 entries: doc.entries.filter((e) => e.id !== entry.id),
                               }))
+                              .then(() => {
+                                if (selectedEntryRef.current === entry.id) selectEntry(null);
+                                setStatus(`Deleted shot: ${entry.label}.`);
+                                restoreJournalFocus(
+                                  neighbor ? [`${shotDomId(neighbor.id)}-use`] : [],
+                                  row,
+                                );
+                              })
                               .catch((e) => setError(message(e)));
                           }}
                         >
@@ -765,26 +823,32 @@ export function DialIn() {
             </table>
           </div>
         )}
-        {pending && (
-          <div className="dial-record">
-            <h4>Record {pending.label}</h4>
-            <MeasureShot
-              key={pending.id}
-              entry={pending}
-              disabled={!!busy}
-              save={async (measurement) => {
-                await journal.update((doc) => ({
-                  ...doc,
-                  entries: doc.entries.map((entry) =>
-                    entry.id === pending.id ? { ...entry, measurement } : entry,
-                  ),
-                }));
-                setSelectedEntry((selected) => (selected === pending.id ? null : selected));
-                setStatus('Measured shot saved.');
-              }}
-            />
-          </div>
-        )}
+        <div className="dial-record" id={RECORD_PANEL_ID} hidden={!pending}>
+          {pending && (
+            <>
+              <h4>Record {pending.label}</h4>
+              <MeasureShot
+                key={pending.id}
+                entry={pending}
+                disabled={!!busy}
+                save={async (measurement) => {
+                  const region = document.getElementById(RECORD_PANEL_ID);
+                  await journal.update((doc) => ({
+                    ...doc,
+                    entries: doc.entries.map((entry) =>
+                      entry.id === pending.id ? { ...entry, measurement } : entry,
+                    ),
+                  }));
+                  if (selectedEntryRef.current === pending.id) {
+                    selectEntry(null);
+                    restoreJournalFocus([`${shotDomId(pending.id)}-use`], region);
+                  }
+                  setStatus('Measured shot saved.');
+                }}
+              />
+            </>
+          )}
+        </div>
       </section>
       <section className="panel panel-stack" aria-labelledby="dial-advice-title">
         <h3 id="dial-advice-title">4. Find the next recipe</h3>

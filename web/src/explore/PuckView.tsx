@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { datedName, downloadJson } from '../shot/download';
+import { PuckCameraControls } from './PuckCameraControls';
 import {
   createBenchmark,
   createGpuTimer,
@@ -14,6 +15,7 @@ import {
   type BenchmarkResult,
   type GpuTimer,
 } from './benchmark';
+import { homeCameraPose, moveCamera, type CameraAction } from './cameraControls';
 import type { buildMicrostructure } from './microstructure';
 import { buildContainmentIndex, containmentDepthFactor } from './renderMath';
 
@@ -137,10 +139,15 @@ export function extractionColor(ey: number | null): [number, number, number] {
 
 export function PuckView(props: PuckViewProps) {
   const { model, active } = props;
+  const viewRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const measureButtonRef = useRef<HTMLButtonElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const latest = useRef(props);
   const update = useRef<(() => void) | null>(null);
   const measure = useRef<(() => void) | null>(null);
+  const cancelMeasure = useRef<(() => void) | null>(null);
+  const controlCamera = useRef<((action: CameraAction) => void) | null>(null);
   const [fallback, setFallback] = useState(false);
   const [report, setReport] = useState<RenderBenchmarkResult | null>(null);
   const [benchmarkPhase, setBenchmarkPhase] = useState<'warmup' | 'sample'>('warmup');
@@ -183,8 +190,9 @@ export function PuckView(props: PuckViewProps) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#111a24');
     const edge = model.domainMm;
+    const home = homeCameraPose(edge);
     const camera = new THREE.PerspectiveCamera(40, 1, edge / 1000, edge * 20);
-    camera.position.set(edge * 1.35, edge * 0.9, edge * 1.6);
+    camera.position.fromArray(home.position);
     const controls = new OrbitControls(camera, canvas);
     controls.enableDamping = false;
     controls.minDistance = edge * 0.6;
@@ -329,8 +337,8 @@ export function PuckView(props: PuckViewProps) {
     let lastRafClock: number | null = null;
     let duplicateRafCallbacks = 0;
     let consecutiveDuplicateRafCallbacks = 0;
-    const initialPosition = [edge * 1.35, edge * 0.9, edge * 1.6] as const;
-    const targetPosition = [0, 0, 0] as const;
+    const initialPosition = home.position;
+    const targetPosition = home.target;
     let measuredConfiguration: {
       ey: Float32Array | null;
       selection: number;
@@ -339,6 +347,16 @@ export function PuckView(props: PuckViewProps) {
     } | null = null;
     let previousEy: Float32Array | null | undefined;
     let previousSelection = -1;
+    const publishCamera = () => {
+      viewRef.current?.setAttribute(
+        'data-camera-position',
+        JSON.stringify(camera.position.toArray()),
+      );
+      viewRef.current?.setAttribute(
+        'data-camera-target',
+        JSON.stringify(controls.target.toArray()),
+      );
+    };
     const draw = () => {
       if (disposed || document.hidden) return;
       renderer.render(scene, camera);
@@ -399,6 +417,7 @@ export function PuckView(props: PuckViewProps) {
     observer.observe(canvas);
     const controlledDraw = () => {
       if (benchmark) stopBenchmark('interrupted');
+      publishCamera();
       draw();
     };
     controls.addEventListener('change', controlledDraw);
@@ -410,6 +429,11 @@ export function PuckView(props: PuckViewProps) {
       gpuPending = status.pending;
     };
     const stopBenchmark = (reason?: BenchmarkCancelReason) => {
+      const restoreFocus =
+        !disposed &&
+        !document.hidden &&
+        cancelButtonRef.current !== null &&
+        document.activeElement === cancelButtonRef.current;
       cancelAnimationFrame(frame);
       if (benchmark) {
         if (reason) benchmark.cancel(reason);
@@ -439,6 +463,19 @@ export function PuckView(props: PuckViewProps) {
       gpuTimer = null;
       measuredConfiguration = null;
       setMeasuring(false);
+      if (restoreFocus) measureButtonRef.current?.focus();
+      publishCamera();
+    };
+    cancelMeasure.current = () => stopBenchmark('interrupted');
+    controlCamera.current = (action) => {
+      if (disposed || document.hidden) return;
+      if (benchmark) stopBenchmark('interrupted');
+      const next = moveCamera(action, camera.position.toArray(), controls.target.toArray(), edge);
+      camera.position.fromArray(next.position);
+      controls.target.fromArray(next.target);
+      controls.update();
+      publishCamera();
+      draw();
     };
     const tick = (now: number) => {
       if (!benchmark || disposed || document.hidden) {
@@ -605,6 +642,7 @@ export function PuckView(props: PuckViewProps) {
     canvas.addEventListener('webglcontextlost', lost);
     resize();
     sync();
+    publishCamera();
     return () => {
       disposed = true;
       stopBenchmark('disposed');
@@ -627,18 +665,40 @@ export function PuckView(props: PuckViewProps) {
       renderer.dispose();
       update.current = null;
       measure.current = null;
+      cancelMeasure.current = null;
+      controlCamera.current = null;
     };
   }, [model, active]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  const cancelMeasurement = () => {
+    cancelMeasure.current?.();
+    measureButtonRef.current?.focus();
+  };
   return (
-    <div className="puck-view" data-render-benchmark={report ? JSON.stringify(report) : undefined}>
-      <canvas
-        ref={canvasRef}
-        className="puck-canvas"
-        aria-label={`3D representative volume with ${model.radiiMm.length.toLocaleString()} particles. Drag to orbit, scroll to zoom. Select a particle here or with the particle number control.`}
-        hidden={fallback}
-      />
+    <div
+      ref={viewRef}
+      className="puck-view"
+      data-render-benchmark={report ? JSON.stringify(report) : undefined}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && measuring) {
+          event.preventDefault();
+          cancelMeasurement();
+        }
+      }}
+    >
+      <PuckCameraControls
+        disabled={fallback || !active}
+        onAction={(action) => controlCamera.current?.(action)}
+      >
+        <canvas
+          ref={canvasRef}
+          className="puck-canvas"
+          role="img"
+          aria-label={`3D representative volume with ${model.radiiMm.length.toLocaleString()} particles. Select a particle here or with the particle number control; exact particle extraction and shell data are in the particle inspector.`}
+          hidden={fallback}
+        />
+      </PuckCameraControls>
       {fallback && (
         <div className="puck-fallback" role="status">
           <p>
@@ -672,10 +732,14 @@ export function PuckView(props: PuckViewProps) {
           {model.radiiMm.length.toLocaleString()} particles · {model.domainMm.toFixed(2)} mm cube
         </span>
         <button
+          ref={measureButtonRef}
           type="button"
           className="button"
-          onClick={() => measure.current?.()}
-          disabled={fallback || measuring || !active}
+          onClick={() => {
+            if (!measuring) measure.current?.();
+          }}
+          disabled={fallback || !active}
+          aria-disabled={measuring || undefined}
         >
           {measuring
             ? benchmarkPhase === 'warmup'
@@ -683,6 +747,16 @@ export function PuckView(props: PuckViewProps) {
               : 'Measuring…'
             : 'Measure frame rate'}
         </button>
+        {measuring && (
+          <button
+            ref={cancelButtonRef}
+            type="button"
+            className="button"
+            onClick={cancelMeasurement}
+          >
+            Cancel measurement
+          </button>
+        )}
         <output aria-live="polite" data-benchmark={report ? JSON.stringify(report) : undefined}>
           {report === null
             ? 'WebGL2 · WebGPU not required'

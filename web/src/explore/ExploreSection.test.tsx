@@ -178,4 +178,40 @@ describe('Explore cross-section depth detail', () => {
     expect(screen.getByLabelText<HTMLSelectElement>('Depth view').value).toBe('overview');
     expect(screen.getByLabelText<HTMLInputElement>('Cell boundaries').checked).toBe(false);
   });
+
+  it('describes and announces the selected cell in the current field with exact bounds and wetting', () => {
+    const { container } = render(<Controlled shot={outcome(1, 150)} initialCell={148} />);
+    const svg = screen.getByRole('img');
+    const descriptionIds = svg.getAttribute('aria-describedby')!.split(' ');
+    expect(descriptionIds.every((id) => document.getElementById(id))).toBe(true);
+    const readout = document.getElementById(descriptionIds[1])!;
+    expect(readout.getAttribute('aria-live')).toBe('polite');
+    expect(readout.getAttribute('aria-atomic')).toBe('true');
+    fireEvent.keyDown(svg, { key: 'ArrowDown' });
+    expect(readout.textContent).toContain('column 1, depth 11.92–12.00 mm');
+    expect(readout.textContent).toContain('Local EY');
+    expect(readout.textContent).toContain('wetted 100%');
+    fireEvent.change(screen.getByLabelText('Cross-section field'), {
+      target: { value: 'liquid_conc_kg_m3' },
+    });
+    expect(readout.textContent).toContain('Liquid solubles 249.00 kg/m³');
+    expect(readout.textContent).not.toContain('Local EY');
+    fireEvent.change(screen.getByLabelText('Column'), { target: { value: '7' } });
+    expect(readout.textContent).toContain('column 8');
+    expect(readout.textContent).toContain('Liquid solubles 319.00 kg/m³');
+    expect(container.querySelectorAll('.explore-cell.selected')).toHaveLength(2);
+  });
+
+  it('retains a valid description without a selection and pauses live playback announcements', () => {
+    const props = { outcome: outcome(1, 30), snapshotIndex: 0, onSelect: vi.fn() };
+    const { rerender } = render(<ExploreSection {...props} selected={null} />);
+    const ids = screen.getByRole('img').getAttribute('aria-describedby')!.split(' ');
+    const readout = document.getElementById(ids[1])!;
+    expect(readout.textContent).toBe('Select a cell to read its values.');
+    rerender(<ExploreSection {...props} selected={{ col: 0, cell: 1 }} playing />);
+    expect(readout.getAttribute('aria-live')).toBe('off');
+    expect(readout.textContent).toContain('wetted 50%');
+    rerender(<ExploreSection {...props} selected={{ col: 0, cell: 1 }} />);
+    expect(readout.getAttribute('aria-live')).toBe('polite');
+  });
 });

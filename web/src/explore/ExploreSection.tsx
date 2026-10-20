@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { rampColor, useChartTheme } from '../components/chartTheme';
 import { BasketOutline, basketFrame } from '../shot/BasketDiagram';
 import { wallBetween, wallFromSpec } from '../shot/basketGeometry';
@@ -32,14 +32,18 @@ export function ExploreSection({
   snapshotIndex,
   selected,
   onSelect,
+  playing = false,
 }: {
   outcome: ShotOutcome;
   snapshotIndex: number;
   selected: ExploreCell | null;
   onSelect: (cell: ExploreCell) => void;
+  playing?: boolean;
 }) {
   const theme = useChartTheme();
   const [field, setField] = useState<SectionField>('local_ey');
+  const readoutId = useId();
+  const instructionsId = useId();
   const [view, setView] = useState(() => initialView(outcome));
   const currentView = view.seq === outcome.seq ? view : initialView(outcome);
   if (currentView !== view) setView(currentView);
@@ -148,7 +152,8 @@ export function ExploreSection({
           preserveAspectRatio={depthView === 'detail' ? 'none' : 'xMidYMid meet'}
           className={`explore-section-svg${boundaries ? ' show-cell-boundaries' : ''}`}
           role="img"
-          aria-label="Puck cross-section. Click a cell or use arrow keys to change the selected column and depth."
+          aria-label={`Puck cross-section: ${field === 'local_ey' ? 'local extraction yield' : 'liquid solubles'}, ${spatial.columns.length} columns and ${spatial.depth_m.length} depth cells.`}
+          aria-describedby={`${instructionsId} ${readoutId}`}
           tabIndex={0}
           onKeyDown={keyDown}
         >
@@ -187,6 +192,10 @@ export function ExploreSection({
           />
         </svg>
       </div>
+      <p id={instructionsId} className="note">
+        Focus the diagram and use arrow keys to inspect cells, or use the Column and Depth cell
+        controls below.
+      </p>
       <p className="note">
         Scale {lo.toFixed(1)}–{hi.toFixed(1)} {field === 'local_ey' ? '%' : 'kg/m³'}, fixed over
         time. Grey = dry.{' '}
@@ -223,14 +232,22 @@ export function ExploreSection({
               />
             </label>
           </div>
-          <p>
-            Selected: column {selected.col + 1}, depth {bounds[selected.cell]?.toFixed(2)}–
-            {bounds[selected.cell + 1]?.toFixed(2)} mm below the top. Local EY{' '}
-            {cellValue(snapshot, 'local_ey', selected.col, selected.cell)?.toFixed(2) ?? '—'}%;
-            wetted {(cellWetted(snapshot, selected.col, selected.cell) * 100).toFixed(0)}%.
-          </p>
         </>
       )}
+      <p id={readoutId} aria-live={playing ? 'off' : 'polite'} aria-atomic="true">
+        {selected ? (
+          <>
+            Selected: column {selected.col + 1}, depth {bounds[selected.cell]?.toFixed(2)}–
+            {bounds[selected.cell + 1]?.toFixed(2)} mm below the top.{' '}
+            {field === 'local_ey' ? 'Local EY' : 'Liquid solubles'}{' '}
+            {cellValue(snapshot, field, selected.col, selected.cell)?.toFixed(2) ?? 'unavailable'}{' '}
+            {field === 'local_ey' ? '%' : 'kg/m³'}; wetted{' '}
+            {(cellWetted(snapshot, selected.col, selected.cell) * 100).toFixed(0)}%.
+          </>
+        ) : (
+          'Select a cell to read its values.'
+        )}
+      </p>
     </section>
   );
 }

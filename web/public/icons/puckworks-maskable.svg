@@ -1,0 +1,10 @@
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#111a24"/>
+  <g transform="translate(256 256) scale(.82) translate(-256 -256)">
+    <ellipse cx="256" cy="337" rx="158" ry="73" fill="#6b4226"/>
+    <ellipse cx="256" cy="299" rx="158" ry="73" fill="#8a5a3b"/>
+    <ellipse cx="256" cy="299" rx="120" ry="47" fill="#c08457"/>
+    <path d="M183 213c0-37 36-37 36-73M256 213c0-37 36-37 36-73M329 213c0-37 36-37 36-73" stroke="#5598e7" stroke-width="24" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

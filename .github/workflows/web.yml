@@ -81,6 +81,12 @@ jobs:
       - name: Browser smoke test
         run: node scripts/e2e.mjs
 
+      - name: Offline installation and explicit updates
+        run: node scripts/offline-e2e.mjs
+
+      - name: Accessibility and keyboard workflows
+        run: node scripts/accessibility-e2e.mjs
+
       - name: Keep the browser test's screenshots
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

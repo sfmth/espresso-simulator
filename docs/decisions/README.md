@@ -19,6 +19,7 @@ Implementation decisions for Puckworks, one short file per decision. Product dec
 | [0013](0013-m3-scenario-bands-and-taste.md) | Input scenario bands and explainable taste | Accepted, experimental |
 | [0014](0014-local-dial-in.md) | Local journal, calibration and constrained advice | Accepted, experimental |
 | [0015](0015-explore-state-and-refinement.md) | Coupled Explore state and explicit depth refinement | Accepted, experimental |
+| [0016](0016-offline-release-cache.md) | Complete static release caches and explicit offline updates | Accepted |
 
 ## Format
 

@@ -2,6 +2,8 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { useState } from 'react';
+import { resetAppStore, useAppStore } from '../store';
 import { fixtureCatalog, fixtureResult, fixtureRun } from '../../test/fixtures/shotFixture';
 import { fixtureTaste } from '../../test/fixtures/m3Fixture';
 import { EngineContext } from '../engine/EngineContext';
@@ -19,6 +21,7 @@ import type { CalibrationProfile, JournalDocument, JournalEntry } from './types'
 import { scopeKey } from './calibration';
 
 beforeEach(() => {
+  resetAppStore();
   resetShotStore();
   useShotStore.getState().setCatalog(fixtureCatalog());
 });
@@ -254,6 +257,155 @@ function journalEntry(id: string, observedAt?: string): JournalEntry {
   };
 }
 
+function reactiveJournal(entries: JournalEntry[], save?: () => Promise<void>) {
+  function useFixtureJournal() {
+    const [document, setDocument] = useState<JournalDocument>(() => ({
+      ...emptyJournal(),
+      entries,
+    }));
+    return {
+      document,
+      ready: true,
+      persistent: false,
+      error: null,
+      update: async (change: (current: JournalDocument) => JournalDocument) => {
+        if (save) await save();
+        setDocument(change);
+      },
+    };
+  }
+  vi.spyOn(journalState, 'useJournal').mockImplementation(useFixtureJournal);
+}
+
+it('names journal actions in row context, safely controls imported IDs and restores focus after saving', async () => {
+  const a = { ...journalEntry('imported id /#\ud800'), label: 'Same name' };
+  const b = { ...journalEntry('imported-id-/#\ud800'), label: 'Same name' };
+  reactiveJournal([a, b]);
+  setup();
+  const open = screen.getByRole('button', { name: 'Record shot 2: Same name' });
+  const panelId = open.getAttribute('aria-controls')!;
+  expect(document.getElementById(panelId)?.hidden).toBe(true);
+  open.focus();
+  fireEvent.click(open);
+  const time = screen.getByLabelText('Measured time (s)');
+  expect(document.activeElement).toBe(time);
+  expect(time.id).not.toMatch(/[\s/#]/);
+  expect(open.getAttribute('aria-expanded')).toBe('true');
+  expect(
+    screen.getByRole('button', { name: 'Record shot 1: Same name' }).getAttribute('aria-expanded'),
+  ).toBe('false');
+  expect(document.getElementById(panelId)?.hidden).toBe(false);
+  fireEvent.change(time, { target: { value: '29' } });
+  fireEvent.change(screen.getByLabelText('Final beverage (g)'), { target: { value: '36' } });
+  const save = screen.getByRole('button', { name: 'Save measurements' });
+  save.focus();
+  fireEvent.click(save);
+  await screen.findByText('Measured shot saved.');
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Use recipe from shot 2: Same name' }),
+  );
+  expect(document.getElementById(panelId)?.hidden).toBe(true);
+  expect(screen.queryByRole('button', { name: 'Record shot 2: Same name' })).toBeNull();
+});
+
+it('returns focus to a surviving journal action after deletion and its heading after the last deletion', async () => {
+  reactiveJournal([journalEntry('First'), journalEntry('Second')]);
+  setup();
+  const remove = screen.getByRole('button', { name: 'Delete shot 1: Second' });
+  remove.focus();
+  fireEvent.click(remove);
+  await screen.findByText('Deleted shot: Second.');
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Use recipe from shot 1: First' }),
+  );
+  const last = screen.getByRole('button', { name: 'Delete shot 1: First' });
+  last.focus();
+  fireEvent.click(last);
+  await screen.findByText('Deleted shot: First.');
+  expect(document.activeElement).toBe(screen.getByRole('heading', { name: '3. Shot journal' }));
+  expect(screen.queryByRole('table', { name: 'Shot journal' })).toBeNull();
+});
+
+it('does not move focus away from another control when a deletion finishes later', async () => {
+  let release!: () => void;
+  reactiveJournal(
+    [journalEntry('Delete later')],
+    () =>
+      new Promise<void>((resolve) => {
+        release = resolve;
+      }),
+  );
+  setup();
+  const remove = screen.getByRole('button', { name: 'Delete shot 1: Delete later' });
+  remove.focus();
+  fireEvent.click(remove);
+  const setupName = screen.getByLabelText('Bag and setup name');
+  setupName.focus();
+  await act(async () => {
+    release();
+    await Promise.resolve();
+  });
+  await screen.findByText('Deleted shot: Delete later.');
+  expect(document.activeElement).toBe(setupName);
+});
+
+it('retains the expanded measurement form, entered values and user focus when saving fails', async () => {
+  let reject!: (error: Error) => void;
+  reactiveJournal(
+    [journalEntry('Keep me')],
+    () =>
+      new Promise<void>((_resolve, fail) => {
+        reject = fail;
+      }),
+  );
+  setup();
+  fireEvent.click(screen.getByRole('button', { name: 'Record shot 1: Keep me' }));
+  fireEvent.change(screen.getByLabelText('Measured time (s)'), { target: { value: '29' } });
+  fireEvent.change(screen.getByLabelText('Final beverage (g)'), { target: { value: '36' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save measurements' }));
+  const notes = screen.getByLabelText('Shot notes');
+  notes.focus();
+  await act(async () => {
+    reject(new Error('Storage blocked'));
+    await Promise.resolve();
+  });
+  expect(screen.getByRole('alert').textContent).toContain('Storage blocked');
+  expect(screen.getByLabelText<HTMLInputElement>('Measured time (s)').value).toBe('29');
+  expect(screen.getByLabelText<HTMLInputElement>('Final beverage (g)').value).toBe('36');
+  expect(
+    screen.getByRole('button', { name: 'Record shot 1: Keep me' }).getAttribute('aria-expanded'),
+  ).toBe('true');
+  expect(document.activeElement).toBe(notes);
+});
+
+it('focuses the visible Lab destination when opening the full recipe', () => {
+  useAppStore.getState().setMode('dial-in');
+  function Navigation() {
+    const mode = useAppStore((state) => state.mode);
+    return (
+      <>
+        <button id="tab-lab" role="tab" aria-selected={mode === 'lab'}>
+          Lab
+        </button>
+        <div hidden={mode !== 'dial-in'}>
+          <DialIn />
+        </div>
+      </>
+    );
+  }
+  render(
+    <EngineContext.Provider value={{} as Engine}>
+      <Navigation />
+    </EngineContext.Provider>,
+  );
+  const edit = screen.getByRole('button', { name: 'Edit full recipe in Lab' });
+  edit.focus();
+  fireEvent.click(edit);
+  expect(useAppStore.getState().mode).toBe('lab');
+  expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Lab', selected: true }));
+  expect(screen.queryByRole('button', { name: 'Edit full recipe in Lab' })).toBeNull();
+});
+
 it('keeps the newest observed shot as the next-shot reference after an older backup is appended', async () => {
   const newest = journalEntry('newest-measured', '2026-10-18T09:00:00Z');
   const olderImported = journalEntry('older-imported', '2026-10-17T09:00:00Z');
@@ -336,11 +488,11 @@ it('keeps a newly selected measurement form open when an earlier record finishes
   const table = within(screen.getByRole('table', { name: 'Shot journal' }));
   const rowA = table.getByText('Pending A').closest('tr')!;
   const rowB = table.getByText('Pending B').closest('tr')!;
-  fireEvent.click(within(rowA).getByRole('button', { name: 'Record shot' }));
+  fireEvent.click(within(rowA).getByRole('button', { name: /^Record shot/ }));
   fireEvent.change(screen.getByLabelText('Measured time (s)'), { target: { value: '29' } });
   fireEvent.change(screen.getByLabelText('Final beverage (g)'), { target: { value: '36' } });
   fireEvent.click(screen.getByRole('button', { name: 'Save measurements' }));
-  fireEvent.click(within(rowB).getByRole('button', { name: 'Record shot' }));
+  fireEvent.click(within(rowB).getByRole('button', { name: /^Record shot/ }));
   fireEvent.change(screen.getByLabelText('Measured time (s)'), { target: { value: '42' } });
   fireEvent.change(screen.getByLabelText('Final beverage (g)'), { target: { value: '40' } });
   await act(async () => {
@@ -350,6 +502,7 @@ it('keeps a newly selected measurement form open when an earlier record finishes
   expect(screen.getByRole('form', { name: 'Measurements for Pending B' })).toBeTruthy();
   expect(screen.getByLabelText<HTMLInputElement>('Measured time (s)').value).toBe('42');
   expect(screen.getByLabelText<HTMLInputElement>('Final beverage (g)').value).toBe('40');
+  expect(document.activeElement).toBe(screen.getByLabelText('Measured time (s)'));
 });
 
 it('keeps the newest compatible calibration active when an older imported fit is appended', () => {

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
+import { offlineBuild } from './scripts/offline-build.mjs';
 import { engineNotices } from './scripts/rust-notices.mjs';
 
 const { version } = JSON.parse(
@@ -104,7 +105,7 @@ function engineCrateNotices(): Plugin {
 export default defineConfig({
   // Relative asset URLs, so the site works under any GitHub Pages sub-path.
   base: './',
-  plugins: [react(), contentSecurityPolicy(), engineCrateNotices()],
+  plugins: [react(), contentSecurityPolicy(), engineCrateNotices(), offlineBuild()],
   define: {
     __APP_VERSION__: JSON.stringify(version),
     __SOURCE_URL__: JSON.stringify(sourceUrl()),

@@ -39,7 +39,7 @@ export function PresetInfo({ preset }: { preset: PresetBase | undefined }) {
   return (
     <div className="preset-info">
       <p className="preset-description">{preset.description}</p>
-      <p className="badges" aria-label="Preset flags and evidence">
+      <p className="badges" role="group" aria-label="Preset flags and evidence">
         <FlagBadges flags={preset.flags} />
         <span className="badge">Evidence grade {preset.evidence_grade}</span>
         <span className="badge">{preset.tag}</span>

@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.9.1 · Last updated 2026-10-19 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
+*Version 0.10.1 · Last updated 2026-10-19 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support and an initial accessibility pass are available. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -729,6 +729,25 @@ Size M.
 - **Quality passes:** performance and accessibility; mobile layouts.
 - **Content:** expanded presets, documentation, privacy page.
 - **Exit:** all of G1–G7 met; public launch.
+
+**First slice in 0.10.0: offline app.** A complete same-origin production build is
+cached with a per-build identity and checked asset digests, including both workers,
+the WASM engine and lazy Explore code. Readiness and update controls preserve active
+sessions; a new release waits for an explicit reload. The install manifest and
+privacy/storage page work under repository subpaths. See [ADR 0016](decisions/0016-offline-release-cache.md),
+the [contract](model/m6-offline.md) and [verification](validation/m6-offline-validation.md).
+This advances G6 without declaring the full milestone complete. Surrogates,
+calibrated predictive coverage, scientific validation, prospective V9 accuracy and
+the specified hardware G5 measurements remain unfinished.
+
+**Quality slice in 0.10.1: keyboard workflows and numerical text alternatives.**
+Explore camera controls, actual-time announcements, selected-cell/particle text,
+all-sample chart readers, and journal focus restoration address concrete keyboard
+gaps. Production audits exercise expanded/dynamic states, both themes and phone
+widths, retaining checks that require manual review. See the
+[accessibility contract](model/m6-accessibility.md) and
+[verification](validation/m6-accessibility-validation.md). Full assistive
+technology testing and the broader launch gates remain open.
 
 ### M7: Research track
 Open-ended.
