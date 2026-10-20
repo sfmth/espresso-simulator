@@ -736,7 +736,10 @@ describe('ShotLab', () => {
     expect(alert.querySelector('.panic-details pre')?.textContent).toBe('panicked at x');
   });
 
-  it('defaults the vent checkbox to the preset and sends only a choice that differs', async () => {
+  it('inherits the preset valve when a loaded recipe omits the field', async () => {
+    const form = defaultForm();
+    form.machine.vent_headspace = '';
+    resetShotStore(form);
     const fake = shotEngine({ catalog: catalogWithMachine({ vent_headspace: true }) });
     renderLab(fake.engine);
     await advance();
@@ -765,16 +768,61 @@ describe('ShotLab', () => {
     );
   });
 
-  it('ticks the vent for a preset without one and sends it', async () => {
+  it('starts with venting enabled and allows turning it off and on', async () => {
     const fake = await startWithPreview();
+    expect(fake.runs[0].recipe.machine.vent_headspace).toBe(true);
+    await openSection('machine');
+    const vent = screen.getByLabelText<HTMLInputElement>(
+      'Vents the group after the shot (three-way valve)',
+    );
+    expect(vent.checked).toBe(true);
+    fireEvent.click(vent);
+    await advance(300);
+    expect(vent.checked).toBe(false);
+    // This preset has no stated valve: leaving the field out means no vent.
+    expect(fake.runs.at(-1)?.recipe.machine.vent_headspace).toBeUndefined();
+    fireEvent.click(vent);
+    await advance(300);
+    expect(vent.checked).toBe(true);
+    // Returning to the solved default reuses its preview; a full run must
+    // still send the restored explicit vent choice.
+    fireEvent.click(screen.getByRole('button', { name: 'Run (tier 1)' }));
+    await advance();
+    expect(fake.runs.at(-1)?.recipe.machine.vent_headspace).toBe(true);
+  });
+
+  it('keeps an imported no-vent choice and follows a newly selected machine preset', async () => {
+    const fake = await startWithPreview();
+    const file = new File(
+      [
+        JSON.stringify({
+          ...DEFAULT_RECIPE,
+          machine: { ...DEFAULT_RECIPE.machine, vent_headspace: false },
+        }),
+      ],
+      'no-valve.json',
+      { type: 'application/json' },
+    );
+    fireEvent.change(screen.getByLabelText('Recipe file to import'), { target: { files: [file] } });
+    await advance(300);
+    expect(fake.runs.at(-1)?.recipe.machine.vent_headspace).toBe(false);
     await openSection('machine');
     const vent = screen.getByLabelText<HTMLInputElement>(
       'Vents the group after the shot (three-way valve)',
     );
     expect(vent.checked).toBe(false);
-    fireEvent.click(vent);
+    // A new machine follows its own valve assumption rather than the import.
+    fireEvent.change(screen.getByLabelText('Machine preset'), { target: { value: 'e61-rotary' } });
     await advance(300);
-    expect(fake.runs.at(-1)?.recipe.machine.vent_headspace).toBe(true);
+    expect(vent.checked).toBe(true);
+    expect(useShotStore.getState().form.machine.vent_headspace).toBe('');
+    fireEvent.change(screen.getByLabelText('Machine preset'), {
+      target: { value: 'vibratory-pump' },
+    });
+    await advance(300);
+    expect(vent.checked).toBe(false);
+    expect(fake.runs.at(-1)?.recipe.machine).toMatchObject({ preset: 'vibratory-pump' });
+    expect(fake.runs.at(-1)?.recipe.machine).not.toHaveProperty('vent_headspace');
   });
 
   it('says where an empty pump field comes from: the preset’s pump or the registry', async () => {

@@ -82,7 +82,7 @@ These are the minimum the M1 solver honours. The full specification lives in `do
 - **Tiers.**
   - `numerics.tier = 0`: the same physics, coarsened to 1 column, about 8 depth cells, 2 size classes and linear driving force kernels. Budget ≤ 10 ms per shot.
   - `tier = 1`: as specified. Budget ≤ 1 s per 30 s shot, native and WebAssembly.
-- **Stop and drip.** The shot stops when the stop rule fires, then the extract drips with time constant `drip_tau_s`. The reported beverage mass includes the drip.
+- **Stop and drip.** The shot stops when the stop rule fires, then the extract drips with time constant `drip_tau_s`. The reported beverage mass includes the drip. The browser's new/reset recipe explicitly enables `machine.vent_headspace`, so its 36 g stop also produces a 36 g final cup with zero modeled drip. This starting preference leaves API defaults and saved/imported recipe semantics unchanged. Disable the Machine vent checkbox to simulate an unvented stop.
 - **Conservation.** The soluble mass balance (particles + liquid + cup) is reported in `diagnostics.mass_balance_error`.
 
 ## 5. Ownership during M1

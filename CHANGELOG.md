@@ -9,6 +9,13 @@ first neural baseline fails its declared accuracy target and is retained as an
 experimental result. Physics, calibration and all 218,221 golden numerical
 values remain unchanged.
 
+### Fixed
+- New/reset browser recipes enable group venting by default. The standard 36 g
+  recipe finishes at 36.000000014 g on Tier 1 (36.000000018 g on Tier 0), with
+  zero modeled drip, instead of 56.812 g on unvented Tier 1. Explicit settings,
+  imported/saved recipes and machine preset precedence remain intact. Solver
+  defaults and the frozen unvented surrogate experiment are unchanged.
+
 ### Added
 - Reproducible native Tier 1 sampling: 256 training, 64 residual-calibration,
   128 final-test and 16 boundary rows, with no failed/capped samples. Generation

@@ -18,6 +18,10 @@ the 58-precision-18g basket, WDT and flat-9-bar. The time limit is 60 seconds an
 the teacher uses standard Tier 1 numerics. Other fields retain the template's
 embedded defaults, including the current unvented post-stop drip behavior.
 
+This frozen teacher template retains its unvented stop. New/reset browser
+recipes now explicitly enable venting; those inputs are outside this template
+and continue to use physics.
+
 | Control | Support | Unit |
 |---|---:|---|
 | Generic grinder setting | 170–230 | µm-equivalent preset dial |
