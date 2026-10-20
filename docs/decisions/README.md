@@ -21,6 +21,7 @@ Implementation decisions for Puckworks, one short file per decision. Product dec
 | [0015](0015-explore-state-and-refinement.md) | Coupled Explore state and explicit depth refinement | Accepted, experimental |
 | [0016](0016-offline-release-cache.md) | Complete static release caches and explicit offline updates | Accepted |
 | [0017](0017-offline-scalar-surrogate-pipeline.md) | Frozen offline scalar surrogate experiments | Accepted, experimental |
+| [0018](0018-visual-equipment-and-first-visit-setup.md) | Visual equipment controls and required local setup | Accepted |
 
 ## Format
 

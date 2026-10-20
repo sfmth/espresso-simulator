@@ -11,7 +11,7 @@ This page covers the project rules, one-time setup and everyday commands.
    - adds a CHANGELOG entry citing the measurement behind the change, where there is one;
    - bumps the version. All manifests share one version, and `puckworks-tools check-versions` verifies they agree.
 4. **Physical parameters go through the registry** (`data/params/`), each with a source, an evidence grade and a tag. From M1 on, physics code refers to registry entries, not bare numbers.
-5. **Privacy.** The site never collects user data: no network requests, analytics or cookies, and user data stays in the browser ([PLAN §7.7](docs/PLAN.md#77-privacy-by-construction-d9)).
+5. **Privacy.** No recipe/journal uploads, analytics or telemetry. Equipment settings remain in local browser storage. The owner's 2026-10-19 request permits one fixed first-party setup-completion cookie; it must contain no equipment values or identifier. Browsers include that marker in matching host requests ([PLAN §7.7](docs/PLAN.md#77-privacy-by-construction-d9)).
 6. **Data licences.** Datasets follow [PLAN §11](docs/PLAN.md#11-data-and-licensing-rules) and carry a metadata sidecar.
 7. **Version control.** The maintainer authorized assistants to use git, create commits and push changes on 2026-10-15. Preserve existing work, run the relevant checks, and use a feature branch for development.
 

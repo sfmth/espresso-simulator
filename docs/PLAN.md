@@ -78,7 +78,7 @@ This plan consolidates the planning Q&A of 2026-10-13 and three research notes. 
 | D6 | Beans | **Descriptors + presets.** Species, variety group, altitude, process, roast level and days off roast → inferred composition and physical properties, all overridable. No roasting simulation |
 | D7 | Compounds | **~30 non-volatiles + ~25 key odorants.** Each parameter is tagged measured / derived / estimated / fitted |
 | D8 | Taste | **Explainable + learnable.** A chemistry-based estimate with uncertainty that learns from the user's own ratings, locally |
-| D9 | User data | **Never collected.** A static site forever: no accounts, uploads, analytics or telemetry. Models improve only through new releases |
+| D9 | User data | **Never collected.** A static site forever: no accounts, uploads, analytics or telemetry. Owner-authorized exception (2026-10-19): one fixed setup-completion cookie; equipment values stay local. Models improve only through new releases |
 | D10 | Owner's gear | Machine: **AMZCHEF Ultra**, with a **58 mm single-wall basket** and a pressure gauge. Grinder: **AMZCHEF single-dose grinder**. A scale; no refractometer. These describe presets, not a calibration rig: the owner considers the setup insufficiently accurate and repeatable for simulator calibration. Use online measurements (D15). *(Basket, gauge and scale confirmed 2026-10-14; single-wall basket and calibration preference confirmed 2026-10-15.)* |
 | D11 | First milestone | **Validated core + lab view** |
 | D12 | Licence | **GPL-2.0-or-later.** Combined builds that include Apache-2.0 or GPL-3.0 code are distributed under GPLv3 |
@@ -126,7 +126,7 @@ Implementation choices (stack, numerics) are not locked. §7 proposes them, and 
 - Mechanistic burr-geometry grinding, until the research track (M7).
 - Health claims beyond reporting caffeine and diterpene amounts.
 
-**Permanently out (D9):** anything that collects or transmits user data.
+**Permanently out (D9):** equipment/recipe/journal uploads, analytics and tracking. The owner-authorized fixed setup-completion cookie carries no entered values or identifier; browsers send that marker in matching host requests.
 
 ---
 
@@ -463,7 +463,9 @@ puckworks/
 
 ### 7.7 Privacy by construction (D9)
 
-- No backend, accounts, analytics, telemetry or cookies.
+- No backend, accounts, analytics or telemetry.
+- At the owner's explicit request on 2026-10-19, one first-party setup-completion cookie is allowed. Its fixed value carries no equipment/recipe/journal fields or identifier. Cookie path follows the app deployment, with SameSite=Strict and Secure on HTTPS, and a one-year lifetime. Browsers send the marker on matching host requests; privacy copy states this exception.
+- First-visit setup requires explicit equipment choices and a valid starting recipe. Settings and completion age metadata stay in localStorage; blocked storage permits session-only use. Existing drafts can be reviewed without replacing their advanced settings. Setup is editable later.
 - No third-party requests at runtime: fonts and libraries are self-hosted.
 - Gear, beans, shot journal, ratings and calibration live in the browser (IndexedDB). They leave it only as a file you export.
 - Share links carry the setup in the URL fragment (`#…`), which browsers do not send to servers.
@@ -748,6 +750,15 @@ widths, retaining checks that require manual review. See the
 [accessibility contract](model/m6-accessibility.md) and
 [verification](validation/m6-accessibility-validation.md). Full assistive
 technology testing and the broader launch gates remain open.
+
+**Equipment workspace in 0.11.0.** A responsive SVG drawing connects six
+expandable setting bubbles to the beans, grinder, machine, portafilter, puck and
+cup. Quick controls and the full editor use one recipe state. Required first-visit
+setup records explicit equipment choices and a builder-checked starting recipe;
+equipment details stay local, with the owner-authorized fixed completion cookie
+described in D9. Keyboard, phone, blocked-storage and return-visit checks accompany
+the existing offline browser regressions. See the
+[contract](model/m6-equipment.md) and [ADR 0018](decisions/0018-visual-equipment-and-first-visit-setup.md).
 
 **Speed tooling slice in 0.11.0: frozen offline scalar experiment.** A synthetic
 464-shot Tier 1 dataset separates training, residual calibration, final tests and

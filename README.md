@@ -2,7 +2,9 @@
 
 An open-source espresso simulator that runs entirely in the browser. It models a shot from bean and grinder, through the puck and the flow, to the cup. The goal is to follow the ~55 compounds that dissolve and to end with an explainable taste estimate, giving every number a source and an uncertainty band. The status below says what exists today.
 
-**Status:** version 0.11.0 adds **offline scalar surrogate training and validation tools** to M6. A frozen 464-shot synthetic dataset supports a small neural ensemble, strict recipe/version guards and an actual Tier 1 fallback. The first baseline **fails its declared accuracy target**, so predictions use physics. These tools are outside the browser app. [Contract](docs/model/m6-surrogates.md) · [Measured errors](docs/validation/m6-surrogate-validation.md). **M6 public launch and the existing scientific, personal accuracy and hardware performance gates remain open.**
+**Status:** version 0.11.0 adds a **visual equipment editor and first-visit setup**. A drawing of the grinder, machine, portafilter, puck and cup has connected, expandable setting bubbles. Their controls edit the same recipe as the full editor. First-time visitors choose their equipment and starting shot; returning visitors recover their local setup. [Equipment and setup contract](docs/model/m6-equipment.md).
+
+M6 also adds **offline scalar surrogate training and validation tools**. A frozen 464-shot synthetic dataset supports a small neural ensemble, strict recipe/version guards and an actual Tier 1 fallback. The first baseline **fails its declared accuracy target**, so predictions use physics. These tools are outside the browser app. [Contract](docs/model/m6-surrogates.md) · [Measured errors](docs/validation/m6-surrogate-validation.md). **M6 public launch and the existing scientific, personal accuracy and hardware performance gates remain open.**
 
 New and reset browser recipes enable **Vents the group after the shot**, so the standard 36 g stop finishes at 36.00 g with zero modeled drip. Saved/imported recipes and machine preset choices retain their own settings; venting can be switched off in Machine. This is the starting recipe's assumption, not a claim about every machine's hardware.
 
@@ -24,6 +26,7 @@ The existing v2 fit is unchanged. **Scientific validation remains incomplete:** 
 | Input models | Bean, grinder (burr family and gap, a grinder preset with its dial, or your own measured particle sizes), basket (any profile), puck preparation and machine programs. Every value has a source in the parameter registry. |
 | Presets | 7 grinders, 12 baskets, 10 machine programs and 9 beans. The owner's own gear is just one set of presets, marked unverified. |
 | Shot lab (web) | A recipe editor for gear described by preset or from scratch; the shot graph, summary tiles and particle-size chart; a compound table with sources; a cross-section of the puck with the wetting front; 1D sweeps, pinned overlays and exports. |
+| Equipment workspace | A scalable equipment drawing with six connected setting callouts, shared quick/full controls, required first-visit choices and locally remembered setup. |
 | Uncertainty and taste | Seeded Tier 0 input ensembles with scenario quantiles, central Tier 0/Tier 1 comparisons, full report export and chemistry-based relative taste indices. Assumptions, evidence and omitted model errors remain visible. |
 | Explore | Selected-cell particle/shell data copied from the coupled Tier 1 shot, standard or 5× depth refinement, a synchronized cross-section and inspector, deterministic representative packing, an illustrative pore lattice, seven guided scenarios and WebGL2/SVG/table paths. Hardware frame-rate targets remain open. |
 | Dial-in | Shared recipe controls; immutable forecasts and measured shots in IndexedDB; finite-grid local calibration with identifiability diagnostics; three constrained inverse modes verified on Tier 1; CSV/DE1 imports, journal backups, Bayesian personal ratings and a prospective scorecard. |
@@ -34,7 +37,7 @@ The existing v2 fit is unchanged. **Scientific validation remains incomplete:** 
 | Parameter registry | 540 sourced parameters, each with an evidence grade. Startup assumptions and experimental pressure storage are exposed in the sandbox. |
 | CI | Rust, Python and web workflows, plus GitHub Pages deployment. |
 
-Nothing you enter leaves your browser.
+Equipment settings, recipes and journals stay in your browser. One fixed first-party cookie records setup completion; browsers send that marker in matching host requests. [Privacy and storage](web/public/privacy.html).
 
 M5 is implemented and M6 offline support and surrogate tooling are available; surrogate accuracy and browser integration, scientific accuracy and device performance remain open ([plan §12](docs/PLAN.md#12-roadmap-and-milestones)). The owner's AMZCHEF preset records a confirmed **58 mm single-wall basket**. No personal measurements or new equipment are required for development.
 
@@ -63,6 +66,7 @@ Calibration source selection includes online community shot archives and control
 - [M4 Dial-in](docs/model/m4-dial-in.md): local records, calibration, inverse advice, preference learning and prospective scoring.
 - [M5 Explore](docs/model/m5-explore.md): coupled particle state, depth refinement, representative graphics and open hardware performance gates.
 - [M6 accessibility](docs/model/m6-accessibility.md): keyboard controls, numerical text alternatives and browser audit scope.
+- [M6 equipment workspace](docs/model/m6-equipment.md): connected setting bubbles, first-visit setup, local persistence and the functional cookie.
 - [M6 scalar surrogates](docs/model/m6-surrogates.md): offline sampling, training, replay checks and physics fallback; [baseline errors](docs/validation/m6-surrogate-validation.md).
 - [M5 rendering performance](docs/validation/m5-rendering-performance.md): benchmark protocol, rendering quality and device evidence.
 - [Shot model](docs/model/shot-model.md): the shot solver's physics and numerics, with verification results.

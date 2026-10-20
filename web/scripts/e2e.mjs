@@ -29,6 +29,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
+import { completeInitialSetup } from './setup-helper.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const SUB_PATH = '/puckworks-e2e/';
@@ -547,6 +548,39 @@ async function shotLabChecks(page, pkg, shot) {
   const previewMs = await tileNumber('runtime');
   check(Number.isFinite(previewMs), `tier-0 preview: ${previewMs.toFixed(1)} ms in the worker`);
   shot.tier0Ms = previewMs;
+  const equipment = lab.locator('.equipment-diagram');
+  check(
+    (await equipment.getByRole('button', { expanded: false }).count()) === 6 &&
+      (await equipment.locator('[data-equipment-leader]').count()) === 6,
+    'equipment callouts connect all six parts to their settings',
+  );
+  const puckCallout = equipment.locator('[data-equipment-callout="prep"]');
+  await puckCallout.click();
+  await equipment.getByLabel('Diagram dry dose (g)', { exact: true }).fill('19');
+  await equipment.getByRole('button', { name: 'More puck / dose settings', exact: false }).click();
+  const doseField = page.locator('#rf-prep-dose_g');
+  await page.waitForFunction(() => document.activeElement?.id === 'rf-prep-dose_g', undefined, {
+    timeout: 5000,
+  });
+  check(
+    (await doseField.inputValue()) === '19',
+    'a callout edit reaches the full recipe field and More settings moves keyboard focus',
+  );
+  await doseField.fill('18');
+  await waitForStatus('Preview (tier 0)');
+  await page.locator('#section-prep > summary').click();
+  const grinderCallout = equipment.locator('[data-equipment-callout="grinder"]');
+  await grinderCallout.click();
+  await equipment
+    .locator('#equipment-settings')
+    .screenshot({ path: shot.path('e2e-equipment-panel') });
+  await equipment.screenshot({ path: shot.path('e2e-equipment-desktop') });
+  await page.keyboard.press('Escape');
+  check(
+    (await grinderCallout.getAttribute('aria-expanded')) === 'false' &&
+      (await grinderCallout.evaluate((element) => document.activeElement === element)),
+    'Escape closes equipment settings and restores the callout focus',
+  );
   check(
     Math.abs((await tileNumber('beverage')) - 0.036) < 1e-6,
     'the starting tier-0 recipe finishes at 36 g',
@@ -1423,6 +1457,34 @@ async function main() {
 
     console.log(`e2e: ${url} in ${browser.browserType().name()} ${browser.version()}`);
     const initialResponse = await page.goto(url);
+    const setup = page.getByRole('dialog', { name: 'Set up your equipment', exact: true });
+    await setup.waitFor({ state: 'visible', timeout: 30000 });
+    await setup.getByRole('combobox', { name: 'Your machine', exact: true }).waitFor();
+    const untouchedMachine = await setup
+      .getByRole('combobox', { name: 'Your machine', exact: true })
+      .inputValue();
+    await setup.getByRole('button', { name: 'Next: starting shot', exact: true }).click();
+    check(
+      untouchedMachine === '' &&
+        (await setup.getByRole('heading', { name: /Step 1 of 3/ }).isVisible()) &&
+        (await setup.getByRole('alert').isVisible()),
+      'first visit requires explicit equipment choices',
+    );
+    await page.keyboard.press('Escape');
+    check(await setup.isVisible(), 'Escape cannot bypass required first-visit setup');
+    await setup.screenshot({ path: shotPath('e2e-setup-first-visit') });
+    await completeInitialSetup(page);
+    const setupCookies = (await context.cookies(url)).filter(
+      (cookie) => cookie.name === 'puckworks_setup_v1',
+    );
+    check(
+      setupCookies.length === 1 &&
+        setupCookies[0].value === 'done' &&
+        setupCookies[0].path === SUB_PATH &&
+        setupCookies[0].sameSite === 'Strict',
+      'setup cookie stores only a fixed completion marker scoped to this app',
+    );
+    await page.reload();
     if (process.env.E2E_DEBUG) {
       console.log(`initial response: ${initialResponse?.status()} ${page.url()}`);
       console.log(`initial body: ${(await page.locator('body').innerText()).slice(0, 2000)}`);

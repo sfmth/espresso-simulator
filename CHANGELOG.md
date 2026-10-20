@@ -17,6 +17,14 @@ values remain unchanged.
   defaults and the frozen unvented surrogate experiment are unchanged.
 
 ### Added
+- A scalable machine/grinder/portafilter drawing with six connected, expandable
+  setting bubbles. Quick controls share the full recipe editor's state, preset
+  rules and validation; keyboard users can expand, close and move to full controls.
+- Required first-visit equipment and starting-shot setup, native builder checks,
+  editable local profiles and graceful session-only use when storage is blocked.
+  A fixed first-party completion cookie contains no equipment values or identifier.
+  This owner-requested exception to the no-cookie policy is documented in D9 and
+  the privacy page; settings remain in local browser storage.
 - Reproducible native Tier 1 sampling: 256 training, 64 residual-calibration,
   128 final-test and 16 boundary rows, with no failed/capped samples. Generation
   took 99.20 seconds with four local workers; this is not a device performance gate.

@@ -1,0 +1,336 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+.equipment-diagram {
+  container-type: inline-size;
+  min-width: 0;
+  overflow: clip;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.equipment-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 0.5rem 1rem;
+  padding: 1rem 1rem 0;
+}
+
+.equipment-heading h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: -0.035em;
+}
+
+.equipment-heading > p,
+.equipment-eyebrow {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.equipment-eyebrow {
+  margin-bottom: 0.15rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.equipment-stage {
+  position: relative;
+  margin: 0.65rem 0.25rem 0;
+  aspect-ratio: 600 / 450;
+}
+
+.equipment-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.equipment-metal {
+  fill: var(--dry);
+}
+
+.equipment-machine-face,
+.equipment-cup,
+.equipment-glass {
+  fill: var(--surface);
+}
+
+.equipment-cutout {
+  fill: var(--page);
+  stroke: var(--line);
+}
+
+.equipment-glass {
+  fill: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+
+.equipment-burr {
+  fill: var(--surface);
+  stroke: var(--ink);
+}
+
+.equipment-coffee {
+  fill: var(--bed);
+  stroke: var(--ink-2);
+  stroke-width: 1;
+}
+
+.equipment-bean-seam,
+.equipment-grains {
+  stroke: var(--surface);
+  stroke-width: 1;
+}
+
+.equipment-handle {
+  fill: var(--ink-2);
+}
+
+.equipment-indicator,
+.equipment-water {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.equipment-unit {
+  fill: var(--ink-2);
+  stroke: none;
+  font: 10px var(--font);
+}
+
+.equipment-counter {
+  stroke: var(--line);
+  stroke-width: 3;
+}
+
+.equipment-highlight {
+  fill: transparent;
+  stroke: transparent;
+}
+
+.equipment-part.is-active .equipment-highlight {
+  fill: color-mix(in srgb, var(--accent) 14%, transparent);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.equipment-leader {
+  stroke: var(--field-border);
+  stroke-width: 1.2;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.equipment-leader circle {
+  fill: var(--surface);
+}
+
+.equipment-leader.is-active {
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  opacity: 1;
+}
+
+.equipment-callout {
+  position: absolute;
+  left: var(--callout-x);
+  top: var(--callout-y);
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  max-width: 10rem;
+  padding: 0.3rem 0.55rem 0.3rem 0.3rem;
+  border: 1px solid var(--field-border);
+  border-radius: 2rem;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.equipment-number {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--dry);
+  font-size: 0.75rem;
+}
+
+.equipment-callout.is-active {
+  border-color: var(--accent);
+  color: var(--link);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.equipment-callout.is-active .equipment-number {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.equipment-callout:hover,
+.equipment-close:hover {
+  border-color: var(--accent);
+}
+
+.equipment-callout:focus-visible,
+.equipment-close:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.equipment-problem {
+  color: var(--danger);
+  font-weight: 800;
+}
+
+.equipment-caption {
+  margin: -0.25rem 1rem 0.9rem;
+  color: var(--ink-2);
+  font-size: 0.73rem;
+  text-align: center;
+}
+
+.equipment-settings {
+  padding: 0.85rem 1rem 1rem;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--accent) 3%, var(--surface));
+}
+
+.equipment-settings[hidden] {
+  display: none;
+}
+
+.equipment-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.equipment-panel-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.equipment-close {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.equipment-description {
+  margin: 0.15rem 0 0.85rem;
+  color: var(--ink-2);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.equipment-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  align-items: start;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.equipment-field,
+.equipment-field input,
+.equipment-field select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.equipment-check {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  align-items: center;
+  align-self: center;
+  gap: 0.35rem;
+}
+
+.equipment-check input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+}
+
+.equipment-check label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 0;
+}
+
+.equipment-check .field-hint,
+.equipment-note {
+  grid-column: 1 / -1;
+}
+
+.equipment-note {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.equipment-more {
+  margin-top: 1rem;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+
+@container (max-width: 360px) {
+  .equipment-callout-label {
+    display: none;
+  }
+
+  .equipment-callout {
+    padding: 0.3rem;
+  }
+
+  .equipment-callout .equipment-problem {
+    position: absolute;
+    right: 0.15rem;
+    top: 0.1rem;
+  }
+
+  .equipment-heading h2 {
+    font-size: 1.2rem;
+  }
+
+  .equipment-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (forced-colors: active) {
+  .equipment-callout.is-active,
+  .equipment-part.is-active .equipment-highlight,
+  .equipment-leader.is-active {
+    border-color: Highlight;
+    stroke: Highlight;
+  }
+}
