@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.10.1 · Last updated 2026-10-19 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support and an initial accessibility pass are available. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
+*Version 0.11.0 · Last updated 2026-10-19 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support, an initial accessibility pass and offline scalar surrogate tooling are available. The first surrogate fails its accuracy gate. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -748,6 +748,18 @@ widths, retaining checks that require manual review. See the
 [accessibility contract](model/m6-accessibility.md) and
 [verification](validation/m6-accessibility-validation.md). Full assistive
 technology testing and the broader launch gates remain open.
+
+**Speed tooling slice in 0.11.0: frozen offline scalar experiment.** A synthetic
+464-shot Tier 1 dataset separates training, residual calibration, final tests and
+all 16 domain corners. Three fixed small neural networks predict time, final cup
+mass and EY; TDS follows from mass accounting. Dataset/model digests, actual
+metric replay and teacher/recipe guards accompany automatic Tier 1 fallback.
+The first baseline misses the declared 1% training-range maximum-error target
+and remains unqualified; even test mass error reaches 1.287 g and boundary mass
+error reaches 3.837 g. No test-driven retuning was performed. Models are outside
+the browser build. Browser integration, qualified speed and calibrated real-world
+coverage remain open. See [ADR 0017](decisions/0017-offline-scalar-surrogate-pipeline.md),
+the [contract](model/m6-surrogates.md) and [evaluation](validation/m6-surrogate-validation.md).
 
 ### M7: Research track
 Open-ended.

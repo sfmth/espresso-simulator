@@ -2,7 +2,9 @@
 
 An open-source espresso simulator that runs entirely in the browser. It models a shot from bean and grinder, through the puck and the flow, to the cup. The goal is to follow the ~55 compounds that dissolve and to end with an explainable taste estimate, giving every number a source and an uncertainty band. The status below says what exists today.
 
-**Status:** version 0.10.1 continues **M6 with offline support and keyboard accessibility fixes**. After the app reports **Ready for offline use**, Lab, Dial-in and Explore can work without a connection, including the WASM engine and previously unopened Explore renderer. Supported browsers can install the app from their own menu. Updates wait for **Reload to update**; export current recipe inputs before reloading. Saved journals remain in this browser. [Offline contract](docs/model/m6-offline.md) · [Verification](docs/validation/m6-offline-validation.md) · [Privacy and storage](web/public/privacy.html). **M6 public launch and the existing scientific, personal accuracy and hardware performance gates remain open.**
+**Status:** version 0.11.0 adds **offline scalar surrogate training and validation tools** to M6. A frozen 464-shot synthetic dataset supports a small neural ensemble, strict recipe/version guards and an actual Tier 1 fallback. The first baseline **fails its declared accuracy target**, so predictions use physics. These tools are outside the browser app. [Contract](docs/model/m6-surrogates.md) · [Measured errors](docs/validation/m6-surrogate-validation.md). **M6 public launch and the existing scientific, personal accuracy and hardware performance gates remain open.**
+
+After the app reports **Ready for offline use**, Lab, Dial-in and Explore can work without a connection, including the WASM engine and previously unopened Explore renderer. Supported browsers can install the app from their own menu. Updates wait for **Reload to update**; export current recipe inputs before reloading. Saved journals remain in this browser. [Offline contract](docs/model/m6-offline.md) · [Verification](docs/validation/m6-offline-validation.md) · [Privacy and storage](web/public/privacy.html).
 
 Explore's camera supports keyboard orbit, zoom and reset; its timeline and selected-cell/particle readouts expose the actual numerical state. Every chart has **Read chart values** for all plotted samples and runs. Journal actions retain keyboard focus when a form or row disappears. Connection status handles changes while the app starts. A production browser audit covers expanded controls, light/dark themes and phone layouts; this is a regression check, not a claim of full accessibility conformance. [Keyboard controls and audit limits](docs/model/m6-accessibility.md).
 
@@ -24,6 +26,7 @@ The existing v2 fit is unchanged. **Scientific validation remains incomplete:** 
 | Explore | Selected-cell particle/shell data copied from the coupled Tier 1 shot, standard or 5× depth refinement, a synchronized cross-section and inspector, deterministic representative packing, an illustrative pore lattice, seven guided scenarios and WebGL2/SVG/table paths. Hardware frame-rate targets remain open. |
 | Dial-in | Shared recipe controls; immutable forecasts and measured shots in IndexedDB; finite-grid local calibration with identifiability diagnostics; three constrained inverse modes verified on Tier 1; CSV/DE1 imports, journal backups, Bayesian personal ratings and a prospective scorecard. |
 | Offline app | A complete cached production build, install metadata, visible readiness and explicit update controls. App downloads and journal data use separate browser storage. First installation needs a connection; browser storage can be evicted. |
+| Offline surrogate tools | Reproducible Tier 1 sampling, a three-member scalar neural ensemble, held-out/boundary error reports, replay verification and guarded physics fallback. The first baseline is unqualified and is not bundled in the app. |
 | Calibration and validation | 19 published datasets (Schmieder, Waszkiewicz, Cameron, Corrochano, Smrke, Vaca Guerra), with calibration on some and held-out tests on others. |
 | Community comparisons | Safe offline import of original DE1 logs and the matching measurement sheet, followed by fixed-scenario comparisons. The [community report](docs/validation/community-shot-comparison.md) separates observed scale mass from estimated inlet flow and conditional model output; these sources have not entered the numerical fit. |
 | Parameter registry | 540 sourced parameters, each with an evidence grade. Startup assumptions and experimental pressure storage are exposed in the sandbox. |
@@ -31,7 +34,7 @@ The existing v2 fit is unchanged. **Scientific validation remains incomplete:** 
 
 Nothing you enter leaves your browser.
 
-M5 is implemented and M6 offline support is available; remaining scientific accuracy, device-performance and surrogate work stays documented ([plan §12](docs/PLAN.md#12-roadmap-and-milestones)). The owner's AMZCHEF preset records a confirmed **58 mm single-wall basket**. No personal measurements or new equipment are required for development.
+M5 is implemented and M6 offline support and surrogate tooling are available; surrogate accuracy and browser integration, scientific accuracy and device performance remain open ([plan §12](docs/PLAN.md#12-roadmap-and-milestones)). The owner's AMZCHEF preset records a confirmed **58 mm single-wall basket**. No personal measurements or new equipment are required for development.
 
 Calibration source selection includes online community shot archives and controlled hobbyist experiments; it does not depend on the owner's equipment. The [community-source audit](docs/research/04-community-shot-data.md) records candidate datasets and what each can support. Newly discovered sources have not yet entered the numerical fit.
 
@@ -44,6 +47,7 @@ Calibration source selection includes online community shot archives and control
 | [`crates/puckcore-wasm`](crates/puckcore-wasm), [`crates/puckcore-py`](crates/puckcore-py) | its WebAssembly and Python bindings |
 | [`web/`](web) | the web app: TypeScript, Vite, React |
 | [`python/`](python) | project tools: registry validation, preset export, calibration, validation reports, golden fixtures, version checks |
+| [`models/`](models) | frozen experimental scalar model, template recipe and reproduction notes |
 | [`data/`](data) | parameter registry, presets, datasets, calibration, fixtures |
 | [`docs/`](docs) | plan, research notes, decision records, model documentation, validation reports |
 
@@ -57,6 +61,7 @@ Calibration source selection includes online community shot archives and control
 - [M4 Dial-in](docs/model/m4-dial-in.md): local records, calibration, inverse advice, preference learning and prospective scoring.
 - [M5 Explore](docs/model/m5-explore.md): coupled particle state, depth refinement, representative graphics and open hardware performance gates.
 - [M6 accessibility](docs/model/m6-accessibility.md): keyboard controls, numerical text alternatives and browser audit scope.
+- [M6 scalar surrogates](docs/model/m6-surrogates.md): offline sampling, training, replay checks and physics fallback; [baseline errors](docs/validation/m6-surrogate-validation.md).
 - [M5 rendering performance](docs/validation/m5-rendering-performance.md): benchmark protocol, rendering quality and device evidence.
 - [Shot model](docs/model/shot-model.md): the shot solver's physics and numerics, with verification results.
 - [Input models](docs/model/input-models.md): from a recipe to the physics, including the presets.

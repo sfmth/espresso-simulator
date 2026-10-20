@@ -1,0 +1,34 @@
+{
+  "dataset": "scalar-v1.json",
+  "dataset_digest": "afbf06041033af2eff6534181f5678c6d87973751c0087cfcaeca83ba8ba6716",
+  "environment": {
+    "numpy": "2.5.4",
+    "python": "3.14.7",
+    "scipy": "1.18.1"
+  },
+  "failed_rows": 0,
+  "file_sha256": "68fa4aedf2ee723df67eab02249cd5d9de949d01001f382fb5228713e3d19163",
+  "generation_command": ".venv/bin/puckworks-tools surrogate-generate --output data/surrogates/scalar-v1.json --train 256 --calibration 64 --test 128 --jobs 4 --seed 20261020",
+  "generation_wall_time_s": 99.2,
+  "generator_sha256": "368990e744599e09185435ab237eb7ceb6d138ce88f07f8f602ef6a3aa23f173",
+  "license": "GPL-2.0-or-later",
+  "limits": [
+    "Fixed four-control recipe family only.",
+    "Labels emulate the current simulator and do not establish agreement with coffee measurements.",
+    "First frozen model failed qualification; no held-out-driven tuning.",
+    "Wall time is a local observation, not a target-device or browser speed gate."
+  ],
+  "model_artifact_digest": "f608f3e75a99edc2e1cea132b45fbd33fba65af163a75bb01ca47424b1e21b5b",
+  "origin": "Synthetic outputs generated locally by the Puckworks Tier 1 solver; no measured coffee shots or personal data.",
+  "schema": "puckworks.surrogate-provenance/1",
+  "source_module": "python/puckworks_tools/surrogate_data.py",
+  "split_counts": {
+    "boundary": 16,
+    "calibration": 64,
+    "test": 128,
+    "train": 256
+  },
+  "successful_rows": 464,
+  "teacher_fingerprint": "fd9ab86cc5ff2f853705b81d559c257e4aa56306828c0eb727c2498cee8f8c1d",
+  "workers": 4
+}

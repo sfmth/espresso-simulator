@@ -1,8 +1,8 @@
 {
   "schema": "puckworks.kernel-verification/1",
-  "generated_utc": "2026-10-20T01:40:32Z",
-  "core_version": "0.10.1",
-  "tools_version": "0.10.1",
+  "generated_utc": "2026-10-20T02:19:16Z",
+  "core_version": "0.11.0",
+  "tools_version": "0.11.0",
   "platform": {
     "python": "3.14.7",
     "numpy": "2.5.4",
@@ -75,7 +75,7 @@
           "error_at_probe": 0.0006294172028393774,
           "probe_tau": 0.1,
           "mass_balance_error": 4.4323433812110125e-12,
-          "runtime_s": 0.18081927811726928
+          "runtime_s": 0.15465930802747607
         },
         {
           "n_shells": 32,
@@ -84,7 +84,7 @@
           "error_at_probe": 0.00015690909539478604,
           "probe_tau": 0.1,
           "mass_balance_error": 9.14823772291129e-13,
-          "runtime_s": 0.23068518564105034
+          "runtime_s": 0.21873736986890435
         },
         {
           "n_shells": 64,
@@ -93,7 +93,7 @@
           "error_at_probe": 3.901165865860534e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 2.521871600436043e-13,
-          "runtime_s": 0.38059636391699314
+          "runtime_s": 0.3553709010593593
         },
         {
           "n_shells": 128,
@@ -102,7 +102,7 @@
           "error_at_probe": 9.551596813373031e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 1.1437517599688363e-12,
-          "runtime_s": 0.6841587498784065
+          "runtime_s": 0.6317890919744968
         }
       ],
       "space_orders": {
@@ -125,7 +125,7 @@
           "error_at_probe": -0.0024773792504918513,
           "probe_tau": 0.1,
           "mass_balance_error": 5.3632099872302774e-09,
-          "runtime_s": 0.03954342007637024
+          "runtime_s": 0.03784320689737797
         },
         {
           "n_shells": 65536,
@@ -134,7 +134,7 @@
           "error_at_probe": -0.0012875332335482437,
           "probe_tau": 0.1,
           "mass_balance_error": 8.81738615454708e-09,
-          "runtime_s": 0.06780975172296166
+          "runtime_s": 0.0658222227357328
         },
         {
           "n_shells": 65536,
@@ -143,7 +143,7 @@
           "error_at_probe": -0.000655862168421173,
           "probe_tau": 0.1,
           "mass_balance_error": 1.9153614250200235e-08,
-          "runtime_s": 0.1280432683415711
+          "runtime_s": 0.12284883484244347
         },
         {
           "n_shells": 65536,
@@ -152,7 +152,7 @@
           "error_at_probe": -0.0003309392150948609,
           "probe_tau": 0.1,
           "mass_balance_error": 1.2749496347552736e-08,
-          "runtime_s": 0.24696323182433844
+          "runtime_s": 0.23767381394281983
         }
       ],
       "time_orders": {
@@ -182,7 +182,7 @@
           "error_at_probe": 0.0006296852505557338,
           "probe_tau": 0.1,
           "mass_balance_error": 1.304512053934559e-12,
-          "runtime_s": 0.011838686186820269
+          "runtime_s": 0.011787637136876583
         },
         {
           "n_shells": 32,
@@ -191,7 +191,7 @@
           "error_at_probe": 0.00015717651176982983,
           "probe_tau": 0.1,
           "mass_balance_error": 3.667066650336892e-13,
-          "runtime_s": 0.018930498976260424
+          "runtime_s": 0.018866393715143204
         },
         {
           "n_shells": 64,
@@ -200,7 +200,7 @@
           "error_at_probe": 3.927891818500395e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 4.0456527017340704e-13,
-          "runtime_s": 0.03409128403291106
+          "runtime_s": 0.033174694981426
         },
         {
           "n_shells": 128,
@@ -209,7 +209,7 @@
           "error_at_probe": 9.818816924300755e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 3.3650859876388495e-13,
-          "runtime_s": 0.062406296376138926
+          "runtime_s": 0.060398579109460115
         }
       ],
       "space_orders": {
@@ -232,7 +232,7 @@
           "error_at_probe": 4.980806704346641e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 7.596307693980009e-09,
-          "runtime_s": 0.0392216588370502
+          "runtime_s": 0.03902576956897974
         },
         {
           "n_shells": 65536,
@@ -241,7 +241,7 @@
           "error_at_probe": 1.2826346690419932e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 7.561148485102365e-09,
-          "runtime_s": 0.06978900078684092
+          "runtime_s": 0.06768749002367258
         },
         {
           "n_shells": 65536,
@@ -250,7 +250,7 @@
           "error_at_probe": 3.2539122993835434e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 7.800899370913328e-09,
-          "runtime_s": 0.1301483721472323
+          "runtime_s": 0.1253956207074225
         },
         {
           "n_shells": 65536,
@@ -259,7 +259,7 @@
           "error_at_probe": 8.210751144543948e-07,
           "probe_tau": 0.1,
           "mass_balance_error": 7.803637180892053e-09,
-          "runtime_s": 0.25050735799595714
+          "runtime_s": 0.24077982315793633
         }
       ],
       "time_orders": {
@@ -289,7 +289,7 @@
           "error_at_probe": 0.0006296852102707362,
           "probe_tau": 0.1,
           "mass_balance_error": 2.421729483614854e-12,
-          "runtime_s": 0.01199778588488698
+          "runtime_s": 0.011905181221663952
         },
         {
           "n_shells": 32,
@@ -298,7 +298,7 @@
           "error_at_probe": 0.00015717647044133365,
           "probe_tau": 0.1,
           "mass_balance_error": 1.6996404283986521e-12,
-          "runtime_s": 0.020415826234966516
+          "runtime_s": 0.01910504326224327
         },
         {
           "n_shells": 64,
@@ -307,7 +307,7 @@
           "error_at_probe": 3.9278877890458475e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 5.513367540288527e-13,
-          "runtime_s": 0.033575990702956915
+          "runtime_s": 0.03301796969026327
         },
         {
           "n_shells": 128,
@@ -316,7 +316,7 @@
           "error_at_probe": 9.818776551595576e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 2.191580250610059e-13,
-          "runtime_s": 0.06323860120028257
+          "runtime_s": 0.0609126859344542
         }
       ],
       "space_orders": {
@@ -339,7 +339,7 @@
           "error_at_probe": 1.1597442670097102e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 8.437404552807948e-09,
-          "runtime_s": 0.03988774074241519
+          "runtime_s": 0.03877287311479449
         },
         {
           "n_shells": 65536,
@@ -348,7 +348,7 @@
           "error_at_probe": 3.03969447557062e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 1.911312286217992e-08,
-          "runtime_s": 0.0703565371222794
+          "runtime_s": 0.06806743005290627
         },
         {
           "n_shells": 65536,
@@ -357,7 +357,7 @@
           "error_at_probe": 7.808241635487434e-07,
           "probe_tau": 0.1,
           "mass_balance_error": 1.241703995180643e-08,
-          "runtime_s": 0.12998096132650971
+          "runtime_s": 0.12771206675097346
         },
         {
           "n_shells": 65536,
@@ -366,7 +366,7 @@
           "error_at_probe": 1.9467476586321197e-07,
           "probe_tau": 0.1,
           "mass_balance_error": 2.7791356993489558e-09,
-          "runtime_s": 0.2543744328431785
+          "runtime_s": 0.24476444302126765
         }
       ],
       "time_orders": {
@@ -396,7 +396,7 @@
           "error_at_probe": -7.157969123994246e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 5.936362512670712e-13,
-          "runtime_s": 0.1524259028956294
+          "runtime_s": 0.1468539168126881
         },
         {
           "n_shells": 32,
@@ -405,7 +405,7 @@
           "error_at_probe": -1.9847487825019883e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 2.3951951533263127e-12,
-          "runtime_s": 0.22243099613115191
+          "runtime_s": 0.21203380404040217
         },
         {
           "n_shells": 64,
@@ -414,7 +414,7 @@
           "error_at_probe": -5.491617696806728e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 3.262945469373335e-12,
-          "runtime_s": 0.36064833821728826
+          "runtime_s": 0.3455352052114904
         },
         {
           "n_shells": 128,
@@ -423,7 +423,7 @@
           "error_at_probe": -1.6376653773075844e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 3.868128040096508e-12,
-          "runtime_s": 0.6442876323126256
+          "runtime_s": 0.6260603098198771
         }
       ],
       "space_orders": {
@@ -446,7 +446,7 @@
           "error_at_probe": -0.0024773800891852993,
           "probe_tau": 0.1,
           "mass_balance_error": 3.103637791213032e-09,
-          "runtime_s": 0.03938550688326359
+          "runtime_s": 0.039126692339777946
         },
         {
           "n_shells": 65536,
@@ -455,7 +455,7 @@
           "error_at_probe": -0.0012875349995727925,
           "probe_tau": 0.1,
           "mass_balance_error": 2.621489136878097e-09,
-          "runtime_s": 0.06874772813171148
+          "runtime_s": 0.06636126199737191
         },
         {
           "n_shells": 65536,
@@ -464,7 +464,7 @@
           "error_at_probe": -0.0006558691922294857,
           "probe_tau": 0.1,
           "mass_balance_error": 2.505128771090881e-09,
-          "runtime_s": 0.1276110871694982
+          "runtime_s": 0.12346623791381717
         },
         {
           "n_shells": 65536,
@@ -473,7 +473,7 @@
           "error_at_probe": -0.00033094585332238413,
           "probe_tau": 0.1,
           "mass_balance_error": 2.088600625782533e-09,
-          "runtime_s": 0.24530218308791518
+          "runtime_s": 0.23759663803502917
         }
       ],
       "time_orders": {
@@ -503,7 +503,7 @@
           "error_at_probe": -7.13127588121143e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 9.15267861500979e-13,
-          "runtime_s": 0.011797129642218351
+          "runtime_s": 0.011784074828028679
         },
         {
           "n_shells": 32,
@@ -512,7 +512,7 @@
           "error_at_probe": -1.958035582994011e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 1.5302203948408533e-12,
-          "runtime_s": 0.01919289492070675
+          "runtime_s": 0.018709668423980474
         },
         {
           "n_shells": 64,
@@ -521,7 +521,7 @@
           "error_at_probe": -5.224428720640439e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 2.049027614248189e-12,
-          "runtime_s": 0.03382770111784339
+          "runtime_s": 0.03310583019629121
         },
         {
           "n_shells": 128,
@@ -530,7 +530,7 @@
           "error_at_probe": -1.370464269290217e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 1.832201057538896e-12,
-          "runtime_s": 0.06268056482076645
+          "runtime_s": 0.06060635996982455
         }
       ],
       "space_orders": {
@@ -553,7 +553,7 @@
           "error_at_probe": 4.980551317324e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 1.6352394438534645e-10,
-          "runtime_s": 0.0400812728330493
+          "runtime_s": 0.039094633888453245
         },
         {
           "n_shells": 65536,
@@ -562,7 +562,7 @@
           "error_at_probe": 1.2823658889882239e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 8.67502736312531e-11,
-          "runtime_s": 0.06969045428559184
+          "runtime_s": 0.06817191420122981
         },
         {
           "n_shells": 65536,
@@ -571,7 +571,7 @@
           "error_at_probe": 3.2513702890035745e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 2.6612989589835934e-10,
-          "runtime_s": 0.13087381981313229
+          "runtime_s": 0.1256140861660242
         },
         {
           "n_shells": 65536,
@@ -580,7 +580,7 @@
           "error_at_probe": 8.183346055234964e-07,
           "probe_tau": 0.1,
           "mass_balance_error": 3.1594282745572855e-11,
-          "runtime_s": 0.24823365500196815
+          "runtime_s": 0.24444980500265956
         }
       ],
       "time_orders": {
@@ -610,7 +610,7 @@
           "error_at_probe": -7.131279842309546e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 3.519406988061746e-14,
-          "runtime_s": 0.011957417707890272
+          "runtime_s": 0.012078528292477131
         },
         {
           "n_shells": 32,
@@ -619,7 +619,7 @@
           "error_at_probe": -1.958039485006058e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 1.0150769114147806e-12,
-          "runtime_s": 0.01933299796655774
+          "runtime_s": 0.01915728533640504
         },
         {
           "n_shells": 64,
@@ -628,7 +628,7 @@
           "error_at_probe": -5.224468080267108e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 4.18554080283684e-14,
-          "runtime_s": 0.03358667716383934
+          "runtime_s": 0.03324830764904618
         },
         {
           "n_shells": 128,
@@ -637,7 +637,7 @@
           "error_at_probe": -1.3705038445221973e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 1.5909495942878493e-13,
-          "runtime_s": 0.0627292450517416
+          "runtime_s": 0.06133299507200718
         }
       ],
       "space_orders": {
@@ -660,7 +660,7 @@
           "error_at_probe": 1.1595863586899569e-05,
           "probe_tau": 0.1,
           "mass_balance_error": 2.553124822668451e-09,
-          "runtime_s": 0.040109767112880945
+          "runtime_s": 0.039678792003542185
         },
         {
           "n_shells": 65536,
@@ -669,7 +669,7 @@
           "error_at_probe": 3.0329838319742564e-06,
           "probe_tau": 0.1,
           "mass_balance_error": 2.738771320842659e-09,
-          "runtime_s": 0.07053463300690055
+          "runtime_s": 0.06878100475296378
         },
         {
           "n_shells": 65536,
@@ -678,7 +678,7 @@
           "error_at_probe": 7.741341661038348e-07,
           "probe_tau": 0.1,
           "mass_balance_error": 2.404952348378231e-09,
-          "runtime_s": 0.1324814399704337
+          "runtime_s": 0.12819411512464285
         },
         {
           "n_shells": 65536,
@@ -687,7 +687,7 @@
           "error_at_probe": 1.959784519112162e-07,
           "probe_tau": 0.1,
           "mass_balance_error": 2.277100730196935e-09,
-          "runtime_s": 0.25356349907815456
+          "runtime_s": 0.24814828298985958
         }
       ],
       "time_orders": {

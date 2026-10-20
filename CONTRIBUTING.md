@@ -49,6 +49,7 @@ Shell sessions that haven't run the `export` line need `$HOME/.cargo/bin` on `PA
 | Check the golden fixture | `.venv/bin/puckworks-tools fixtures --check` |
 | Regenerate the kernel verification report | `.venv/bin/puckworks-tools verify` |
 | Regenerate the M3 scenario and taste checks | `.venv/bin/puckworks-tools m3-validate` |
+| Replay the offline scalar model against its frozen dataset | `.venv/bin/puckworks-tools surrogate-check --model models/scalar-v1.json --dataset data/surrogates/scalar-v1.json` |
 | Benchmark repeated simulations (release build) | `cargo run --release -p puckcore --example shot_benchmark -- 11` |
 | Check that all versions agree | `.venv/bin/puckworks-tools check-versions` |
 | Run the Python tests | `.venv/bin/pytest python/tests` |
@@ -89,6 +90,58 @@ assets/notices do not contain it. Production dependency checks remain unchanged.
 See [the keyboard contract](docs/model/m6-accessibility.md) for manual checks still
 needed.
 
+## Offline scalar surrogate experiment
+
+Version 0.11.0 adds Python tools for a small scalar approximation to standard
+Tier 1. The [contract](docs/model/m6-surrogates.md) defines its four varying
+controls and fixed recipe template. Synthetic teacher outputs carry the core's
+assumptions and limitations. The browser continues to run physics; these model
+files are outside the production app.
+
+Rebuild the native extension before generation, then use fresh local paths:
+
+```bash
+.venv/bin/puckworks-tools surrogate-generate \
+  --output .local/surrogates/dataset.json \
+  --train 256 --calibration 64 --test 128 --jobs 4 --seed 20261020
+.venv/bin/puckworks-tools surrogate-train \
+  --dataset .local/surrogates/dataset.json \
+  --model .local/surrogates/model.json \
+  --report-dir .local/surrogates/report --seed 20261020 --max-iter 2000
+.venv/bin/puckworks-tools surrogate-check \
+  --model .local/surrogates/model.json --dataset .local/surrogates/dataset.json
+```
+
+The default dataset has 256 training, 64 residual-calibration, 128 final test and
+16 boundary-corner rows. Native generation supports one to four processes.
+Failed or capped shots stay recorded and block training. The validator replays
+the declared Sobol streams and checks split membership, scalar accounting and
+scientific digests. Compatibility also checks effective embedded registry and
+presets, source inputs and native behavior probes.
+
+Freeze the domain, seeds, split roles, architecture and optimizer settings before
+examining test or boundary errors. Do not retune against those errors or replace
+difficult samples to meet the gate. Keep failed results in the report; a new
+experiment needs a separately declared untouched evaluation split. Training can
+exit successfully while its accuracy gate fails.
+
+The committed baseline fails the 1% error gate and the offline predictor falls
+back to Tier 1. Ordinary CI uses this read-only replay command:
+
+```bash
+.venv/bin/puckworks-tools surrogate-check \
+  --model models/scalar-v1.json --dataset data/surrogates/scalar-v1.json
+```
+
+Supplying `--dataset` replays predictions and verifies stored error, coverage and
+qualification results. Add `--require-qualified` only for an explicit readiness
+gate; it exits 1 for the current baseline. Residual intervals describe simulator
+approximation error, with observed held-out coverage recorded separately.
+Espresso accuracy, physical uncertainty coverage and browser acceleration remain
+unvalidated. Report cold identity probes, warm compatibility checks, neural
+forward passes and physics fallback costs separately. See the
+[evaluation](docs/validation/m6-surrogate-validation.md) for the frozen result.
+
 ## Rendering performance measurements
 
 Version 0.9.1 provides a repeatable production-view benchmark. From `web/`, build once, then run:
@@ -124,7 +177,7 @@ Four GitHub Actions workflows run in `.github/workflows/`:
 | Workflow | Runs |
 |---|---|
 | `rust.yml` | rustfmt, clippy, tests, the WebAssembly build check and the cargo-deny licence check |
-| `python.yml` | builds the extension, then validates the registry, checks versions and the golden fixture, and runs pytest |
+| `python.yml` | builds the extension, then validates the registry, checks versions and the golden fixtures, replays the offline scalar model against its frozen dataset, and runs pytest |
 | `web.yml` | builds the engine, then lints, type-checks, tests and builds the app, checks licences and runs the smoke, offline/update and accessibility browser suites; on pull requests, and as the first stage of `pages.yml` |
 | `pages.yml` | on every push to `main`: runs `web.yml`, then deploys that exact build to GitHub Pages; set **Settings → Pages → Source** to **GitHub Actions** |
 

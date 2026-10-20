@@ -12,6 +12,7 @@ Subcommands:
 - ``m2-validate``: M2 chemistry accounting and fixed-assumption V7 comparisons;
 - ``m3-validate``: seeded scenario and mechanistic taste checks (not sensory validation);
 - ``community``: compare locally downloaded community shots with fixed model scenarios;
+- ``surrogate-*``: generate, train, inspect and evaluate an offline scalar emulator;
 - ``export [--check]``: presets and registry for the model crate (puckworks_tools.export);
 - ``check-versions [--release]``: the same version everywhere.
 
@@ -220,6 +221,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--root", type=Path, help="repository root (default: found from the current directory)"
     )
     sub = parser.add_subparsers(dest="command", required=True, metavar="COMMAND")
+
+    from .surrogate import add_commands as add_surrogate_commands
+
+    add_surrogate_commands(sub, common)
 
     p = sub.add_parser(
         "validate-registry",
