@@ -96,7 +96,7 @@ export function PinsPanel({
                   };
                   loadForm(form, 'Undo load');
                 }}
-                aria-label={`Load the recipe of ${pin.label}`}
+                aria-label={`Load recipe from ${pin.label}`}
               >
                 Load recipe
               </button>

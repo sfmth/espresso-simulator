@@ -2,6 +2,28 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.10.1] - 2026-10-19
+
+M6 accessibility fixes. Physics, calibration and all 218,221 golden numerical values
+remain unchanged.
+
+### Fixed
+- Explore camera orbit, zoom and reset are available from the keyboard, with an
+  explicit way to cancel frame-rate measurement. The timeline announces actual
+  seconds; selected cells and particles expose the values used for their colours.
+- Chart text readers cover every plotted sample and pinned run, including values
+  absent from the existing 11-row current-run table.
+- Journal actions identify their shot, focus the measurement form when opened,
+  and restore focus after save/delete. Editing the full recipe focuses Lab.
+- Initially invalid recipe sections open, filtered compound groups can be
+  collapsed, parameter override names identify the parameter, and recipe heading
+  levels and preset evidence groups have consistent semantics.
+- Production accessibility and keyboard regressions run alongside offline/update
+  checks in CI. Local Chrome audits pass 14 states with zero detected rule
+  violations and 30 keyboard/data/layout assertions; all 737 web tests pass.
+  Manual-review items remain in the report; assistive technology and
+  physical-device testing remain open.
+
 ## [0.10.0] - 2026-10-19
 
 M6.1: offline support. The simulator remains experimental; this release does not

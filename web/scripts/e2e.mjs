@@ -1081,7 +1081,12 @@ async function exploreChecks(page, shotPath) {
   const measure = panel.getByRole('button', { name: 'Measure frame rate', exact: true });
   const completedBenchmark = async (count) => {
     await measure.click();
+    await panel.getByRole('button', { name: 'Cancel measurement', exact: true }).focus();
     await measure.waitFor({ timeout: 180_000 });
+    check(
+      await measure.evaluate((element) => document.activeElement === element),
+      `natural ${count}-particle measurement completion restores focus from Cancel to Measure`,
+    );
     const output = await panel.locator('.explore-render-status output').textContent();
     check(/\d+\.\d fps/.test(output ?? ''), `measured ${count} particles: ${output}`);
     const report = await renderBenchmarkChecks(page, panel, Number(count));

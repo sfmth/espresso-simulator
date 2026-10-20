@@ -202,6 +202,10 @@ export function CompoundTable({
   const [query, setQuery] = useState('');
   const [family, setFamily] = useState('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [filteredExpansion, setFilteredExpansion] = useState<{
+    key: string;
+    groups: Record<string, boolean>;
+  }>({ key: '', groups: {} });
   if (!outcome) return <p className="note">The compound table appears after the first run.</p>;
   const summary = outcome.result.summary;
   const spec = outcome.build.spec;
@@ -226,6 +230,13 @@ export function CompoundTable({
   const families = [...new Set(displayed.map((s) => compoundGroup(metadata.get(s.id))))];
   const activeFamily = families.includes(family) ? family : '';
   const search = query.trim().toLocaleLowerCase();
+  const filtered = Boolean(search || activeFamily);
+  const filterKey = JSON.stringify([search, activeFamily]);
+  // A changed filter starts a fresh browsing context, even if the user later
+  // returns to an earlier query without toggling any intervening groups.
+  if (filteredExpansion.key !== filterKey) {
+    setFilteredExpansion({ key: filterKey, groups: {} });
+  }
   const visible = displayed.filter((s) => {
     const meta = metadata.get(s.id);
     return (
@@ -379,7 +390,11 @@ export function CompoundTable({
             families.map((name) => {
               const rows = visible.filter((s) => compoundGroup(metadata.get(s.id)) === name);
               if (rows.length === 0) return null;
-              const open = Boolean(search || activeFamily || expanded[name]);
+              const open = filtered
+                ? ((filteredExpansion.key === filterKey
+                    ? filteredExpansion.groups[name]
+                    : undefined) ?? true)
+                : Boolean(expanded[name]);
               return (
                 <tbody key={name}>
                   <tr className="compound-family">
@@ -387,7 +402,17 @@ export function CompoundTable({
                       <button
                         type="button"
                         aria-expanded={open}
-                        onClick={() => setExpanded((old) => ({ ...old, [name]: !open }))}
+                        onClick={() => {
+                          if (filtered) {
+                            setFilteredExpansion((old) => ({
+                              key: filterKey,
+                              groups: {
+                                ...(old.key === filterKey ? old.groups : {}),
+                                [name]: !open,
+                              },
+                            }));
+                          } else setExpanded((old) => ({ ...old, [name]: !open }));
+                        }}
                       >
                         {open ? '−' : '+'} {name.replaceAll('_', ' ')}{' '}
                         <span className="note">({rows.length})</span>

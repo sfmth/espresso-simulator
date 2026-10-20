@@ -57,6 +57,7 @@ Shell sessions that haven't run the `export` line need `$HOME/.cargo/bin` on `PA
 | Run the web checks | `cd web && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build && npm run licenses` |
 | Run the browser end-to-end test (uses the installed Google Chrome) | `cd web && npm run e2e` |
 | Check only offline installation and updates (production build) | `cd web && npm run e2e:offline` |
+| Audit production accessibility and keyboard workflows | `cd web && npm run e2e:a11y` |
 | Measure production Explore rendering (build first) | `cd web && node scripts/render-benchmark.mjs --backend auto --quality exact --counts 30000,150000,5000,25000 --trials 3 --dpr 1` |
 
 ## Offline builds
@@ -72,6 +73,21 @@ workers with HTTP caching disabled and a server that sends `no-store`, then disc
 the browser. It checks fresh navigation, computation, unvisited Explore code, journal
 import/export, failed installation and explicit multi-tab updates. Build/worker policy
 and client lifecycle tests run in `npm test`. See [the offline contract](docs/model/m6-offline.md).
+
+## Accessibility checks
+
+`npm run e2e:a11y` runs the production app under a repository subpath in installed
+Chrome. It opens lazy/expanded UI before auditing, checks real keyboard workflows,
+and saves `web/test-results/accessibility-checks.json` plus phone screenshots.
+`npm run e2e` and web CI run this alongside the smoke and offline/update suites.
+Do not suppress a rule to make the build pass. Inspect `incomplete` results and
+record their limits; a green automated audit does not establish WCAG conformance.
+
+The exact-pinned `axe-core` dependency is an MPL-2.0 **development tool**. Playwright
+injects it into the local test browser; app code does not import it and production
+assets/notices do not contain it. Production dependency checks remain unchanged.
+See [the keyboard contract](docs/model/m6-accessibility.md) for manual checks still
+needed.
 
 ## Rendering performance measurements
 
@@ -109,7 +125,7 @@ Four GitHub Actions workflows run in `.github/workflows/`:
 |---|---|
 | `rust.yml` | rustfmt, clippy, tests, the WebAssembly build check and the cargo-deny licence check |
 | `python.yml` | builds the extension, then validates the registry, checks versions and the golden fixture, and runs pytest |
-| `web.yml` | builds the engine, then lints, type-checks, tests and builds the app, checks licences and runs the browser test; on pull requests, and as the first stage of `pages.yml` |
+| `web.yml` | builds the engine, then lints, type-checks, tests and builds the app, checks licences and runs the smoke, offline/update and accessibility browser suites; on pull requests, and as the first stage of `pages.yml` |
 | `pages.yml` | on every push to `main`: runs `web.yml`, then deploys that exact build to GitHub Pages; set **Settings → Pages → Source** to **GitHub Actions** |
 
 ## The source link in the deployed site

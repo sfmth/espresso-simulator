@@ -432,7 +432,7 @@ export function MachineSection() {
       </div>
       <VentField machine={machine} set={set} presetVent={preset?.vent_headspace} />
 
-      <h4 className="subheading">Program</h4>
+      <h3 className="subheading">Program</h3>
       {preset && (
         <div className="field field-check">
           <div className="field-head">
@@ -465,7 +465,7 @@ export function MachineSection() {
           ))}
         </ol>
       )}
-      <h4 className="subheading">Pump</h4>
+      <h3 className="subheading">Pump</h3>
       <PumpEditor machine={machine} set={set} preset={preset} catalog={catalog} />
       {errors.machine && <p className="field-error">{errors.machine}</p>}
       <BuildNotes notes={notes.machine} stale={notesStale} />

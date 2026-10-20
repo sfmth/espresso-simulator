@@ -7,7 +7,7 @@
  * and the panels offer a table view of the same data. One y axis per chart:
  * quantities with different units go in separate charts (small multiples).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import { useChartTheme, type ChartTheme } from './chartTheme';
@@ -210,6 +210,10 @@ function enhanceLegend(u: uPlot, specs: readonly ChartSeriesSpec[]): void {
 }
 
 export function LineChart({ data, summary, ...config }: LineChartProps) {
+  const sampleId = useId();
+  const [selectedSample, setSelectedSample] = useState(0);
+  const sampleCount = data[0].length;
+  const sample = Math.min(selectedSample, Math.max(0, sampleCount - 1));
   const theme = useChartTheme();
   const container = useRef<HTMLDivElement>(null);
   const chart = useRef<uPlot | null>(null);
@@ -312,5 +316,47 @@ export function LineChart({ data, summary, ...config }: LineChartProps) {
     return () => observer.disconnect();
   }, [height]);
 
-  return <div ref={container} className="chart-canvas" />;
+  return (
+    <>
+      <div ref={container} className="chart-canvas" />
+      <details className="chart-readout">
+        <summary>Read chart values</summary>
+        {sampleCount > 0 ? (
+          <>
+            <label htmlFor={sampleId}>
+              {xLabel}: sample {sample + 1} of {sampleCount}
+            </label>
+            <input
+              id={sampleId}
+              type="range"
+              min={0}
+              max={sampleCount - 1}
+              step={1}
+              value={sample}
+              aria-label={`${xLabel} sample`}
+              aria-valuetext={`${formatX(data[0][sample])}, sample ${sample + 1} of ${sampleCount}`}
+              aria-describedby={`${sampleId}-values`}
+              onChange={(event) => setSelectedSample(Number(event.target.value))}
+            />
+            <div id={`${sampleId}-values`} aria-live="polite" aria-atomic="true">
+              <p>{formatX(data[0][sample])}</p>
+              <dl>
+                {series.map((spec, i) => {
+                  const value = data[i + 1]?.[sample];
+                  return (
+                    <div key={`${i}-${spec.label}`}>
+                      <dt>{spec.label}</dt>
+                      <dd>{value == null ? 'No value at this sample' : formatY(value)}</dd>
+                    </div>
+                  );
+                })}
+              </dl>
+            </div>
+          </>
+        ) : (
+          <p>No samples available.</p>
+        )}
+      </details>
+    </>
+  );
 }

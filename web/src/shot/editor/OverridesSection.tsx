@@ -41,11 +41,11 @@ function ParameterCard({ p, value }: { p: RegistryParameter; value: string | und
   return (
     <li className={`param-card${overridden ? ' param-card-overridden' : ''}`}>
       <section aria-labelledby={headingId}>
-        <h4 id={headingId} className="param-name">
+        <h3 id={headingId} className="param-name">
           {p.name}
           {p.symbol ? ` (${p.symbol})` : ''}
           {overridden && <span className="badge badge-caution">Overridden</span>}
-        </h4>
+        </h3>
         <p className="param-meta">
           <code>{p.id}</code> · {parameterValue(p)} · range {rangeText(p)} ·{' '}
           <EvidenceBadges p={p} />
@@ -61,7 +61,7 @@ function ParameterCard({ p, value }: { p: RegistryParameter; value: string | und
         <div className="param-override">
           <TextField
             path={path}
-            label={`Override${unit ? ` (${unit})` : ''}`}
+            label={`Override ${p.name}${unit ? ` (${unit})` : ''}`}
             value={value ?? ''}
             onChange={(text) => setOverride(p.id, text)}
             placeholder={sig(p.default, 6)}

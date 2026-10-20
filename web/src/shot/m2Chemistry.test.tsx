@@ -136,7 +136,64 @@ describe('M2 recipe and cup UI', () => {
     expect(screen.queryByText('Test compound 0')).toBeNull();
     expect(screen.getByText('Test compound 7')).toBeTruthy();
     expect(screen.getByText('4 of 8 tracked compounds.', { exact: false })).toBeTruthy();
+    const gas = screen.getByRole('button', { name: /Gas inventory/ });
+    expect(gas.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(gas);
+    expect(gas.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.queryByText('Test compound 7')).toBeNull();
+    fireEvent.click(gas);
+    expect(screen.getByText('Test compound 7')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Search compounds'), { target: { value: 'gas' } });
+    expect(gas.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(gas);
+    expect(screen.queryByText('Test compound 7')).toBeNull();
+    fireEvent.change(screen.getByLabelText('Search compounds'), { target: { value: 'K6' } });
+    expect(gas.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.change(screen.getByLabelText('Search compounds'), { target: { value: 'gas' } });
+    expect(gas.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(gas);
+    expect(screen.queryByText('Test compound 7')).toBeNull();
+    fireEvent.change(screen.getByLabelText('Search compounds'), { target: { value: '' } });
+    expect(screen.getByText('Test compound 0')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Search compounds'), { target: { value: 'gas' } });
+    expect(gas.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.change(screen.getByLabelText('Search compounds'), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText('Compound family'), {
+      target: { value: 'Gas inventory' },
+    });
+    const filteredGas = screen.getByRole('button', { name: /Gas inventory/ });
+    expect(filteredGas.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(filteredGas);
+    expect(filteredGas.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.queryByText('Test compound 7')).toBeNull();
+    fireEvent.click(filteredGas);
+    expect(screen.getByText('Test compound 7')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Search compounds'), { target: { value: 'no match' } });
     expect(screen.getByText('No compounds match these filters.')).toBeTruthy();
+  });
+
+  it('opens sections with errors present on the first editor render, leaving valid sections folded', () => {
+    const catalog = fixtureCatalog();
+    useShotStore.getState().patchForm('grinder', { preset: 'removed-preset' });
+    const validation = formToRecipe(useShotStore.getState().form, { catalog });
+    if (validation.ok) throw new Error('Expected the obsolete preset to be rejected.');
+    render(
+      <RecipeEditor
+        context={{
+          catalog,
+          errors: validation.errors,
+          notes: emptyRouting(),
+          notesStale: false,
+          build: null,
+          buildStale: false,
+        }}
+        onSubmit={() => {}}
+      />,
+    );
+    expect(document.getElementById('section-grinder')?.hasAttribute('open')).toBe(true);
+    const preset = screen.getByRole('combobox', { name: 'Grinder preset' });
+    expect(preset.getAttribute('aria-invalid')).toBe('true');
+    expect(screen.getByText(/Unknown preset "removed-preset"/)).toBeTruthy();
+    expect(document.getElementById('section-bean')?.hasAttribute('open')).toBe(false);
   });
 });

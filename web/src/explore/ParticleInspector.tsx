@@ -1,16 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import { useId } from 'react';
 import type { ParticleProfile } from './microstructure';
 export function ParticleInspector({
   profile,
   index,
   count,
   onSelect,
+  ey,
+  playing = false,
 }: {
   profile: ParticleProfile | null;
   index: number;
   count: number;
   onSelect: (index: number) => void;
+  ey: number | null;
+  playing?: boolean;
 }) {
+  const eyId = useId();
   const values = profile?.concentrationKgM3;
   const max = Math.max(1, ...(values ?? []));
   const points = profile
@@ -32,11 +38,19 @@ export function ParticleInspector({
           min={1}
           max={count}
           value={index + 1}
+          aria-describedby={eyId}
           onChange={(e) =>
             onSelect(Math.max(0, Math.min(count - 1, Math.round(Number(e.target.value)) - 1)))
           }
         />
       </label>
+      <p id={eyId} aria-live={playing ? 'off' : 'polite'} aria-atomic="true">
+        Particle {index + 1} extraction yield:{' '}
+        {ey !== null && Number.isFinite(ey)
+          ? `${(ey * 100).toFixed(2)}%`
+          : 'unavailable for this selected cell and snapshot'}
+        .
+      </p>
       {profile ? (
         <>
           <p>
@@ -74,13 +88,14 @@ export function ParticleInspector({
               </p>
               <details>
                 <summary>Shell data table</summary>
-                <div className="table-scroll">
+                <div className="table-wrap">
                   <table>
+                    <caption>Kernel shell data for particle {index + 1}</caption>
                     <thead>
                       <tr>
-                        <th>Kernel radius fraction</th>
-                        <th>Equivalent loading (kg/m³)</th>
-                        <th>Initial kernel loading remaining</th>
+                        <th scope="col">Kernel radius fraction</th>
+                        <th scope="col">Equivalent loading (kg/m³)</th>
+                        <th scope="col">Initial kernel loading remaining</th>
                       </tr>
                     </thead>
                     <tbody>

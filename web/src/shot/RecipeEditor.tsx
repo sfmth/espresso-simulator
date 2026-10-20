@@ -120,7 +120,7 @@ function Section({
   catalog: Catalog;
   errorCount: number;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => errorCount > 0);
   const previous = useRef(errorCount);
   const reveal = useShotStore((s) => s.reveal);
   useEffect(() => {
