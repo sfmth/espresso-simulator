@@ -65,12 +65,17 @@ class Container extends EventTarget {
 }
 const clients: OfflineClient[] = [];
 function setup(
-  overrides: { enabled?: boolean; supported?: boolean; buildId?: string | null } = {},
+  overrides: {
+    enabled?: boolean;
+    supported?: boolean;
+    buildId?: string | null;
+    online?: boolean;
+  } = {},
 ) {
   const sw = new Container(),
     events = new EventTarget(),
     reload = vi.fn();
-  let online = true;
+  let online = overrides.online ?? true;
   const client = createOfflineClient({
     enabled: overrides.enabled ?? true,
     pageUrl: 'https://example.com/app/index.html?x=1#main',
@@ -105,6 +110,18 @@ afterEach(() => {
 });
 
 describe('offline runtime', () => {
+  it.each([
+    [true, false],
+    [false, true],
+  ])('reconciles connection changes from %s to %s before listeners start', (initial, current) => {
+    const f = setup({ online: initial });
+    f.connect(current);
+    // The event predates start() and cannot have reached its listeners.
+    expect(f.client.getSnapshot().online).toBe(initial);
+    f.client.start();
+    expect(f.client.getSnapshot().online).toBe(current);
+  });
+
   it('rejects foreign bases without registering another origin', () => {
     expect(() => offlineUrls('https://example.com/app/', 'https://other.com/')).toThrow(
       'same-origin',

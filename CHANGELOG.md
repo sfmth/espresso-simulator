@@ -18,9 +18,12 @@ remain unchanged.
 - Initially invalid recipe sections open, filtered compound groups can be
   collapsed, parameter override names identify the parameter, and recipe heading
   levels and preset evidence groups have consistent semantics.
+- Connection status reconciles browser changes that happen before startup
+  listeners attach. The offline browser suite tests native connection signals
+  separately from its blocked-transport/cache assertions across Chrome versions.
 - Production accessibility and keyboard regressions run alongside offline/update
   checks in CI. Local Chrome audits pass 14 states with zero detected rule
-  violations and 30 keyboard/data/layout assertions; all 737 web tests pass.
+  violations and 30 keyboard/data/layout assertions; all 739 web tests pass.
   Manual-review items remain in the report; assistive technology and
   physical-device testing remain open.
 

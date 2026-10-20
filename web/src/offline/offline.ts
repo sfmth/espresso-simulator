@@ -276,6 +276,9 @@ export function createOfflineClient(env: OfflineEnvironment): OfflineClient {
       if (!env.enabled) return;
       env.events.addEventListener('online', connection);
       env.events.addEventListener('offline', connection);
+      // A connection event can occur after construction but before this page
+      // effect starts listening. Reconcile the snapshot after subscribing.
+      set({ online: env.isOnline() });
       if (!sw || !env.expectedBuildId) {
         set({
           phase: 'unavailable',

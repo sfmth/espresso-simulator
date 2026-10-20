@@ -70,3 +70,26 @@ Focused Rust/Python/cross-language checks and exact fixture audits preserve ever
 one of the 218,221 golden numerical values. Generated M0–M3 reports change only
 version/build/timestamp/hash metadata and timing observations; existing empirical
 limitations remain unchanged.
+
+## Follow-up in 0.10.1
+
+Connection state is resampled after listeners attach so a native online/offline
+event between client construction and startup cannot leave the UI stale. Both
+directions have regression tests; the offline runtime/UI count is now 22.
+
+The newly enabled CI suite uses Chrome 155, while the local browser is Chrome
+131. Genuine offline navigation, WASM/worker computation and denied uncached
+fetches passed before CI exposed an assumption that the navigator hint would
+remain offline across every target/navigation lifecycle. The test now records
+the browser version and native hint events, reapplies native connection hints on
+the existing page DevTools session, and waits for both `navigator.onLine` and the
+UI on online/offline transitions. New Chrome uses
+[`Network.overrideNetworkState`](https://chromedevtools.github.io/devtools-protocol/tot/Network/#method-overrideNetworkState);
+older Chrome falls back only when that command is unavailable. No navigator
+getters or synthetic connection events are injected. Overrides are cleared on
+the same session when restoring the connection.
+
+All blocked-server, disabled HTTP cache, rejected uncached-fetch, explicit-update
+and retained-release assertions remain independent of those advisory hints.
+The version stays 0.10.1 for this unmerged quality slice; all 218,221 golden
+numerical values remain unchanged.

@@ -30,6 +30,44 @@ const mime = {
   '.md': 'text/markdown',
 };
 
+/** Exercise native navigator state independently of the server's transport gate.
+ * New Chromium exposes a dedicated command; Chrome 131 needs the legacy one.
+ * No injected getters or synthetic online/offline events are used.
+ */
+async function browserHint(page, cdp, offline) {
+  const conditions = { offline, latency: 0, downloadThroughput: -1, uploadThroughput: -1 };
+  let method = 'Network.overrideNetworkState';
+  try {
+    await cdp.send(method, conditions);
+  } catch (error) {
+    if (!/overrideNetworkState.*(?:wasn't found|not found)/.test(String(error))) throw error;
+    method = 'Network.emulateNetworkConditions';
+    await cdp.send(method, conditions);
+  }
+  try {
+    await page.waitForFunction((expected) => navigator.onLine === !expected, offline, {
+      timeout: 5000,
+    });
+    await page.waitForFunction(
+      (expected) =>
+        document
+          .querySelector('[aria-label="Offline availability"]')
+          ?.textContent.includes('Offline.') === expected,
+      offline,
+      { timeout: 5000 },
+    );
+  } catch (error) {
+    const observed = await page.evaluate(() => ({
+      online: navigator.onLine,
+      text: document.querySelector('[aria-label="Offline availability"]')?.textContent,
+      events: window.__puckworksNetworkHints,
+      controller: navigator.serviceWorker.controller?.scriptURL,
+    }));
+    throw new Error(`${method} offline=${offline}: ${JSON.stringify(observed)}`, { cause: error });
+  }
+  check(true, `native ${offline ? 'offline' : 'online'} hint reaches the UI via ${method}`);
+}
+
 async function currentWorker(page) {
   return page.evaluate(
     () =>
@@ -99,7 +137,7 @@ async function update(page) {
   });
 }
 
-async function exerciseOffline(page, context, url, origin, requests, network) {
+async function exerciseOffline(page, context, url, origin, requests, network, cdp) {
   await waitPreview(page);
   const manifest = await page.locator('link[rel="manifest"]').getAttribute('href');
   const manifestData = await page.evaluate(async (href) => (await fetch(href)).json(), manifest);
@@ -194,10 +232,18 @@ async function exerciseOffline(page, context, url, origin, requests, network) {
     rejected.every(Boolean),
     'unlisted URLs and query variants are not served from the app cache',
   );
-  check(
-    (await page.getByLabel('Offline availability').textContent()).includes('Offline.'),
-    'connection status honestly reports offline operation',
+  console.log(
+    '  navigator after offline navigation:',
+    await page.evaluate(() => ({
+      online: navigator.onLine,
+      text: document.querySelector('[aria-label="Offline availability"]')?.textContent,
+      events: window.__puckworksNetworkHints,
+    })),
   );
+  // Transport failure is proven above. navigator.onLine is a separate advisory
+  // signal; exercise both native transitions on this final document explicitly.
+  await browserHint(page, cdp, false);
+  await browserHint(page, cdp, true);
   await page.screenshot({ path: join(webDir, 'test-results/e2e-offline.png'), fullPage: true });
   await page.screenshot({ path: join(webDir, 'test-results/e2e-offline-desktop.png') });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -212,6 +258,7 @@ async function exerciseOffline(page, context, url, origin, requests, network) {
   await page.setViewportSize({ width: 1280, height: 900 });
   network.blocked = false;
   await context.setOffline(false);
+  await browserHint(page, cdp, false);
   check(new URL(url).origin === origin, 'offline test origin remains local');
 }
 
@@ -275,11 +322,19 @@ async function main() {
         ? { executablePath: process.env.CHROME_PATH }
         : { channel: 'chrome' }),
     });
+    console.log(`offline e2e: Chromium ${browser.version()}`);
     // The substantive flow runs under the same repository subpath as GitHub Pages.
     const context = await browser.newContext({
       viewport: { width: 1280, height: 900 },
       locale: 'en-US',
       acceptDownloads: true,
+    });
+    await context.addInitScript(() => {
+      const events = [{ event: 'initial', online: navigator.onLine }];
+      window.__puckworksNetworkHints = events;
+      for (const event of ['online', 'offline', 'pageshow']) {
+        addEventListener(event, () => events.push({ event, online: navigator.onLine }));
+      }
     });
     const foreign = [],
       errors = [];
@@ -304,7 +359,7 @@ async function main() {
         url,
       'registration cannot control sibling repository paths',
     );
-    await exerciseOffline(page, context, url, origin, requests, network);
+    await exerciseOffline(page, context, url, origin, requests, network, cdp);
 
     // A failed install must leave the previously complete release operational.
     current = bDir;

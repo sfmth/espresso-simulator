@@ -24,7 +24,7 @@ Chrome **131.0.6778.139** on Linux, headless with SwiftShader, and axe-core
 |---|---|
 | Rendered production audit | **14 states, zero detected violations** |
 | Keyboard/data/layout workflow assertions | **30 passed** |
-| Web unit/integration/cross-language tests | **737 passed in 54 files** |
+| Web unit/integration/cross-language tests | **739 passed in 54 files** |
 | Manifest/installed extension release versions | All **0.10.1**, release check passed |
 | Golden fixtures | **218,221 values unchanged**, maximum difference **0** |
 | Natural benchmark completion with Cancel focused | Focus returns to Measure at **5k, 25k, 30k and 150k** particles |
