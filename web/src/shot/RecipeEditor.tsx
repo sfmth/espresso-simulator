@@ -159,9 +159,13 @@ function Section({
 export function RecipeEditor({
   context,
   onSubmit,
+  formLabel = 'Recipe',
+  submitLabel = 'Run this recipe',
 }: {
   context: EditorContextValue;
   onSubmit: () => void;
+  formLabel?: string;
+  submitLabel?: string;
 }) {
   const form = useShotStore((s) => s.form);
   const counts = new Map<string, number>();
@@ -173,7 +177,7 @@ export function RecipeEditor({
     <EditorContext.Provider value={context}>
       <form
         className="recipe-editor"
-        aria-label="Recipe"
+        aria-label={formLabel}
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
@@ -192,7 +196,7 @@ export function RecipeEditor({
         ))}
         {/* Enter in a field runs the recipe, like the Run button. */}
         <button type="submit" className="visually-hidden" tabIndex={-1}>
-          Run this recipe
+          {submitLabel}
         </button>
       </form>
     </EditorContext.Provider>

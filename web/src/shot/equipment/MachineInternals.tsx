@@ -2,6 +2,7 @@
 /** A cutaway whose editable parts share the recipe with the full machine editor. */
 import { useId, useRef, useState } from 'react';
 import type { PumpInput } from '../../engine/shotTypes';
+import { InlineConstraintControl } from '../../setup/ConstraintContext';
 import { findPreset, useEditorContext } from '../editor/context';
 import { changePumpMode, type PumpMode } from '../recipeForm';
 import { useShotStore } from '../shotStore';
@@ -24,12 +25,14 @@ const PARTS = [
 type Part = (typeof PARTS)[number][0];
 
 function InternalField({
+  path,
   label,
   value,
   onChange,
   error,
   hint,
 }: {
+  path: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -59,6 +62,7 @@ function InternalField({
           {error}
         </p>
       )}
+      <InlineConstraintControl path={path} />
     </div>
   );
 }
@@ -296,6 +300,7 @@ export function MachineInternals() {
               and PID control are not simulated.
             </p>
             <InternalField
+              path="machine.temperature_c"
               label="Brew temperature (°C)"
               value={machine.temperature_c}
               onChange={(temperature_c) => patch('machine', { temperature_c })}
@@ -367,6 +372,7 @@ export function MachineInternals() {
             ).map(([key, label, path, parameter]) => (
               <InternalField
                 key={key}
+                path={`machine.pump.${path}`}
                 label={label}
                 value={machine[key]}
                 onChange={(value) => patch('machine', { [key]: value })}
@@ -407,6 +413,7 @@ export function MachineInternals() {
               return (
                 <InternalField
                   key={parameter}
+                  path={`overrides.${parameter}`}
                   label={label}
                   value={form.overrides[parameter] ?? ''}
                   onChange={(value) => setOverride(parameter, value.trim() === '' ? null : value)}
@@ -435,6 +442,7 @@ export function MachineInternals() {
               />
               Internal three-way valve: vent the group after stop
             </label>
+            <InlineConstraintControl path="machine.vent_headspace" />
             <p className="machine-internal-note">
               A vented group releases stored water after the stop instead of continuing to drip
               through the puck.

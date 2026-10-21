@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 import { writeOfflineBuild } from './offline-build.mjs';
 import { completeInitialSetup } from './setup-helper.mjs';
+import { exerciseOfflineEquipmentInference } from './setup-inference-checks.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const report = [];
@@ -152,7 +153,7 @@ async function exerciseOffline(page, context, url, origin, requests, network, cd
     'install metadata includes both required icon sizes',
   );
 
-  await page.getByRole('tab', { name: 'Dial-in', exact: true }).click();
+  await page.getByRole('tab', { name: 'Dial in', exact: true }).click();
   const dial = page.locator('#panel-dial-in');
   await dial.getByText(/Journal saved on this device in IndexedDB/).waitFor();
   await dial.getByLabel('Bag and setup name').fill('Offline test bag');
@@ -166,6 +167,7 @@ async function exerciseOffline(page, context, url, origin, requests, network, cd
   await page.goto(`${url}index.html?offline-check=1#offline-check`);
   await waitReady(page);
   await waitPreview(page);
+  await page.getByRole('tab', { name: 'Lab', exact: true }).click();
   await page.locator('#shot-run').click();
   await page.waitForFunction(
     () => document.getElementById('shot-status')?.textContent?.startsWith('Up to date: tier 1'),
@@ -184,7 +186,7 @@ async function exerciseOffline(page, context, url, origin, requests, network, cd
     .waitFor({ timeout: 60000 });
   await explore.locator('.puck-canvas').waitFor({ timeout: 30000 });
   check(true, 'previously unopened Explore loads its lazy renderer and particle worker offline');
-  await page.getByRole('tab', { name: 'Dial-in', exact: true }).click();
+  await page.getByRole('tab', { name: 'Dial in', exact: true }).click();
   await dial.getByLabel('Bag and setup name').fill('Offline test bag');
   await dial.getByRole('rowheader', { name: /Offline retained shot/ }).waitFor();
   const [download] = await Promise.all([
@@ -203,6 +205,8 @@ async function exerciseOffline(page, context, url, origin, requests, network, cd
   });
   await dial.getByText(/Import complete/).waitFor();
   check(true, 'journal import also works without a connection');
+
+  await exerciseOfflineEquipmentInference(page, { check });
 
   await page.getByRole('link', { name: 'Privacy and browser storage' }).click();
   await page.getByRole('heading', { name: 'Privacy and browser storage', exact: true }).waitFor();
@@ -433,7 +437,7 @@ async function main() {
     );
     await page.reload();
     await waitReady(page);
-    await page.getByRole('tab', { name: 'Dial-in', exact: true }).click();
+    await page.getByRole('tab', { name: 'Dial in', exact: true }).click();
     await page.getByLabel('Bag and setup name').fill('Offline test bag');
     await page.getByRole('rowheader', { name: /Offline retained shot/ }).waitFor();
     check(true, 'journal survives a release update and fresh offline restart');

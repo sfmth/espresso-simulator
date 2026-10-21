@@ -8,11 +8,14 @@ import { EngineError, type CallOptions, type Engine, type Timed } from './engine
 import { EngineContext } from './engine/EngineContext';
 import type { SphereReleaseParams, SphereRunData } from './engine/types';
 import { TAU_MESSAGE } from './lab/sphereForm';
-import { resetAppStore } from './store';
+import { resetAppStore, useAppStore } from './store';
 import type { ReactNode } from 'react';
 
 // These exercise the kernel/navigation lifecycle; the real setup gate has its
 // own tests and production browser coverage.
+vi.mock('./setup/SetupEquipment', () => ({
+  SetupEquipment: ({ active }: { active: boolean }) => (active ? <h2>Set up equipment</h2> : null),
+}));
 vi.mock('./setup/EquipmentSetup', () => ({
   EquipmentSetupGate: ({ children }: { children: ReactNode }) => children,
 }));
@@ -127,17 +130,23 @@ describe('App', () => {
     vi.useFakeTimers();
     // The M0 verification panel lives in the Lab's second view.
     resetAppStore('verification');
+    useAppStore.getState().setMode('lab');
   });
   afterEach(() => {
     cleanup();
     vi.useRealTimers();
   });
 
-  it('renders the header, the three modes and the footer', () => {
+  it('renders the header, the four modes in workflow order and the footer', () => {
     renderApp(deferredEngine().engine);
     expect(screen.getByRole('heading', { level: 1, name: 'Puckworks' })).toBeTruthy();
     const modes = within(screen.getByRole('tablist', { name: 'Mode' })).getAllByRole('tab');
-    expect(modes.map((t) => t.textContent)).toEqual(['Dial-in', 'Lab', 'Explore']);
+    expect(modes.map((t) => t.textContent)).toEqual([
+      'Set up equipment',
+      'Dial in',
+      'Lab',
+      'Explore',
+    ]);
     expect(screen.getByRole('tab', { name: 'Lab' }).getAttribute('aria-selected')).toBe('true');
     expect(
       screen.getByRole('tab', { name: 'Kernel verification' }).getAttribute('aria-selected'),
@@ -334,6 +343,7 @@ describe('App', () => {
 
   it('opens the Lab on the shot lab, with the kernel verification one tab away', async () => {
     resetAppStore();
+    useAppStore.getState().setMode('lab');
     const { engine, calls } = deferredEngine();
     renderApp(engine);
     expect(screen.getByRole('tab', { name: 'Shot lab' }).getAttribute('aria-selected')).toBe(
@@ -352,24 +362,34 @@ describe('App', () => {
     expect(calls).toHaveLength(1);
   });
 
-  it('switches modes with the mouse and the keyboard', () => {
+  it('starts on equipment setup and moves through the tabs with mouse and keyboard', () => {
+    resetAppStore();
     renderApp(deferredEngine().engine);
-    fireEvent.click(screen.getByRole('tab', { name: 'Dial-in' }));
-    expect(screen.getByRole('heading', { name: 'Dial-in' })).toBeTruthy();
-    expect(screen.getByRole('tabpanel').getAttribute('id')).toBe('panel-dial-in');
+    const setup = screen.getByRole('tab', { name: 'Set up equipment' });
+    expect(setup.getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('heading', { name: 'Set up equipment' })).toBeTruthy();
+    expect(screen.getByRole('tabpanel').id).toBe('panel-setup');
 
-    const dialIn = screen.getByRole('tab', { name: 'Dial-in' });
+    fireEvent.click(screen.getByRole('tab', { name: 'Dial in' }));
+    expect(screen.getByRole('tabpanel').id).toBe('panel-dial-in');
+    const dialIn = screen.getByRole('tab', { name: 'Dial in' });
     fireEvent.keyDown(dialIn, { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(setup);
+    expect(setup.getAttribute('aria-selected')).toBe('true');
+
+    fireEvent.keyDown(setup, { key: 'ArrowLeft' });
     const explore = screen.getByRole('tab', { name: 'Explore' });
     expect(explore.getAttribute('aria-selected')).toBe('true');
     expect(document.activeElement).toBe(explore);
     expect(screen.getByRole('heading', { name: 'Explore' })).toBeTruthy();
 
     fireEvent.keyDown(explore, { key: 'Home' });
-    expect(screen.getByRole('tab', { name: 'Dial-in' }).getAttribute('aria-selected')).toBe('true');
-    fireEvent.keyDown(document.activeElement as Element, { key: 'ArrowRight' });
+    expect(setup.getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(setup, { key: 'ArrowRight' });
+    expect(dialIn.getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(dialIn, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: 'Lab' }).getAttribute('aria-selected')).toBe('true');
     expect(screen.getByRole('tab', { name: 'Lab' }).tabIndex).toBe(0);
-    expect(screen.getByRole('tab', { name: 'Explore' }).tabIndex).toBe(-1);
+    expect(explore.tabIndex).toBe(-1);
   });
 });

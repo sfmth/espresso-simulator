@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import axe from 'axe-core';
 import { chromium } from 'playwright-core';
 import { completeInitialSetup } from './setup-helper.mjs';
+import { exerciseSetupInference } from './setup-inference-checks.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const dist = resolve(webDir, 'dist');
@@ -130,15 +131,13 @@ try {
   const page = await context.newPage();
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(origin + prefix);
-  await audit(page, 'Required equipment setup · light');
+  await audit(page, 'Equipment welcome · light');
   await page.setViewportSize({ width: 320, height: 760 });
-  await noOverflow(page, 'Required equipment setup at 320px');
-  await audit(page, 'Required equipment setup · phone');
+  await noOverflow(page, 'Equipment welcome at 320px');
+  await audit(page, 'Equipment welcome · phone');
   await page.screenshot({ path: resolve(output, 'equipment-setup-phone.png'), fullPage: true });
   await page.setViewportSize({ width: 1280, height: 900 });
-  await completeInitialSetup(page, {
-    onStep: (step) => audit(page, `Required equipment setup step ${step} · light`),
-  });
+  await completeInitialSetup(page);
   await page.reload();
   await page.waitForFunction(
     () => document.getElementById('shot-status')?.textContent?.startsWith('Preview'),
@@ -152,6 +151,7 @@ try {
   );
   await page.keyboard.press('Enter');
   check(await focused(page.locator('#main')), 'Skip to content moves keyboard focus to main');
+  await activate(page.getByRole('tab', { name: 'Lab', exact: true }));
   await audit(page, 'Lab preview · light');
   for (const part of ['bean', 'grinder', 'machine', 'basket', 'prep', 'stop']) {
     await activate(page.locator(`[data-equipment-callout="${part}"]`));
@@ -305,11 +305,17 @@ try {
     'End selects and focuses the last mode tab',
   );
   await page.keyboard.press('Home');
-  const dial = page.locator('#panel-dial-in');
   check(
-    await focused(page.getByRole('tab', { name: 'Dial-in', exact: true })),
-    'Home selects and focuses the first mode tab',
+    await focused(page.getByRole('tab', { name: 'Set up equipment', exact: true })),
+    'Home selects and focuses the first equipment setup tab',
   );
+  await audit(page, 'Set up equipment · dark');
+  await page.keyboard.press('ArrowRight');
+  check(
+    await focused(page.getByRole('tab', { name: 'Dial in', exact: true })),
+    'Right arrow moves from equipment setup to Dial in',
+  );
+  const dial = page.locator('#panel-dial-in');
   await dial.getByText(/Journal saved on this device in IndexedDB/).waitFor();
   await audit(page, 'Dial-in · dark');
   await dial.getByLabel('Bag and setup name').fill('Keyboard bag');
@@ -451,7 +457,7 @@ try {
   await activate(page.getByRole('tab', { name: 'Kernel verification', exact: true }));
   await page.getByRole('heading', { name: 'Particle kernel verification' }).waitFor();
   await audit(page, 'Kernel verification · phone');
-  await activate(page.getByRole('tab', { name: 'Dial-in', exact: true }));
+  await activate(page.getByRole('tab', { name: 'Dial in', exact: true }));
   await noOverflow(page, 'Journal at 390px');
   await audit(page, 'Journal · phone');
   await page.setViewportSize({ width: 320, height: 700 });
@@ -469,13 +475,38 @@ try {
   await activate(page.getByRole('tab', { name: 'Explore', exact: true }));
   await noOverflow(page, 'Explore at 320px');
 
-  await activate(page.getByRole('tab', { name: 'Dial-in', exact: true }));
+  await activate(page.getByRole('tab', { name: 'Dial in', exact: true }));
   await activate(dial.getByRole('button', { name: /Delete shot.*Keyboard shot/ }));
   await page.waitForFunction(() => document.activeElement?.id === 'dial-journal-title');
   check(
     await focused(dial.locator('#dial-journal-title')),
     'deleting the final journal row restores focus to the journal heading',
   );
+
+  const setupContext = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    locale: 'en-US',
+    colorScheme: 'light',
+    serviceWorkers: 'block',
+    acceptDownloads: true,
+  });
+  try {
+    setupContext.on('request', (req) => {
+      if (!req.url().startsWith(origin + '/') && !req.url().startsWith('blob:'))
+        foreign.push(req.url());
+    });
+    const setupPage = await setupContext.newPage();
+    setupPage.on('pageerror', (error) => errors.push(error.message));
+    await setupPage.goto(origin + prefix);
+    await exerciseSetupInference(setupPage, {
+      check,
+      audit,
+      capture: (surface, name) =>
+        surface.screenshot({ path: resolve(output, `${name}.png`), fullPage: true }),
+    });
+  } finally {
+    await setupContext.close();
+  }
 
   await page.goto(origin + prefix + 'privacy.html');
   await audit(page, 'Privacy · phone');

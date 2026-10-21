@@ -5,6 +5,8 @@
 Accepted, 2026-10-19, following the owner's explicit request for equipment
 drawings, connected setting bubbles, cookies and required first-visit setup.
 
+The mandatory first-visit flow is superseded by [ADR 0019](0019-equipment-inference-before-dial-in.md), 2026-10-21. Visual controls and fixed-cookie restrictions remain in force.
+
 ## Context
 
 The full recipe editor has many controls with relationships that are easier to

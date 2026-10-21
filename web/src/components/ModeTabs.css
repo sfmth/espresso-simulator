@@ -1,0 +1,19 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+.app-header .mode-tabs {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.mode-tabs .mode-tab {
+  min-height: 2.75rem;
+}
+@media (max-width: 480px) {
+  .app-header .mode-tabs {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mode-tabs .mode-tab {
+    min-width: 0;
+    padding-inline: 0.5rem;
+  }
+}

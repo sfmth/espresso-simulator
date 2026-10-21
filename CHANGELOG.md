@@ -2,6 +2,46 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.12.0] - 2026-10-21
+
+### Added
+- **Set up equipment** before **Dial in**, **Lab** and **Explore**. The first-visit
+  popup offers setup or **Skip setup with defaults**. Setup reuses the illustrated
+  overview, detailed machine/grinder/basket views and full shared recipe editor.
+- Exact locks, bounded ranges and unknown states for supported physical settings
+  and internal registry coefficients. Unmarked values remain explicit assumptions;
+  recorded-only settings and numerical controls do not become inferred physics.
+- Direct recording of one to twelve observed shots, with per-shot known settings,
+  timing/weighing conventions and editable tolerances. Seeded multistart search
+  returns distinct alternatives, each replayed at Tier 1 against every shot.
+  Results show residuals and near misses; observed time is a replay condition.
+- Local setup alternatives, explicit activation, refinement, bounded JSON backup
+  and restore, cancellation and stale-result protection. Dial in can compare the
+  next shot across retained alternatives while preserving equipment differences.
+  Displayed machine temperature is saved separately from modeled inlet water.
+- A version-only replay confirms all 218,221 golden values, 58,804 M3 report
+  values and 13,036,890 native values across 464 frozen scalar samples are
+  unchanged. The existing surrogate remains unqualified; no retraining or new
+  real-shot accuracy claim is made. See the
+  [version receipt](docs/validation/setup-inference-version-replay.json) and
+  [workflow validation](docs/validation/setup-inference-validation.md).
+
+### Fixed
+- Grinder family/preset changes cannot reinterpret a constrained dial reference
+  gap. Per-shot categorical changes are checked against every shared locked or
+  inferred value, except explicitly overridden paths. Invalid or clamped native
+  candidates cannot be accepted as fits.
+- Equipment setup predictions do not receive the older automatic calibration
+  overlay. Earlier journal/calibration data remain available with their original
+  scorecard scope.
+- Only the active setup/Lab editor mounts its form, keeping label targets unique.
+  Picture controls, constraint inputs and alternative selection support narrow
+  screens and keyboard navigation.
+
+This is a bounded representative search within the configured recipe structure,
+not enumeration of all possible machines. Heater/PID physics and prospective
+accuracy validation for inferred setups remain later work.
+
 ## [0.11.1] - 2026-10-21
 
 ### Added

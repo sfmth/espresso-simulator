@@ -73,23 +73,19 @@ for rendered examples, native recipe checks and release replay evidence.
 
 ## First visit
 
-Before using the simulator, choose machine, grinder, basket and coffee. Generic
-presets are available for unlisted gear; choosing one explicitly records an
-assumption rather than identifying the actual machine. Then review dose, beverage
-target, temperature and grinder setting, and confirm the setup. The shared native
-builder must accept the recipe before setup finishes. Invalid combinations remain
-in the wizard with their errors.
+Version 0.12.0 replaces the mandatory chooser wizard with a welcome popup.
+**Set up equipment** opens the illustrated setup tab with the current recipe;
+Escape takes the same path. **Skip setup with defaults** explicitly validates and
+loads the standard recipe, records completion locally, and opens **Dial in**.
+Skipping is a deliberate recipe replacement with Undo. Existing complete setups
+restore their latest valid draft and open Dial in without the popup.
 
-Initial setup is required and Escape cannot dismiss it. **Equipment setup** opens
-a later review with a Cancel action. Existing drafts can be reviewed and custom
-gear/advanced fields retained. Deliberately choosing another preset follows the
-existing replacement rules. Confirmed choices update the same recipe used by Lab,
-Dial-in and Explore.
-
-If retained advanced inputs cannot pass validation, **Start with a clean recipe**
-resets only the wizard's working copy and requires the four equipment choices
-again. The original recipe remains intact until confirmation; cancelling a later
-equipment review also preserves it.
+The setup tab reuses the same overview, detailed parts and full Lab editor. It
+adds known/range/unknown controls, direct observed-shot entry and multiple-shot
+inference. Keeping an alternative does not select it; **Use … in Dial in** explicitly
+loads it. Users can also proceed with stated settings and assumptions. A setup-first
+visit is remembered as completed only when a setup is saved/activated; opening the
+tab alone does not silently accept defaults. See the [inference contract](setup-inference.md).
 
 ## Persistence and cookie
 

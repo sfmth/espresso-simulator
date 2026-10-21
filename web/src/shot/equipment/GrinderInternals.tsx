@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** Illustrated burr swaps edit the existing empirical grinder model. */
 import { useId } from 'react';
+import { InlineConstraintControl } from '../../setup/ConstraintContext';
 import type { GrinderPreset } from '../../engine/shotTypes';
 import { parseDecimal } from '../../lab/sphereForm';
 import { findPreset, useEditorContext } from '../editor/context';
@@ -122,6 +123,7 @@ function InternalField({
           {error}
         </p>
       )}
+      <InlineConstraintControl path={`grinder.${name}`} />
     </div>
   );
 }
@@ -272,6 +274,7 @@ export function GrinderInternals() {
           {errors['grinder.family']}
         </p>
       )}
+      <InlineConstraintControl path="grinder.family" />
       <p className="field-hint">
         Family differences use estimated particle-size coefficients. Tooth shapes here explain the
         parts; the simulator does not calculate cutting from their geometry. Flat low-fines and

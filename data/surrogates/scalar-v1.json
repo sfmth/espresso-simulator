@@ -27,7 +27,7 @@
       "time_s": 60.0
     }
   },
-  "digest": "907b970c9fedf4fdaaffbf95912453e7421b6821beaa8e397851e1bc66bde308",
+  "digest": "ad7c18341d8aa3c9fabbf1f9e55c94fa902010c33a20b836557d95d0f6489c19",
   "failures": [],
   "features": [
     {
@@ -7517,9 +7517,9 @@
     "ey"
   ],
   "teacher": {
-    "core_version": "0.11.1",
-    "embedded_behavior_sha256": "bb08fa3f6ab0a7de8d146a08e020c73f3f0b7aa8e055afd137913e478f2a5cd5",
-    "fingerprint": "3ef32958d2985a69195c52bc1d38ab7186e4d07dd2b51b3fe56f399eb1e73d7c",
+    "core_version": "0.12.0",
+    "embedded_behavior_sha256": "0c917aebf023ee14713bfb94b18e84823d67ded22e099e132d93b74ff858ebf2",
+    "fingerprint": "04b9dcb6246164ba7705ce23a0e4cb017b793b35617b64a70390fd36ccb75f35",
     "presets_sha256": "b25aa7145128a4b435cc4626300ce675d78d7e092ee838e181eb85086b878ea7",
     "probe_features": [
       [
@@ -7544,8 +7544,8 @@
     "registry_sha256": "bb1dbdd3ab0bea46ff8c43e3ab01e4788a4c5281cd309e57990d2ded7ecaf2e1",
     "schema": "puckworks.surrogate-teacher/1",
     "sources_sha256": {
-      "Cargo.lock": "ed62e23b78f9ce44d71115759b75ae97a4e4eebf03e55978a9d796a89f0d2726",
-      "Cargo.toml": "94656dcb4b98b0375151e3bad95992c184c44e1a65544f73ac71bf1f9b71d374",
+      "Cargo.lock": "1d47c91fc094ffaeb9c548223e62b433c9bc3d8e0b657c8845220848c7c0d23c",
+      "Cargo.toml": "b4dd2ae1dd2bb26cf20e818777da49f4b698007a69ad00e130862695ce8ed8da",
       "crates/puckcore-py/Cargo.toml": "0b99cbf929a7a86b2f11f4f29da70c9e5d6098e08565f6dc88d0b22c049861f9",
       "crates/puckcore-py/src/lib.rs": "556c18b0b06b570fa6e2cea44e4f4805f20e0d13c8b88cb6d61c74d385cbd764",
       "crates/puckcore-wasm/Cargo.toml": "7af83e0ba7d1e7c1382f4aef5fbe3a5eb5eba895c6402a3fece985978673bc90",
