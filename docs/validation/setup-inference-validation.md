@@ -48,6 +48,11 @@ Important new coverage includes:
 The complete suite also retains the earlier numerical, recipe-editor, journal,
 calibration, accessibility-helper and offline-build tests.
 
+The multi-shot search and native replay tests use a 30-second per-test timeout.
+On the shared CI runner their first run took about 6.2 and 7.0 seconds, exceeding
+the generic five-second test limit. Their simulation budgets and correctness
+assertions are unchanged; this timeout is not a runtime performance criterion.
+
 ## Production browser checks
 
 The smoke, offline/update and accessibility scripts exercise the production app

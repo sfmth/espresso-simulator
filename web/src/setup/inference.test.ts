@@ -160,6 +160,7 @@ describe('setup inference', () => {
     expect(result.notes.join(' ')).toContain('more free setup coordinates');
   });
 
+  // Two complete bounded searches are correctness checks, not a five-second hardware gate.
   it('uses known shot changes and additional observations to narrow a confounded setup', async () => {
     const single = await inferSetups(
       fakeEngine().engine,
@@ -189,7 +190,7 @@ describe('setup inference', () => {
     };
     expect(span(multiple)).toBeLessThan(span(single));
     expect(fake.calls.some((r) => r.grinder.setting === 300)).toBe(true);
-  });
+  }, 30_000);
 
   it('does not use recorded shot snapshot differences unless explicitly marked known', async () => {
     const fake = fakeEngine();
@@ -522,6 +523,7 @@ describe('setup inference', () => {
     ).rejects.toThrow('versions differ');
   });
 
+  // Native Tier 1 replay can exceed the default timeout on shared CI runners.
   it('replays one real native-engine observation with exact physical locks', async () => {
     const core = loadPuckcore();
     const realRecipe = { ...structuredClone(DEFAULT_RECIPE), stop: { time_s: 30 } };
@@ -558,5 +560,5 @@ describe('setup inference', () => {
     expect(result.candidates, JSON.stringify(result)).toHaveLength(1);
     expect(result.candidates[0].checks[0].residuals.yieldG).toBeCloseTo(0, 8);
     expect(result.candidates[0].checks[0].residuals.tdsPercent).toBeCloseTo(0, 8);
-  });
+  }, 30_000);
 });
