@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.11.0 · Last updated 2026-10-19 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support, an initial accessibility pass and offline scalar surrogate tooling are available. The first surrogate fails its accuracy gate. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
+*Version 0.11.1 · Last updated 2026-10-21 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support, an initial accessibility pass and offline scalar surrogate tooling are available. The first surrogate fails its accuracy gate. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -759,6 +759,14 @@ equipment details stay local, with the owner-authorized fixed completion cookie
 described in D9. Keyboard, phone, blocked-storage and return-visit checks accompany
 the existing offline browser regressions. See the
 [contract](model/m6-equipment.md) and [ADR 0018](decisions/0018-visual-equipment-and-first-visit-setup.md).
+
+**Detailed parts in 0.11.1.** Full machine, grinder and basket sections add SVG
+cutaways and replaceable parts linked to the recipe. Pump/valve, group thermal
+assumptions, empirical burr families, basket geometry and preparation layers use
+existing modeled inputs. Boiler/thermoblock comparisons are temporary diagrams;
+heater/PID dynamics and spatial temperature profiles remain unimplemented.
+Recorded-only diameter/RPM/top-paper choices retain their existing limits.
+See the [equipment contract](model/m6-equipment.md#detailed-parts).
 
 **Speed tooling slice in 0.11.0: frozen offline scalar experiment.** A synthetic
 464-shot Tier 1 dataset separates training, residual calibration, final tests and

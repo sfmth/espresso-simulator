@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-21",
+  "from_core_version": "0.11.0",
+  "frozen_experiment": {
+    "all_scales_training_metrics_calibration_quality_unchanged": true,
+    "browser_approved": false,
+    "changed_target_rows": 0,
+    "changed_weights": 0,
+    "dataset_without_teacher_and_digest_sha256": "fa1b976ece416fcee38b09f5d2afa1c61ce8711e0600ed7014277181e25b045e",
+    "model_without_teacher_and_linked_digests_sha256": "ecb793dee3f73105e2dd5db2bf286dc72407f1701a1c164b772929eb4a77fc5b",
+    "qualified_small_scope": false,
+    "split_counts": {
+      "boundary": 16,
+      "calibration": 64,
+      "test": 128,
+      "train": 256
+    }
+  },
+  "full_native_replay": {
+    "after_rows_sha256": "fce1986efd8d0012328d74276e43dfd124d164f6180ee2ddbad4ca3f72672005",
+    "before_rows_sha256": "fce1986efd8d0012328d74276e43dfd124d164f6180ee2ddbad4ca3f72672005",
+    "changed_numeric_values": 0,
+    "changed_rows": 0,
+    "numeric_values": 13036890,
+    "rows": 464
+  },
+  "golden_native_checks": {
+    "max_abs_difference": 0.0,
+    "shot_values": 214018,
+    "sphere_values": 4203,
+    "tolerance": 0.0
+  },
+  "identity": {
+    "after": {
+      "artifact_digest": "5056d7b63950300e7d2ca2117489d363d72e026f7db884e08c41fe368ef47a1a",
+      "dataset_digest": "907b970c9fedf4fdaaffbf95912453e7421b6821beaa8e397851e1bc66bde308",
+      "teacher_fingerprint": "3ef32958d2985a69195c52bc1d38ab7186e4d07dd2b51b3fe56f399eb1e73d7c"
+    },
+    "before": {
+      "artifact_digest": "f608f3e75a99edc2e1cea132b45fbd33fba65af163a75bb01ca47424b1e21b5b",
+      "dataset_digest": "afbf06041033af2eff6534181f5678c6d87973751c0087cfcaeca83ba8ba6716",
+      "teacher_fingerprint": "fd9ab86cc5ff2f853705b81d559c257e4aa56306828c0eb727c2498cee8f8c1d"
+    }
+  },
+  "limits": [
+    "This demonstrates release-version numerical parity for the frozen 464 samples and the golden fixtures, not scientific agreement with measured coffee.",
+    "The frozen baseline still fails its original accuracy gate; physics fallback and browser_approved:false are preserved.",
+    "Historical M0-M2 reports retain the version and date on which they were generated."
+  ],
+  "m3_current_cross_language_fixture": {
+    "changed_scientific_values": 0,
+    "checks": 19,
+    "excluded_top_level_fields": [
+      "core_version",
+      "created",
+      "solver_identity",
+      "timing_s"
+    ],
+    "failed_checks": 0,
+    "from_core_version": "0.11.0",
+    "numeric_values": 58804,
+    "regenerated_by": "puckworks-tools m3-validate",
+    "scientific_sha256": "84b6f95fb6bf3c3606930b9d55fbfcad762ec46a9af708886e94f182b5904963",
+    "to_core_version": "0.11.1"
+  },
+  "method": {
+    "compatibility_guard_changes": 0,
+    "digest": "SHA-256 over UTF-8 json.dumps(sort_keys=True,separators=(comma,colon),allow_nan=False).",
+    "equality": "Exact canonical finite JSON SHA-256 per row; every stored scalar target and TDS also checked by exact equality.",
+    "new_training_runs": 0,
+    "payload": "Complete build_shot_spec return and simulate_shot return; only top-level result.core_version removed.",
+    "rows": "All 464 original frozen coordinates replayed with both rebuilt native extensions."
+  },
+  "reason": "Shared release version bump for detailed equipment controls; no Rust solver, registry or preset change.",
+  "schema": "puckworks.release-numeric-replay/1",
+  "teacher_inputs": {
+    "changed_source_files": {
+      "Cargo.lock": {
+        "after": "ed62e23b78f9ce44d71115759b75ae97a4e4eebf03e55978a9d796a89f0d2726",
+        "before": "b1869660c6343ce495ce610a4f7b66d60058eadf911b01045cbeff9cd2c7b9bf",
+        "only_change": "0.11.0 to 0.11.1 release version"
+      },
+      "Cargo.toml": {
+        "after": "94656dcb4b98b0375151e3bad95992c184c44e1a65544f73ac71bf1f9b71d374",
+        "before": "94d1433f48f9841661d70fb9a6504a200d678ff5c46d0b13301f9a4f0b93feed",
+        "only_change": "0.11.0 to 0.11.1 release version"
+      }
+    },
+    "unchanged_presets_sha256": "b25aa7145128a4b435cc4626300ce675d78d7e092ee838e181eb85086b878ea7",
+    "unchanged_registry_sha256": "bb1dbdd3ab0bea46ff8c43e3ab01e4788a4c5281cd309e57990d2ded7ecaf2e1"
+  },
+  "to_core_version": "0.11.1"
+}

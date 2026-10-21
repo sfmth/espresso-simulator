@@ -236,4 +236,18 @@ describe('visual equipment editor', () => {
     expect(screen.getByLabelText('Dose (g)')).toBeTruthy();
     await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Dose (g)')));
   });
+
+  it('opens each detailed cutaway and puts keyboard focus at its start', async () => {
+    render(<EditorHarness />);
+    for (const [part, name] of [
+      ['machine', 'Open machine · parts and settings'],
+      ['grinder', 'Open grinder · burrs and settings'],
+      ['basket', 'Open portafilter · layers and baskets'],
+    ]) {
+      fireEvent.click(document.querySelector(`[data-equipment-callout="${part}"]`)!);
+      fireEvent.click(screen.getByRole('button', { name }));
+      await waitFor(() => expect(document.activeElement?.id).toBe(`${part}-internals`));
+      expect((document.getElementById(`section-${part}`) as HTMLDetailsElement).open).toBe(true);
+    }
+  });
 });

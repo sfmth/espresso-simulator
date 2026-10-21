@@ -19,6 +19,7 @@ import {
 } from '../recipeForm';
 import { useShotStore } from '../shotStore';
 import { findPreset, presetOptions, useEditorContext } from './context';
+import { MachineInternals } from '../equipment/MachineInternals';
 
 type Machine = RecipeForm['machine'];
 
@@ -370,6 +371,9 @@ export function MachineSection() {
 
   return (
     <>
+      <div id="machine-internals" tabIndex={-1}>
+        <MachineInternals />
+      </div>
       <SelectField
         path="machine.preset"
         label="Machine preset"

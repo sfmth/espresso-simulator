@@ -42,6 +42,20 @@ local record requires setup again; no account or server profile exists.
 
 ## Consequences
 
+### Detailed parts extension, 2026-10-21
+
+Use code-native SVG cutaways in the full machine, grinder and basket sections,
+reachable from the overview's Open controls. Part choices continue to use one
+recipe and existing conversion/validation. Replacing a burr family or basket
+retains an Undo; group controls edit their three existing overrides and can reset
+them with Undo. No new physical effect is inferred from a drawing: boiler/thermoblock
+comparison is temporary illustration, diameter/RPM and top paper keep their
+recorded-only semantics, and empirical burr coefficients remain distinct from
+schematic tooth geometry. Numerical replay demonstrates version-only parity;
+the frozen surrogate is not retrained or qualified by this interface change.
+
+### Existing setup and overview
+
 Both keyboard and pointer users can move between equipment and its controls.
 Every quick edit must use existing recipe conversion, preset-clearing and
 validation rules. Input errors must remain discoverable in the full editor.

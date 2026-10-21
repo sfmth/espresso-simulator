@@ -1,0 +1,151 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+.portafilter-internals {
+  min-width: 0;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.portafilter-internals h3 {
+  font-size: 1.15rem;
+  margin: 0.1rem 0 0.5rem;
+}
+.portafilter-internals header p,
+.portafilter-caption {
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.portafilter-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  font-size: 0.65rem !important;
+}
+.portafilter-internals > svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.portafilter-internals svg text {
+  fill: var(--ink);
+  stroke: none;
+  font: 14px var(--font);
+}
+.pf-axis {
+  stroke: var(--line);
+  stroke-dasharray: 4 6;
+}
+.pf-layer {
+  opacity: 0.65;
+  stroke-dasharray: 4 4;
+}
+.pf-layer.is-installed {
+  opacity: 1;
+  stroke: var(--accent);
+  stroke-dasharray: none;
+  fill: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+.pf-layer circle {
+  fill: var(--surface);
+  stroke-dasharray: none;
+}
+.pf-leader {
+  fill: none;
+}
+.pf-puck {
+  fill: var(--bed);
+}
+.pf-puck circle {
+  fill: var(--surface);
+  stroke: none;
+}
+.pf-basket {
+  stroke: var(--ink);
+  stroke-width: 4;
+}
+.pf-handle {
+  fill: var(--ink-2);
+}
+.pf-holes {
+  stroke: var(--accent);
+  stroke-dasharray: 3 6;
+}
+.pf-dual {
+  stroke: var(--accent);
+}
+.portafilter-caption {
+  margin: 0 0 0.7rem;
+  text-align: center;
+}
+.portafilter-layers,
+.portafilter-baskets {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  margin: 0.7rem 0;
+}
+.portafilter-internals button {
+  min-height: 44px;
+  white-space: normal;
+}
+.portafilter-layers button,
+.portafilter-baskets button,
+.portafilter-outlets button {
+  min-width: 0;
+  border: 1px solid var(--field-border);
+  border-radius: 0.65rem;
+  padding: 0.6rem;
+  color: var(--ink);
+  background: var(--page);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.portafilter-internals button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.portafilter-internals button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.portafilter-internals button small {
+  display: block;
+  color: var(--ink-2);
+  margin-top: 0.3rem;
+}
+.portafilter-baskets svg {
+  display: block;
+  width: 100%;
+  max-height: 65px;
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 3;
+  margin-bottom: 0.5rem;
+}
+.portafilter-baskets {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr));
+}
+.portafilter-outlets {
+  min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  margin: 0.7rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.portafilter-outlets legend {
+  font-size: 0.8rem;
+}
+.portafilter-internals > .button {
+  margin: 0.3rem 0.3rem 0.3rem 0;
+}

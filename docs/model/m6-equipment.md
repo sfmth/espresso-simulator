@@ -31,6 +31,46 @@ The vector illustration and leaders scale with the editor. Narrow screens show
 compact numbered bubbles and a full-width settings panel; the same labels remain
 available to assistive technology. No remote images or fonts are loaded.
 
+## Detailed parts
+
+**Open machine**, **Open grinder** and **Open portafilter** move from the overview
+bubbles into the corresponding full section and place keyboard focus on its
+cutaway. Opening the full section directly shows the same controls.
+
+The machine cutaway follows reservoir → pump → heater → group. Three connected
+bubbles expose heating layout, pump and group/valve settings. Boiler and thermoblock
+drawings compare layouts only: their view choice is not saved as a machine part
+and does not change the solver. The current model has constant inlet-water
+temperature, one shared thermal node and no heater recovery, PID or thermostat
+dynamics. Ideal/vibratory pump choices and curve fields change the actual recipe;
+the three-way valve changes the real post-stop vent flag.
+
+Group controls edit the existing basket/portafilter heat-capacity, preheat and
+cooling-time overrides. Their defaults come from the existing registry and machine
+preset, with estimated evidence; they do not specify a measured boiler.
+**Use existing group defaults** removes only those three overrides. Unrelated
+overrides remain intact and Undo restores previous custom values.
+
+The grinder shows two flat discs or a ring and cone, cutting faces and a gap
+indicator. Swapping a burr family changes the existing empirical family and
+preserves the resolved gap while clearing calibration/shape overrides belonging
+to the previous grinder. Undo restores the named grinder, measured PSD or custom
+configuration. A measured PSD does not identify burr geometry. Tooth shapes are
+schematic; family coefficients determine the modeled PSD. Diameter and RPM are
+recorded without a modeled effect.
+
+The portafilter separates the screen, top paper, puck, bottom paper and basket.
+Layer toggles edit the preparation inputs. Screen and bottom-paper effects remain
+estimated; top paper is recorded without an extraction effect. Basket cards show
+their actual wall-profile proportions, with layer spacing separated for clarity.
+Swapping an outlet first copies all preset geometry and coefficients into a custom
+basket. Custom profiles remain editable, malformed geometry is withheld, and Undo
+restores replaced baskets. All saved changes use the existing recipe/draft and
+setup persistence; heater-comparison state is temporary.
+
+See the [detailed-parts verification](../validation/m6-detailed-parts-validation.md)
+for rendered examples, native recipe checks and release replay evidence.
+
 ## First visit
 
 Before using the simulator, choose machine, grinder, basket and coffee. Generic

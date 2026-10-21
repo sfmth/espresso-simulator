@@ -1,16 +1,29 @@
 {
   "dataset": "scalar-v1.json",
-  "dataset_digest": "afbf06041033af2eff6534181f5678c6d87973751c0087cfcaeca83ba8ba6716",
+  "dataset_digest": "907b970c9fedf4fdaaffbf95912453e7421b6821beaa8e397851e1bc66bde308",
   "environment": {
     "numpy": "2.5.4",
     "python": "3.14.7",
     "scipy": "1.18.1"
   },
   "failed_rows": 0,
-  "file_sha256": "68fa4aedf2ee723df67eab02249cd5d9de949d01001f382fb5228713e3d19163",
+  "file_sha256": "d0020adfef5046248084990c5d9147038f075c706e76b9ede344b6d4edadee9a",
   "generation_command": ".venv/bin/puckworks-tools surrogate-generate --output data/surrogates/scalar-v1.json --train 256 --calibration 64 --test 128 --jobs 4 --seed 20261020",
   "generation_wall_time_s": 99.2,
   "generator_sha256": "368990e744599e09185435ab237eb7ceb6d138ce88f07f8f602ef6a3aa23f173",
+  "identity_refresh": {
+    "changed_frozen_rows": 0,
+    "changed_model_weights": 0,
+    "date": "2026-10-21",
+    "from_core_version": "0.11.0",
+    "new_training_runs": 0,
+    "prior_dataset_digest": "afbf06041033af2eff6534181f5678c6d87973751c0087cfcaeca83ba8ba6716",
+    "prior_model_artifact_digest": "f608f3e75a99edc2e1cea132b45fbd33fba65af163a75bb01ca47424b1e21b5b",
+    "prior_teacher_fingerprint": "fd9ab86cc5ff2f853705b81d559c257e4aa56306828c0eb727c2498cee8f8c1d",
+    "reason": "Shared release version bump for detailed equipment UI; solver, registry and presets unchanged.",
+    "replay_report": "../../docs/validation/m6-parts-version-replay.json",
+    "to_core_version": "0.11.1"
+  },
   "license": "GPL-2.0-or-later",
   "limits": [
     "Fixed four-control recipe family only.",
@@ -18,7 +31,7 @@
     "First frozen model failed qualification; no held-out-driven tuning.",
     "Wall time is a local observation, not a target-device or browser speed gate."
   ],
-  "model_artifact_digest": "f608f3e75a99edc2e1cea132b45fbd33fba65af163a75bb01ca47424b1e21b5b",
+  "model_artifact_digest": "5056d7b63950300e7d2ca2117489d363d72e026f7db884e08c41fe368ef47a1a",
   "origin": "Synthetic outputs generated locally by the Puckworks Tier 1 solver; no measured coffee shots or personal data.",
   "schema": "puckworks.surrogate-provenance/1",
   "source_module": "python/puckworks_tools/surrogate_data.py",
@@ -29,6 +42,6 @@
     "train": 256
   },
   "successful_rows": 464,
-  "teacher_fingerprint": "fd9ab86cc5ff2f853705b81d559c257e4aa56306828c0eb727c2498cee8f8c1d",
+  "teacher_fingerprint": "3ef32958d2985a69195c52bc1d38ab7186e4d07dd2b51b3fe56f399eb1e73d7c",
   "workers": 4
 }

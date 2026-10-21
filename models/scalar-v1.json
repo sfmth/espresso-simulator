@@ -5,7 +5,7 @@
     "kind": "tanh_mlp",
     "output_size": 3
   },
-  "artifact_digest": "f608f3e75a99edc2e1cea132b45fbd33fba65af163a75bb01ca47424b1e21b5b",
+  "artifact_digest": "5056d7b63950300e7d2ca2117489d363d72e026f7db884e08c41fe368ef47a1a",
   "base_recipe": {
     "basket": {
       "preset": "58-precision-18g"
@@ -871,16 +871,16 @@
     ]
   },
   "schema": "puckworks.scalar-surrogate/1",
-  "source_dataset_digest": "afbf06041033af2eff6534181f5678c6d87973751c0087cfcaeca83ba8ba6716",
+  "source_dataset_digest": "907b970c9fedf4fdaaffbf95912453e7421b6821beaa8e397851e1bc66bde308",
   "targets": [
     "shot_time_s",
     "beverage_mass_kg",
     "ey"
   ],
   "teacher": {
-    "core_version": "0.11.0",
-    "embedded_behavior_sha256": "964019f4638529542585ef0c6b5726a47a8cc9824cf1da1dc01dd34cdda9e176",
-    "fingerprint": "fd9ab86cc5ff2f853705b81d559c257e4aa56306828c0eb727c2498cee8f8c1d",
+    "core_version": "0.11.1",
+    "embedded_behavior_sha256": "bb08fa3f6ab0a7de8d146a08e020c73f3f0b7aa8e055afd137913e478f2a5cd5",
+    "fingerprint": "3ef32958d2985a69195c52bc1d38ab7186e4d07dd2b51b3fe56f399eb1e73d7c",
     "presets_sha256": "b25aa7145128a4b435cc4626300ce675d78d7e092ee838e181eb85086b878ea7",
     "probe_features": [
       [
@@ -905,8 +905,8 @@
     "registry_sha256": "bb1dbdd3ab0bea46ff8c43e3ab01e4788a4c5281cd309e57990d2ded7ecaf2e1",
     "schema": "puckworks.surrogate-teacher/1",
     "sources_sha256": {
-      "Cargo.lock": "b1869660c6343ce495ce610a4f7b66d60058eadf911b01045cbeff9cd2c7b9bf",
-      "Cargo.toml": "94d1433f48f9841661d70fb9a6504a200d678ff5c46d0b13301f9a4f0b93feed",
+      "Cargo.lock": "ed62e23b78f9ce44d71115759b75ae97a4e4eebf03e55978a9d796a89f0d2726",
+      "Cargo.toml": "94656dcb4b98b0375151e3bad95992c184c44e1a65544f73ac71bf1f9b71d374",
       "crates/puckcore-py/Cargo.toml": "0b99cbf929a7a86b2f11f4f29da70c9e5d6098e08565f6dc88d0b22c049861f9",
       "crates/puckcore-py/src/lib.rs": "556c18b0b06b570fa6e2cea44e4f4805f20e0d13c8b88cb6d61c74d385cbd764",
       "crates/puckcore-wasm/Cargo.toml": "7af83e0ba7d1e7c1382f4aef5fbe3a5eb5eba895c6402a3fece985978673bc90",

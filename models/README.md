@@ -25,6 +25,10 @@ deliberately preserved, rather than hidden by tuning on the final test set.
 
 The artifact was trained once with seed 20261020, fixed L2 penalty 1e-6 and
 2,000 L-BFGS-B iterations per member. All members reached the iteration limit.
+The 0.11.1 release refreshes teacher/provenance identities after exact native
+replay of all 464 original cases, retaining every weight, target and evaluation.
+The [version replay receipt](../docs/validation/m6-parts-version-replay.json)
+records the original and refreshed digests; no retraining was performed.
 Maximum final-mass errors are 1.287 g on the test set and 3.837 g at the boundary.
 See [all measured errors and coverage](../docs/validation/m6-surrogate-validation.md),
 [synthetic data provenance](../data/surrogates/README.md) and the

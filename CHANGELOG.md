@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.11.1] - 2026-10-21
+
+### Added
+- Detailed vector equipment views: open the machine for heating-layout, pump and
+  group/valve callouts; open the grinder for flat/conical burrs and replaceable
+  empirical families; open the portafilter for basket shapes, outlets and
+  screen/paper layers. Part choices edit the shared recipe with recovery/Undo
+  for replacements. All drawings support light/dark themes and narrow screens.
+- Explicit model boundaries: boiler/thermoblock comparison is an illustration,
+  group thermal controls use the existing registry inputs, burr geometry is
+  schematic, and diameter/RPM/top-paper inputs are recorded without invented
+  physical effects. PID and spatial temperature dynamics remain unimplemented.
+- Version-only native replay receipt: all 464 frozen scalar samples retain their
+  numerical outputs, weights and failed qualification; current identity metadata
+  is refreshed without retraining. All 218,221 golden values remain unchanged.
+
+### Fixed
+- Repeated Open/Go-to actions keep distinct reveal requests after focus moves,
+  so later sections open correctly. Burr swaps preserve the native 5 µm minimum
+  for direct and calibrated dial gaps, including zero/negative mapped gaps.
+
 ## [0.11.0] - 2026-10-19
 
 M6 offline scalar surrogate tooling. The browser continues to use physics; the

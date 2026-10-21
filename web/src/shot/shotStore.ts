@@ -157,6 +157,8 @@ export interface ShotState {
   undo: Undo | null;
   /** A request to open the editor where a field is and focus it. */
   reveal: { path: string; nonce: number } | null;
+  /** Sequence survives clearing a handled request so later reveals remain distinct. */
+  revealSeq: number;
   /** Things the editor did on its own that the user should know (e.g. dropped overrides). */
   notices: string[];
   livePreview: boolean;
@@ -265,6 +267,7 @@ function initialState(form: RecipeForm) {
     form,
     undo: null,
     reveal: null,
+    revealSeq: 0,
     notices: [],
     livePreview: true,
     check: null,
@@ -329,7 +332,10 @@ export const useShotStore = create<ShotState>()((set) => ({
     set((state) => ({ form: defaultForm(), undo: { form: state.form, label: 'Undo reset' } })),
   undoLast: () => set((state) => (state.undo ? { form: state.undo.form, undo: null } : {})),
   revealField: (path) =>
-    set((state) => ({ reveal: { path, nonce: (state.reveal?.nonce ?? 0) + 1 } })),
+    set((state) => ({
+      reveal: { path, nonce: state.revealSeq + 1 },
+      revealSeq: state.revealSeq + 1,
+    })),
   clearReveal: () => set({ reveal: null }),
   addNotice: (notice) => set((state) => ({ notices: [...state.notices, notice] })),
   dismissNotices: () => set({ notices: [] }),
