@@ -28,13 +28,20 @@
   font-weight: 700;
 }
 .machine-internal-stage {
-  position: relative;
-  margin: 3.3rem 0.25rem 3.6rem;
-  aspect-ratio: 600 / 360;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: 0.75rem 0.25rem;
+}
+.machine-internal-callouts {
+  display: contents;
 }
 .machine-internal-art {
+  grid-column: 1 / -1;
+  grid-row: 2;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 600 / 360;
   display: block;
   fill: none;
   stroke: var(--ink-2);
@@ -100,7 +107,8 @@
   stroke-width: 2.5;
 }
 .machine-internal-callout {
-  position: absolute;
+  min-width: 0;
+  max-width: 100%;
   min-height: 44px;
   padding: 0.45rem 0.65rem;
   font-size: 0.75rem;
@@ -122,17 +130,19 @@
   font-weight: 800;
 }
 .mi-callout-heating {
-  top: -2.8rem;
-  left: 50%;
-  transform: translateX(-50%);
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: center;
 }
 .mi-callout-pump {
-  top: calc(100% + 0.1rem);
-  left: 3%;
+  grid-column: 1;
+  grid-row: 3;
+  justify-self: start;
 }
 .mi-callout-group {
-  top: calc(100% + 0.1rem);
-  right: 3%;
+  grid-column: 2;
+  grid-row: 3;
+  justify-self: end;
 }
 .machine-internal-panel {
   padding: 1rem;
@@ -191,9 +201,6 @@
   min-height: 44px;
 }
 @container (max-width: 300px) {
-  .machine-internal-stage {
-    margin-bottom: 4.5rem;
-  }
   .machine-internal-heading {
     padding-inline: 0.75rem;
   }
@@ -201,12 +208,9 @@
     padding: 0.75rem;
   }
   .machine-internal-callout {
-    max-width: 46%;
     padding-inline: 0.4rem;
   }
   .mi-callout-heating {
-    max-width: 95%;
-    width: max-content;
     white-space: nowrap;
   }
 }

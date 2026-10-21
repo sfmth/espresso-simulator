@@ -19,6 +19,8 @@ All notable changes are recorded here. Versions follow semantic versioning. Whil
   is refreshed without retraining. All 218,221 golden values remain unchanged.
 
 ### Fixed
+- Internal machine callouts reserve their own layout rows, keeping wrapped
+  labels clear of the cutaway and controls on narrow screens.
 - Repeated Open/Go-to actions keep distinct reveal requests after focus moves,
   so later sections open correctly. Burr swaps preserve the native 5 µm minimum
   for direct and calibrated dial gaps, including zero/negative mapped gaps.

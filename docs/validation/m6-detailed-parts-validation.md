@@ -26,6 +26,9 @@ preparation inputs.
   error linkage and keyboard behavior. Reset/Undo restores thermal inputs without
   removing unrelated overrides; replacing burrs or baskets retains their full
   previous configuration for Undo.
+- Machine callouts use intrinsic grid rows, reserving space for wrapped labels.
+  The browser checks actual element boundaries at 320 px, preventing callouts
+  from covering the cutaway or the controls across font/browser differences.
 - Production offline/update checks pass under root and repository paths, including
   disconnected engine/Explore/journal workflows and returning setup. No page
   errors or foreign-origin requests were observed.

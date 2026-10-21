@@ -229,16 +229,25 @@ try {
     await activate(filterParts.locator(`[data-prep-part-choice="${layer}"]`));
   await page.setViewportSize({ width: 320, height: 760 });
   await noOverflow(page, 'Detailed equipment at 320px');
-  const calloutsClear = await machineParts.evaluate((element) => {
+  const calloutLayout = await machineParts.evaluate((element) => {
     const rect = (selector) => element.querySelector(selector).getBoundingClientRect();
     const art = rect('.machine-internal-art');
     const panel = rect('.machine-internal-panel');
-    return (
-      rect('.mi-callout-heating').bottom <= art.top + 1 &&
-      ['pump', 'group'].every((part) => rect(`.mi-callout-${part}`).bottom <= panel.top + 1)
-    );
+    return {
+      artTop: art.top,
+      panelTop: panel.top,
+      heatingBottom: rect('.mi-callout-heating').bottom,
+      pumpBottom: rect('.mi-callout-pump').bottom,
+      groupBottom: rect('.mi-callout-group').bottom,
+    };
   });
-  check(calloutsClear, 'Phone machine callouts clear the cutaway and its controls');
+  check(
+    calloutLayout.heatingBottom <= calloutLayout.artTop + 1 &&
+      [calloutLayout.pumpBottom, calloutLayout.groupBottom].every(
+        (bottom) => bottom <= calloutLayout.panelTop + 1,
+      ),
+    `Phone machine callouts clear the cutaway and its controls (${JSON.stringify(calloutLayout)})`,
+  );
   await audit(page, 'Detailed equipment · phone');
   await machineParts.screenshot({ path: resolve(output, 'parts-machine-phone.png') });
   await burrParts.screenshot({ path: resolve(output, 'parts-grinder-phone.png') });
