@@ -45,25 +45,27 @@ import { TastePanel } from './TastePanel';
 const DRAFT_SAVE_MS = 500;
 
 /** Standalone mounting retains the component's test/embedding contract. */
-function StandaloneShotLab() {
+function StandaloneShotLab({ active }: { active: boolean }) {
   const { retry } = useShotCatalog();
   const controls = useShotRun();
-  return <ShotLabView controls={controls} retryCatalog={retry} />;
+  return <ShotLabView controls={controls} retryCatalog={retry} active={active} />;
 }
-export function ShotLab() {
+export function ShotLab({ active = true }: { active?: boolean }) {
   const shared = useOptionalSharedShotRun();
   return shared ? (
-    <ShotLabView controls={shared} retryCatalog={shared.retryCatalog} />
+    <ShotLabView controls={shared} retryCatalog={shared.retryCatalog} active={active} />
   ) : (
-    <StandaloneShotLab />
+    <StandaloneShotLab active={active} />
   );
 }
 function ShotLabView({
   controls,
   retryCatalog: retry,
+  active,
 }: {
   controls: ShotRunControls;
   retryCatalog: () => void;
+  active: boolean;
 }) {
   const catalog = useShotStore((s) => s.catalog);
   const catalogError = useShotStore((s) => s.catalogError);
@@ -232,9 +234,11 @@ function ShotLabView({
               </button>
             </div>
           )}
-          <ErrorBoundary name="the recipe editor">
-            <RecipeEditor context={editorContext} onSubmit={run} />
-          </ErrorBoundary>
+          {active && (
+            <ErrorBoundary name="the recipe editor">
+              <RecipeEditor context={editorContext} onSubmit={run} />
+            </ErrorBoundary>
+          )}
         </div>
         <div className="results-column">
           <div className="run-bar">

@@ -9,13 +9,14 @@ import { create } from 'zustand';
 import type { SphereReleaseParams, SphereRunData } from './engine/types';
 import { DEFAULT_SPHERE_FORM, type SphereForm } from './lab/sphereForm';
 
-export type Mode = 'dial-in' | 'lab' | 'explore';
+export type Mode = 'setup' | 'dial-in' | 'lab' | 'explore';
 
 /** The Lab's views: the M1 shot lab, and the M0 particle-kernel verification. */
 export type LabView = 'shot' | 'verification';
 
 export const MODES: readonly { id: Mode; label: string }[] = [
-  { id: 'dial-in', label: 'Dial-in' },
+  { id: 'setup', label: 'Set up equipment' },
+  { id: 'dial-in', label: 'Dial in' },
   { id: 'lab', label: 'Lab' },
   { id: 'explore', label: 'Explore' },
 ];
@@ -60,7 +61,7 @@ export interface AppState {
 const INITIAL_RUN: SphereRunState = { status: 'idle', latest: null, error: null, announcement: '' };
 
 export const useAppStore = create<AppState>()((set) => ({
-  mode: 'lab',
+  mode: 'setup',
   labView: 'shot',
   sphereForm: DEFAULT_SPHERE_FORM,
   sphereRun: INITIAL_RUN,
@@ -98,7 +99,7 @@ export const useAppStore = create<AppState>()((set) => ({
 /** Restores the initial state (used by tests), optionally on another Lab view. */
 export function resetAppStore(labView: LabView = 'shot'): void {
   useAppStore.setState({
-    mode: 'lab',
+    mode: 'setup',
     labView,
     sphereForm: DEFAULT_SPHERE_FORM,
     sphereRun: INITIAL_RUN,
