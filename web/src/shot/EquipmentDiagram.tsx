@@ -651,12 +651,25 @@ export function EquipmentDiagram() {
               onClick={() => {
                 setActive(null);
                 useShotStore.getState().revealField(selected.path);
-                focusSoon([fieldId(selected.path), `section-${selected.id}-summary`], 10, () =>
-                  useShotStore.getState().clearReveal(),
+                focusSoon(
+                  [
+                    `${selected.id}-internals`,
+                    fieldId(selected.path),
+                    `section-${selected.id}-summary`,
+                  ],
+                  10,
+                  () => useShotStore.getState().clearReveal(),
                 );
               }}
             >
-              More {selected.title.toLowerCase()} settings <span aria-hidden="true">↓</span>
+              {selected.id === 'machine'
+                ? 'Open machine · parts and settings'
+                : selected.id === 'grinder'
+                  ? 'Open grinder · burrs and settings'
+                  : selected.id === 'basket'
+                    ? 'Open portafilter · layers and baskets'
+                    : `More ${selected.title.toLowerCase()} settings`}{' '}
+              <span aria-hidden="true">↓</span>
             </button>
           </>
         )}

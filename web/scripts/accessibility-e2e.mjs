@@ -159,6 +159,20 @@ try {
   }
   await page.keyboard.press('Escape');
 
+  for (const [part, name] of [
+    ['machine', 'Open machine · parts and settings'],
+    ['grinder', 'Open grinder · burrs and settings'],
+    ['basket', 'Open portafilter · layers and baskets'],
+  ]) {
+    await activate(page.locator(`[data-equipment-callout="${part}"]`));
+    await activate(page.getByRole('button', { name, exact: true }));
+    await page.waitForFunction((id) => document.activeElement?.id === id, `${part}-internals`);
+    check(
+      await focused(page.locator(`#${part}-internals`)),
+      `Open ${part} reveals its cutaway and moves keyboard focus`,
+    );
+    await activate(page.locator(`#section-${part} > summary`));
+  }
   for (const id of [
     'bean',
     'water',
@@ -172,6 +186,73 @@ try {
   ]) {
     await activate(page.locator(`#section-${id} > summary`));
   }
+  const machineParts = page.locator('.machine-internals');
+  await audit(page, 'Detailed machine · boiler layout');
+  await activate(machineParts.getByRole('button', { name: 'Thermoblock illustration' }));
+  await audit(page, 'Detailed machine · thermoblock layout');
+  await machineParts.screenshot({ path: resolve(output, 'parts-machine-desktop.png') });
+  await activate(machineParts.locator('[data-machine-internal-callout="pump"]'));
+  await machineParts.getByLabel('Internal pump model', { exact: true }).selectOption('vibratory');
+  await audit(page, 'Detailed machine · vibratory pump');
+  await machineParts.getByLabel('Internal pump model', { exact: true }).selectOption('preset');
+  await activate(machineParts.locator('[data-machine-internal-callout="group"]'));
+  await machineParts
+    .getByLabel('Internal Group thermal mass (water-equivalent g)', { exact: true })
+    .fill('70');
+  await audit(page, 'Detailed machine · thermal assembly');
+  await activate(machineParts.getByRole('button', { name: 'Use existing group defaults' }));
+  await activate(machineParts.getByRole('button', { name: 'Undo group assembly change' }));
+  check(
+    (await machineParts
+      .getByLabel('Internal Group thermal mass (water-equivalent g)', { exact: true })
+      .inputValue()) === '70',
+    'Undo restores custom group assumptions after a reset',
+  );
+  await activate(machineParts.getByRole('button', { name: 'Use existing group defaults' }));
+  const burrParts = page.locator('.grinder-internals');
+  for (const family of ['flat-unimodal', 'flat-traditional', 'conical']) {
+    await activate(burrParts.locator(`[data-burr-family="${family}"]`));
+    await audit(page, `Detailed burr family · ${family}`);
+    if (family === 'conical')
+      await burrParts.screenshot({ path: resolve(output, 'parts-grinder-desktop.png') });
+    await activate(burrParts.getByRole('button', { name: 'Undo burr swap' }));
+  }
+  const filterParts = page.locator('.portafilter-internals');
+  for (const layer of ['puck_screen', 'paper_top', 'paper_bottom'])
+    await activate(filterParts.locator(`[data-prep-part-choice="${layer}"]`));
+  await audit(page, 'Detailed portafilter · installed layers');
+  await activate(filterParts.getByRole('button', { name: 'Dual wall', exact: true }));
+  await audit(page, 'Detailed portafilter · dual-wall basket');
+  await filterParts.screenshot({ path: resolve(output, 'parts-portafilter-desktop.png') });
+  await activate(filterParts.getByRole('button', { name: 'Undo basket part change' }));
+  for (const layer of ['puck_screen', 'paper_top', 'paper_bottom'])
+    await activate(filterParts.locator(`[data-prep-part-choice="${layer}"]`));
+  await page.setViewportSize({ width: 320, height: 760 });
+  await noOverflow(page, 'Detailed equipment at 320px');
+  const calloutLayout = await machineParts.evaluate((element) => {
+    const rect = (selector) => element.querySelector(selector).getBoundingClientRect();
+    const art = rect('.machine-internal-art');
+    const panel = rect('.machine-internal-panel');
+    return {
+      artTop: art.top,
+      panelTop: panel.top,
+      heatingBottom: rect('.mi-callout-heating').bottom,
+      pumpBottom: rect('.mi-callout-pump').bottom,
+      groupBottom: rect('.mi-callout-group').bottom,
+    };
+  });
+  check(
+    calloutLayout.heatingBottom <= calloutLayout.artTop + 1 &&
+      [calloutLayout.pumpBottom, calloutLayout.groupBottom].every(
+        (bottom) => bottom <= calloutLayout.panelTop + 1,
+      ),
+    `Phone machine callouts clear the cutaway and its controls (${JSON.stringify(calloutLayout)})`,
+  );
+  await audit(page, 'Detailed equipment · phone');
+  await machineParts.screenshot({ path: resolve(output, 'parts-machine-phone.png') });
+  await burrParts.screenshot({ path: resolve(output, 'parts-grinder-phone.png') });
+  await filterParts.screenshot({ path: resolve(output, 'parts-portafilter-phone.png') });
+  await page.setViewportSize({ width: 1280, height: 900 });
   const help = page.getByRole('button', { name: 'What is Roast level?', exact: true });
   await activate(help);
   check(
@@ -200,8 +281,13 @@ try {
     'native chart sample control reads an intermediate time with arrow keys',
   );
   const textValues = await chart.locator('.chart-readout dl').innerText();
+  const pinnedLabel = await chart
+    .locator('.u-legend .u-label')
+    .filter({ hasText: /^Run / })
+    .first()
+    .innerText();
   check(
-    /Run 1/.test(textValues) && (await chart.locator('.chart-readout dd').count()) >= 2,
+    textValues.includes(pinnedLabel) && (await chart.locator('.chart-readout dd').count()) >= 2,
     'chart text readout includes the current and pinned runs',
   );
   await audit(page, 'Chart sample and pinned overlay · light');

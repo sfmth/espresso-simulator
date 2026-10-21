@@ -26,6 +26,7 @@ import {
 } from '../recipeForm';
 import { useShotStore } from '../shotStore';
 import { findPreset, presetOptions, useEditorContext } from './context';
+import { GrinderInternals } from '../equipment/GrinderInternals';
 
 const METHOD_LABELS: Record<string, string> = {
   dry_laser: 'Laser diffraction, dry',
@@ -137,6 +138,9 @@ export function GrinderSection() {
 
   return (
     <>
+      <div id="grinder-internals" tabIndex={-1}>
+        <GrinderInternals />
+      </div>
       <RadioGroup<GrinderMode>
         name="grinder.mode"
         legend="Describe the grinder by"

@@ -15,6 +15,7 @@ import { profileRow, shiftedText, type BasketMode, type RecipeForm } from '../re
 import { parseDecimal } from '../../lab/sphereForm';
 import { useShotStore } from '../shotStore';
 import { findPreset, presetOptions, useEditorContext } from './context';
+import { PortafilterInternals } from '../equipment/PortafilterInternals';
 
 type Basket = RecipeForm['basket'];
 
@@ -200,6 +201,9 @@ export function BasketSection() {
 
   return (
     <>
+      <div id="basket-internals" tabIndex={-1}>
+        <PortafilterInternals />
+      </div>
       <RadioGroup<BasketMode>
         name="basket.mode"
         legend="Basket"

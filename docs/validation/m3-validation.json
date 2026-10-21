@@ -1,11 +1,11 @@
 {
   "schema": "puckworks.m3-validation/1",
-  "created": "2026-10-19",
-  "core_version": "0.11.0",
+  "created": "2026-10-21",
+  "core_version": "0.11.1",
   "solver_identity": {
-    "puckcore_version": "0.11.0",
-    "extension_sha256": "47c0ef360cca3e2e",
-    "extension_built": "2026-10-19T19:15:41-07:00",
+    "puckcore_version": "0.11.1",
+    "extension_sha256": "6e63efa8b50dc3ba",
+    "extension_built": "2026-10-21T00:44:27-07:00",
     "sources_sha256": {
       "crates/puckcore/src": "d57f6df152239716",
       "crates/puckmodel/src": "2bd9747974cfd7fb",
@@ -14,7 +14,7 @@
       "data/chemistry": "6dd11d8f1a08ce38"
     },
     "files_sha256": {
-      "Cargo.lock": "b1869660c6343ce4"
+      "Cargo.lock": "ed62e23b78f9ce44"
     },
     "python": {
       "version": "3.14.7",
@@ -279,16 +279,16 @@
     }
   ],
   "timing_s": {
-    "central_tier1": 0.7633397332392633,
-    "central_tier0": 0.01597291324287653,
-    "ensemble_unknown": 0.2087960010394454,
-    "ensemble_fixed": 0.20815128972753882,
-    "ensemble_measured": 0.20979809202253819,
-    "ensemble_unknown_replay": 0.20863927574828267,
-    "chemistry_disabled": 0.3781649200245738,
-    "no_beverage": 0.005857011768966913,
-    "alkalinity_low": 0.7608487522229552,
-    "alkalinity_high": 0.7628374989144504
+    "central_tier1": 0.7811632337979972,
+    "central_tier0": 0.016430018935352564,
+    "ensemble_unknown": 0.21137235220521688,
+    "ensemble_fixed": 0.221047755330801,
+    "ensemble_measured": 0.20846343832090497,
+    "ensemble_unknown_replay": 0.20840051071718335,
+    "chemistry_disabled": 0.3762448290362954,
+    "no_beverage": 0.005792893003672361,
+    "alkalinity_low": 0.7740358021110296,
+    "alkalinity_high": 0.7806206326931715
   },
   "scenario_widths": [
     {
