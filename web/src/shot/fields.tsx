@@ -7,6 +7,7 @@
  * name a path can be matched to their input.
  */
 import { useState, type ReactNode } from 'react';
+import { InlineConstraintControl } from '../setup/ConstraintContext';
 import { GLOSSARY } from './glossary';
 
 /** The DOM id of the control for a recipe path. */
@@ -138,6 +139,7 @@ export function TextField({
         onChange={(event) => onChange(event.target.value)}
       />
       <Messages id={id} error={error} hint={hint} />
+      <InlineConstraintControl path={path} />
     </div>
   );
 }
@@ -192,6 +194,7 @@ export function SelectField({
         ))}
       </select>
       <Messages id={id} error={error} hint={hint} />
+      <InlineConstraintControl path={path} />
     </div>
   );
 }
@@ -223,6 +226,7 @@ export function CheckField({ path, label, checked, onChange, hint, term }: Check
       </div>
       {help.text}
       <Messages id={id} hint={hint} />
+      <InlineConstraintControl path={path} />
     </div>
   );
 }

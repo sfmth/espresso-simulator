@@ -30,6 +30,7 @@ import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 import { completeInitialSetup } from './setup-helper.mjs';
+import { exerciseSetupInference } from './setup-inference-checks.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const SUB_PATH = '/puckworks-e2e/';
@@ -380,9 +381,9 @@ async function renderClockRecoveryChecks(page, { requests, workers, errors }) {
 }
 
 async function dialInChecks(page, shotPath) {
-  await page.getByRole('tab', { name: 'Dial-in' }).click();
+  await page.getByRole('tab', { name: 'Dial in' }).click();
   const dial = page.locator('#panel-dial-in');
-  await dial.getByRole('heading', { name: 'Dial-in', exact: true }).waitFor();
+  await dial.getByRole('heading', { name: 'Dial in', exact: true }).waitFor();
   await dial.getByText(/Journal saved on this device in IndexedDB/).waitFor();
   await dial.getByLabel('Bag and setup name').fill('Browser smoke bag');
   await dial.getByLabel('Shot name', { exact: true }).fill('Prospective browser shot');
@@ -411,7 +412,7 @@ async function dialInChecks(page, shotPath) {
     'journal export retains the recipe, immutable forecast, later observation and personal rating',
   );
   await page.reload();
-  await page.getByRole('tab', { name: 'Dial-in' }).click();
+  await page.getByRole('tab', { name: 'Dial in' }).click();
   await dial.getByLabel('Bag and setup name').fill('Browser smoke bag');
   await dial.getByRole('table', { name: 'Shot journal' }).waitFor({ timeout: 30_000 });
   check(
@@ -447,7 +448,7 @@ async function dialInChecks(page, shotPath) {
   const staleTab = await page.context().newPage();
   try {
     await staleTab.goto(page.url());
-    await staleTab.getByRole('tab', { name: 'Dial-in' }).click();
+    await staleTab.getByRole('tab', { name: 'Dial in' }).click();
     await staleTab.getByText(/Journal saved on this device in IndexedDB/).waitFor();
     await staleTab.getByLabel('Bag and setup name').fill('Browser smoke bag');
     await dial.getByRole('button', { name: 'Predict and save before pulling' }).click();
@@ -531,6 +532,7 @@ async function dialInChecks(page, shotPath) {
 }
 
 async function shotLabChecks(page, pkg, shot) {
+  await page.getByRole('tab', { name: 'Lab', exact: true }).click();
   const lab = page.locator('#lab-panel-shot');
   const status = page.locator('#shot-status');
   const waitForStatus = (prefix, timeout = 30_000) =>
@@ -1457,22 +1459,28 @@ async function main() {
 
     console.log(`e2e: ${url} in ${browser.browserType().name()} ${browser.version()}`);
     const initialResponse = await page.goto(url);
-    const setup = page.getByRole('dialog', { name: 'Set up your equipment', exact: true });
+    const setup = page.getByRole('dialog', { name: 'Welcome to Puckworks', exact: true });
     await setup.waitFor({ state: 'visible', timeout: 30000 });
-    await setup.getByRole('combobox', { name: 'Your machine', exact: true }).waitFor();
-    const untouchedMachine = await setup
-      .getByRole('combobox', { name: 'Your machine', exact: true })
-      .inputValue();
-    await setup.getByRole('button', { name: 'Next: starting shot', exact: true }).click();
     check(
-      untouchedMachine === '' &&
-        (await setup.getByRole('heading', { name: /Step 1 of 3/ }).isVisible()) &&
-        (await setup.getByRole('alert').isVisible()),
-      'first visit requires explicit equipment choices',
+      (await setup.getByRole('button', { name: 'Set up equipment', exact: true }).isVisible()) &&
+        (await setup
+          .getByRole('button', { name: 'Skip setup with defaults', exact: true })
+          .isVisible()),
+      'first visit offers equipment setup or an explicit defaults choice',
     );
-    await page.keyboard.press('Escape');
-    check(await setup.isVisible(), 'Escape cannot bypass required first-visit setup');
     await setup.screenshot({ path: shotPath('e2e-setup-first-visit') });
+    await page.keyboard.press('Escape');
+    await setup.waitFor({ state: 'hidden' });
+    await page.locator('#panel-setup .equipment-diagram').waitFor({ timeout: 30000 });
+    check(
+      (await page
+        .getByRole('tab', { name: 'Set up equipment', exact: true })
+        .getAttribute('aria-selected')) === 'true' &&
+        !(await context.cookies(url)).some((cookie) => cookie.name === 'puckworks_setup_v1'),
+      'Escape opens illustrated setup without silently accepting defaults or persisting completion',
+    );
+    // Opening setup alone is session-only; the explicit defaults path is also checked.
+    await page.reload();
     await completeInitialSetup(page);
     const setupCookies = (await context.cookies(url)).filter(
       (cookie) => cookie.name === 'puckworks_setup_v1',
@@ -1560,10 +1568,17 @@ async function main() {
     await page.screenshot({ path: shotPath('e2e-verification'), fullPage: true });
 
     // Tabs.
-    await page.getByRole('tab', { name: 'Dial-in' }).click();
+    await page.getByRole('tab', { name: 'Dial in' }).click();
     check(
-      await page.getByRole('heading', { name: 'Dial-in', exact: true }).isVisible(),
-      'Dial-in opens its local journal and calibration workflow',
+      await page.getByRole('heading', { name: 'Dial in', exact: true }).isVisible(),
+      'Dial in opens its recipe and local journal workflow',
+    );
+    await page.keyboard.press('ArrowLeft');
+    check(
+      (await page
+        .getByRole('tab', { name: 'Set up equipment', exact: true })
+        .getAttribute('aria-selected')) === 'true',
+      'arrow keys move from Dial in to Set up equipment',
     );
     await page.keyboard.press('ArrowLeft');
     check(
@@ -1587,6 +1602,25 @@ async function main() {
     );
     check(overflow <= 0, `no horizontal scrolling at 390 px (overflow ${overflow} px)`);
     await page.screenshot({ path: shotPath('e2e-phone-dark'), fullPage: true });
+
+    const setupContext = await browser.newContext({
+      viewport: { width: 1280, height: 900 },
+      locale: 'en-US',
+      acceptDownloads: true,
+    });
+    try {
+      setupContext.on('request', (request) => requests.push(request.url()));
+      const setupPage = await setupContext.newPage();
+      setupPage.on('pageerror', (error) => errors.push(error.message));
+      await setupPage.goto(url);
+      await exerciseSetupInference(setupPage, {
+        check,
+        capture: (surface, name) =>
+          surface.screenshot({ path: shotPath(`e2e-${name}`), fullPage: true }),
+      });
+    } finally {
+      await setupContext.close();
+    }
 
     // Privacy: every request stayed on this origin. The audit sees the workers' own
     // requests too (the worker scripts and the WebAssembly they fetch).

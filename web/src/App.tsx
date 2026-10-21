@@ -10,6 +10,7 @@ import { ShotRunProvider } from './shot/ShotRunContext';
 import { Explore } from './explore/Explore';
 import { OfflineStatus } from './offline/OfflineStatus';
 import { EquipmentSetupGate } from './setup/EquipmentSetup';
+import { SetupEquipment } from './setup/SetupEquipment';
 import { useAppStore, type LabView, type Mode } from './store';
 
 function TabPanel({ mode, active, children }: { mode: Mode; active: Mode; children: ReactNode }) {
@@ -28,7 +29,7 @@ function TabPanel({ mode, active, children }: { mode: Mode; active: Mode; childr
   );
 }
 
-function Lab() {
+function Lab({ active }: { active: boolean }) {
   const view = useAppStore((s) => s.labView);
   const setView = useAppStore((s) => s.setLabView);
   return (
@@ -39,7 +40,7 @@ function Lab() {
       value={view}
       onChange={setView}
       tabs={[
-        { id: 'shot', label: 'Shot lab', render: () => <ShotLab /> },
+        { id: 'shot', label: 'Shot lab', render: () => <ShotLab active={active} /> },
         {
           id: 'verification',
           label: 'Kernel verification',
@@ -62,7 +63,7 @@ export function App() {
       <header className="app-header">
         <div className="brand">
           <h1>Puckworks</h1>
-          <p className="tagline">Espresso simulator · experimental dial-in</p>
+          <p className="tagline">Set up your equipment · dial in your shot</p>
         </div>
         <ModeTabs mode={mode} onChange={setMode} />
       </header>
@@ -71,11 +72,14 @@ export function App() {
       <ShotRunProvider>
         <main id="main" className="app-main" tabIndex={-1}>
           <EquipmentSetupGate>
+            <TabPanel mode="setup" active={mode}>
+              <SetupEquipment active={mode === 'setup'} />
+            </TabPanel>
             <TabPanel mode="dial-in" active={mode}>
               <DialIn />
             </TabPanel>
             <TabPanel mode="lab" active={mode}>
-              <Lab />
+              <Lab active={mode === 'lab'} />
             </TabPanel>
             <TabPanel mode="explore" active={mode}>
               <Explore active={mode === 'explore'} />

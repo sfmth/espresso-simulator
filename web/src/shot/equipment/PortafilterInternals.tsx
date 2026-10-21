@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** Exploded preparation layers and replaceable baskets share the actual recipe. */
 import { useId } from 'react';
+import { InlineConstraintControl } from '../../setup/ConstraintContext';
 import type { BasketPreset, Catalog } from '../../engine/shotTypes';
 import { parseDecimal } from '../../lab/sphereForm';
 import { checkProfile, profileIsValid } from '../basketGeometry';
@@ -177,6 +178,9 @@ export function PortafilterInternals() {
         Screen and bottom-paper effects use estimated preparation coefficients. Top paper is
         recorded in the recipe; it has no modeled extraction effect.
       </p>
+      {layers.map((layer) => (
+        <InlineConstraintControl key={layer.key} path={`prep.${layer.key}`} />
+      ))}
       <div className="portafilter-baskets" role="group" aria-label="Replace the basket">
         {catalog.presets.baskets.map((p) => (
           <button
@@ -244,6 +248,7 @@ export function PortafilterInternals() {
               {errors['basket.custom.pressurised_orifice_mm']}
             </p>
           )}
+          <InlineConstraintControl path="basket.custom.pressurised_orifice_mm" />
         </div>
       )}
       {undo?.label === 'Undo basket part change' && (

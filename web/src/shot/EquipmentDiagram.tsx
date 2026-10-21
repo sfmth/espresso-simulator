@@ -2,6 +2,7 @@
 /** A schematic map into the same recipe form used by the full editor. */
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { Catalog, Distribution } from '../engine/shotTypes';
+import { InlineConstraintControl } from '../setup/ConstraintContext';
 import { findPreset, presetOptions, useEditorContext } from './editor/context';
 import { fieldId } from './fields';
 import { focusSoon } from './focus';
@@ -116,6 +117,7 @@ function QuickField({
           {error}
         </p>
       )}
+      <InlineConstraintControl path={path} />
     </div>
   );
 }

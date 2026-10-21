@@ -4,6 +4,22 @@ Version 0.8.0 · 2026-10-18. Implementation: `web/src/dialin/`.
 The shared Rust physics, published calibration and original scientific targets
 are unchanged. Personal measurements are optional; V9 remains open.
 
+## Equipment inference and future recipes (0.12.0)
+
+The new **Set up equipment** tab performs observation-first setup inference; see
+[its contract](setup-inference.md). **Dial in** uses the selected setup for future
+recipe adjustment and prediction, and can compare predictions across retained
+alternatives. Completed journal shots can be copied into setup observations without
+changing their original journal records. Their recorded dose and grind become
+explicit per-shot conditions, which can be reviewed in setup.
+
+The original two-parameter calibration remains under **Earlier local calibration
+tools**. A selected equipment profile disables automatic application of that older
+fit, avoiding a second calibration over an already inferred recipe. Existing
+journal/calibration formats and historical forecasts remain intact. The older V9
+scorecard retains its original eligibility rules; it does not validate the new
+setup-inference workflow.
+
 ## Recipe and records
 
 Dial-in uses the same recipe store as the Lab. Basic controls change bean,

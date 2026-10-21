@@ -14,6 +14,8 @@ import {
 } from '../shot/recipeForm';
 import { useShotStore } from '../shot/shotStore';
 import { useAppStore } from '../store';
+import { SetupPrediction } from '../setup/SetupPrediction';
+import { MAX_SETUP_OBSERVATIONS, useEquipmentStore } from '../setup/inferenceStorage';
 import { applyCalibration, calibrate, scopeKey } from './calibration';
 import { importShotLog } from './imports';
 import { mergeJournal, parseJournal } from './journal';
@@ -147,7 +149,17 @@ export function DialIn() {
   const validation = useMemo(() => formToRecipe(form, { catalog }), [form, catalog]);
   const recipe = validation.ok ? validation.recipe : null;
   const recipeKey = recipe ? physicalKey(recipe) : '';
-  const [setupName, setSetupId] = useState('My current bag and setup');
+  const equipment = useEquipmentStore((s) => s.document);
+  const equipmentProfile = equipment.alternatives.find((p) => p.id === equipment.activeId);
+  const [setupNameOverride, setSetupNameOverride] = useState<{
+    id: string | null;
+    name: string;
+  } | null>(null);
+  const setupName =
+    setupNameOverride?.id === equipment.activeId
+      ? setupNameOverride.name
+      : (equipmentProfile?.name ?? 'My current bag and setup');
+  const setSetupId = (name: string) => setSetupNameOverride({ id: equipment.activeId, name });
   const setupId = setupName.trim();
   const [label, setLabel] = useState('Next shot');
   const [job, setJob] = useState<{ text: string; key: string; id: number } | null>(null);
@@ -213,7 +225,9 @@ export function DialIn() {
   const latestProfile = compatible.sort(
     (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id),
   )[0];
-  const activeProfile = useLocal ? latestProfile : undefined;
+  // Inferred setup recipes already include their fitted parameters. Never apply a
+  // second, older two-parameter calibration over the selected setup implicitly.
+  const activeProfile = useLocal && !equipmentProfile ? latestProfile : undefined;
   const training = entries.filter(
     (entry) => !!entry.measurement && scopeKey(entry.recipe) === scope,
   );
@@ -363,13 +377,16 @@ export function DialIn() {
     <section ref={dialRef} className="dial-in panel-stack" aria-labelledby="dial-in-title">
       <div className="panel-header">
         <div>
-          <h2 id="dial-in-title">Dial-in</h2>
-          <p>Predict a shot, pull it, then learn from the result.</p>
+          <h2 id="dial-in-title">Dial in</h2>
+          <p>
+            Use your equipment setup to adjust the next shot, predict it, and record the result.
+          </p>
         </div>
         <button className="button" onClick={editInLab}>
           Edit full recipe in Lab
         </button>
       </div>
+      <SetupPrediction recipe={recipe} catalog={catalog} />
       <p className="run-warning">
         Experimental advice. Local calibration can adapt this model to a bag and setup; its
         scientific accuracy and taste estimates remain unvalidated. Personal measurements are
@@ -389,7 +406,7 @@ export function DialIn() {
       </p>
       <div className="dial-grid">
         <section className="panel panel-stack" aria-labelledby="dial-recipe-title">
-          <h3 id="dial-recipe-title">1. Set up your shot</h3>
+          <h3 id="dial-recipe-title">Your next shot</h3>
           <div className="dial-fields">
             <label>
               Bag and setup name
@@ -522,132 +539,140 @@ export function DialIn() {
             Predict and save before pulling
           </button>
         </section>
-        <section className="panel panel-stack" aria-labelledby="dial-calibration-title">
-          <h3 id="dial-calibration-title">2. Calibrate this bag and setup</h3>
-          <ol>
-            <li>Log at least three completed shots with the same bag and equipment.</li>
-            <li>Use varied grinder settings; TDS is optional for permeability alone.</li>
-            <li>Fit locally, then test new predictions on future shots.</li>
-          </ol>
-          <p>{training.length} matching completed shots available.</p>
-          <div className="dial-fields">
-            <label>
-              Timing uncertainty (s)
-              <input
-                value={timeSigma}
-                inputMode="decimal"
-                onChange={(e) => setTimeSigma(e.target.value)}
-              />
-            </label>
-            <label>
-              TDS uncertainty (percentage points)
-              <input
-                value={tdsSigma}
-                inputMode="decimal"
-                onChange={(e) => setTdsSigma(e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="checkbox-field">
-            <input
-              type="checkbox"
-              checked={fitGrinder}
-              onChange={(e) => setFitGrinder(e.target.checked)}
-            />
-            Also fit particle-size scale (needs varied settings and TDS)
-          </label>
-          <button
-            className="button"
-            disabled={!canRun || training.length < 3}
-            onClick={() => {
-              void task('Fitting local calibration…', async (signal) => {
-                if (!catalog) return;
-                const profile = await calibrate(
-                  engine,
-                  training,
-                  catalog,
-                  {
-                    setupId,
-                    fitGrinderScale: fitGrinder,
-                    timeSigmaS: number(timeSigma, 'Timing uncertainty', 0.1, 60),
-                    tdsSigmaPercent: number(tdsSigma, 'TDS uncertainty', 0.01, 5),
-                  },
-                  signal,
-                  (done, total) => {
-                    if (!signal.aborted) setStatus(`Calibration: ${done} / ${total} evaluations`);
-                  },
-                );
-                signal.throwIfAborted();
-                await journal.update(
-                  (doc) => ({
-                    ...doc,
-                    calibrations: [...doc.calibrations, profile],
-                  }),
-                  signal,
-                );
-                signal.throwIfAborted();
-                setStatus('Local fit saved. Training checks do not establish future accuracy.');
-              });
-            }}
-          >
-            Fit local calibration
-          </button>
-          {latestProfile && (
-            <div className="dial-fit">
-              <h4>Identifiability and training checks</h4>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Parameter</th>
-                    <th>MAP multiplier</th>
-                    <th>p05–p95</th>
-                    <th>What the data constrain</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {latestProfile.parameters.map((p) => (
-                    <tr key={p.id}>
-                      <th scope="row">{p.label}</th>
-                      <td>{f(p.map, 2)}×</td>
-                      <td>
-                        {f(p.p05, 2)}–{f(p.p95, 2)}
-                      </td>
-                      <td>{p.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <details>
-                <summary>Fit assumptions and Tier 1 checks</summary>
-                <ul>
-                  {latestProfile.notes.map((note, i) => (
-                    <li key={i}>{note}</li>
-                  ))}
-                </ul>
-                <p>
-                  {latestProfile.checks.length} training shots rechecked on Tier 1. These are
-                  training residuals.
-                </p>
-                <ul>
-                  {latestProfile.checks.map((c) => (
-                    <li key={c.entryId}>
-                      Time error {f(c.timeErrorS)} s;{' '}
-                      {c.eyErrorPoints === null
-                        ? 'EY unmeasured'
-                        : `EY error ${f(c.eyErrorPoints)} percentage points`}
-                      .
-                    </li>
-                  ))}
-                </ul>
-              </details>
+        <details className="panel panel-stack">
+          <summary>Earlier local calibration tools</summary>
+          <section className="panel-stack" aria-labelledby="dial-calibration-title">
+            <h3 id="dial-calibration-title">Earlier local calibration</h3>
+            <p className="note">
+              Existing calibration records are kept here. Use Set up equipment for the full
+              observed-shot workflow. Selecting an equipment setup disables automatic application of
+              these earlier fits.
+            </p>
+            <ol>
+              <li>Log at least three completed shots with the same bag and equipment.</li>
+              <li>Use varied grinder settings; TDS is optional for permeability alone.</li>
+              <li>Fit locally, then test new predictions on future shots.</li>
+            </ol>
+            <p>{training.length} matching completed shots available.</p>
+            <div className="dial-fields">
+              <label>
+                Timing uncertainty (s)
+                <input
+                  value={timeSigma}
+                  inputMode="decimal"
+                  onChange={(e) => setTimeSigma(e.target.value)}
+                />
+              </label>
+              <label>
+                TDS uncertainty (percentage points)
+                <input
+                  value={tdsSigma}
+                  inputMode="decimal"
+                  onChange={(e) => setTdsSigma(e.target.value)}
+                />
+              </label>
             </div>
-          )}
-        </section>
+            <label className="checkbox-field">
+              <input
+                type="checkbox"
+                checked={fitGrinder}
+                onChange={(e) => setFitGrinder(e.target.checked)}
+              />
+              Also fit particle-size scale (needs varied settings and TDS)
+            </label>
+            <button
+              className="button"
+              disabled={!canRun || training.length < 3 || !!equipmentProfile}
+              onClick={() => {
+                void task('Fitting local calibration…', async (signal) => {
+                  if (!catalog) return;
+                  const profile = await calibrate(
+                    engine,
+                    training,
+                    catalog,
+                    {
+                      setupId,
+                      fitGrinderScale: fitGrinder,
+                      timeSigmaS: number(timeSigma, 'Timing uncertainty', 0.1, 60),
+                      tdsSigmaPercent: number(tdsSigma, 'TDS uncertainty', 0.01, 5),
+                    },
+                    signal,
+                    (done, total) => {
+                      if (!signal.aborted) setStatus(`Calibration: ${done} / ${total} evaluations`);
+                    },
+                  );
+                  signal.throwIfAborted();
+                  await journal.update(
+                    (doc) => ({
+                      ...doc,
+                      calibrations: [...doc.calibrations, profile],
+                    }),
+                    signal,
+                  );
+                  signal.throwIfAborted();
+                  setStatus('Local fit saved. Training checks do not establish future accuracy.');
+                });
+              }}
+            >
+              Fit local calibration
+            </button>
+            {latestProfile && (
+              <div className="dial-fit">
+                <h4>Identifiability and training checks</h4>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>MAP multiplier</th>
+                      <th>p05–p95</th>
+                      <th>What the data constrain</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {latestProfile.parameters.map((p) => (
+                      <tr key={p.id}>
+                        <th scope="row">{p.label}</th>
+                        <td>{f(p.map, 2)}×</td>
+                        <td>
+                          {f(p.p05, 2)}–{f(p.p95, 2)}
+                        </td>
+                        <td>{p.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <details>
+                  <summary>Fit assumptions and Tier 1 checks</summary>
+                  <ul>
+                    {latestProfile.notes.map((note, i) => (
+                      <li key={i}>{note}</li>
+                    ))}
+                  </ul>
+                  <p>
+                    {latestProfile.checks.length} training shots rechecked on Tier 1. These are
+                    training residuals.
+                  </p>
+                  <ul>
+                    {latestProfile.checks.map((c) => (
+                      <li key={c.entryId}>
+                        Time error {f(c.timeErrorS)} s;{' '}
+                        {c.eyErrorPoints === null
+                          ? 'EY unmeasured'
+                          : `EY error ${f(c.eyErrorPoints)} percentage points`}
+                        .
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </div>
+            )}
+          </section>
+        </details>
       </div>
       <section className="panel panel-stack" aria-labelledby="dial-journal-title">
         <div className="panel-header">
           <h3 id="dial-journal-title" tabIndex={-1}>
-            3. Shot journal
+            Shot journal
           </h3>
           <div className="button-row">
             <button
@@ -790,6 +815,67 @@ export function DialIn() {
                         >
                           Use recipe
                         </button>
+                        {entry.measurement && (
+                          <button
+                            type="button"
+                            className="button"
+                            aria-label={`Use shot to refine equipment: shot ${rowIndex + 1}`}
+                            disabled={!!busy}
+                            onClick={() => {
+                              try {
+                                const measurement = entry.measurement!;
+                                useEquipmentStore.getState().update((d) => {
+                                  if (d.observations.length >= MAX_SETUP_OBSERVATIONS)
+                                    throw new Error(
+                                      'Remove a setup observation before adding another.',
+                                    );
+                                  if (d.observations.some((o) => o.id === `journal-${entry.id}`))
+                                    throw new Error(
+                                      'This shot is already included in equipment setup.',
+                                    );
+                                  return {
+                                    ...d,
+                                    observations: [
+                                      ...d.observations,
+                                      {
+                                        id: `journal-${entry.id}`,
+                                        label: entry.label,
+                                        recipe: entry.prediction?.executedRecipe ?? entry.recipe,
+                                        timeS: measurement.timeS,
+                                        yieldG: measurement.yieldG,
+                                        ...(measurement.tdsPercent === undefined
+                                          ? {}
+                                          : { tdsPercent: measurement.tdsPercent }),
+                                        timeBasis: 'pump',
+                                        massBasis: 'final',
+                                        timeToleranceS: 1,
+                                        yieldToleranceG: 0.5,
+                                        tdsTolerancePercent: 0.2,
+                                        changes: [
+                                          'prep.dose_g',
+                                          ...(entry.recipe.grinder.gap_um !== undefined
+                                            ? ['grinder.gap_um']
+                                            : entry.recipe.grinder.setting !== undefined
+                                              ? ['grinder.setting']
+                                              : []),
+                                          ...((entry.prediction?.executedRecipe ?? entry.recipe)
+                                            .machine.temperature_c != null
+                                            ? ['machine.temperature_c']
+                                            : []),
+                                        ],
+                                      },
+                                    ],
+                                  };
+                                });
+                                useAppStore.getState().setMode('setup');
+                              } catch (failure) {
+                                setError(message(failure));
+                              }
+                            }}
+                          >
+                            Use shot to refine equipment
+                          </button>
+                        )}
                         <button
                           className="button"
                           aria-label={`Delete shot ${rowIndex + 1}: ${entry.label}`}
@@ -851,7 +937,7 @@ export function DialIn() {
         </div>
       </section>
       <section className="panel panel-stack" aria-labelledby="dial-advice-title">
-        <h3 id="dial-advice-title">4. Find the next recipe</h3>
+        <h3 id="dial-advice-title">Find the next recipe</h3>
         <div className="dial-fields">
           <label>
             Advice mode
@@ -1200,7 +1286,13 @@ export function DialIn() {
         )}
       </section>
       <section className="panel panel-stack" aria-labelledby="dial-scorecard-title">
-        <h3 id="dial-scorecard-title">Prediction scorecard</h3>
+        <h3 id="dial-scorecard-title">Earlier local calibration scorecard</h3>
+        <p className="note">
+          This scorecard evaluates predictions attached to the earlier local calibration tools. It
+          does not grade equipment profiles from Set up equipment. Compare those profiles’ saved
+          forecasts with their measured results in the shot journal; their future accuracy has not
+          been established by this scorecard.
+        </p>
         <p>
           {card.timeOnly.evaluated} prospective timing checks · {card.timeOnly.passed} within ±3 s
           {card.timeOnly.maeS === null ? '' : ` · mean absolute error ${f(card.timeOnly.maeS)} s`}.
@@ -1212,7 +1304,7 @@ export function DialIn() {
         </p>
         <p className={card.met ? 'note' : 'run-warning'}>
           {card.met
-            ? 'V9 target met for this local set of prospective shots.'
+            ? 'V9 target met for this earlier local-calibration set of prospective shots. This does not establish the accuracy of an active equipment profile.'
             : 'V9 remains open. Calibration training shots, imported predictions and shots without measured TDS cannot establish the complete target.'}
         </p>
         <p className="note">

@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.11.1 · Last updated 2026-10-21 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support, an initial accessibility pass and offline scalar surrogate tooling are available. The first surrogate fails its accuracy gate. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
+*Version 0.12.0 · Last updated 2026-10-21 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support, an initial accessibility pass and offline scalar surrogate tooling are available. The first surrogate fails its accuracy gate. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -465,9 +465,9 @@ puckworks/
 
 - No backend, accounts, analytics or telemetry.
 - At the owner's explicit request on 2026-10-19, one first-party setup-completion cookie is allowed. Its fixed value carries no equipment/recipe/journal fields or identifier. Cookie path follows the app deployment, with SameSite=Strict and Secure on HTTPS, and a one-year lifetime. Browsers send the marker on matching host requests; privacy copy states this exception.
-- First-visit setup requires explicit equipment choices and a valid starting recipe. Settings and completion age metadata stay in localStorage; blocked storage permits session-only use. Existing drafts can be reviewed without replacing their advanced settings. Setup is editable later.
+- Owner update, 2026-10-21: first visit offers Set up equipment or Skip setup with defaults. Setup, constraints, observed shots and alternative configurations stay in localStorage; the existing journal remains in IndexedDB. Explicit defaults and saved active setups are builder-checked. Blocked storage permits session-only use with export reminders.
 - No third-party requests at runtime: fonts and libraries are self-hosted.
-- Gear, beans, shot journal, ratings and calibration live in the browser (IndexedDB). They leave it only as a file you export.
+- Equipment, beans and recipe drafts live in localStorage; the shot journal, ratings and earlier calibration records live in IndexedDB. They leave the browser only as a file you export.
 - Share links carry the setup in the URL fragment (`#…`), which browsers do not send to servers.
 - Imported shot logs and PSD files are parsed locally.
 - The host is GitHub Pages (D14). Its own access logs are outside the app, and the privacy page says so.
@@ -498,10 +498,10 @@ Everything else is estimated and tagged as such. Closing the TDS mass balance is
 
 ## 9. User interface
 
-Three modes share one simulation state. Library, Journal and Science sections sit alongside them.
+Four tabs share one simulation state. Library, Journal and Science sections sit alongside them.
 
 ```
-Puckworks   [ Dial-in ]  [ Lab ]  [ Explore ]                   Library · Journal · Science · Settings
+Puckworks   [ Set up equipment ]  [ Dial in ]  [ Lab ]  [ Explore ]                   Library · Journal · Science · Settings
 ───────────────────────────────────────────────────────────────────────────────────────────────────────
 Beans    Light washed Arabica, 12 d   │ Shot graph: pressure · flow · cup g · TDS   │ Time      28 s ± 2
 Grinder  Flat 64 mm, setting 12       │ curves with uncertainty bands               │ Yield     36 g
@@ -510,8 +510,13 @@ Machine  9 bar · 5 s PI · 93 °C       │ [Log real shot]  [Suggest next shot
 Water    SCA target                   │                                             │ Taste radar with band
 ```
 
-- **Dial-in:**
-  - setup cards with presets;
+- **Set up equipment:**
+  - Lab illustrations and detailed parts with exact known values, allowed ranges and unknown settings;
+  - one or more observed shots, including explicit per-shot known changes;
+  - bounded search for distinct compatible equipment configurations, full-model checks and saved alternatives;
+  - selected active equipment becomes the basis for future predictions; heater/PID physics follows later.
+- **Dial in:**
+  - adjust the next recipe using the selected equipment; compare retained alternatives;
   - shot graph with playback, and result tiles;
   - taste radar and a sour↔bitter balance meter;
   - "log real shot", with a predict-then-pull scorecard;
@@ -534,7 +539,7 @@ Water    SCA target                   │                                       
   - model documentation, assumptions, references and the latest validation report.
 - **Everywhere:**
   - URL-shareable state; works offline;
-  - responsive: Dial-in first on phones, with reduced particle counts;
+  - responsive: setup first on fresh visits, then Dial in; reduced particle counts on phones;
   - keyboard accessible, colour-blind-safe palettes, light and dark themes;
   - metric units, with °F as an option.
 
@@ -767,6 +772,19 @@ existing modeled inputs. Boiler/thermoblock comparisons are temporary diagrams;
 heater/PID dynamics and spatial temperature profiles remain unimplemented.
 Recorded-only diameter/RPM/top-paper choices retain their existing limits.
 See the [equipment contract](model/m6-equipment.md#detailed-parts).
+
+**Setup inference in 0.12.0 (owner-approved 2026-10-21).** A new first tab reuses
+the illustrated Lab editor with known locks, bounded ranges/choices and unknown
+physical parameters. One or more observed shots constrain shared setup parameters;
+explicit known per-shot changes support different doses/grinds. Seeded multistart
+optimization returns distinct matching alternatives, each replayed at Tier 1
+against every observation. Closest misses remain separate. Users retain alternatives,
+choose an active setup, and use Dial in for future recipes and predictions.
+The welcome popup offers explicit skip with defaults. Stored display/set temperature
+is distinct from inlet-water temperature; boiler/PID dynamics are deferred.
+Current phase/outlet structures are chosen in the editor; their active scalars and
+registry parameters can be searched. See [contract](model/setup-inference.md) and
+[ADR 0019](decisions/0019-equipment-inference-before-dial-in.md).
 
 **Speed tooling slice in 0.11.0: frozen offline scalar experiment.** A synthetic
 464-shot Tier 1 dataset separates training, residual calibration, final tests and

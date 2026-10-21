@@ -5,6 +5,7 @@
  */
 import { useRef, type KeyboardEvent } from 'react';
 import { MODES, type Mode } from '../store';
+import './ModeTabs.css';
 
 export const tabId = (mode: Mode) => `tab-${mode}`;
 export const panelId = (mode: Mode) => `panel-${mode}`;

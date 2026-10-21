@@ -19,8 +19,11 @@ import { emptyJournal } from './journal';
 import { learnTaste } from './learning';
 import type { CalibrationProfile, JournalDocument, JournalEntry } from './types';
 import { scopeKey } from './calibration';
+import { resetEquipmentStore } from '../setup/inferenceStorage';
 
 beforeEach(() => {
+  localStorage.clear();
+  resetEquipmentStore();
   resetAppStore();
   resetShotStore();
   useShotStore.getState().setCatalog(fixtureCatalog());
@@ -72,6 +75,10 @@ it('saves a prediction before enabling a measured record and preserves trimmed s
     within(screen.getByRole('table', { name: 'Shot journal' })).getByText(/29.0 s/),
   ).toBeTruthy();
   expect(screen.getByText(/V9 remains open/)).toBeTruthy();
+  const scorecard = screen.getByRole('region', { name: 'Earlier local calibration scorecard' });
+  expect(
+    within(scorecard).getByText(/does not grade equipment profiles from Set up equipment/),
+  ).toBeTruthy();
 });
 it('aborts prediction on recipe changes and ignores a worker that answers late', async () => {
   const { calls } = setup();
@@ -322,7 +329,7 @@ it('returns focus to a surviving journal action after deletion and its heading a
   last.focus();
   fireEvent.click(last);
   await screen.findByText('Deleted shot: First.');
-  expect(document.activeElement).toBe(screen.getByRole('heading', { name: '3. Shot journal' }));
+  expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Shot journal' }));
   expect(screen.queryByRole('table', { name: 'Shot journal' })).toBeNull();
 });
 
