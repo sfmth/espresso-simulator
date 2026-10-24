@@ -1,0 +1,139 @@
+{
+  "schema": "puckworks.curated-coffee-provenance/1",
+  "catalog": "catalog.ts",
+  "license": "GPL-2.0-or-later",
+  "license_scope": "The authored selection, modelling annotations and source code. No license is claimed or granted over third-party product pages, photographs, logos or marketing copy.",
+  "verified_at": "2026-10-23",
+  "scope": "A manually curated starting catalogue of single-origin coffees from US roasters, not an exhaustive or live inventory.",
+  "extraction_method": "Manual transcription of short factual product descriptors from the linked primary roaster listings; no bulk scraping, copied descriptions or images.",
+  "count": 13,
+  "source_fact_fields": [
+    "name",
+    "roaster",
+    "country",
+    "region",
+    "producer",
+    "varieties",
+    "process_label",
+    "roast_label",
+    "harvest",
+    "roast_color"
+  ],
+  "transformed_fields": {
+    "altitude_m": "Published metres, or an explicitly annotated feet-to-metres unit conversion.",
+    "altitude_range_m": "Published range endpoints in metres, with feet conversions annotated. coffeeToBeanInput uses an explicitly labelled midpoint estimate.",
+    "process": "Mapping to a supported process enum when the published label matches; unsupported wet-hulled remains null."
+  },
+  "estimated_fields": {
+    "arabica_fraction": "Inferred from listed varieties and origin; no species assay was provided.",
+    "roast_level": "An editable model starting estimate from the roaster label. Not a color-to-chemistry conversion."
+  },
+  "unavailable_fields": [
+    "bag roast date",
+    "bag age",
+    "storage history",
+    "measured bean composition",
+    "measured extraction constants",
+    "observed shot outcomes"
+  ],
+  "uncertainty": [
+    "Roaster descriptions are source-reported facts, not independently measured by Puckworks.",
+    "Availability is a dated snapshot. Returning product names can represent different harvests, lots or roast profiles.",
+    "A single-origin farm or cooperative lot may contain multiple cultivars; cultivar proportions are not invented.",
+    "Roast color retains the reported scale, instrument and sample preparation; different measurement conventions are not interchangeable.",
+    "Catalogue presets are starting assumptions and do not establish real-world shot prediction accuracy."
+  ],
+  "sources": [
+    {
+      "id": "counter-culture-idido-2026",
+      "roaster": "Counter Culture",
+      "url": "https://counterculturecoffee.com/collections/single-origins/products/idido",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "counter-culture-finca-el-puente-honey-2026",
+      "roaster": "Counter Culture",
+      "url": "https://counterculturecoffee.com/collections/single-origins/products/finca-el-puente-honey",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "onyx-las-lajas-natural-2026",
+      "roaster": "Onyx Coffee Lab",
+      "url": "https://onyxcoffeelab.com/products/costa-rica-las-lajas-natural-26",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "onyx-aponte-village-honey-2026",
+      "roaster": "Onyx Coffee Lab",
+      "url": "https://onyxcoffeelab.com/products/colombia-aponte-village-honey-26",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "verve-kiunyu-2026-10",
+      "roaster": "Verve",
+      "url": "https://www.vervecoffee.com/products/kiunyu",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "verve-biftu-gudina-2026-10",
+      "roaster": "Verve",
+      "url": "https://www.vervecoffee.com/products/biftu-gudina",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "intelligentsia-cauca-castillo-2026",
+      "roaster": "Intelligentsia",
+      "url": "https://www.intelligentsia.com/products/colombia-cauca-castillo-single-origin-espresso",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "black-white-ushirika-washed-2026-10",
+      "roaster": "Black & White",
+      "url": "https://www.blackwhiteroasters.com/collections/all-coffee/products/r-ushirika-washed",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "black-white-limu-kossa-washed-2026-10",
+      "roaster": "Black & White",
+      "url": "https://www.blackwhiteroasters.com/collections/all-coffee/products/r-limu-kossa-washed",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "george-howell-yulnimox-2025",
+      "roaster": "George Howell",
+      "url": "https://georgehowellcoffee.com/products/yulnimox-guatemala",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "george-howell-dota-dark-2026",
+      "roaster": "George Howell",
+      "url": "https://georgehowellcoffee.com/products/dota-dark",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "klatch-sumatra-mutu-batak-2026-10",
+      "roaster": "Klatch",
+      "url": "https://www.klatchcoffee.com/products/sumatra-mutu-batak",
+      "verified_at": "2026-10-23",
+      "availability": "current"
+    },
+    {
+      "id": "pts-el-socorro-red-bourbon-2026-10",
+      "roaster": "PT’s Coffee",
+      "url": "https://ptscoffee.com/products/red-bourbon-washed",
+      "verified_at": "2026-10-23",
+      "availability": "unknown"
+    }
+  ]
+}

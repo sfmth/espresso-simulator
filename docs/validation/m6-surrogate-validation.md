@@ -1,8 +1,8 @@
 # M6 scalar surrogate: offline evaluation
 
-Artifact `b894331f97687abe6e4b79c1f731f8da4d1bcd008a6bd6dcb726339b629172cb` · dataset `ad7c18341d8aa3c9fabbf1f9e55c94fa902010c33a20b836557d95d0f6489c19`.
+Artifact `a690bd23d56deccd0f8f1131b5042d5e54390e9dcdba5c6cf3fa267bb72dc7e8` · dataset `4a8bef561c67a281616741c03ee717074ec34c91da97ce85b055bb6c3ceae605`.
 
-Teacher core `0.12.0`; behavior fingerprint `04b9dcb6246164ba7705ce23a0e4cb017b793b35617b64a70390fd36ccb75f35`.
+Teacher core `0.13.0`; behavior fingerprint `2302a903a89a1f0de14d35e02fef4abefae073acd08fac94bc624d4998dd0f0c`.
 
 This is a four-input, three-member 4 → 16 tanh → 3 neural ensemble trained on Tier-1 simulator outputs. It has no shot curves, species, chemistry or spatial-state predictions. TDS is derived from the ensemble mean EY, dose and final beverage mass, preserving the reported scalars' accounting.
 

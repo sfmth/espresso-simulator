@@ -64,6 +64,53 @@ pub struct BeanInput {
     pub variety_group: Option<String>,
     /// "sealed", "open" or "frozen" storage; aroma retention remains an estimate.
     pub storage: Option<String>,
+    /// Source facts from a roaster or the coffee bag. These do not create
+    /// unmeasured chemical properties; the physical descriptors above do.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub coffee: Option<CoffeeMetadata>,
+    /// A user-made blend, described as positive relative dry-coffee masses.
+    /// Components are single coffees; nested blends are rejected.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub components: Option<Vec<BeanComponent>>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BeanComponent {
+    pub weight: f64,
+    pub bean: BeanInput,
+}
+
+/// Original published identifiers and measurements, retained in recipe backups.
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields, default)]
+pub struct CoffeeMetadata {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub roaster: Option<String>,
+    pub country: Option<String>,
+    pub region: Option<String>,
+    pub producer: Option<String>,
+    pub varieties: Option<Vec<String>>,
+    pub process_label: Option<String>,
+    pub roast_label: Option<String>,
+    pub roast_color: Option<RoastColor>,
+    pub roast_date: Option<String>,
+    pub source_url: Option<String>,
+    pub verified_at: Option<String>,
+    pub harvest: Option<String>,
+    pub model_roast_basis: Option<String>,
+}
+
+/// Color readings are not interchangeable across instruments or sample types.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RoastColor {
+    pub scale: String,
+    pub value: f64,
+    pub sample: String,
+    #[serde(default)]
+    pub instrument: Option<String>,
 }
 
 /// Source-water measurements. Hardness and alkalinity are distinct quantities as CaCO3.
@@ -97,6 +144,9 @@ pub struct GrinderInput {
     pub preset: Option<String>,
     /// Dial setting, in the preset's own scale.
     pub setting: Option<f64>,
+    /// Dial number at which `gap_at_ref_um` applies. Defaults to the preset's
+    /// reference, or zero for a generic family.
+    pub setting_ref: Option<f64>,
     /// Burr family id (e.g. "flat-unimodal", "conical"), used with `gap_um`
     /// when there is no preset.
     pub family: Option<String>,
@@ -110,11 +160,10 @@ pub struct GrinderInput {
     /// Burr speed, rpm. Recorded; no systematic effect in the evidence.
     /// *(Added in M1.)*
     pub rpm: Option<f64>,
-    /// Dial calibration: burr gap at the preset's reference setting, µm
-    /// (replaces the preset's value; with a family and no preset, the gap at
-    /// setting 0). *(Added in M1.)*
+    /// Effective gap at `setting_ref`, µm (default reference: the preset's
+    /// reference setting, or zero with a generic family).
     pub gap_at_ref_um: Option<f64>,
-    /// Dial calibration: change of burr gap per unit of setting, µm
+    /// Dial calibration: signed, nonzero change of burr gap per unit of setting, µm
     /// (replaces the preset's value). *(Added in M1.)*
     pub gap_per_unit_um: Option<f64>,
     /// κ_G, volume median X50 divided by the burr gap (replaces the preset's,

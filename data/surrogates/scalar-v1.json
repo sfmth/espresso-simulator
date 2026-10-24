@@ -27,7 +27,7 @@
       "time_s": 60.0
     }
   },
-  "digest": "ad7c18341d8aa3c9fabbf1f9e55c94fa902010c33a20b836557d95d0f6489c19",
+  "digest": "4a8bef561c67a281616741c03ee717074ec34c91da97ce85b055bb6c3ceae605",
   "failures": [],
   "features": [
     {
@@ -7517,9 +7517,9 @@
     "ey"
   ],
   "teacher": {
-    "core_version": "0.12.0",
-    "embedded_behavior_sha256": "0c917aebf023ee14713bfb94b18e84823d67ded22e099e132d93b74ff858ebf2",
-    "fingerprint": "04b9dcb6246164ba7705ce23a0e4cb017b793b35617b64a70390fd36ccb75f35",
+    "core_version": "0.13.0",
+    "embedded_behavior_sha256": "e3d1b6e12f9ebcb41b53071c4e245648e007714de2d7e3e15b52e162c7bbe944",
+    "fingerprint": "2302a903a89a1f0de14d35e02fef4abefae073acd08fac94bc624d4998dd0f0c",
     "presets_sha256": "b25aa7145128a4b435cc4626300ce675d78d7e092ee838e181eb85086b878ea7",
     "probe_features": [
       [
@@ -7544,8 +7544,8 @@
     "registry_sha256": "bb1dbdd3ab0bea46ff8c43e3ab01e4788a4c5281cd309e57990d2ded7ecaf2e1",
     "schema": "puckworks.surrogate-teacher/1",
     "sources_sha256": {
-      "Cargo.lock": "1d47c91fc094ffaeb9c548223e62b433c9bc3d8e0b657c8845220848c7c0d23c",
-      "Cargo.toml": "b4dd2ae1dd2bb26cf20e818777da49f4b698007a69ad00e130862695ce8ed8da",
+      "Cargo.lock": "f57b2951b1f103c8e1839551faf5f254c9d9f2c86dd2d6fa1a3ce8d548c8e5c2",
+      "Cargo.toml": "0e29b1847769a6433ccc2a8defefeacf9bc986c1af0fe9cc3af6bc7c82c5416d",
       "crates/puckcore-py/Cargo.toml": "0b99cbf929a7a86b2f11f4f29da70c9e5d6098e08565f6dc88d0b22c049861f9",
       "crates/puckcore-py/src/lib.rs": "556c18b0b06b570fa6e2cea44e4f4805f20e0d13c8b88cb6d61c74d385cbd764",
       "crates/puckcore-wasm/Cargo.toml": "7af83e0ba7d1e7c1382f4aef5fbe3a5eb5eba895c6402a3fece985978673bc90",
@@ -7576,20 +7576,20 @@
       "crates/puckmodel/generated/registry.json": "f9d3c2570d678c45107ae37040c860489dbe466058ed8c13d97cf3168f9db373",
       "crates/puckmodel/src/api.rs": "5ebe7aa80fc48cbb77113b17177443b6cd25d1b643c72a3b8a6b0ec3e476ef09",
       "crates/puckmodel/src/bounds.rs": "fcaf2ead9572f18cb9452acc497c0a7399c58947236b0c96c9c1b6a72c5b064f",
-      "crates/puckmodel/src/builder.rs": "6f5c9a53195f82955488a7bdb9ef1b19977156cf931637b6b6c1f75cebec5e77",
+      "crates/puckmodel/src/builder.rs": "cc243fc876dd4b0bb73ae5cf7992fe6a642a8c3bbdfad52ec3eb284affa0c128",
       "crates/puckmodel/src/context.rs": "259d16964cbfc60cbbb1a6e1908333dad6e67a1cdde2d62f9200cb2426563903",
       "crates/puckmodel/src/lib.rs": "91693015526e7f0a9b5ba1ba61c6ca89117e732f80a518a7cb91fd1393689757",
       "crates/puckmodel/src/models/basket.rs": "4209ccfcd47f0c44909bd2a303a49990b79c3d7be5e199868d0d09bff288e059",
-      "crates/puckmodel/src/models/bean.rs": "e74128f33312fc4a4df0671090f784ba6b8fce98e2fda78a2ff592f59f9c0f3d",
+      "crates/puckmodel/src/models/bean.rs": "bc7e71ec1ad98aa18ab5aa7b4a30663f9b028af834533a0ac1ae251c8e462534",
       "crates/puckmodel/src/models/chemistry_catalog.rs": "62f298f17499ed3fb0a86e4143d4eee87ba6dfc4a76267807937d520b76bb643",
-      "crates/puckmodel/src/models/grinder.rs": "d9a86403fe76ace31b325ed6de942ed312f21e8ccaf333f9c3a3aab0c2d358d4",
+      "crates/puckmodel/src/models/grinder.rs": "2a4f8732dcf693ba5c42918c602379bb87b0238d546e7542f668e7afc35b313c",
       "crates/puckmodel/src/models/machine.rs": "e7f26184f8882273f4b870ad35737ccd7663a43b2c49da45462d46d6db6029b7",
       "crates/puckmodel/src/models/mod.rs": "51cdff78c9b47004997acb865e9650083504adc8c856842719d34973acdaee71",
       "crates/puckmodel/src/models/prep.rs": "1ce0d7f262205c3859aaa4a97a60343d5b973470d96725f8f7b62660aa2d2079",
       "crates/puckmodel/src/models/water.rs": "b296bfa920c46d5cc3f529deaa322529257ad8c2526a2d533172332867f90831",
       "crates/puckmodel/src/numeric.rs": "c11d16bba8c919f96a0ac2df22fb7169a295856591171742b2e707fe08c0bbec",
       "crates/puckmodel/src/presets.rs": "b1886b83a571abbece4a18a626cdaad1ddaba63cf2e490fefcd059f2ef5c0324",
-      "crates/puckmodel/src/recipe.rs": "d573289d4509cb317785d096ed2c3f55a9933597b5a3e87b604daae81b2e4189",
+      "crates/puckmodel/src/recipe.rs": "cfcf7cd7aeb3b7591c837df46d43d4cca114fc5e93892a9480074750d0dda01b",
       "crates/puckmodel/src/registry.rs": "2d3658448f4f353c56e0080a6e3a4dfd80211b294f298488d5cb2f7079b3498a",
       "crates/puckmodel/src/taste.rs": "47326776c5da5566a487716d2c08eab51b5b1b3d7f746f2dc938c80033b6223d",
       "crates/puckmodel/src/uncertainty.rs": "3e8c2c059ca147d2eea93917507476f81f830b11da353a9247ef85626dc40d2c",

@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { validateRecipe } from '../dialin/journalValidation';
 import type { Recipe } from '../engine/shotTypes';
+import { useShotStore } from '../shot/shotStore';
 import { browserStorage, type KeyValueStore } from '../shot/storage';
 import type {
   InferenceRequest,
@@ -354,6 +355,9 @@ export const useEquipmentStore = create<SetupState>()((set, get) => ({
     } catch {
       /* Keep the session state, with an explicit export reminder. */
     }
+    // A later setup edit/import must not leave a recovery action that can
+    // overwrite newer equipment knowledge with an older structural snapshot.
+    useShotStore.setState({ undo: null });
     set({
       document,
       persistent,

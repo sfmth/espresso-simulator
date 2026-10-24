@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import { HelpButton, HelpField } from '../help/HelpButton';
 import { lazy, Suspense, useMemo, useRef, useState } from 'react';
 import type { ExploreResolution } from '../engine/exploreTypes';
 import { useSharedShotRun } from '../shot/ShotRunContext';
@@ -87,12 +88,11 @@ export function Explore({ active }: { active: boolean }) {
           <h2>Explore</h2>
           <p>Look inside a representative piece of your puck.</p>
         </div>
-        <span className="tag">Experimental · coupled to Tier 1</span>
+        <span className="tag">Inside your simulated puck</span>
       </div>
       <section className="panel panel-stack" aria-label="Explore run controls">
         <div className="explore-controls">
-          <label>
-            Simulation resolution
+          <HelpField label="Simulation resolution" term="visual-resolution">
             <select
               value={resolution}
               onChange={(e) => {
@@ -104,16 +104,15 @@ export function Explore({ active }: { active: boolean }) {
               <option value="standard">Standard · 30 depth cells</option>
               <option value="high">High resolution · 150 cells (5×)</option>
             </select>
-          </label>
-          <label>
-            Displayed particles
+          </HelpField>
+          <HelpField label="Displayed particles" term="visual-resolution">
             <select value={count} onChange={(e) => setCount(Number(e.target.value))}>
               <option value={5000}>5,000 · mobile</option>
               <option value={25000}>25,000 · mobile 5×</option>
               <option value={30000}>30,000 · desktop</option>
               <option value={150000}>150,000 · desktop 5×</option>
             </select>
-          </label>
+          </HelpField>
           <button
             ref={runButtonRef}
             className="button primary"
@@ -140,10 +139,9 @@ export function Explore({ active }: { active: boolean }) {
           )}
         </div>
         <p className="note">
-          High resolution refines the current parallel 1D solver by 5× in depth and can take longer.
-          It is not the future 2D Tier 2 model. Displayed particle count changes visual detail; it
-          does not change the extraction calculation. Edit the shared recipe in Lab, or load a
-          scenario below.
+          High resolution calculates five times as many depth cells and can take longer. Run Explore
+          after changing resolution to update the cross-section. Displayed particles control visual
+          detail.
         </p>
         {!controls.validation.ok && (
           <p role="alert">The shared recipe needs attention in Lab before it can run.</p>
@@ -175,8 +173,8 @@ export function Explore({ active }: { active: boolean }) {
             {micro?.resolution === 'high'
               ? 'Refined 1D · 5× depth'
               : outcome.tier === 0
-                ? 'Tier 0 preview'
-                : 'Tier 1 · standard'}{' '}
+                ? 'Fast preview'
+                : 'Standard simulation'}{' '}
             · {outcome.result.spatial.depth_m.length} depth cells · cup EY{' '}
             {fmt(outcome.result.summary.ey * 100)}% · {fmt(outcome.result.summary.shot_time_s, 1)} s
             · core {fmt(outcome.coreMs, 0)} ms
@@ -199,8 +197,7 @@ export function Explore({ active }: { active: boolean }) {
             >
               {view.playing ? 'Pause' : 'Play'}
             </button>
-            <label>
-              Shot time
+            <HelpField label="Shot time" term="visual-selection">
               <input
                 type="range"
                 min={0}
@@ -213,7 +210,7 @@ export function Explore({ active }: { active: boolean }) {
                 }
                 onChange={(e) => view.selectSnapshot(Number(e.target.value))}
               />
-            </label>
+            </HelpField>
             <output aria-live="off">
               {fmt(selectedSnapshot?.t_s, 1)} s · snapshot {view.snapshotIndex + 1}/
               {view.frameCount}
@@ -230,8 +227,7 @@ export function Explore({ active }: { active: boolean }) {
             >
               <h3 id="explore-volume-title">Representative particle volume</h3>
               <div className="explore-controls">
-                <label>
-                  Cutaway plane
+                <HelpField label="Cutaway plane" term="visual-selection">
                   <input
                     type="range"
                     min={0}
@@ -241,7 +237,7 @@ export function Explore({ active }: { active: boolean }) {
                     aria-valuetext={`${Math.round(cut * 100)}% of cube depth`}
                     onChange={(e) => setCut(Number(e.target.value))}
                   />
-                </label>
+                </HelpField>
                 <label className="explore-checkbox">
                   <input
                     type="checkbox"
@@ -275,27 +271,45 @@ export function Explore({ active }: { active: boolean }) {
                 <>
                   <dl className="explore-metrics">
                     <div>
-                      <dt>Weighted particle EY</dt>
+                      <dt>
+                        Weighted particle EY
+                        <HelpButton term="ey" label="Weighted particle EY" />
+                      </dt>
                       <dd>{fmt(frame.meanEy === null ? null : frame.meanEy * 100)}%</dd>
                     </div>
                     <div>
-                      <dt>Continuum cell EY</dt>
+                      <dt>
+                        Continuum cell EY
+                        <HelpButton term="ey" label="Continuum cell EY" />
+                      </dt>
                       <dd>{fmt(frame.targetEy === null ? null : frame.targetEy * 100)}%</dd>
                     </div>
                     <div>
-                      <dt>Difference (percentage points)</dt>
+                      <dt>
+                        Difference (percentage points)
+                        <HelpButton term="uniformity" label="Difference (percentage points)" />
+                      </dt>
                       <dd>{fmt(frame.consistencyErrorPoints, 6)}</dd>
                     </div>
                     <div>
-                      <dt>Local liquid solubles</dt>
+                      <dt>
+                        Local liquid solubles
+                        <HelpButton term="local-solubles" label="Local liquid solubles" />
+                      </dt>
                       <dd>{fmt(frame.localConcentrationKgM3)} kg/m³</dd>
                     </div>
                     <div>
-                      <dt>Column flow</dt>
+                      <dt>
+                        Column flow
+                        <HelpButton term="flow" label="Column flow" />
+                      </dt>
                       <dd>{fmt(frame.columnFlowMlS)} mL/s</dd>
                     </div>
                     <div>
-                      <dt>Bed temperature (one node)</dt>
+                      <dt>
+                        Bed temperature (one node)
+                        <HelpButton term="temperature" label="Bed temperature (one node)" />
+                      </dt>
                       <dd>{fmt(frame.bedTemperatureC, 1)} °C</dd>
                     </div>
                   </dl>

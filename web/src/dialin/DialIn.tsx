@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { tabId } from '../components/ModeTabs';
+import { HelpField, HelpButton } from '../help/HelpButton';
 import { useEngine } from '../engine/EngineContext';
 import { isAbortError } from '../engine/engine';
 import type { Recipe } from '../engine/shotTypes';
@@ -14,6 +15,7 @@ import {
 } from '../shot/recipeForm';
 import { useShotStore } from '../shot/shotStore';
 import { useAppStore } from '../store';
+import { beanSummary } from '../shot/editor/summaries';
 import { SetupPrediction } from '../setup/SetupPrediction';
 import { MAX_SETUP_OBSERVATIONS, useEquipmentStore } from '../setup/inferenceStorage';
 import { applyCalibration, calibrate, scopeKey } from './calibration';
@@ -85,8 +87,7 @@ function MeasureShot({
       }}
     >
       <div className="dial-fields">
-        <label>
-          Measured time (s)
+        <HelpField label="Measured time (s)" term="shot-time">
           <input
             id={`${shotDomId(entry.id)}-time`}
             value={time}
@@ -94,22 +95,19 @@ function MeasureShot({
             onChange={(e) => setTime(e.target.value)}
             required
           />
-        </label>
-        <label>
-          Final beverage (g)
+        </HelpField>
+        <HelpField label="Final beverage (g)" term="beverage">
           <input
             value={yieldG}
             inputMode="decimal"
             onChange={(e) => setYield(e.target.value)}
             required
           />
-        </label>
-        <label>
-          TDS (%) · optional
+        </HelpField>
+        <HelpField label="TDS (%) · optional" term="tds">
           <input value={tds} inputMode="decimal" onChange={(e) => setTds(e.target.value)} />
-        </label>
-        <label>
-          Your rating · optional
+        </HelpField>
+        <HelpField label="Your rating · optional" term="rating">
           <select value={rating} onChange={(e) => setRating(e.target.value)}>
             <option value="">No rating</option>
             {[1, 2, 3, 4, 5].map((v) => (
@@ -118,12 +116,11 @@ function MeasureShot({
               </option>
             ))}
           </select>
-        </label>
+        </HelpField>
       </div>
-      <label>
-        Shot notes
+      <HelpField label="Shot notes" term="shot-notes">
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={4000} />
-      </label>
+      </HelpField>
       <p className="note">
         Time from pump on to pump off. Weigh the final cup including the drip. TDS is a percentage
         from a cooled sample; omit it without a refractometer.
@@ -387,11 +384,14 @@ export function DialIn() {
         </button>
       </div>
       <SetupPrediction recipe={recipe} catalog={catalog} />
-      <p className="run-warning">
-        Experimental advice. Local calibration can adapt this model to a bag and setup; its
-        scientific accuracy and taste estimates remain unvalidated. Personal measurements are
-        optional.
-      </p>
+      <details className="calculation-details">
+        <summary>Prediction limits</summary>
+        <p>
+          These are estimates from a physical model. A fitted setup can explain your recorded shots
+          without uniquely identifying the equipment or guaranteeing the next shot. Taste estimates
+          have not been validated against sensory measurements.
+        </p>
+      </details>
       {journal.error && (
         <p role="alert" className="run-error">
           Journal: {journal.error}
@@ -408,37 +408,34 @@ export function DialIn() {
         <section className="panel panel-stack" aria-labelledby="dial-recipe-title">
           <h3 id="dial-recipe-title">Your next shot</h3>
           <div className="dial-fields">
-            <label>
-              Bag and setup name
+            <HelpField label="Bag and setup name" term="setup-name">
               <input
                 value={setupName}
                 maxLength={120}
                 onChange={(e) => setSetupId(e.target.value)}
               />
-            </label>
-            <label>
-              Shot name
+            </HelpField>
+            <HelpField label="Shot name" term="shot-label">
               <input value={label} maxLength={120} onChange={(e) => setLabel(e.target.value)} />
-            </label>
+            </HelpField>
             {catalog && (
               <>
-                <label>
-                  Bean preset
-                  <select
-                    value={form.bean.preset}
-                    onChange={(e) => patch('bean', { preset: e.target.value })}
+                <div className="field">
+                  <div className="field-head">
+                    <strong>Coffee</strong>
+                    <HelpButton term="roast" label="Selected coffee" />
+                  </div>
+                  <span>{beanSummary(form, catalog)}</span>
+                  <button
+                    type="button"
+                    className="button button-small"
+                    onClick={() => useAppStore.getState().setMode('setup')}
                   >
-                    <option value="">Recipe / defaults</option>
-                    {catalog.presets.beans.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    Change coffee in Set up equipment
+                  </button>
+                </div>
                 {form.grinder.mode === 'preset' && (
-                  <label>
-                    Grinder preset
+                  <HelpField label="Grinder preset" term="grind">
                     <select
                       value={form.grinder.preset}
                       onChange={(e) =>
@@ -458,21 +455,24 @@ export function DialIn() {
                         </option>
                       ))}
                     </select>
-                  </label>
+                  </HelpField>
                 )}
               </>
             )}
-            <label>
-              Dose (g)
+            <HelpField label="Dose (g)" term="dose">
               <input
                 value={form.prep.dose_g}
                 inputMode="decimal"
                 onChange={(e) => patch('prep', { dose_g: e.target.value })}
               />
-            </label>
+            </HelpField>
             {form.grinder.mode !== 'psd' && (
-              <label>
-                {form.grinder.by === 'setting' ? 'Grinder setting' : 'Burr gap (µm)'}
+              <HelpField
+                label={
+                  form.grinder.by === 'setting' ? 'Grinder setting' : 'Effective fineness (µm)'
+                }
+                term={form.grinder.by === 'setting' ? 'grind' : 'gap'}
+              >
                 <input
                   value={form.grinder.by === 'setting' ? form.grinder.setting : form.grinder.gap_um}
                   inputMode="decimal"
@@ -482,25 +482,23 @@ export function DialIn() {
                     })
                   }
                 />
-              </label>
+              </HelpField>
             )}
-            <label>
-              Stop beverage (g)
+            <HelpField label="Stop beverage (g)" term="beverage">
               <input
                 value={form.stop.beverage_g}
                 inputMode="decimal"
                 onChange={(e) => patch('stop', { beverage_g: e.target.value })}
               />
-            </label>
-            <label>
-              Water temperature (°C)
+            </HelpField>
+            <HelpField label="Water temperature (°C)" term="temperature">
               <input
                 value={form.machine.temperature_c}
                 placeholder="From machine preset"
                 inputMode="decimal"
                 onChange={(e) => patch('machine', { temperature_c: e.target.value })}
               />
-            </label>
+            </HelpField>
           </div>
           <p className="note">
             These controls share the Lab recipe, including its basket, water, machine program and
@@ -642,15 +640,15 @@ export function DialIn() {
                   </tbody>
                 </table>
                 <details>
-                  <summary>Fit assumptions and Tier 1 checks</summary>
+                  <summary>Fit assumptions and simulation checks</summary>
                   <ul>
                     {latestProfile.notes.map((note, i) => (
                       <li key={i}>{note}</li>
                     ))}
                   </ul>
                   <p>
-                    {latestProfile.checks.length} training shots rechecked on Tier 1. These are
-                    training residuals.
+                    {latestProfile.checks.length} training shots rechecked with the full simulation.
+                    These are training residuals.
                   </p>
                   <ul>
                     {latestProfile.checks.map((c) => (
@@ -939,8 +937,7 @@ export function DialIn() {
       <section className="panel panel-stack" aria-labelledby="dial-advice-title">
         <h3 id="dial-advice-title">Find the next recipe</h3>
         <div className="dial-fields">
-          <label>
-            Advice mode
+          <HelpField label="Advice mode" term="advice">
             <select
               value={mode}
               onChange={(e) => setMode(e.target.value as InverseOptions['mode'])}
@@ -949,43 +946,38 @@ export function DialIn() {
               <option value="outcome">Cup target: TDS, EY or taste</option>
               <option value="next">Next shot from the last result</option>
             </select>
-          </label>
-          <label>
-            Target time (s)
+          </HelpField>
+          <HelpField label="Target time (s)" term="shot-time">
             <input
               value={targetTime}
               inputMode="decimal"
               onChange={(e) => setTargetTime(e.target.value)}
             />
-          </label>
-          <label>
-            Target final beverage (g)
+          </HelpField>
+          <HelpField label="Target final beverage (g)" term="beverage">
             <input
               value={targetYield}
               inputMode="decimal"
               onChange={(e) => setTargetYield(e.target.value)}
             />
-          </label>
+          </HelpField>
           {mode === 'outcome' && (
             <>
-              <label>
-                Target TDS (%)
+              <HelpField label="Target TDS (%)" term="tds">
                 <input
                   value={targetTds}
                   inputMode="decimal"
                   onChange={(e) => setTargetTds(e.target.value)}
                 />
-              </label>
-              <label>
-                Target EY (%)
+              </HelpField>
+              <HelpField label="Target EY (%)" term="ey">
                 <input
                   value={targetEy}
                   inputMode="decimal"
                   onChange={(e) => setTargetEy(e.target.value)}
                 />
-              </label>
-              <label>
-                Optional taste attribute
+              </HelpField>
+              <HelpField label="Optional taste attribute" term="taste">
                 <select value={tasteAttribute} onChange={(e) => setTasteAttribute(e.target.value)}>
                   <option value="">No taste target</option>
                   {['acidity', 'bitterness', 'astringency', 'body'].map((a) => (
@@ -994,16 +986,15 @@ export function DialIn() {
                     </option>
                   ))}
                 </select>
-              </label>
+              </HelpField>
               {tasteAttribute && (
-                <label>
-                  Target relative taste index
+                <HelpField label="Target relative taste index" term="taste">
                   <input
                     value={tasteTarget}
                     inputMode="decimal"
                     onChange={(e) => setTasteTarget(e.target.value)}
                   />
-                </label>
+                </HelpField>
               )}
             </>
           )}
@@ -1026,30 +1017,27 @@ export function DialIn() {
             remains enforced by the builder.
           </p>
           <div className="dial-fields">
-            <label>
-              Minimum grind
+            <HelpField label="Minimum grind" term="grind">
               <input
                 value={grindMin}
                 inputMode="decimal"
                 onChange={(e) => setGrindMin(e.target.value)}
               />
-            </label>
-            <label>
-              Maximum grind
+            </HelpField>
+            <HelpField label="Maximum grind" term="grind">
               <input
                 value={grindMax}
                 inputMode="decimal"
                 onChange={(e) => setGrindMax(e.target.value)}
               />
-            </label>
-            <label>
-              Grinder step
+            </HelpField>
+            <HelpField label="Grinder step" term="grind">
               <input
                 value={grindStep}
                 inputMode="decimal"
                 onChange={(e) => setGrindStep(e.target.value)}
               />
-            </label>
+            </HelpField>
           </div>
           <label className="checkbox-field">
             <input
@@ -1061,22 +1049,20 @@ export function DialIn() {
           </label>
           {varyDose && (
             <div className="dial-fields">
-              <label>
-                Minimum dose (g)
+              <HelpField label="Minimum dose (g)" term="dose">
                 <input
                   value={doseMin}
                   inputMode="decimal"
                   onChange={(e) => setDoseMin(e.target.value)}
                 />
-              </label>
-              <label>
-                Maximum dose (g)
+              </HelpField>
+              <HelpField label="Maximum dose (g)" term="dose">
                 <input
                   value={doseMax}
                   inputMode="decimal"
                   onChange={(e) => setDoseMax(e.target.value)}
                 />
-              </label>
+              </HelpField>
             </div>
           )}
           <label className="checkbox-field">
@@ -1089,22 +1075,20 @@ export function DialIn() {
           </label>
           {varyTemp && (
             <div className="dial-fields">
-              <label>
-                Minimum temperature (°C)
+              <HelpField label="Minimum temperature (°C)" term="temperature">
                 <input
                   value={tempMin}
                   inputMode="decimal"
                   onChange={(e) => setTempMin(e.target.value)}
                 />
-              </label>
-              <label>
-                Maximum temperature (°C)
+              </HelpField>
+              <HelpField label="Maximum temperature (°C)" term="temperature">
                 <input
                   value={tempMax}
                   inputMode="decimal"
                   onChange={(e) => setTempMax(e.target.value)}
                 />
-              </label>
+              </HelpField>
             </div>
           )}
         </details>
@@ -1117,11 +1101,24 @@ export function DialIn() {
               const dial = catalog.presets.grinders.find(
                 (p) => p.id === recipe.grinder.preset,
               )?.dial;
+              const directGap = recipe.grinder.gap_um != null;
+              const grindLower = directGap ? 5 : (dial?.min ?? -Number.MAX_SAFE_INTEGER);
+              const grindUpper = directGap ? 3000 : (dial?.max ?? Number.MAX_SAFE_INTEGER);
               const controlsGrinder =
                 grindMin.trim() || grindMax.trim() || (dial && !recipe.grinder.gap_um)
                   ? {
-                      min: number(grindMin || String(dial?.min ?? ''), 'Minimum grind', 0, 2000),
-                      max: number(grindMax || String(dial?.max ?? ''), 'Maximum grind', 0, 2000),
+                      min: number(
+                        grindMin || String(dial?.min ?? ''),
+                        'Minimum grind',
+                        grindLower,
+                        grindUpper,
+                      ),
+                      max: number(
+                        grindMax || String(dial?.max ?? ''),
+                        'Maximum grind',
+                        grindLower,
+                        grindUpper,
+                      ),
                       step: number(grindStep, 'Grinder step', 0.001, 1000),
                     }
                   : undefined;
@@ -1184,7 +1181,7 @@ export function DialIn() {
               );
               signal.throwIfAborted();
               setSuggestions({ key: adviceKey, setup: setupId, result });
-              setStatus('Search finished; candidates rechecked on Tier 1.');
+              setStatus('Search finished; candidates checked with the full simulation.');
             });
           }}
         >
@@ -1225,13 +1222,13 @@ export function DialIn() {
                       {candidate.recipe.machine?.temperature_c ?? 'preset'} °C
                     </p>
                     <p>
-                      <strong>Tier 1:</strong> {f(candidate.verified.summary.shot_time_s)} s ·{' '}
+                      <strong>Prediction:</strong> {f(candidate.verified.summary.shot_time_s)} s ·{' '}
                       {f(candidate.verified.summary.beverage_mass_kg * 1000)} g final ·{' '}
                       {f(candidate.verified.summary.tds * 100)}% TDS ·{' '}
                       {f(candidate.verified.summary.ey * 100)}% EY
                     </p>
                     <p className="note">
-                      Tier 0 search: {f(candidate.preview.summary.shot_time_s)} s. Prediction
+                      Fast search estimate: {f(candidate.preview.summary.shot_time_s)} s. Prediction
                       intervals for model error are unavailable.
                     </p>
                     <p className="note">
@@ -1242,7 +1239,7 @@ export function DialIn() {
                     </p>
                     <details>
                       <summary>
-                        Local control sensitivity ({candidate.envelope.samples} Tier 0 samples)
+                        Local control sensitivity ({candidate.envelope.samples} preview samples)
                       </summary>
                       <p>
                         Time {f(candidate.envelope.timeS[0])}–{f(candidate.envelope.timeS[1])} s;
@@ -1304,8 +1301,8 @@ export function DialIn() {
         </p>
         <p className={card.met ? 'note' : 'run-warning'}>
           {card.met
-            ? 'V9 target met for this earlier local-calibration set of prospective shots. This does not establish the accuracy of an active equipment profile.'
-            : 'V9 remains open. Calibration training shots, imported predictions and shots without measured TDS cannot establish the complete target.'}
+            ? 'The earlier calibration met its check on subsequent measured shots. This does not establish the accuracy of an active equipment profile.'
+            : 'Accuracy check incomplete. Calibration training shots, imported predictions and shots without measured TDS cannot establish the complete target.'}
         </p>
         <p className="note">
           {learning.count} compatible rated shots inform your local preference model. Ratings stay

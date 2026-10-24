@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** One-line summaries of each editor section, shown while the section is folded. */
 import type { Catalog } from '../../engine/shotTypes';
+import { roastAssumptionName } from '../../coffee/roast';
 import { filledAdvanced, type GrinderAdvancedField, type RecipeForm } from '../recipeForm';
 import { defaultRatio } from '../sweep';
 import { findPreset } from './context';
@@ -10,18 +11,24 @@ const join = (parts: (string | false | null | undefined)[]) =>
 
 export function beanSummary(form: RecipeForm, catalog: Catalog): string {
   const b = form.bean;
+  if (b.components) return `${b.coffee?.name || 'Your blend'} · ${b.components.length} coffees`;
   const preset =
     findPreset(catalog.presets.beans, b.preset) ?? catalog.presets.beans.find((x) => x.default);
   return join([
-    preset?.name ?? 'Default bean',
-    b.roast_level && `roast ${b.roast_level}`,
+    b.coffee?.name ?? preset?.name ?? 'Default bean',
+    b.roast_level && roastAssumptionName(b.roast_level),
     b.days_off_roast && `${b.days_off_roast} days`,
-    b.arabica_fraction && `${b.arabica_fraction}% Arabica`,
+    b.arabica_fraction === '100'
+      ? 'Arabica'
+      : b.arabica_fraction === '0'
+        ? 'Robusta'
+        : b.arabica_fraction && `${b.arabica_fraction}% Arabica`,
   ]);
 }
 
 /** Short names of the advanced grinder overrides, for the section summary. */
 const ADVANCED_NAMES: Record<GrinderAdvancedField, (v: string) => string> = {
+  setting_ref: (v) => `reference dial ${v}`,
   gap_at_ref_um: (v) => `gap at ref ${v} µm`,
   gap_per_unit_um: (v) => `${v} µm per unit`,
   x50_gap_ratio: (v) => `κ_G ${v}`,
@@ -100,7 +107,7 @@ export function stopSummary(form: RecipeForm, catalog: Catalog): string {
     s.beverage_g && `${s.beverage_g} g`,
     s.time_s && `${s.time_s} s`,
     !s.beverage_g && !s.time_s && `${defaultRatio(catalog)} × dose`,
-    `tier ${form.numerics.tier}`,
+    form.numerics.tier === '0' ? 'fast preview' : 'standard',
   ]);
 }
 

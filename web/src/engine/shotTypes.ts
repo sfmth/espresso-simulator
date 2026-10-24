@@ -68,8 +68,38 @@ export interface Recipe {
   overrides?: Record<string, number>;
 }
 
+/** A published or measured roast color. Scales and sample preparations are not interchangeable. */
+export interface RoastColor {
+  scale: 'agtron-gourmet' | 'agtron-commercial' | 'colorette' | 'cielab-lstar' | 'other';
+  value: number;
+  sample: 'ground' | 'whole-bean' | 'unspecified';
+  instrument?: string;
+}
+
+/** Source facts retained with the coffee. These do not supply physical coefficients. */
+export interface CoffeeMetadata {
+  id?: string;
+  name?: string;
+  roaster?: string;
+  country?: string;
+  region?: string;
+  producer?: string;
+  varieties?: string[];
+  process_label?: string;
+  roast_label?: string;
+  roast_color?: RoastColor;
+  roast_date?: string;
+  source_url?: string;
+  verified_at?: string;
+  harvest?: string;
+  model_roast_basis?: string;
+}
+
 /** The coffee; omitted fields come from the preset or the default bean preset. */
 export interface BeanInput {
+  coffee?: CoffeeMetadata | null;
+  /** Up to six positive relative weights, normalized by the builder. Leaves cannot contain blends. */
+  components?: { weight: number; bean: BeanInput }[] | null;
   preset?: string | null;
   /** Arabica share of the blend, 0–1. */
   arabica_fraction?: number | null;
@@ -118,6 +148,7 @@ export interface GrinderInput {
   burr_diameter_mm?: number | null;
   rpm?: number | null;
   gap_at_ref_um?: number | null;
+  setting_ref?: number | null;
   gap_per_unit_um?: number | null;
   /** κ_G: X50 / burr gap. */
   x50_gap_ratio?: number | null;

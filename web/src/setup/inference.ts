@@ -55,6 +55,7 @@ function validateValue(
   if (parameter.kind === 'number') {
     if (
       !finite(value) ||
+      (parameter.path === 'grinder.gap_per_unit_um' && value === 0) ||
       (parameter.min != null && value < parameter.min) ||
       (parameter.max != null && value > parameter.max)
     ) {
@@ -124,6 +125,74 @@ function distance(a: number[], b: number[]): number {
   return a.length ? Math.sqrt(a.reduce((sum, v, i) => sum + (v - b[i]) ** 2, 0) / a.length) : 0;
 }
 
+/** Positional shot overrides must still name the same coffees after editor changes. */
+function validateObservedCoffeeReferences(
+  recipe: Recipe,
+  observation: SetupObservation,
+  catalog: Catalog,
+): void {
+  const changes = observation.changes ?? [];
+  if (!changes.some((path) => path.startsWith('bean.components.'))) return;
+  const current = recipe.bean.components;
+  const recorded = observation.recipe.bean.components;
+  const review = (detail: string): never => {
+    throw new Error(
+      `${observation.label}: ${detail} Review this recorded shot's coffee-specific changes before searching; restore its original blend or record a new observation for the current coffees. The saved observation has not been changed.`,
+    );
+  };
+  if (!current || !recorded || current.length !== recorded.length)
+    review('The blend component count differs from the recorded shot.');
+  const currentParameters = inferenceParameters(recipe, catalog);
+  const recordedParameters = inferenceParameters(observation.recipe, catalog);
+  const identities = (
+    components: NonNullable<Recipe['bean']['components']>,
+    parameters: SetupParameter[],
+  ) =>
+    components.map(({ bean }, i) => {
+      const facts = bean.coffee;
+      if (facts?.id?.trim()) return { key: `catalog:${facts.id.trim()}`, named: true };
+      const names = [
+        facts?.name,
+        facts?.roaster,
+        facts?.country,
+        facts?.region,
+        facts?.producer,
+        facts?.harvest,
+        facts?.roast_date,
+      ].map((value) => value?.trim() ?? '');
+      const preset = parameters.find((p) => p.path === `bean.components.${i}.bean.preset`)?.value;
+      return { key: JSON.stringify([preset, ...names]), named: names.some(Boolean) };
+    });
+  const before = identities(recorded!, recordedParameters);
+  const after = identities(current!, currentParameters);
+  for (let i = 0; i < before.length; i++) {
+    if (before[i].key !== after[i].key)
+      review(
+        `Coffee ${i + 1} no longer has the recorded origin or identity, or the blend order changed.`,
+      );
+    // Anonymous or repeated coffees have no unique stable identity. Require
+    // their remaining effective descriptors to agree, rather than guessing
+    // which positional leaf a historical edit belonged to. Known shot changes
+    // (such as age) are deliberately excluded from this consistency check.
+    if (
+      !before[i].named ||
+      before.filter((identity) => identity.key === before[i].key).length > 1
+    ) {
+      const prefix = `bean.components.${i}.bean.`;
+      const fingerprint = (parameters: SetupParameter[]) =>
+        JSON.stringify(
+          parameters
+            .filter((p) => p.modeled && p.path.startsWith(prefix) && !changes.includes(p.path))
+            .map((p) => [p.path, p.value]),
+        );
+      if (fingerprint(currentParameters) !== fingerprint(recordedParameters))
+        review(
+          `Coffee ${i + 1} has no unique recorded identity and its other settings differ. Give each coffee a distinct name when reviewing the observation.`,
+        );
+    }
+  }
+}
+
 /** Runtime boundary shared by UI/import consumers. Missing constraints are fixed assumptions. */
 export function validateInferenceRequest(request: InferenceRequest, catalog: Catalog): void {
   const parameters = new Map(inferenceParameters(request.recipe, catalog).map((p) => [p.path, p]));
@@ -184,6 +253,7 @@ export function validateInferenceRequest(request: InferenceRequest, catalog: Cat
       throw new Error(
         `${observation.label}: TDS needs a finite percentage and positive tolerance.`,
       );
+    validateObservedCoffeeReferences(request.recipe, observation, catalog);
     const shotParameters = new Map(
       inferenceParameters(observation.recipe, catalog).map((p) => [p.path, p]),
     );
@@ -220,6 +290,7 @@ function preserveReferenceGapMeaning(
 ): void {
   if (
     !constrainedPaths.includes('grinder.gap_at_ref_um') ||
+    constrainedPaths.includes('grinder.setting_ref') ||
     before.grinder.gap_um != null ||
     after.grinder.gap_um != null ||
     before.grinder.psd ||
@@ -227,7 +298,9 @@ function preserveReferenceGapMeaning(
   )
     return;
   const reference = (recipe: Recipe) =>
-    catalog.presets.grinders.find((p) => p.id === recipe.grinder.preset)?.dial.ref ?? 0;
+    recipe.grinder.setting_ref ??
+    catalog.presets.grinders.find((p) => p.id === recipe.grinder.preset)?.dial.ref ??
+    0;
   if (reference(before) !== reference(after))
     throw new Error(
       'Changing this grinder would change the named dial reference and reinterpret its constrained reference gap. Choose the grinder or generic dial in the equipment editor before constraining its reference gap.',
@@ -376,7 +449,7 @@ export async function inferSetups(
       const expectedGap =
         grinder.gap_um ??
         (setting != null && referenceGap != null && slope != null
-          ? referenceGap + slope * (setting - (preset?.dial.ref ?? 0))
+          ? referenceGap + slope * (setting - (grinder.setting_ref ?? preset?.dial.ref ?? 0))
           : NaN);
       const actualGap = run.build.derived.psd?.gap_um;
       if (

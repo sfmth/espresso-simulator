@@ -89,7 +89,10 @@ export async function exerciseOfflineEquipmentInference(page, { check }) {
     'active equipment selection, verification and observations survive another offline reload',
   );
   await page.getByRole('tab', { name: 'Dial in', exact: true }).click();
-  await page.locator('#panel-dial-in').getByLabel('Bag and setup name').fill('Offline test bag');
+  await page
+    .locator('#panel-dial-in')
+    .getByLabel('Bag and setup name', { exact: true })
+    .fill('Offline test bag');
   await page
     .locator('#panel-dial-in')
     .getByRole('rowheader', { name: /Offline retained shot/ })

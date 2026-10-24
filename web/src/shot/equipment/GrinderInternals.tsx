@@ -24,7 +24,7 @@ function currentGap(grinder: Grinder, preset?: GrinderPreset): number | null {
     return gap !== null && gap > 0 ? Math.max(MIN_NATIVE_GAP_UM, gap) : null;
   }
   if (
-    [grinder.setting, grinder.gap_at_ref_um, grinder.gap_per_unit_um].some(
+    [grinder.setting, grinder.setting_ref, grinder.gap_at_ref_um, grinder.gap_per_unit_um].some(
       (value) => value.trim() !== '' && parseDecimal(value) === null,
     )
   )
@@ -35,7 +35,8 @@ function currentGap(grinder: Grinder, preset?: GrinderPreset): number | null {
   const step = parseDecimal(grinder.gap_per_unit_um) ?? dial?.gap_per_unit_um;
   if (setting === undefined || referenceGap === undefined || step === undefined) return null;
   const clamped = dial ? Math.min(dial.max, Math.max(dial.min, setting)) : setting;
-  const gap = referenceGap + step * (clamped - (dial?.ref ?? 0));
+  const gap =
+    referenceGap + step * (clamped - (parseDecimal(grinder.setting_ref) ?? dial?.ref ?? 0));
   return Number.isFinite(gap) ? Math.max(MIN_NATIVE_GAP_UM, gap) : null;
 }
 

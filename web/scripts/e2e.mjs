@@ -31,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 import { completeInitialSetup } from './setup-helper.mjs';
 import { exerciseSetupInference } from './setup-inference-checks.mjs';
+import { exercisePracticalControls } from './practical-controls-checks.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const SUB_PATH = '/puckworks-e2e/';
@@ -270,7 +271,7 @@ async function renderClockRecoveryChecks(page, { requests, workers, errors }) {
     const panel = faultPage.locator('.explore');
     await panel.getByLabel('Teaching scenario').selectOption('reference');
     await panel.getByRole('button', { name: 'Load scenario', exact: true }).click();
-    await panel.getByLabel('Displayed particles').selectOption('5000');
+    await panel.getByLabel('Displayed particles', { exact: true }).selectOption('5000');
     await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
     await panel
       .getByText('Surface-pool content remaining:', { exact: false })
@@ -385,7 +386,7 @@ async function dialInChecks(page, shotPath) {
   const dial = page.locator('#panel-dial-in');
   await dial.getByRole('heading', { name: 'Dial in', exact: true }).waitFor();
   await dial.getByText(/Journal saved on this device in IndexedDB/).waitFor();
-  await dial.getByLabel('Bag and setup name').fill('Browser smoke bag');
+  await dial.getByLabel('Bag and setup name', { exact: true }).fill('Browser smoke bag');
   await dial.getByLabel('Shot name', { exact: true }).fill('Prospective browser shot');
   await dial.getByRole('button', { name: 'Predict and save before pulling' }).click();
   await dial.getByRole('button', { name: 'Save measurements' }).waitFor({ timeout: 60_000 });
@@ -393,10 +394,10 @@ async function dialInChecks(page, shotPath) {
     await dial.getByText('Waiting for measurements', { exact: true }).isVisible(),
     'Dial-in persists a prediction before receiving measurements',
   );
-  await dial.getByLabel('Measured time (s)').fill('28');
+  await dial.getByLabel('Measured time (s)', { exact: true }).fill('28');
   await dial.getByLabel('Final beverage (g)', { exact: true }).fill('36');
-  await dial.getByLabel('TDS (%) · optional').fill('10');
-  await dial.getByLabel('Your rating · optional').selectOption('4');
+  await dial.getByLabel('TDS (%) · optional', { exact: true }).fill('10');
+  await dial.getByLabel('Your rating · optional', { exact: true }).selectOption('4');
   await dial.getByRole('button', { name: 'Save measurements' }).click();
   await dial.getByText('Measured shot saved.', { exact: true }).waitFor();
   const backup = await downloadText(page, () =>
@@ -413,13 +414,13 @@ async function dialInChecks(page, shotPath) {
   );
   await page.reload();
   await page.getByRole('tab', { name: 'Dial in' }).click();
-  await dial.getByLabel('Bag and setup name').fill('Browser smoke bag');
+  await dial.getByLabel('Bag and setup name', { exact: true }).fill('Browser smoke bag');
   await dial.getByRole('table', { name: 'Shot journal' }).waitFor({ timeout: 30_000 });
   check(
     await dial.getByRole('rowheader', { name: /Prospective browser shot/ }).isVisible(),
     'native IndexedDB transaction survives page reload',
   );
-  await dial.getByLabel('Import journal or shot log').setInputFiles({
+  await dial.getByLabel('Import journal or shot log', { exact: true }).setInputFiles({
     name: 'journal.json',
     mimeType: 'application/json',
     buffer: Buffer.from(backup.text),
@@ -429,7 +430,7 @@ async function dialInChecks(page, shotPath) {
     (await dial.getByRole('table', { name: 'Shot journal' }).getByRole('row').count()) === 2,
     'reimporting an exported journal is idempotent',
   );
-  await dial.getByLabel('Import journal or shot log').setInputFiles({
+  await dial.getByLabel('Import journal or shot log', { exact: true }).setInputFiles({
     name: 'shots.csv',
     mimeType: 'text/csv',
     buffer: Buffer.from(
@@ -442,7 +443,7 @@ async function dialInChecks(page, shotPath) {
         .length === 4,
   );
   check(
-    await dial.getByText(/V9 remains open/).isVisible(),
+    await dial.getByText(/Accuracy check incomplete/).isVisible(),
     'imported and uncalibrated shots cannot establish prospective V9 accuracy',
   );
   const staleTab = await page.context().newPage();
@@ -450,7 +451,7 @@ async function dialInChecks(page, shotPath) {
     await staleTab.goto(page.url());
     await staleTab.getByRole('tab', { name: 'Dial in' }).click();
     await staleTab.getByText(/Journal saved on this device in IndexedDB/).waitFor();
-    await staleTab.getByLabel('Bag and setup name').fill('Browser smoke bag');
+    await staleTab.getByLabel('Bag and setup name', { exact: true }).fill('Browser smoke bag');
     await dial.getByRole('button', { name: 'Predict and save before pulling' }).click();
     await dial.getByRole('button', { name: 'Save measurements' }).waitFor({ timeout: 60_000 });
     await staleTab.getByRole('button', { name: 'Predict and save before pulling' }).click();
@@ -671,8 +672,14 @@ async function shotLabChecks(page, pkg, shot) {
     'estimated cup pH displays the WASM result with its reference conditions',
   );
   check(
-    (await chemistryPanel.getByText('Crema volume proxy', { exact: true }).count()) === 1 &&
-      (await chemistryPanel.getByText('True coffee TDS', { exact: true }).count()) === 1,
+    (await chemistryPanel
+      .locator('.tile > dt')
+      .filter({ hasText: /^Crema volume proxy/ })
+      .count()) === 1 &&
+      (await chemistryPanel
+        .locator('.tile > dt')
+        .filter({ hasText: /^True coffee TDS/ })
+        .count()) === 1,
     'cup chemistry separates phase proxies and true coffee TDS from the refractometer estimate',
   );
   await chemistryPanel.screenshot({ path: shot.path('e2e-cup-chemistry') });
@@ -683,7 +690,7 @@ async function shotLabChecks(page, pkg, shot) {
   const uncertainty = lab.locator('.uncertainty-panel');
   await uncertainty.getByLabel('Scenario count', { exact: true }).selectOption('8');
   await uncertainty.getByLabel('Random seed', { exact: true }).fill('1729');
-  await uncertainty.getByRole('button', { name: 'Run uncertainty (Tier 0)', exact: true }).click();
+  await uncertainty.getByRole('button', { name: 'Run uncertainty', exact: true }).click();
   await uncertainty
     .getByRole('status')
     .filter({ hasText: '8 of 8 scenarios completed' })
@@ -1035,7 +1042,7 @@ async function verificationChecks(page, reference) {
   await page.mouse.move(0, 0);
 
   // Validation: an invalid shell count is flagged and blocks Run.
-  const shells = page.getByLabel('Shells');
+  const shells = page.getByLabel('Shells', { exact: true });
   await shells.fill('1');
   check(
     await page.getByText(/whole number of shells/).isVisible(),
@@ -1049,8 +1056,8 @@ async function verificationChecks(page, reference) {
 
   // Little work but a large output (2 shells, 2 million steps): no automatic run, a memory
   // warning, and a result the worker thins before sending it.
-  await page.getByLabel('Shells').fill('2');
-  await page.getByLabel('Steps').fill('2000000');
+  await page.getByLabel('Shells', { exact: true }).fill('2');
+  await page.getByLabel('Steps', { exact: true }).fill('2000000');
   await page.waitForTimeout(600);
   check(
     (await status.textContent()).startsWith('Large run'),
@@ -1068,8 +1075,8 @@ async function verificationChecks(page, reference) {
 
   // A huge run (10^11 shell-steps) waits for Run; Cancel stops it at once by replacing the
   // busy worker, keeps the keyboard focus, and the next run is quick.
-  await page.getByLabel('Shells').fill('100000');
-  await page.getByLabel('Steps').fill('1000000');
+  await page.getByLabel('Shells', { exact: true }).fill('100000');
+  await page.getByLabel('Steps', { exact: true }).fill('1000000');
   await run.click();
   check((await status.textContent()) === 'Running…', 'Run starts the huge run');
   const cancel = panel.getByRole('button', { name: 'Cancel', exact: true });
@@ -1167,7 +1174,7 @@ async function exploreChecks(page, shotPath) {
   };
   for (const count of ['30000', '150000', '5000', '25000']) {
     if (count === '5000') await page.setViewportSize({ width: 390, height: 844 });
-    await panel.getByLabel('Displayed particles').selectOption(count);
+    await panel.getByLabel('Displayed particles', { exact: true }).selectOption(count);
     const canvas = panel.locator('.puck-canvas');
     await canvas.waitFor({ state: 'visible', timeout: 30_000 });
     await page.waitForFunction(
@@ -1238,14 +1245,14 @@ async function exploreChecks(page, shotPath) {
   );
   check(overflow <= 0, `Explore fits a 390px viewport (overflow ${overflow}px)`);
   await page.setViewportSize({ width: 1280, height: 900 });
-  await panel.getByLabel('Simulation resolution').selectOption('high');
+  await panel.getByLabel('Simulation resolution', { exact: true }).selectOption('high');
   check(
     (await panel.locator('.explore-resolution-notice').textContent()).includes(
       'still shows 30 depth cells',
     ) && (await panel.locator('.explore-cell').count()) === 8 * 30 * 2,
     'selecting high identifies the previous grid until Run Explore computes the new one',
   );
-  await panel.getByLabel('Displayed particles').selectOption('5000');
+  await panel.getByLabel('Displayed particles', { exact: true }).selectOption('5000');
   await panel.getByRole('button', { name: 'Run Explore', exact: true }).click();
   await page.waitForFunction(
     () => document.querySelector('.explore input[type="number"][max="150"]'),
@@ -1324,8 +1331,8 @@ async function exploreChecks(page, shotPath) {
     Number(await panel.locator('.explore-metrics dd').nth(2).textContent()) < 0.5,
     'refined-grid micro extraction agrees within 0.5 percentage points',
   );
-  await panel.getByLabel('Illustrative pore network').check();
-  await panel.getByLabel('Cutaway plane').focus();
+  await panel.getByLabel('Illustrative pore network', { exact: true }).check();
+  await panel.getByLabel('Cutaway plane', { exact: true }).focus();
   await page.keyboard.press('Home');
   await page.keyboard.press('End');
   await panel.locator('.explore-volume').screenshot({ path: shotPath('e2e-explore-refined') });
@@ -1525,6 +1532,7 @@ async function main() {
       PUCKWORKS_SOURCE_URL ||
       (GITHUB_SERVER_URL && GITHUB_REPOSITORY ? `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}` : '');
     const modelStatus = page.locator('.model-status');
+    await page.getByText('Model scope and evidence', { exact: true }).click();
     if (expectedSource) {
       check(
         (await page.getByRole('link', { name: 'Source code' }).getAttribute('href')) ===
@@ -1603,23 +1611,25 @@ async function main() {
     check(overflow <= 0, `no horizontal scrolling at 390 px (overflow ${overflow} px)`);
     await page.screenshot({ path: shotPath('e2e-phone-dark'), fullPage: true });
 
-    const setupContext = await browser.newContext({
-      viewport: { width: 1280, height: 900 },
-      locale: 'en-US',
-      acceptDownloads: true,
-    });
-    try {
-      setupContext.on('request', (request) => requests.push(request.url()));
-      const setupPage = await setupContext.newPage();
-      setupPage.on('pageerror', (error) => errors.push(error.message));
-      await setupPage.goto(url);
-      await exerciseSetupInference(setupPage, {
-        check,
-        capture: (surface, name) =>
-          surface.screenshot({ path: shotPath(`e2e-${name}`), fullPage: true }),
+    for (const exercise of [exerciseSetupInference, exercisePracticalControls]) {
+      const setupContext = await browser.newContext({
+        viewport: { width: 1280, height: 900 },
+        locale: 'en-US',
+        acceptDownloads: true,
       });
-    } finally {
-      await setupContext.close();
+      try {
+        setupContext.on('request', (request) => requests.push(request.url()));
+        const setupPage = await setupContext.newPage();
+        setupPage.on('pageerror', (error) => errors.push(error.message));
+        await setupPage.goto(url);
+        await exercise(setupPage, {
+          check,
+          capture: (surface, name) =>
+            surface.screenshot({ path: shotPath(`e2e-${name}`), fullPage: true }),
+        });
+      } finally {
+        await setupContext.close();
+      }
     }
 
     // Privacy: every request stayed on this origin. The audit sees the workers' own

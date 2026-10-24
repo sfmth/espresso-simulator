@@ -144,8 +144,99 @@
             "frozen",
             null
           ]
+        },
+        "coffee": {
+          "$ref": "#/$defs/coffee_metadata"
+        },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "weight",
+              "bean"
+            ],
+            "properties": {
+              "weight": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "bean": {
+                "$ref": "#/$defs/bean_leaf"
+              }
+            }
+          }
         }
-      }
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/bean_leaf"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "components"
+          ],
+          "properties": {
+            "preset": {
+              "type": "null"
+            },
+            "arabica_fraction": {
+              "type": "null"
+            },
+            "roast_level": {
+              "type": "null"
+            },
+            "days_off_roast": {
+              "type": "null"
+            },
+            "process": {
+              "type": "null"
+            },
+            "bean_temp_c": {
+              "type": "null"
+            },
+            "altitude_m": {
+              "type": "null"
+            },
+            "variety_group": {
+              "type": "null"
+            },
+            "storage": {
+              "type": "null"
+            },
+            "coffee": {
+              "$ref": "#/$defs/coffee_metadata"
+            },
+            "components": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 6,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "weight",
+                  "bean"
+                ],
+                "properties": {
+                  "weight": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "bean": {
+                    "$ref": "#/$defs/bean_leaf"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "grinder": {
       "description": "A preset plus a dial setting; a family plus gap_um (or setting with gap_at_ref_um and gap_per_unit_um); or a measured psd, which overrides everything else.",
@@ -157,6 +248,13 @@
         },
         "setting": {
           "description": "Dial setting in the preset's own scale.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "setting_ref": {
+          "description": "Dial number at which gap_at_ref_um applies; defaults to the preset reference or zero.",
           "type": [
             "number",
             "null"
@@ -208,7 +306,7 @@
             "number",
             "null"
           ],
-          "description": "Dial calibration: gap at the preset's reference setting (with a family: at setting 0), µm.",
+          "description": "Effective gap at setting_ref (defaults to the preset reference or zero), µm.",
           "minimum": 0,
           "maximum": 3000
         },
@@ -217,8 +315,11 @@
             "number",
             "null"
           ],
-          "description": "Dial calibration: gap change per unit of setting, µm.",
-          "exclusiveMinimum": 0,
+          "description": "Signed nonzero effective gap change per dial unit, µm; negative for larger numbers grinding finer.",
+          "minimum": -1000,
+          "not": {
+            "const": 0
+          },
           "maximum": 1000
         },
         "x50_gap_ratio": {
@@ -780,6 +881,250 @@
         }
       },
       "description": "Post-shot observation settings; chemistry enabled by default."
+    },
+    "roast_color": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale",
+        "value",
+        "sample"
+      ],
+      "properties": {
+        "scale": {
+          "enum": [
+            "agtron-gourmet",
+            "agtron-commercial",
+            "colorette",
+            "cielab-lstar",
+            "other"
+          ]
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0
+        },
+        "sample": {
+          "enum": [
+            "ground",
+            "whole-bean",
+            "unspecified"
+          ]
+        },
+        "instrument": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        }
+      }
+    },
+    "coffee_metadata": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "roaster": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "country": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "region": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "producer": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "process_label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "roast_label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "roast_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "source_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "verified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "harvest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "model_roast_basis": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "varieties": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "roast_color": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/roast_color"
+            }
+          ]
+        }
+      }
+    },
+    "bean_leaf": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preset": {
+          "$ref": "#/$defs/preset_id"
+        },
+        "arabica_fraction": {
+          "description": "Arabica share of the blend (the rest is Robusta).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "roast_level": {
+          "description": "0 = very light … 1 = very dark.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "days_off_roast": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 3650
+        },
+        "process": {
+          "description": "Processing method; only explicitly labelled estimated effects are applied.",
+          "enum": [
+            "washed",
+            "natural",
+            "honey",
+            "anaerobic",
+            null
+          ]
+        },
+        "bean_temp_c": {
+          "description": "Bean temperature when ground, °C (room temperature if omitted).",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": -200,
+          "maximum": 60
+        },
+        "altitude_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 4000,
+          "description": "Growing altitude in metres; recorded without a universal roast-composition correction."
+        },
+        "variety_group": {
+          "enum": [
+            "unspecified",
+            "typica-bourbon",
+            "gesha",
+            "ethiopian-landrace",
+            "canephora",
+            "hybrid",
+            null
+          ]
+        },
+        "storage": {
+          "enum": [
+            "sealed",
+            "open",
+            "frozen",
+            null
+          ]
+        },
+        "coffee": {
+          "$ref": "#/$defs/coffee_metadata"
+        }
+      }
     }
   }
 }

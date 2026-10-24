@@ -7,6 +7,7 @@
  * exports. Everything runs in the browser's engine workers.
  */
 import { useEffect, useMemo } from 'react';
+import { HelpButton } from '../help/HelpButton';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Tabs } from '../components/Tabs';
 import { checkShotResult } from '../engine/shotCheck';
@@ -284,7 +285,8 @@ function ShotLabView({
                   checked={livePreview}
                   onChange={(e) => setLivePreview(e.target.checked)}
                 />
-                <label htmlFor="live-preview">Live preview (tier 0) while editing</label>
+                <label htmlFor="live-preview">Live preview while editing</label>
+                <HelpButton term="numerical" label="Live preview" />
               </div>
             </div>
             <p className="run-status" id="shot-status">
@@ -365,7 +367,7 @@ function ShotLabView({
               <p className="result-badges">
                 {stale && <span className="stale-badge">Results for earlier inputs</span>}
                 <span className={latest.kind === 'preview' ? 'stale-badge' : 'tier-badge'}>
-                  {latest.kind === 'preview' ? 'Preview, tier 0' : `Tier ${latest.tier}`}
+                  {latest.kind === 'preview' ? 'Fast preview' : 'Standard simulation'}
                 </span>
               </p>
             )}

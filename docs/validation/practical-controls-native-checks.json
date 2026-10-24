@@ -1,0 +1,68 @@
+{
+  "schema": "puckworks.native-validation-gates/1",
+  "date": "2026-10-23",
+  "core_version": "0.13.0",
+  "scope": "Native/Python build, regression, provenance and release consistency checks for optional coffee components and grinder dial coordinates.",
+  "builds": {
+    "python_native_release": "passed",
+    "wasm_release": "passed",
+    "production_source_hashes_match_build_start": true
+  },
+  "rust": {
+    "command": "cargo test --locked",
+    "passed": 282,
+    "failed": 0,
+    "ignored": 1,
+    "ignored_reason": "The existing every_preset_combination_simulates exhaustive product test is ignored by default; the covering-set simulations and full valid-spec product passed.",
+    "format": "cargo fmt --all --check: passed",
+    "clippy": "cargo clippy --locked --workspace --all-targets -- -D warnings: passed",
+    "licenses": "cargo deny --locked check licenses: passed"
+  },
+  "python": {
+    "version": "3.14.7",
+    "tests_accounted_for": 600,
+    "passed": 600,
+    "unresolved_failures": 0,
+    "runs": [
+      {
+        "scope": "Versions, golden fixtures, M3 and surrogate data/training/inference/CLI modules",
+        "passed": 217
+      },
+      {
+        "scope": "All remaining Python test modules",
+        "passed": 378,
+        "environment_failures": 5
+      },
+      {
+        "scope": "Only the five environment-affected tests rerun with local forkserver IPC and a fresh /var/tmp directory",
+        "passed": 5,
+        "failed": 0
+      }
+    ],
+    "environment_note": "The sandbox blocked the parallel calibration test's Unix socket. An invalid /tmp/.git marker also caused four output-safety tests to reject their temporary paths. All five passed with the required local IPC access and an isolated temporary root; production code, assertions and safety checks were unchanged."
+  },
+  "registry": {
+    "parameters": 540,
+    "parameter_files": 15,
+    "datasets": 19,
+    "status": "passed"
+  },
+  "release_versions": {
+    "command": "puckworks-tools check-versions --release",
+    "status": "passed",
+    "version": "0.13.0"
+  },
+  "surrogate": {
+    "command": "puckworks-tools surrogate-check --model models/scalar-v1.json --dataset data/surrogates/scalar-v1.json",
+    "status": "passed",
+    "current_teacher_fingerprint": "2302a903a89a1f0de14d35e02fef4abefae073acd08fac94bc624d4998dd0f0c",
+    "structure_digests_teacher_and_evaluation_match": true,
+    "browser_approved": false,
+    "qualified_small_scope": false
+  },
+  "numeric_replay_receipt": "practical-controls-version-replay.json",
+  "limits": [
+    "These local checks do not constitute browser, accessibility, offline or deployment verification.",
+    "Exact legacy replay does not establish empirical accuracy for new coffee components or a particular real grinder."
+  ]
+}

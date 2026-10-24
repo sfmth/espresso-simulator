@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import { useMemo, useState } from 'react';
+import { HelpButton } from '../help/HelpButton';
 import type uPlot from 'uplot';
 import { LineChart, type ChartSeriesSpec } from '../components/LineChart';
 import type {
@@ -16,6 +17,17 @@ import type { FormResult } from './recipeForm';
 import type { ShotOutcome } from './shotStore';
 import { EVIDENCE_MODES, type useUncertainty } from './useUncertainty';
 
+function metricTerm(path: string): string {
+  if (path.includes('shot_time')) return 'shot-time';
+  if (path.includes('beverage_mass')) return 'beverage';
+  if (path.endsWith('/tds')) return 'tds';
+  if (path.endsWith('/ey')) return 'ey';
+  if (path.endsWith('/ph')) return 'output.cup.ph';
+  if (path.includes('titratable')) return 'output.cup.titratable';
+  if (path.includes('lipid')) return 'output.cup.lipid';
+  if (path.includes('apparent_tds')) return 'output.cup.apparent-tds';
+  return 'output.scenarios';
+}
 export type UncertaintyControls = ReturnType<typeof useUncertainty>;
 
 const GROUPS: { id: keyof UncertaintyGroups; label: string; description: string }[] = [
@@ -84,7 +96,7 @@ const CURVES = [
 const BAND_SERIES: readonly ChartSeriesSpec[] = [
   { label: 'p95 scenario', slot: 0, width: 1, dash: [4, 3] },
   { label: 'p05 scenario', slot: 0, width: 1, dash: [4, 3] },
-  { label: 'Median (Tier 0)', slot: 0, width: 2 },
+  { label: 'Scenario median', slot: 0, width: 2 },
 ];
 const CHART_BANDS = [{ upper: 1, lower: 2 }] as const;
 const formatProgress = (v: number) => `${fixed(v * 100, 0)}% of recorded shot`;
@@ -109,7 +121,7 @@ function Trajectories({ result }: { result: UncertaintyResult }) {
   if (!charts.length) return null;
   return (
     <section aria-labelledby="scenario-curves-title">
-      <h4 id="scenario-curves-title">Scenario trajectories (Tier 0)</h4>
+      <h4 id="scenario-curves-title">Scenario trajectories</h4>
       <p className="note">
         Shading spans p05–p95; the solid line is the median. Each shot is aligned by its own
         recorded duration, including drip. A point at 50% can occur at a different time in each
@@ -124,6 +136,18 @@ function Trajectories({ result }: { result: UncertaintyResult }) {
           >
             <figcaption>
               {chart.label} ({chart.unit})
+              <HelpButton
+                term={
+                  chart.id.includes('pressure')
+                    ? 'pressure'
+                    : chart.id.includes('flow')
+                      ? 'flow'
+                      : chart.id.includes('tds')
+                        ? 'tds'
+                        : 'ey'
+                }
+                label={chart.label}
+              />
             </figcaption>
             <LineChart
               data={chart.data}
@@ -135,7 +159,7 @@ function Trajectories({ result }: { result: UncertaintyResult }) {
               formatX={formatProgress}
               formatY={formatCurve}
               formatTick={formatTick}
-              summary={`${chart.label}: Tier-0 scenario p05, median and p95 at ${result.series.progress.length} fractions of recorded duration.`}
+              summary={`${chart.label}: Scenario p05, median and p95 at ${result.series.progress.length} fractions of recorded duration.`}
               syncKey="scenario-progress"
               height={170}
             />
@@ -146,13 +170,25 @@ function Trajectories({ result }: { result: UncertaintyResult }) {
         <summary>Trajectory interval table</summary>
         <div className="table-wrap">
           <table>
-            <caption>Tier-0 p05–p95 intervals by fraction of recorded duration</caption>
+            <caption>Scenario p05–p95 intervals by fraction of recorded duration</caption>
             <thead>
               <tr>
                 <th scope="col">Progress</th>
                 {charts.map((chart) => (
                   <th scope="col" key={chart.id}>
                     {chart.label} ({chart.unit})
+                    <HelpButton
+                      term={
+                        chart.id.includes('pressure')
+                          ? 'pressure'
+                          : chart.id.includes('flow')
+                            ? 'flow'
+                            : chart.id.includes('tds')
+                              ? 'tds'
+                              : 'ey'
+                      }
+                      label={chart.label}
+                    />
                   </th>
                 ))}
               </tr>
@@ -217,6 +253,7 @@ function AllBands({ result }: { result: UncertaintyResult }) {
               <tr key={path}>
                 <th scope="row">
                   <code>{path}</code>
+                  <HelpButton term={metricTerm(path)} label={path} />
                 </th>
                 <td>{sig(band.p05, 5)}</td>
                 <td>{sig(band.p50, 5)}</td>
@@ -258,7 +295,7 @@ export function UncertaintyPanel({
   const result = outcome?.result;
   let status = 'Choose what is known, then run the input scenarios.';
   if (!validation.ok) status = 'Correct the recipe inputs before running scenarios.';
-  else if (running) status = `Running ${options.samples} Tier-0 input scenarios…`;
+  else if (running) status = `Running ${options.samples} input scenarios…`;
   else if (state === 'cancelled')
     status = 'Scenario run cancelled. Run again for the current inputs.';
   else if (error) status = 'Scenario run failed. Check the message and run again.';
@@ -267,11 +304,14 @@ export function UncertaintyPanel({
   return (
     <div className="panel-stack uncertainty-panel" aria-label="Input uncertainty">
       <div>
-        <h4>Uncertainty in the inputs</h4>
+        <h4>
+          Uncertainty in the inputs
+          <HelpButton term="output.scenarios" label="Input scenarios" />
+        </h4>
         <p className="note">
           Explore plausible inputs before reading the taste estimates. These are p05–p95 scenario
-          percentiles from a fast Tier-0 ensemble, not confidence intervals or a validated
-          prediction of the real shot. The standard Run result keeps its selected tier.
+          percentiles from fast input scenarios. They exclude model error and do not establish the
+          accuracy of a real-shot prediction. Your main simulation result stays separate.
         </p>
       </div>
       <form
@@ -286,7 +326,12 @@ export function UncertaintyPanel({
           <div className="field-grid">
             {GROUPS.map((group) => (
               <div className="field" key={group.id}>
-                <label htmlFor={`uncertainty-${group.id}`}>{group.label}</label>
+                <div className="field-head">
+                  <label htmlFor={`uncertainty-${group.id}`}>{group.label}</label>
+                  <HelpButton term="output.scenarios" label={group.label}>
+                    {group.description}
+                  </HelpButton>
+                </div>
                 <select
                   id={`uncertainty-${group.id}`}
                   value={options.groups[group.id]}
@@ -314,7 +359,10 @@ export function UncertaintyPanel({
         </fieldset>
         <div className="field-grid">
           <div className="field">
-            <label htmlFor="uncertainty-samples">Scenario count</label>
+            <div className="field-head">
+              <label htmlFor="uncertainty-samples">Scenario count</label>
+              <HelpButton term="output.scenarios" label="Scenario count" />
+            </div>
             <select
               id="uncertainty-samples"
               value={options.samples}
@@ -329,7 +377,10 @@ export function UncertaintyPanel({
             <p className="field-hint">More samples refine the percentiles, not model accuracy.</p>
           </div>
           <div className="field">
-            <label htmlFor="uncertainty-seed">Random seed</label>
+            <div className="field-head">
+              <label htmlFor="uncertainty-seed">Random seed</label>
+              <HelpButton term="output.scenarios" label="Random seed" />
+            </div>
             <input
               id="uncertainty-seed"
               type="number"
@@ -359,7 +410,7 @@ export function UncertaintyPanel({
             className="button button-primary"
             disabled={!validation.ok || !validSeed || running}
           >
-            Run uncertainty (Tier 0)
+            Run uncertainty
           </button>
           <button
             type="button"
@@ -389,7 +440,7 @@ export function UncertaintyPanel({
             </p>
           )}
           <p className="result-badges">
-            <span className="tier-badge">Tier 0 ensemble</span>
+            <span className="tier-badge">Fast input scenarios</span>
             <span className="note">Input scenarios only · model error excluded</span>
           </p>
           {(result.sample_failures.length > 0 ||
@@ -419,7 +470,10 @@ export function UncertaintyPanel({
               if (!band) return null;
               return (
                 <div className="tile" key={metric.path}>
-                  <dt>{metric.label}: p05–p95</dt>
+                  <dt>
+                    {metric.label}: p05–p95
+                    <HelpButton term={metricTerm(metric.path)} label={metric.label} />
+                  </dt>
                   <dd>
                     <span className="tile-value">{bandText(band, metric.format)}</span>
                     <span className="tile-hint">
@@ -431,16 +485,21 @@ export function UncertaintyPanel({
             })}
           </dl>
           <div className="table-wrap">
-            <table aria-label="Central shot and Tier-0 baseline comparison">
+            <table aria-label="Central shot and preview baseline comparison">
               <caption>Check the solver difference before interpreting the scenario spread</caption>
               <thead>
                 <tr>
                   <th scope="col">Output</th>
                   <th scope="col">
-                    Current central shot {central ? `(Tier ${central.tier})` : '(run needed)'}
+                    Current central shot{' '}
+                    {central
+                      ? central.tier === 0
+                        ? '(fast preview)'
+                        : '(standard)'
+                      : '(run needed)'}
                   </th>
-                  <th scope="col">Same-input baseline (Tier 0)</th>
-                  <th scope="col">Scenario median (Tier 0)</th>
+                  <th scope="col">Same-input preview baseline</th>
+                  <th scope="col">Scenario median</th>
                 </tr>
               </thead>
               <tbody>
@@ -451,7 +510,10 @@ export function UncertaintyPanel({
                   const band = result.bands[metric.path];
                   return (
                     <tr key={metric.path}>
-                      <th scope="row">{metric.label}</th>
+                      <th scope="row">
+                        {metric.label}
+                        <HelpButton term={metricTerm(metric.path)} label={metric.label} />
+                      </th>
                       <td>{centralValue === null ? '—' : metric.format(centralValue)}</td>
                       <td>{base === null ? '—' : metric.format(base)}</td>
                       <td>{band ? metric.format(band.p50) : '—'}</td>
@@ -462,9 +524,9 @@ export function UncertaintyPanel({
             </table>
           </div>
           <p className="note">
-            The baseline uses the original inputs at Tier 0. Its difference from the central shot
-            estimates a solver approximation gap for this recipe; this gap is outside the bands. The
-            central shot can lie outside the scenario interval.
+            The baseline uses the original inputs with the fast preview solver. Its difference from
+            the central shot estimates a solver approximation gap for this recipe; this gap is
+            outside the bands. The central shot can lie outside the scenario interval.
           </p>
           <Trajectories result={result} />
           <AllBands result={result} />

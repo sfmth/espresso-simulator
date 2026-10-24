@@ -7,6 +7,7 @@
  */
 import { useMemo } from 'react';
 import { LineChart } from '../components/LineChart';
+import { HelpButton } from '../help/HelpButton';
 import { formatTick } from '../lab/format';
 import { fixed } from './format';
 import {
@@ -27,6 +28,7 @@ function ShotChart({ chart, runs }: { chart: ShotChartDef; runs: readonly ChartR
     <figure className="chart chart-small" data-chart={chart.id}>
       <figcaption>
         {chart.title} ({chart.unit})
+        <HelpButton term={`output.chart.${chart.id}`} label={`${chart.title} chart`} />
       </figcaption>
       <LineChart
         data={data}
@@ -68,11 +70,18 @@ function SeriesTable({ run }: { run: ChartRun }) {
           <caption>{run.label}: values at evenly spaced times</caption>
           <thead>
             <tr>
-              <th scope="col">Time (s)</th>
+              <th scope="col">
+                Time (s)
+                <HelpButton term="output.chart.time" />
+              </th>
               {columns.map(({ chart, q }) => (
                 <th scope="col" key={`${chart.id}-${q.field}`}>
                   {chart.quantities.length > 1 ? `${chart.title}, ${q.label}` : chart.title} (
                   {chart.unit})
+                  <HelpButton
+                    term={`output.chart.${chart.id}`}
+                    label={chart.quantities.length > 1 ? `${chart.title}, ${q.label}` : chart.title}
+                  />
                 </th>
               ))}
             </tr>

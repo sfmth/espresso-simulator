@@ -224,8 +224,7 @@ pub fn build_traced(recipe: &Recipe) -> Result<(Built, BTreeSet<String>), ApiErr
     }
 
     // Input models.
-    let bean_state = bean::resolve(&mut ctx, &recipe.bean, presets)?;
-    let mut bean = bean::model(&mut ctx, &bean_state)?;
+    let (bean_state, mut bean) = bean::resolve_and_model(&mut ctx, &recipe.bean, presets)?;
     if recipe.chemistry.as_ref().and_then(|c| c.enabled) == Some(false) {
         bean.species
             .retain(|s| ["caffeine", "trigonelline", "cqa5", "acids"].contains(&s.id));

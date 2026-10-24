@@ -425,13 +425,28 @@ pub(crate) fn psd(
         bounds::check(x, 0.0, bounds::MAX_GAP_UM, "grinder.gap_at_ref_um", "µm")
     })?;
     let gap_per_unit = bounds::opt(g.gap_per_unit_um, |x| {
-        bounds::check_pos(
+        let value = bounds::check(
             x,
+            -bounds::MAX_GAP_PER_UNIT_UM,
             bounds::MAX_GAP_PER_UNIT_UM,
             "grinder.gap_per_unit_um",
             "µm",
-        )
+        )?;
+        if value == 0.0 {
+            return Err(ApiError("grinder.gap_per_unit_um must be nonzero".into()));
+        }
+        Ok(value)
     })?;
+    if g.setting_ref.is_some_and(|value| !value.is_finite()) {
+        return Err(ApiError(
+            "grinder.setting_ref must be a finite number".into(),
+        ));
+    }
+    let reference_source = if g.setting_ref.is_some() {
+        "recipe:grinder.setting_ref"
+    } else {
+        ""
+    };
     let mut setting_used = None;
     let mut gap = if let Some(gap_um) = g.gap_um {
         bounds::check_pos(gap_um, bounds::MAX_GAP_UM, "grinder.gap_um", "µm")?;
@@ -471,8 +486,8 @@ pub(crate) fn psd(
         };
         setting_used = Some(s.v);
         Val::new(
-            g0.v + step.v * (s.v - dial.reference),
-            join(&[&s.src, &g0.src, &step.src]),
+            g0.v + step.v * (s.v - g.setting_ref.unwrap_or(dial.reference)),
+            join(&[&s.src, &g0.src, &step.src, reference_source]),
         )
     } else {
         match (g.setting, gap_at_ref, gap_per_unit) {
@@ -482,8 +497,11 @@ pub(crate) fn psd(
                 }
                 setting_used = Some(s);
                 Val::new(
-                    g0 + step * s,
-                    "recipe:grinder.setting, recipe:grinder.gap_at_ref_um, recipe:grinder.gap_per_unit_um",
+                    g0 + step * (s - g.setting_ref.unwrap_or(0.0)),
+                    join(&[
+                        "recipe:grinder.setting, recipe:grinder.gap_at_ref_um, recipe:grinder.gap_per_unit_um",
+                        reference_source,
+                    ]),
                 )
             }
             _ => {

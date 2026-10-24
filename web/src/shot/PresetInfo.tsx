@@ -39,18 +39,21 @@ export function PresetInfo({ preset }: { preset: PresetBase | undefined }) {
   return (
     <div className="preset-info">
       <p className="preset-description">{preset.description}</p>
-      <p className="badges" role="group" aria-label="Preset flags and evidence">
-        <FlagBadges flags={preset.flags} />
-        <span className="badge">Evidence grade {preset.evidence_grade}</span>
-        <span className="badge">{preset.tag}</span>
-      </p>
-      {preset.notes.length > 0 && (
-        <ul className="preset-notes">
-          {preset.notes.map((note) => (
-            <li key={note}>{note}</li>
-          ))}
-        </ul>
-      )}
+      <details className="preset-model-details">
+        <summary>Sources and assumptions</summary>
+        <p className="badges" role="group" aria-label="Preset flags and evidence">
+          <FlagBadges flags={preset.flags} />
+          <span className="badge">Evidence grade {preset.evidence_grade}</span>
+          <span className="badge">{preset.tag}</span>
+        </p>
+        {preset.notes.length > 0 && (
+          <ul className="preset-notes">
+            {preset.notes.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        )}
+      </details>
     </div>
   );
 }
@@ -59,13 +62,13 @@ export function PresetInfo({ preset }: { preset: PresetBase | undefined }) {
 export function BuildNotes({ notes, stale }: { notes: readonly string[]; stale?: boolean }) {
   if (notes.length === 0) return null;
   return (
-    <div className="build-notes">
-      <p className="build-notes-title">From the model{stale ? ' (for earlier inputs)' : ''}:</p>
+    <details className="build-notes">
+      <summary>Calculation notes{stale ? ' for earlier settings' : ''}</summary>
       <ul>
         {notes.map((note) => (
           <li key={note}>{note}</li>
         ))}
       </ul>
-    </div>
+    </details>
   );
 }

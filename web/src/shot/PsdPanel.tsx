@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import type uPlot from 'uplot';
 import { LineChart, type ChartSeriesSpec } from '../components/LineChart';
 import type { SizeClass } from '../engine/shotTypes';
+import { HelpButton } from '../help/HelpButton';
 import { formatTick } from '../lab/format';
 import { fixed, percent, sig } from './format';
 import { HelpHeading } from './fields';
@@ -119,7 +120,10 @@ export function PsdPanel({ runs }: { runs: readonly PsdRun[] }) {
   return (
     <div className="panel-stack">
       <figure className="chart">
-        <figcaption>Particle-size distribution (volume density per unit ln d)</figcaption>
+        <figcaption>
+          Particle-size distribution
+          <HelpButton term="output.psd.distribution" />
+        </figcaption>
         <LineChart
           data={psdChart.data}
           series={psdChart.series}
@@ -139,36 +143,51 @@ export function PsdPanel({ runs }: { runs: readonly PsdRun[] }) {
       </figure>
       {psd && (
         <>
-          <HelpHeading id="psd-stats" term="x50" level={4}>
+          <HelpHeading id="psd-stats" term="output.psd.distribution" level={4}>
             Distribution statistics
           </HelpHeading>
           <dl className="tiles tiles-compact" aria-labelledby="psd-stats">
             <div className="tile">
-              <dt>X50 (median)</dt>
+              <dt>
+                X50 (median)
+                <HelpButton term="output.psd.x50" />
+              </dt>
               <dd>
                 <span className="tile-value">{sig(psd.x50_um, 3)} µm</span>
               </dd>
             </div>
             <div className="tile">
-              <dt>Fines below 100 µm</dt>
+              <dt>
+                Fines below 100 µm
+                <HelpButton term="output.psd.fines" />
+              </dt>
               <dd>
                 <span className="tile-value">{percent(psd.fines_fraction)}</span>
               </dd>
             </div>
             <div className="tile">
-              <dt>D[3,2] (Sauter)</dt>
+              <dt>
+                D[3,2] (Sauter)
+                <HelpButton term="output.psd.d32" />
+              </dt>
               <dd>
                 <span className="tile-value">{sig(psd.d32_um, 3)} µm</span>
               </dd>
             </div>
             <div className="tile">
-              <dt>D[4,3]</dt>
+              <dt>
+                D[4,3]
+                <HelpButton term="output.psd.d43" />
+              </dt>
               <dd>
                 <span className="tile-value">{sig(psd.d43_um, 3)} µm</span>
               </dd>
             </div>
             <div className="tile">
-              <dt>Source</dt>
+              <dt>
+                Source
+                <HelpButton term="output.psd.source" />
+              </dt>
               <dd>
                 <span className="tile-value">
                   {psd.source === 'measured' ? 'Measured' : 'Model'}
@@ -180,7 +199,10 @@ export function PsdPanel({ runs }: { runs: readonly PsdRun[] }) {
               </dd>
             </div>
             <div className="tile">
-              <dt>Size classes</dt>
+              <dt>
+                Size classes
+                <HelpButton term="output.psd.classes" />
+              </dt>
               <dd>
                 <span className="tile-value">{psd.classes}</span>
               </dd>
@@ -189,13 +211,25 @@ export function PsdPanel({ runs }: { runs: readonly PsdRun[] }) {
           {psd.mixture.length > 0 && (
             <div className="table-wrap">
               <table>
-                <caption>The log-normal components of the model distribution</caption>
+                <caption>
+                  The log-normal components of the model distribution
+                  <HelpButton term="output.psd.mixture" />
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">Component</th>
-                    <th scope="col">Volume share</th>
-                    <th scope="col">Mode (µm)</th>
-                    <th scope="col">Width (σ of ln d)</th>
+                    <th scope="col">
+                      Volume share
+                      <HelpButton term="output.psd.mixture" label="Component volume share" />
+                    </th>
+                    <th scope="col">
+                      Mode (µm)
+                      <HelpButton term="output.psd.mixture" label="Component mode" />
+                    </th>
+                    <th scope="col">
+                      Width (σ of ln d)
+                      <HelpButton term="output.psd.mixture" label="Component log width" />
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -214,7 +248,10 @@ export function PsdPanel({ runs }: { runs: readonly PsdRun[] }) {
         </>
       )}
       <figure className="chart">
-        <figcaption>Extraction yield by particle size at the end of the shot</figcaption>
+        <figcaption>
+          Extraction yield by particle size at the end of the shot
+          <HelpButton term="output.psd.class-ey" />
+        </figcaption>
         <LineChart
           data={classChart.data}
           series={classChart.series}
@@ -233,16 +270,27 @@ export function PsdPanel({ runs }: { runs: readonly PsdRun[] }) {
         <div className="table-wrap">
           <table>
             <caption>
-              Size classes handed to the solver
+              Particle sizes used in the calculation
               {classEy.length !== classes.length
-                ? ` (tier ${current.tier} reports ${classEy.length} merged classes; their yields are listed below)`
+                ? ` (this calculation combines them into ${classEy.length} groups; their yields are listed below)`
                 : ''}
             </caption>
             <thead>
               <tr>
-                <th scope="col">Diameter (µm)</th>
-                <th scope="col">Volume share</th>
-                {classEy.length === classes.length && <th scope="col">EY at the end</th>}
+                <th scope="col">
+                  Diameter (µm)
+                  <HelpButton term="output.psd.distribution" label="Size-class diameter" />
+                </th>
+                <th scope="col">
+                  Volume share
+                  <HelpButton term="output.psd.distribution" label="Size-class volume share" />
+                </th>
+                {classEy.length === classes.length && (
+                  <th scope="col">
+                    EY at the end
+                    <HelpButton term="output.psd.class-ey" label="Size-class extraction yield" />
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -260,8 +308,17 @@ export function PsdPanel({ runs }: { runs: readonly PsdRun[] }) {
               <caption>Merged classes reported by the solver</caption>
               <thead>
                 <tr>
-                  <th scope="col">Diameter (µm)</th>
-                  <th scope="col">EY at the end</th>
+                  <th scope="col">
+                    Diameter (µm)
+                    <HelpButton term="output.psd.classes" label="Merged size-class diameter" />
+                  </th>
+                  <th scope="col">
+                    EY at the end
+                    <HelpButton
+                      term="output.psd.class-ey"
+                      label="Merged size-class extraction yield"
+                    />
+                  </th>
                 </tr>
               </thead>
               <tbody>

@@ -67,8 +67,11 @@ builds it into a physical spec (`buildShotSpec`) and simulates it
 summary and a problem count; a section opens by itself when a new problem
 appears in it):
 
-- **Bean**: preset (or the default bean), Arabica share, roast level, days off
-  roast, process, bean temperature, growing altitude, variety group and storage.
+- **Coffee**: source-linked US single origins, a custom coffee, or a mixture of
+  up to six single origins by relative dry mass. Species, named roast assumptions,
+  age, process, origin/variety and optional measured roast color are retained.
+  Exact physical roast indices and imported legacy species mixtures remain under
+  technical details.
   Empty fields show the preset's value. Altitude and variety are recorded
   descriptors; no universal composition multiplier is assumed for them.
 - **Brew water**: alkalinity and total hardness (mg/L as CaCO₃), calcium,
@@ -110,21 +113,23 @@ appears in it):
   switching to the preset's pump type copies its values into the fields.
   Choosing another machine preset brings its program, pump and vent default
   (with an undo when it drops your own program or pump).
-- **Stop and numerics**: beverage mass and/or time; the tier Run uses (0
-  preview, 1 standard); the number of size classes.
-- **Sandbox overrides**: a searchable browser of the parameter registry (id,
+- **Shot stop**: beverage mass and/or time. **Calculation accuracy** expands
+  Standard/Fast preview and the number of size classes.
+- **Advanced model parameters**: a searchable browser of the parameter registry (id,
   value, unit, range, tag, evidence grade, sources), by default limited to the
   parameters the last build used, where any parameter can be given your own
   value; overridden parameters are marked and can be reset one by one or all
   at once. Overrides of ids this version's registry lacks (an old file or
   draft) are dropped with a notice, or listed with a Remove button.
 
-Every preset picker shows the preset's description, flags (generic, estimated,
-unverified, disputed, maintainer's own gear) and notes. Every field's valid
+Input controls and result labels have contextual help with meaning, simulation
+impact, measurement methods and relevant inexpensive instruments. Preset sources,
+assumptions and calculation notes are expandable. Sources and model limits remain
+available without developer milestones in the normal controls. Every field's valid
 range is read from `../data/schema/recipe.schema.json`, the builder's
 plausibility bounds, so the editor cannot drift from the builder; numbers may
 use a decimal comma ("18,5"). After each build, the builder's notes
-(assumptions, clamped inputs) appear in the section they concern, and an error
+(assumptions, clamped inputs) are available under Calculation notes in their section, and an error
 the builder reports (for example a dose that does not fit the basket) is shown
 in an alert and next to the field it names; **Go to the field** opens its
 section (and Advanced) and focuses it. A failure of the engine itself (a trap
@@ -376,3 +381,10 @@ a pin or an override moves the focus to a neighbour. Placeholders (preset and
 registry values) clear 4.5:1 contrast. Each result panel has an error boundary,
 so a failing panel never blanks the page. Light and dark themes
 follow the system setting; the layout works down to phone width.
+
+## Practical equipment and coffee controls
+
+See [the shared contract](../docs/model/practical-controls.md) for signed grinder
+calibration, component mixture math, recorded coffee facts, catalogue provenance,
+help behavior and measurement limitations. The catalogue is bundled for offline
+use; opening an external source or shop link is an explicit user action.

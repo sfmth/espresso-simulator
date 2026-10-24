@@ -51,6 +51,37 @@ function setup() {
   );
   return { engine, calls };
 }
+it.each([
+  [-10, -5],
+  [3000, 3010],
+])('searches custom grinder numbers from %s to %s', async (min, max) => {
+  useShotStore.getState().patchForm('grinder', {
+    mode: 'family',
+    by: 'setting',
+    family: 'flat-traditional',
+    preset: '',
+    setting: String(min),
+    setting_ref: String(min),
+    gap_at_ref_um: '190',
+    gap_per_unit_um: '-1',
+  });
+  const search = vi.spyOn(inverse, 'searchRecipes').mockResolvedValue({
+    mode: 'recipe',
+    candidates: [],
+    evaluations: 1,
+    skipped: 0,
+    notes: [],
+    modelError: 'unavailable',
+  });
+  setup();
+  await screen.findByText(/This journal lasts only for this session/);
+  fireEvent.change(screen.getByLabelText(/^Minimum grind/), { target: { value: String(min) } });
+  fireEvent.change(screen.getByLabelText(/^Maximum grind/), { target: { value: String(max) } });
+  fireEvent.click(screen.getByRole('button', { name: 'Find ranked recipes' }));
+  await waitFor(() => expect(search).toHaveBeenCalledOnce());
+  expect(search.mock.calls[0][3].controls?.grinder).toEqual({ min, max, step: 1 });
+});
+
 it('saves a prediction before enabling a measured record and preserves trimmed setup names', async () => {
   const { calls } = setup();
   await screen.findByText(/This journal lasts only for this session/);
@@ -74,7 +105,7 @@ it('saves a prediction before enabling a measured record and preserves trimmed s
   expect(
     within(screen.getByRole('table', { name: 'Shot journal' })).getByText(/29.0 s/),
   ).toBeTruthy();
-  expect(screen.getByText(/V9 remains open/)).toBeTruthy();
+  expect(screen.getByText(/Accuracy check incomplete/)).toBeTruthy();
   const scorecard = screen.getByRole('region', { name: 'Earlier local calibration scorecard' });
   expect(
     within(scorecard).getByText(/does not grade equipment profiles from Set up equipment/),

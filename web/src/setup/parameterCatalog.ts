@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** Search coordinates use recipe/registry units, never display-scaled fractions. */
-import type { Catalog, Recipe, RegistryParameter } from '../engine/shotTypes';
+import type { BeanInput, Catalog, Recipe, RegistryParameter } from '../engine/shotTypes';
 import { BEAN_PROCESSES, BEAN_STORAGE, BEAN_VARIETIES, DISTRIBUTIONS } from '../engine/shotTypes';
 import { FIELDS, phaseFieldMeta, type FieldMeta, type PhaseField } from '../shot/recipeFields';
 import type { SetupParameter, SetupValue } from './inferenceTypes';
@@ -109,8 +109,7 @@ export function setSetupValue(
     next.machine.pump = value === 'vibratory' ? { type: 'vibratory' } : { type: 'ideal' };
   }
   if (path === 'grinder.family' && next.grinder.preset) {
-    // Keep the calibrated dial mapping when replacing the burr family. A
-    // generic-family dial has reference zero, while named dials have a ref.
+    // Keep the calibrated dial reference when replacing the burr family.
     const preset = catalog.presets.grinders.find((p) => p.id === next.grinder.preset);
     if (preset?.family === value) {
       next.grinder.family = value;
@@ -118,14 +117,9 @@ export function setSetupValue(
     }
     if (preset && next.grinder.gap_um == null) {
       const slope = next.grinder.gap_per_unit_um ?? preset.dial.gap_per_unit_um;
-      const intercept =
-        (next.grinder.gap_at_ref_um ?? preset.dial.gap_at_ref_um) - slope * preset.dial.ref;
-      if (intercept < 0)
-        throw new Error(
-          'This named dial cannot be converted to a generic family without changing its reference. Select a generic family and explicit gap first.',
-        );
       next.grinder.setting ??= preset.dial.default;
-      next.grinder.gap_at_ref_um = intercept;
+      next.grinder.setting_ref ??= preset.dial.ref;
+      next.grinder.gap_at_ref_um ??= preset.dial.gap_at_ref_um;
       next.grinder.gap_per_unit_um = slope;
     }
     delete next.grinder.preset;
@@ -147,8 +141,113 @@ function registryBounds(p: RegistryParameter): { min?: number; max?: number } {
   };
 }
 
-export function inferenceParameters(recipe: Recipe, catalog: Catalog): SetupParameter[] {
+/** Each blend leaf keeps its own physical descriptors and source facts. */
+function coffeeParameters(recipe: Recipe, catalog: Catalog): SetupParameter[] {
   const out: SetupParameter[] = [];
+  const recorded = 'Recorded only; this coffee fact does not supply a physical coefficient.';
+  const metadata = (bean: BeanInput, prefix: string, group: string) => {
+    const visit = (input: unknown, path: string) => {
+      if (input && typeof input === 'object') {
+        for (const [key, value] of Object.entries(input)) visit(value, `${path}.${key}`);
+      } else if (primitive(input) !== undefined) {
+        const value = primitive(input)!;
+        out.push({
+          path,
+          label: path.split('.coffee.')[1].replaceAll('_', ' '),
+          unit: '',
+          kind: typeof value === 'number' ? 'number' : 'category',
+          value,
+          choices: typeof value === 'number' ? undefined : [value],
+          min: path.endsWith('.roast_color.value') ? 0 : undefined,
+          group,
+          modeled: false,
+          reason: recorded,
+        });
+      }
+    };
+    visit(bean.coffee, `${prefix}.coffee`);
+  };
+  const leaf = (bean: BeanInput, prefix: string, group: string) => {
+    const preset =
+      catalog.presets.beans.find((p) => p.id === bean.preset) ??
+      catalog.presets.beans.find((p) => p.default);
+    const defaults: Record<string, unknown> = {
+      ...preset,
+      preset: preset?.id,
+      bean_temp_c:
+        recipe.overrides?.['model.thermal.room_temperature'] ??
+        catalog.registry.parameters.find((p) => p.id === 'model.thermal.room_temperature')?.default,
+      storage: 'sealed',
+    };
+    const value = (field: string) =>
+      primitive((bean as Record<string, unknown>)[field] ?? defaults[field]);
+    for (const [path, meta] of Object.entries(FIELDS)) {
+      if (!path.startsWith('bean.') || path.startsWith('bean.coffee.')) continue;
+      const field = path.slice(5);
+      const scale = 10 ** (meta.shift ?? 0);
+      out.push({
+        path: `${prefix}.${field}`,
+        label: meta.label,
+        unit: meta.shift ? 'fraction' : meta.unit,
+        kind: 'number',
+        value: value(field),
+        min: meta.min === undefined ? undefined : meta.min / scale,
+        max: meta.max === undefined ? undefined : meta.max / scale,
+        step: meta.integer ? 1 : undefined,
+        group,
+        modeled: field !== 'altitude_m',
+        reason: field === 'altitude_m' ? recorded : undefined,
+      });
+    }
+    for (const [field, label, choices] of [
+      ['preset', 'Coffee preset', catalog.presets.beans.map((p) => p.id)],
+      ['process', 'Coffee process', [...BEAN_PROCESSES]],
+      ['storage', 'Bean storage', [...BEAN_STORAGE]],
+      ['variety_group', 'Variety', [...BEAN_VARIETIES]],
+    ] as [string, string, string[]][])
+      out.push({
+        path: `${prefix}.${field}`,
+        label,
+        unit: '',
+        kind: 'category',
+        value: value(field),
+        choices,
+        group,
+        modeled: field !== 'variety_group',
+        reason: field === 'variety_group' ? recorded : undefined,
+      });
+    metadata(bean, prefix, group);
+  };
+  if (recipe.bean.components) {
+    metadata(recipe.bean, 'bean', 'Coffee blend');
+    recipe.bean.components.forEach((component, i) => {
+      const start = out.length;
+      const prefix = `bean.components.${i}`;
+      const group = `Coffee ${i + 1}${component.bean.coffee?.name ? ` · ${component.bean.coffee.name}` : ''}`;
+      out.push({
+        path: `${prefix}.weight`,
+        label: 'Relative dry coffee weight',
+        unit: 'relative',
+        kind: 'number',
+        value: component.weight,
+        min: Number.MIN_VALUE,
+        group,
+        modeled: true,
+        reason:
+          'Only relative proportions affect the blend; scaling every weight equally cannot be identified from a shot.',
+      });
+      leaf(component.bean, `${prefix}.bean`, group);
+      // Component context must also be in each label: the constraint cards
+      // and recorded-shot selectors can show several coffees together.
+      for (const parameter of out.slice(start))
+        parameter.label = `Coffee ${i + 1}: ${parameter.label}`;
+    });
+  } else leaf(recipe.bean, 'bean', 'Coffee');
+  return out;
+}
+
+export function inferenceParameters(recipe: Recipe, catalog: Catalog): SetupParameter[] {
+  const out: SetupParameter[] = coffeeParameters(recipe, catalog);
   const reg = (id: string): number | undefined =>
     recipe.overrides?.[id] ?? catalog.registry.parameters.find((p) => p.id === id)?.default;
   const inherited = (id: string, preset?: number | null): number | undefined => {
@@ -184,6 +283,7 @@ export function inferenceParameters(recipe: Recipe, catalog: Catalog): SetupPara
     'bean.storage': 'sealed',
     'grinder.family': family?.id,
     'grinder.setting': grinder?.dial.default,
+    'grinder.setting_ref': grinder?.dial.ref ?? 0,
     'grinder.gap_at_ref_um': grinder?.dial.gap_at_ref_um,
     'grinder.gap_per_unit_um': grinder?.dial.gap_per_unit_um,
     'grinder.burr_diameter_mm': grinder?.burr_diameter_mm,
@@ -249,6 +349,7 @@ export function inferenceParameters(recipe: Recipe, catalog: Catalog): SetupPara
   for (const [path, meta] of Object.entries(FIELDS)) {
     if (
       path.startsWith('stop.') ||
+      path.startsWith('bean.') ||
       path.startsWith('numerics.') ||
       path.includes('.profile_mm.') ||
       path.startsWith('grinder.psd.')
@@ -262,13 +363,21 @@ export function inferenceParameters(recipe: Recipe, catalog: Catalog): SetupPara
       continue;
     let reason: string | undefined;
     if (
-      ['grinder.burr_diameter_mm', 'grinder.rpm', 'bean.altitude_m', 'prep.tamp_kgf'].includes(path)
+      [
+        'grinder.burr_diameter_mm',
+        'grinder.rpm',
+        'bean.altitude_m',
+        'prep.tamp_kgf',
+        'water.hardness_mg_l_caco3',
+        'water.calcium_mg_l',
+        'water.magnesium_mg_l',
+      ].includes(path)
     )
       reason = 'Recorded only; this setting has no physical effect in the current model.';
     if (path.startsWith('grinder.') && recipe.grinder.psd)
       reason = 'The measured particle distribution replaces the grinder model.';
     if (
-      ['grinder.gap_at_ref_um', 'grinder.gap_per_unit_um'].includes(path) &&
+      ['grinder.setting_ref', 'grinder.gap_at_ref_um', 'grinder.gap_per_unit_um'].includes(path) &&
       recipe.grinder.gap_um != null
     )
       reason = 'An explicit burr gap replaces the dial calibration.';
@@ -310,14 +419,6 @@ export function inferenceParameters(recipe: Recipe, catalog: Catalog): SetupPara
       modeled: !reason,
       reason,
     });
-  addChoice('bean.process', 'Coffee process', [...BEAN_PROCESSES]);
-  addChoice('bean.storage', 'Bean storage', [...BEAN_STORAGE]);
-  addChoice(
-    'bean.variety_group',
-    'Variety',
-    [...BEAN_VARIETIES],
-    'Recorded only; no physical effect in the current model.',
-  );
   addChoice(
     'grinder.family',
     'Burr family',
@@ -339,7 +440,6 @@ export function inferenceParameters(recipe: Recipe, catalog: Catalog): SetupPara
   addChoice('machine.vent_headspace', 'Three-way valve vents after stop', [false, true]);
   addChoice('machine.pump.type', 'Pump type', ['ideal', 'vibratory']);
   for (const [path, label, choices] of [
-    ['bean.preset', 'Coffee preset', catalog.presets.beans.map((p) => p.id)],
     ['grinder.preset', 'Grinder preset', catalog.presets.grinders.map((p) => p.id)],
     ['basket.preset', 'Basket preset', catalog.presets.baskets.map((p) => p.id)],
     ['machine.preset', 'Machine preset', catalog.presets.machines.map((p) => p.id)],
@@ -414,15 +514,26 @@ export function inferenceParameters(recipe: Recipe, catalog: Catalog): SetupPara
       recipe.overrides?.[parameter.id] == null &&
       parameter.default_from !== 'calibration'
     ) {
-      const roast = recipe.bean.roast_level ?? bean?.roast_level ?? 0.5;
-      resolved = Math.max(
-        0.2,
-        Math.min(
-          0.8,
-          reg('model.bean.intraparticle_porosity_medium')! +
-            reg('model.bean.intraparticle_porosity_roast_slope')! * (roast - 0.5),
-        ),
-      );
+      const porosity = (input: BeanInput) => {
+        const preset = catalog.presets.beans.find((p) => p.id === input.preset) ?? bean;
+        const roast = input.roast_level ?? preset?.roast_level ?? 0.5;
+        return Math.max(
+          0.2,
+          Math.min(
+            0.8,
+            reg('model.bean.intraparticle_porosity_medium')! +
+              reg('model.bean.intraparticle_porosity_roast_slope')! * (roast - 0.5),
+          ),
+        );
+      };
+      const components = recipe.bean.components;
+      if (components?.length) {
+        // Every leaf shares the global skeletal density. Sum porous particle
+        // volumes by dry mass, matching the native homogeneous-bed mixture.
+        const total = components.reduce((sum, c) => sum + c.weight, 0);
+        resolved =
+          1 - 1 / components.reduce((sum, c) => sum + c.weight / total / (1 - porosity(c.bean)), 0);
+      } else resolved = porosity(recipe.bean);
     }
     out.push({
       path,

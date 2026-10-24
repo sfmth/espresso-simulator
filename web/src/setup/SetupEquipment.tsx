@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { tabId } from '../components/ModeTabs';
+import { HelpField, HelpButton } from '../help/HelpButton';
 import { useEngine } from '../engine/EngineContext';
 import { isAbortError } from '../engine/engine';
 import { datedName, downloadJson } from '../shot/download';
@@ -27,6 +28,7 @@ import { inferenceParameters } from './parameterCatalog';
 import { SetupCandidates } from './SetupCandidates';
 import { createSetupStorage, SETUP_SCHEMA } from './setupStorage';
 import './SetupEquipment.css';
+import { MeasurementTools } from '../help/MeasurementTools';
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 export function SetupEquipment({ active = true }: { active?: boolean }) {
@@ -286,6 +288,36 @@ export function SetupEquipment({ active = true }: { active?: boolean }) {
           <a href="#setup-find">3. Possible setups</a>
         </li>
       </ol>
+      <section className="panel setup-essentials" aria-labelledby="setup-essentials-title">
+        <h3 id="setup-essentials-title">What you need to know</h3>
+        <p>
+          Start with the information on your coffee bag and a scale. Leave uncertain details as
+          estimates or give the solver a range.
+        </p>
+        <ul>
+          <li>
+            <strong>Coffee:</strong> origin, species, processing, the roaster’s roast description
+            and roast date. <HelpButton term="roast" label="Coffee bag information" />
+          </li>
+          <li>
+            <strong>Recipe:</strong> dry dose, final cup weight and shot time, using the same timer
+            start each time. <HelpButton term="dose" label="Dose and shot measurements" />
+          </li>
+          <li>
+            <strong>Equipment:</strong> your grinder number, basket size, preparation and machine
+            temperature setting. <HelpButton term="grind" label="Equipment settings" />
+          </li>
+          <li>
+            <strong>Optional:</strong> measured coffee TDS, brew-water temperature and a water
+            analysis can narrow the possibilities.{' '}
+            <HelpButton term="tds" label="Optional measurements" />
+          </li>
+        </ul>
+        <details>
+          <summary>Inexpensive measuring tools</summary>
+          <MeasurementTools />
+        </details>
+      </section>
       {notice && (
         <p className="run-warning" role="status">
           {notice}
@@ -318,16 +350,14 @@ export function SetupEquipment({ active = true }: { active?: boolean }) {
             <fieldset disabled={running} className="setup-unframed">
               <legend className="visually-hidden">Equipment facts and settings</legend>
               <div className="setup-fields">
-                <label className="field">
-                  Equipment setup name
+                <HelpField label="Equipment setup name" term="setup-name">
                   <input
                     value={doc.name}
                     maxLength={120}
                     onChange={(e) => update((d) => ({ ...d, name: e.target.value }))}
                   />
-                </label>
-                <label className="field">
-                  Known heating system
+                </HelpField>
+                <HelpField label="Known heating system" term="heater">
                   <select
                     value={doc.facts.heater}
                     onChange={(e) =>
@@ -344,9 +374,11 @@ export function SetupEquipment({ active = true }: { active?: boolean }) {
                     <option value="boiler">Boiler</option>
                     <option value="thermoblock">Thermoblock</option>
                   </select>
-                </label>
-                <label className="field">
-                  Machine display / set temperature (°C)
+                </HelpField>
+                <HelpField
+                  label="Machine display / set temperature (°C)"
+                  term="display-temperature"
+                >
                   <input
                     type="number"
                     min="0"
@@ -366,12 +398,9 @@ export function SetupEquipment({ active = true }: { active?: boolean }) {
                       }));
                     }}
                   />
-                </label>
+                </HelpField>
               </div>
-              <p className="note">
-                Heater type and the machine display are recorded facts. Brew-water temperature below
-                is separate. Boiler recovery and PID behavior are not modeled yet.
-              </p>
+
               <ConstraintContextProvider
                 parameters={parameters}
                 constraints={doc.constraints}
@@ -489,8 +518,7 @@ export function SetupEquipment({ active = true }: { active?: boolean }) {
               unmarked values remain visible assumptions.
             </p>
             <div className="button-row">
-              <label className="field">
-                Search depth
+              <HelpField label="Search depth" term="search-depth">
                 <select
                   value={budget}
                   disabled={running}
@@ -499,7 +527,7 @@ export function SetupEquipment({ active = true }: { active?: boolean }) {
                   <option value={480}>Standard · up to 480 simulations</option>
                   <option value={1440}>Deeper · up to 1,440 simulations</option>
                 </select>
-              </label>
+              </HelpField>
               <button
                 className="button button-primary"
                 type="button"

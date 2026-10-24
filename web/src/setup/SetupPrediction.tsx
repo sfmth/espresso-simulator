@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import { HelpButton } from '../help/HelpButton';
 import { useEffect, useRef, useState } from 'react';
 import { useEngine } from '../engine/EngineContext';
 import { isAbortError } from '../engine/engine';
@@ -105,7 +106,7 @@ export function validateAlternativeGrind(recipe: Recipe, catalog: Catalog, build
   const step = grinder.gap_per_unit_um ?? preset?.dial.gap_per_unit_um;
   if (referenceGap == null || step == null)
     throw new Error('This setup has no complete dial calibration for the requested grind.');
-  const gap = referenceGap + step * (setting - (preset?.dial.ref ?? 0));
+  const gap = referenceGap + step * (setting - (grinder.setting_ref ?? preset?.dial.ref ?? 0));
   if (!close(resolved?.gap_um, gap))
     throw new Error(
       'The engine would clamp the gap produced by this dial calibration. Choose a supported setting before comparing this setup.',
@@ -272,10 +273,22 @@ export function SetupPrediction({
               <thead>
                 <tr>
                   <th>Setup</th>
-                  <th>Time</th>
-                  <th>Final cup</th>
-                  <th>TDS</th>
-                  <th>EY</th>
+                  <th>
+                    Time
+                    <HelpButton term="shot-time" label="Time" />
+                  </th>
+                  <th>
+                    Final cup
+                    <HelpButton term="beverage" label="Final cup" />
+                  </th>
+                  <th>
+                    TDS
+                    <HelpButton term="tds" label="TDS" />
+                  </th>
+                  <th>
+                    EY
+                    <HelpButton term="ey" label="EY" />
+                  </th>
                 </tr>
               </thead>
               <tbody>

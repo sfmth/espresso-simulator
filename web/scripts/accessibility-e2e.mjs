@@ -13,6 +13,7 @@ import axe from 'axe-core';
 import { chromium } from 'playwright-core';
 import { completeInitialSetup } from './setup-helper.mjs';
 import { exerciseSetupInference } from './setup-inference-checks.mjs';
+import { exercisePracticalControls } from './practical-controls-checks.mjs';
 
 const webDir = fileURLToPath(new URL('../', import.meta.url));
 const dist = resolve(webDir, 'dist');
@@ -253,7 +254,10 @@ try {
   await burrParts.screenshot({ path: resolve(output, 'parts-grinder-phone.png') });
   await filterParts.screenshot({ path: resolve(output, 'parts-portafilter-phone.png') });
   await page.setViewportSize({ width: 1280, height: 900 });
-  const help = page.getByRole('button', { name: 'What is Roast level?', exact: true });
+  const help = page
+    .locator('.field')
+    .filter({ has: page.getByLabel('Roast description', { exact: true }) })
+    .getByRole('button', { name: 'What is Roast information?', exact: true });
   await activate(help);
   check(
     (await help.getAttribute('aria-expanded')) === 'true' && (await focused(help)),
@@ -318,22 +322,22 @@ try {
   const dial = page.locator('#panel-dial-in');
   await dial.getByText(/Journal saved on this device in IndexedDB/).waitFor();
   await audit(page, 'Dial-in · dark');
-  await dial.getByLabel('Bag and setup name').fill('Keyboard bag');
+  await dial.getByLabel('Bag and setup name', { exact: true }).fill('Keyboard bag');
   await dial.getByLabel('Shot name', { exact: true }).fill('Keyboard shot');
   await activate(dial.getByRole('button', { name: 'Predict and save before pulling' }));
   await dial.getByRole('button', { name: 'Save measurements' }).waitFor({ timeout: 60000 });
   const record = dial.getByRole('button', { name: /Record shot.*Keyboard shot/ });
   await activate(record); // close the initially selected prediction
   await activate(record); // explicitly reopen from its journal row
-  const timeId = await dial.getByLabel('Measured time (s)').getAttribute('id');
+  const timeId = await dial.getByLabel('Measured time (s)', { exact: true }).getAttribute('id');
   await page.waitForFunction((id) => document.activeElement?.id === id, timeId);
   check(
     (await record.getAttribute('aria-expanded')) === 'true' &&
-      (await focused(dial.getByLabel('Measured time (s)'))),
+      (await focused(dial.getByLabel('Measured time (s)', { exact: true }))),
     'Record shot identifies its expanded form and moves focus to its first field',
   );
   await audit(page, 'Journal with measurement form · dark');
-  await dial.getByLabel('Measured time (s)').fill('28');
+  await dial.getByLabel('Measured time (s)', { exact: true }).fill('28');
   await dial.getByLabel('Final beverage (g)', { exact: true }).fill('36');
   await activate(dial.getByRole('button', { name: 'Save measurements' }));
   await dial.getByText('Measured shot saved.', { exact: true }).waitFor();
@@ -349,7 +353,7 @@ try {
 
   await activate(page.getByRole('tab', { name: 'Explore', exact: true }));
   const explore = page.locator('.explore');
-  await explore.getByLabel('Displayed particles').selectOption('5000');
+  await explore.getByLabel('Displayed particles', { exact: true }).selectOption('5000');
   await activate(explore.getByRole('button', { name: 'Run Explore', exact: true }));
   await explore
     .getByText('Surface-pool content remaining:', { exact: false })
@@ -372,7 +376,9 @@ try {
     (await cell.getAttribute('aria-live')) === 'polite' && /wetted/i.test(await cell.innerText()),
     'cross-section keyboard selection has a live text readout',
   );
-  await explore.getByLabel('Cross-section field').selectOption('liquid_conc_kg_m3');
+  await explore
+    .getByLabel('Cross-section field', { exact: true })
+    .selectOption('liquid_conc_kg_m3');
   check(
     /Liquid solubles.*kg\/m³/.test(await cell.innerText()),
     'selected-cell text follows the chosen liquid-solubles field and units',
@@ -423,8 +429,8 @@ try {
   await page.emulateMedia({ colorScheme: 'light' });
   await audit(page, 'Coupled Explore · light');
 
-  await explore.getByLabel('Simulation resolution').selectOption('high');
-  await explore.getByLabel('Displayed particles').selectOption('5000');
+  await explore.getByLabel('Simulation resolution', { exact: true }).selectOption('high');
+  await explore.getByLabel('Displayed particles', { exact: true }).selectOption('5000');
   await activate(explore.getByRole('button', { name: 'Run Explore', exact: true }));
   await explore
     .locator('.explore-section-grid-size')
@@ -483,29 +489,31 @@ try {
     'deleting the final journal row restores focus to the journal heading',
   );
 
-  const setupContext = await browser.newContext({
-    viewport: { width: 1280, height: 900 },
-    locale: 'en-US',
-    colorScheme: 'light',
-    serviceWorkers: 'block',
-    acceptDownloads: true,
-  });
-  try {
-    setupContext.on('request', (req) => {
-      if (!req.url().startsWith(origin + '/') && !req.url().startsWith('blob:'))
-        foreign.push(req.url());
+  for (const exercise of [exerciseSetupInference, exercisePracticalControls]) {
+    const setupContext = await browser.newContext({
+      viewport: { width: 1280, height: 900 },
+      locale: 'en-US',
+      colorScheme: 'light',
+      serviceWorkers: 'block',
+      acceptDownloads: true,
     });
-    const setupPage = await setupContext.newPage();
-    setupPage.on('pageerror', (error) => errors.push(error.message));
-    await setupPage.goto(origin + prefix);
-    await exerciseSetupInference(setupPage, {
-      check,
-      audit,
-      capture: (surface, name) =>
-        surface.screenshot({ path: resolve(output, `${name}.png`), fullPage: true }),
-    });
-  } finally {
-    await setupContext.close();
+    try {
+      setupContext.on('request', (req) => {
+        if (!req.url().startsWith(origin + '/') && !req.url().startsWith('blob:'))
+          foreign.push(req.url());
+      });
+      const setupPage = await setupContext.newPage();
+      setupPage.on('pageerror', (error) => errors.push(error.message));
+      await setupPage.goto(origin + prefix);
+      await exercise(setupPage, {
+        check,
+        audit,
+        capture: (surface, name) =>
+          surface.screenshot({ path: resolve(output, `${name}.png`), fullPage: true }),
+      });
+    } finally {
+      await setupContext.close();
+    }
   }
 
   await page.goto(origin + prefix + 'privacy.html');

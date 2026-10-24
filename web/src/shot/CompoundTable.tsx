@@ -7,6 +7,7 @@
  * dissolved solids come first, from the same run.
  */
 import { useState } from 'react';
+import { HelpButton } from '../help/HelpButton';
 import type {
   Catalog,
   CompoundMeta,
@@ -149,15 +150,24 @@ function CompoundMetadata({
       <summary>Composition and transport evidence</summary>
       <dl className="provenance-list">
         <div>
-          <dt>Transport</dt>
+          <dt>
+            Transport
+            <HelpButton term="output.compound.transport" />
+          </dt>
           <dd>{meta.transport_evidence}</dd>
         </div>
         <div>
-          <dt>Composition</dt>
+          <dt>
+            Composition
+            <HelpButton term="output.compound.composition" />
+          </dt>
           <dd>{meta.composition_evidence}</dd>
         </div>
         <div>
-          <dt>TDS accounting</dt>
+          <dt>
+            TDS accounting
+            <HelpButton term="output.accounting" />
+          </dt>
           <dd>
             {meta.counts_toward_tds
               ? 'Dissolved species; compared with lumped coffee solubles.'
@@ -271,6 +281,7 @@ export function CompoundTable({
       <tr key={s.id} data-species={s.id}>
         <th scope="row">
           {speciesName(s.id, outcome.build.derived.compounds)}
+          {s.id === 'caffeine' && <HelpButton term="output.compound.caffeine" />}
           {meta && (
             <span className="compound-tags">
               <span className="badge">{meta.kinetic_class}</span>
@@ -312,7 +323,7 @@ export function CompoundTable({
   };
   return (
     <div className="panel-stack">
-      <HelpHeading id="compounds-title" term="provenance" level={4}>
+      <HelpHeading id="compounds-title" term="output.compound.provenance" level={4}>
         Compounds in the cup, with provenance
       </HelpHeading>
       <div className="compound-filters field-grid">
@@ -346,15 +357,30 @@ export function CompoundTable({
           <thead>
             <tr>
               <th scope="col">Compound</th>
-              <th scope="col">In the cup</th>
-              <th scope="col">Extracted / recovered</th>
-              <th scope="col">Content in the dose</th>
-              <th scope="col">Provenance</th>
+              <th scope="col">
+                In the cup
+                <HelpButton term="output.compound.mass" />
+              </th>
+              <th scope="col">
+                Extracted / recovered
+                <HelpButton term="output.compound.recovery" />
+              </th>
+              <th scope="col">
+                Content in the dose
+                <HelpButton term="output.compound.dose" />
+              </th>
+              <th scope="col">
+                Provenance
+                <HelpButton term="output.compound.provenance" />
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr className="compound-total">
-              <th scope="row">Total dissolved solids</th>
+              <th scope="row">
+                Total dissolved solids
+                <HelpButton term="output.cup.true-tds" label="Total dissolved solids" />
+              </th>
               <td className="num">{grams(solubles, 2)}</td>
               <td>
                 {percent(extractable > 0 ? summary.ey / extractable : null)}{' '}
@@ -427,10 +453,13 @@ export function CompoundTable({
       </div>
       {visible.length === 0 && <p className="note">No compounds match these filters.</p>}
       <p className="note">
-        K1–K6 identify transport-model classes, not taste categories. Most compounds use estimated
-        kinetics; open the evidence details for each species. Species are tracked beside the lumped
-        solubles and are not added to total TDS a second time. Lipid, gas and diagnostic inventories
-        have separate accounting in cup chemistry.
+        About transport classes and separate inventories
+        <HelpButton term="output.compound.transport">
+          <p>
+            Species are tracked beside the lumped solubles and are not added to total TDS a second
+            time. Lipid, gas and diagnostic inventories have separate accounting in cup chemistry.
+          </p>
+        </HelpButton>
       </p>
     </div>
   );

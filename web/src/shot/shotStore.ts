@@ -66,6 +66,8 @@ export interface Undo {
   form: RecipeForm;
   /** The button's label: "Undo reset", "Undo load", … */
   label: string;
+  /** Restore associated equipment knowledge together with a structural replacement. */
+  onUndo?: () => void;
 }
 
 export interface ShotRunState {
@@ -181,7 +183,7 @@ export interface ShotState {
   setOverride: (id: string, text: string | null) => void;
   clearOverrides: () => void;
   /** Replaces the form (import, saved recipe, pinned run), keeping an undo. */
-  loadForm: (form: RecipeForm, undoLabel?: string) => void;
+  loadForm: (form: RecipeForm, undoLabel?: string, onUndo?: () => void) => void;
   resetForm: () => void;
   undoLast: () => void;
   revealField: (path: string) => void;
@@ -297,7 +299,7 @@ export function startingForm(): RecipeForm {
   return defaultForm();
 }
 
-export const useShotStore = create<ShotState>()((set) => ({
+export const useShotStore = create<ShotState>()((set, get) => ({
   ...initialState(startingForm()),
 
   setCatalog: (catalog) =>
@@ -326,11 +328,21 @@ export const useShotStore = create<ShotState>()((set) => ({
       return { form: { ...state.form, overrides }, undo: null };
     }),
   clearOverrides: () => set((state) => ({ form: { ...state.form, overrides: {} }, undo: null })),
-  loadForm: (form, undoLabel = 'Undo load') =>
-    set((state) => ({ form, undo: { form: state.form, label: undoLabel } })),
+  loadForm: (form, undoLabel = 'Undo load', onUndo) =>
+    set((state) => ({
+      form,
+      undo: { form: state.form, label: undoLabel, ...(onUndo ? { onUndo } : {}) },
+    })),
   resetForm: () =>
     set((state) => ({ form: defaultForm(), undo: { form: state.form, label: 'Undo reset' } })),
-  undoLast: () => set((state) => (state.undo ? { form: state.undo.form, undo: null } : {})),
+  undoLast: () => {
+    const undo = get().undo;
+    if (!undo) return;
+    // Restore knowledge before the recipe. If an external-tab write is refused,
+    // retain the current recipe and recovery action instead of restoring only half.
+    undo.onUndo?.();
+    set({ form: undo.form, undo: null });
+  },
   revealField: (path) =>
     set((state) => ({
       reveal: { path, nonce: state.revealSeq + 1 },

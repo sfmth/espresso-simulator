@@ -6,9 +6,11 @@
  * and aria-invalid. Ids derive from the recipe path, so builder errors that
  * name a path can be matched to their input.
  */
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { InlineConstraintControl } from '../setup/ConstraintContext';
-import { GLOSSARY } from './glossary';
+import { HelpContent } from '../help/HelpButton';
+import { parameterHelp } from '../help/parameterHelp';
+import { useShotStore } from './shotStore';
 
 /** The DOM id of the control for a recipe path. */
 export function fieldId(path: string): string {
@@ -16,12 +18,23 @@ export function fieldId(path: string): string {
 }
 
 /** A help button that shows or hides an explanation of `term` below its row. */
-export function useHelp(id: string, term?: string) {
+export function useHelp(
+  id: string,
+  term?: string,
+  field?: { path: string; label: string; hint?: ReactNode },
+) {
   const [open, setOpen] = useState(false);
-  const entry = term ? GLOSSARY[term] : undefined;
+  const trigger = useRef<HTMLButtonElement>(null);
+  const key = term ?? field?.path;
+  const catalog = useShotStore((s) => s.catalog);
+  const parameter = key?.startsWith('overrides.')
+    ? catalog?.registry.parameters.find((p) => p.id === key.slice(10))
+    : undefined;
+  const entry = key ? parameterHelp(key, field?.label, parameter) : undefined;
   const helpId = `${id}-help`;
   const button = entry ? (
     <button
+      ref={trigger}
       type="button"
       className="help-button"
       aria-expanded={open}
@@ -33,9 +46,26 @@ export function useHelp(id: string, term?: string) {
     </button>
   ) : null;
   const text = entry ? (
-    <p className="help-text" id={helpId} hidden={!open}>
-      {entry.text}
-    </p>
+    <div
+      className="help-text metric-help-content field-help-panel"
+      id={helpId}
+      hidden={!open}
+      role="region"
+      aria-label={`${entry.title} help`}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setOpen(false);
+          trigger.current?.focus();
+        }
+      }}
+    >
+      {open && key && (
+        <HelpContent term={key} label={field?.label}>
+          {field?.hint}
+        </HelpContent>
+      )}
+    </div>
   ) : null;
   return { button, text };
 }
@@ -75,19 +105,13 @@ interface CommonProps {
   className?: string;
 }
 
-function describedBy(id: string, error?: string, hint?: ReactNode): string | undefined {
-  const ids = [error ? `${id}-error` : null, hint ? `${id}-hint` : null].filter(Boolean);
-  return ids.length > 0 ? ids.join(' ') : undefined;
+function describedBy(id: string, error?: string): string | undefined {
+  return error ? `${id}-error` : undefined;
 }
 
-function Messages({ id, error, hint }: { id: string; error?: string; hint?: ReactNode }) {
+function Messages({ id, error }: { id: string; error?: string; hint?: ReactNode }) {
   return (
     <>
-      {hint && (
-        <p className="field-hint" id={`${id}-hint`}>
-          {hint}
-        </p>
-      )}
       {error && (
         <p className="field-error" id={`${id}-error`}>
           {error}
@@ -118,7 +142,7 @@ export function TextField({
   inputMode = 'decimal',
 }: TextFieldProps) {
   const id = fieldId(path);
-  const help = useHelp(id, term);
+  const help = useHelp(id, term, { path, label, hint });
   return (
     <div className={`field${className ? ` ${className}` : ''}`}>
       <div className="field-head">
@@ -135,7 +159,7 @@ export function TextField({
         value={value}
         placeholder={placeholder}
         aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(id, error, hint)}
+        aria-describedby={describedBy(id, error)}
         onChange={(event) => onChange(event.target.value)}
       />
       <Messages id={id} error={error} hint={hint} />
@@ -169,7 +193,7 @@ export function SelectField({
   disabled,
 }: SelectFieldProps) {
   const id = fieldId(path);
-  const help = useHelp(id, term);
+  const help = useHelp(id, term, { path, label, hint });
   const known = options.some((o) => o.value === value);
   return (
     <div className={`field${className ? ` ${className}` : ''}`}>
@@ -183,7 +207,7 @@ export function SelectField({
         value={value}
         disabled={disabled}
         aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(id, error, hint)}
+        aria-describedby={describedBy(id, error)}
         onChange={(event) => onChange(event.target.value)}
       >
         {!known && <option value={value}>{value || '—'}</option>}
@@ -210,7 +234,7 @@ export interface CheckFieldProps {
 
 export function CheckField({ path, label, checked, onChange, hint, term }: CheckFieldProps) {
   const id = fieldId(path);
-  const help = useHelp(id, term);
+  const help = useHelp(id, term, { path, label, hint });
   return (
     <div className="field field-check">
       <div className="field-head">
@@ -218,7 +242,6 @@ export function CheckField({ path, label, checked, onChange, hint, term }: Check
           id={id}
           type="checkbox"
           checked={checked}
-          aria-describedby={hint ? `${id}-hint` : undefined}
           onChange={(event) => onChange(event.target.checked)}
         />
         <label htmlFor={id}>{label}</label>
@@ -253,7 +276,7 @@ export function RadioGroup<T extends string>({
   term?: string;
 }) {
   const id = fieldId(name);
-  const help = useHelp(id, term);
+  const help = useHelp(id, term, { path: name, label: legend });
   return (
     <fieldset className="radio-group">
       <legend>
