@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import { useState } from 'react';
+import { HelpField, HelpButton } from '../help/HelpButton';
 import type { Recipe } from '../engine/shotTypes';
 import type { SetupObservation, SetupParameter } from './inferenceTypes';
 
@@ -80,34 +81,29 @@ export function ObservationEditor({
       }}
     >
       <div className="setup-fields">
-        <label className="field">
-          Observed shot name
+        <HelpField label="Observed shot name" term="shot-label">
           <input value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} />
-        </label>
-        <label className="field">
-          Observed time (s)
+        </HelpField>
+        <HelpField label="Observed time (s)" term="shot-time">
           <input
             value={time}
             onChange={(e) => setTime(e.target.value)}
             inputMode="decimal"
             required
           />
-        </label>
-        <label className="field">
-          Observed cup weight (g)
+        </HelpField>
+        <HelpField label="Observed cup weight (g)" term="beverage">
           <input
             value={mass}
             onChange={(e) => setMass(e.target.value)}
             inputMode="decimal"
             required
           />
-        </label>
-        <label className="field">
-          Measured TDS (%) · optional
+        </HelpField>
+        <HelpField label="Measured TDS (%) · optional" term="tds">
           <input value={tds} onChange={(e) => setTds(e.target.value)} inputMode="decimal" />
-        </label>
-        <label className="field">
-          Timer started at
+        </HelpField>
+        <HelpField label="Timer started at" term="shot-time">
           <select
             value={timeBasis}
             onChange={(e) => setTimeBasis(e.target.value as SetupObservation['timeBasis'])}
@@ -115,9 +111,8 @@ export function ObservationEditor({
             <option value="pump">Pump on</option>
             <option value="first-drip">First drip into the cup</option>
           </select>
-        </label>
-        <label className="field">
-          Cup was weighed
+        </HelpField>
+        <HelpField label="Cup was weighed" term="beverage">
           <select
             value={massBasis}
             onChange={(e) => setMassBasis(e.target.value as SetupObservation['massBasis'])}
@@ -125,7 +120,7 @@ export function ObservationEditor({
             <option value="final">After dripping finished</option>
             <option value="pump-stop">At pump stop</option>
           </select>
-        </label>
+        </HelpField>
       </div>
       <p className="note">
         The timer ends when the pump stops. Record what happened; a prediction is not required.
@@ -133,30 +128,27 @@ export function ObservationEditor({
       <details>
         <summary>Measurement tolerances</summary>
         <div className="setup-fields">
-          <label className="field">
-            Time tolerance (± s)
+          <HelpField label="Time tolerance (± s)" term="tolerance">
             <input
               value={timeTolerance}
               onChange={(e) => setTimeTolerance(e.target.value)}
               inputMode="decimal"
             />
-          </label>
-          <label className="field">
-            Weight tolerance (± g)
+          </HelpField>
+          <HelpField label="Weight tolerance (± g)" term="tolerance">
             <input
               value={massTolerance}
               onChange={(e) => setMassTolerance(e.target.value)}
               inputMode="decimal"
             />
-          </label>
-          <label className="field">
-            TDS tolerance (± percentage points)
+          </HelpField>
+          <HelpField label="TDS tolerance (± percentage points)" term="tolerance">
             <input
               value={tdsTolerance}
               onChange={(e) => setTdsTolerance(e.target.value)}
               inputMode="decimal"
             />
-          </label>
+          </HelpField>
         </div>
       </details>
       <details>
@@ -166,24 +158,26 @@ export function ObservationEditor({
           values in the equipment editor when you record the shot. They override shared values for
           this shot only. All other values come from the setup being inferred.
         </p>
-        <label className="field">
-          Find a shot-specific setting
+        <HelpField label="Find a shot-specific setting" term="shot-settings">
           <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
-        </label>
+        </HelpField>
         <div className="setup-shot-settings">
           {choices.map((p) => (
-            <label className="checkbox-field" key={p.path}>
-              <input
-                type="checkbox"
-                checked={changes.includes(p.path)}
-                onChange={(e) =>
-                  setChanges((old) =>
-                    e.target.checked ? [...old, p.path] : old.filter((path) => path !== p.path),
-                  )
-                }
-              />
-              {p.label}: {String(p.value)} {p.unit}
-            </label>
+            <div key={p.path} className="field-head">
+              <label className="checkbox-field">
+                <input
+                  type="checkbox"
+                  checked={changes.includes(p.path)}
+                  onChange={(e) =>
+                    setChanges((old) =>
+                      e.target.checked ? [...old, p.path] : old.filter((path) => path !== p.path),
+                    )
+                  }
+                />
+                {p.label}: {String(p.value)} {p.unit}
+              </label>
+              <HelpButton term={p.path} label={p.label} />
+            </div>
           ))}
         </div>
         {changes

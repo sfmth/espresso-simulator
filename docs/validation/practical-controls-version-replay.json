@@ -1,0 +1,119 @@
+{
+  "baseline": {
+    "captured_core_version": "0.12.0",
+    "current_extension_sha256": "24fe258762d58be401b953d0d4523acbd71dd64682afbed5357bcb9288af1c96",
+    "old_extension_sha256": "13090176f09f924eece50efe7ac088a9554aa230aa8be29944cb76dd98989898",
+    "source_commit": "bb565b4b30555441b4049ff781e4d5620d5fb4eb"
+  },
+  "date": "2026-10-23",
+  "from_core_version": "0.12.0",
+  "frozen_experiment": {
+    "all_scales_training_metrics_calibration_quality_unchanged": true,
+    "browser_approved": false,
+    "changed_target_rows": 0,
+    "changed_weights": 0,
+    "dataset_without_teacher_and_digest_sha256": "fa1b976ece416fcee38b09f5d2afa1c61ce8711e0600ed7014277181e25b045e",
+    "model_without_teacher_and_linked_digests_sha256": "ecb793dee3f73105e2dd5db2bf286dc72407f1701a1c164b772929eb4a77fc5b",
+    "qualified_small_scope": false,
+    "split_counts": {
+      "boundary": 16,
+      "calibration": 64,
+      "test": 128,
+      "train": 256
+    }
+  },
+  "full_native_replay": {
+    "after_rows_sha256": "fce1986efd8d0012328d74276e43dfd124d164f6180ee2ddbad4ca3f72672005",
+    "before_rows_sha256": "fce1986efd8d0012328d74276e43dfd124d164f6180ee2ddbad4ca3f72672005",
+    "changed_numeric_values": 0,
+    "changed_rows": 0,
+    "numeric_values": 13036890,
+    "rows": 464
+  },
+  "golden_native_checks": {
+    "max_abs_difference": 0.0,
+    "shot_values": 214018,
+    "sphere_values": 4203,
+    "tolerance": 0.0
+  },
+  "identity": {
+    "after": {
+      "artifact_digest": "a690bd23d56deccd0f8f1131b5042d5e54390e9dcdba5c6cf3fa267bb72dc7e8",
+      "dataset_digest": "4a8bef561c67a281616741c03ee717074ec34c91da97ce85b055bb6c3ceae605",
+      "teacher_fingerprint": "2302a903a89a1f0de14d35e02fef4abefae073acd08fac94bc624d4998dd0f0c"
+    },
+    "before": {
+      "artifact_digest": "b894331f97687abe6e4b79c1f731f8da4d1bcd008a6bd6dcb726339b629172cb",
+      "dataset_digest": "ad7c18341d8aa3c9fabbf1f9e55c94fa902010c33a20b836557d95d0f6489c19",
+      "teacher_fingerprint": "04b9dcb6246164ba7705ce23a0e4cb017b793b35617b64a70390fd36ccb75f35"
+    }
+  },
+  "limits": [
+    "This establishes numerical parity for the legacy 464 samples and golden fixtures, not scientific agreement with measured coffee or validation of new component recipes.",
+    "The frozen baseline still fails its original accuracy gate; physics fallback and browser_approved:false are preserved.",
+    "Historical M0-M2 reports and prior version replay receipts retain their original versions and dates."
+  ],
+  "m3_current_cross_language_fixture": {
+    "changed_scientific_values": 0,
+    "checks": 19,
+    "excluded_top_level_fields": [
+      "core_version",
+      "created",
+      "solver_identity",
+      "timing_s"
+    ],
+    "failed_checks": 0,
+    "from_core_version": "0.12.0",
+    "numeric_values": 58804,
+    "regenerated_by": "puckworks-tools m3-validate",
+    "scientific_sha256": "84b6f95fb6bf3c3606930b9d55fbfcad762ec46a9af708886e94f182b5904963",
+    "to_core_version": "0.13.0"
+  },
+  "method": {
+    "compatibility_guard_changes": 0,
+    "digest": "SHA-256 over UTF-8 json.dumps(sort_keys=True,separators=(comma,colon),allow_nan=False).",
+    "equality": "Exact canonical finite JSON SHA-256 per row; every stored scalar target and TDS also checked by exact equality.",
+    "new_training_runs": 0,
+    "payload": "Complete build_shot_spec return and simulate_shot return; only top-level result.core_version removed.",
+    "rows": "All 464 original frozen coordinates replayed with both native extensions. The old extension was copied before rebuilding and its source/probe identity matched the published 0.12.0 teacher."
+  },
+  "reason": "Optional coffee-component and grinder-coordinate support extends the recipe builder. Existing numeric recipes, solver, registry and presets retain exact legacy outputs.",
+  "schema": "puckworks.release-numeric-replay/1",
+  "teacher_inputs": {
+    "changed_source_files": {
+      "Cargo.lock": {
+        "after": "f57b2951b1f103c8e1839551faf5f254c9d9f2c86dd2d6fa1a3ce8d548c8e5c2",
+        "before": "1d47c91fc094ffaeb9c548223e62b433c9bc3d8e0b657c8845220848c7c0d23c",
+        "change": "0.12.0 to 0.13.0 workspace package versions only."
+      },
+      "Cargo.toml": {
+        "after": "0e29b1847769a6433ccc2a8defefeacf9bc986c1af0fe9cc3af6bc7c82c5416d",
+        "before": "b4dd2ae1dd2bb26cf20e818777da49f4b698007a69ad00e130862695ce8ed8da",
+        "change": "0.12.0 to 0.13.0 release version only."
+      },
+      "crates/puckmodel/src/builder.rs": {
+        "after": "cc243fc876dd4b0bb73ae5cf7992fe6a642a8c3bbdfad52ec3eb284affa0c128",
+        "before": "6f5c9a53195f82955488a7bdb9ef1b19977156cf931637b6b6c1f75cebec5e77",
+        "change": "Opt-in component assembly and source metadata; legacy recipes follow unchanged arithmetic."
+      },
+      "crates/puckmodel/src/models/bean.rs": {
+        "after": "bc7e71ec1ad98aa18ab5aa7b4a30663f9b028af834533a0ac1ae251c8e462534",
+        "before": "e74128f33312fc4a4df0671090f784ba6b8fce98e2fda78a2ff592f59f9c0f3d",
+        "change": "Optional coffee components and metadata; legacy leaf behavior preserved."
+      },
+      "crates/puckmodel/src/models/grinder.rs": {
+        "after": "2a4f8732dcf693ba5c42918c602379bb87b0238d546e7542f668e7afc35b313c",
+        "before": "d9a86403fe76ace31b325ed6de942ed312f21e8ccaf333f9c3a3aab0c2d358d4",
+        "change": "Optional arbitrary dial-coordinate calibration; legacy dial convention preserved."
+      },
+      "crates/puckmodel/src/recipe.rs": {
+        "after": "cfcf7cd7aeb3b7591c837df46d43d4cca114fc5e93892a9480074750d0dda01b",
+        "before": "d573289d4509cb317785d096ed2c3f55a9933597b5a3e87b604daae81b2e4189",
+        "change": "Recipe fields for optional coffee metadata/components and dial-coordinate calibration."
+      }
+    },
+    "unchanged_presets_sha256": "b25aa7145128a4b435cc4626300ce675d78d7e092ee838e181eb85086b878ea7",
+    "unchanged_registry_sha256": "bb1dbdd3ab0bea46ff8c43e3ab01e4788a4c5281cd309e57990d2ded7ecaf2e1"
+  },
+  "to_core_version": "0.13.0"
+}

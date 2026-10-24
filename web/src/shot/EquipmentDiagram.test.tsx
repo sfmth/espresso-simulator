@@ -89,7 +89,7 @@ describe('visual equipment editor', () => {
     fireEvent.click(grinder);
     expect(beans.getAttribute('aria-expanded')).toBe('false');
     expect(within(group).getAllByRole('button', { expanded: true })).toEqual([grinder]);
-    expect(screen.queryByLabelText('Diagram bean preset')).toBeNull();
+    expect(screen.queryByLabelText('Diagram coffee')).toBeNull();
     fireEvent.click(grinder);
     expect(panel().hidden).toBe(true);
   });
@@ -177,18 +177,19 @@ describe('visual equipment editor', () => {
   it('maps bean, basket and stop controls to their actual recipe fields', () => {
     render(<EditorHarness />);
     fireEvent.click(screen.getByRole('button', { name: '1 Beans settings' }));
-    fireEvent.change(screen.getByLabelText('Diagram bean preset'), {
+    fireEvent.change(screen.getByLabelText('Diagram coffee'), {
       target: { value: 'robusta-medium' },
     });
-    fireEvent.change(screen.getByLabelText('Diagram roast level (0–1)'), {
-      target: { value: '0.7' },
+    fireEvent.change(screen.getByLabelText('Diagram roast description'), {
+      target: { value: '0.65' },
     });
     fireEvent.change(screen.getByLabelText('Diagram days off roast'), { target: { value: '14' } });
-    expect(recipe().bean).toEqual({
+    expect(recipe().bean).toMatchObject({
       preset: 'robusta-medium',
-      roast_level: 0.7,
+      roast_level: 0.65,
       days_off_roast: 14,
     });
+    expect(recipe().bean.coffee?.model_roast_basis).toContain('Medium-dark');
     fireEvent.click(screen.getByRole('button', { name: '4 Basket settings' }));
     fireEvent.change(screen.getByLabelText('Diagram basket preset'), {
       target: { value: '54-double' },

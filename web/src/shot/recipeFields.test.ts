@@ -51,6 +51,15 @@ describe('field ranges come from the recipe schema', () => {
     const covered = new Set(
       Object.values(FIELD_SCHEMA_PATHS).map((at) => `${String(at[0])}.${String(at[1])}`),
     );
+    // Component leaves reuse the single-coffee controls and their exact bounds.
+    for (const [prop, rule] of Object.entries(defs.bean_leaf.properties ?? {})) {
+      if (covered.has(`bean.${prop}`)) {
+        expect(rule, `bean_leaf.${prop} must match the shared control`).toEqual(
+          defs.bean.properties?.[prop],
+        );
+        covered.add(`bean_leaf.${prop}`);
+      }
+    }
     const phase = [
       'phase.target',
       'phase.ramp_s',

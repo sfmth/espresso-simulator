@@ -90,7 +90,7 @@ async function currentWorker(page) {
 
 async function waitReady(page) {
   await page
-    .getByLabel('Offline availability')
+    .getByLabel('Offline availability', { exact: true })
     .getByText('Ready for offline use.', { exact: false })
     .waitFor({ timeout: 30000 });
   const status = await currentWorker(page);
@@ -156,7 +156,7 @@ async function exerciseOffline(page, context, url, origin, requests, network, cd
   await page.getByRole('tab', { name: 'Dial in', exact: true }).click();
   const dial = page.locator('#panel-dial-in');
   await dial.getByText(/Journal saved on this device in IndexedDB/).waitFor();
-  await dial.getByLabel('Bag and setup name').fill('Offline test bag');
+  await dial.getByLabel('Bag and setup name', { exact: true }).fill('Offline test bag');
   await dial.getByLabel('Shot name', { exact: true }).fill('Offline retained shot');
   await dial.getByRole('button', { name: 'Predict and save before pulling' }).click();
   await dial.getByRole('button', { name: 'Save measurements' }).waitFor({ timeout: 60000 });
@@ -179,7 +179,7 @@ async function exerciseOffline(page, context, url, origin, requests, network, cd
   // Explore was never opened online; its lazy module and packing worker must come from the saved build.
   await page.getByRole('tab', { name: 'Explore', exact: true }).click();
   const explore = page.locator('.explore');
-  await explore.getByLabel('Displayed particles').selectOption('5000');
+  await explore.getByLabel('Displayed particles', { exact: true }).selectOption('5000');
   await explore.getByRole('button', { name: 'Run Explore', exact: true }).click();
   await explore
     .getByText('Surface-pool content remaining:', { exact: false })
@@ -187,7 +187,7 @@ async function exerciseOffline(page, context, url, origin, requests, network, cd
   await explore.locator('.puck-canvas').waitFor({ timeout: 30000 });
   check(true, 'previously unopened Explore loads its lazy renderer and particle worker offline');
   await page.getByRole('tab', { name: 'Dial in', exact: true }).click();
-  await dial.getByLabel('Bag and setup name').fill('Offline test bag');
+  await dial.getByLabel('Bag and setup name', { exact: true }).fill('Offline test bag');
   await dial.getByRole('rowheader', { name: /Offline retained shot/ }).waitFor();
   const [download] = await Promise.all([
     page.waitForEvent('download'),
@@ -198,7 +198,7 @@ async function exerciseOffline(page, context, url, origin, requests, network, cd
     saved.entries.some((entry) => entry.label === 'Offline retained shot'),
     'saved journal survives offline reload and exports locally',
   );
-  await dial.getByLabel('Import journal or shot log').setInputFiles({
+  await dial.getByLabel('Import journal or shot log', { exact: true }).setInputFiles({
     name: 'offline-journal.json',
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(saved)),
@@ -438,7 +438,7 @@ async function main() {
     await page.reload();
     await waitReady(page);
     await page.getByRole('tab', { name: 'Dial in', exact: true }).click();
-    await page.getByLabel('Bag and setup name').fill('Offline test bag');
+    await page.getByLabel('Bag and setup name', { exact: true }).fill('Offline test bag');
     await page.getByRole('rowheader', { name: /Offline retained shot/ }).waitFor();
     check(true, 'journal survives a release update and fresh offline restart');
     network.blocked = false;

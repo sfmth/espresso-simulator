@@ -66,6 +66,15 @@ function finiteTree(value: unknown, depth = 0, budget = { count: 0 }) {
 }
 /** Evaluates the bounded, local recipe schema, without runtime code generation. */
 function schema(value: unknown, rule: RecordValue, path: string): void {
+  if (rule.not && typeof rule.not === 'object') {
+    let forbidden = true;
+    try {
+      schema(value, rule.not as RecordValue, path);
+    } catch {
+      forbidden = false;
+    }
+    if (forbidden) throw new Error(`${path}: unsupported recipe value`);
+  }
   if (typeof rule.$ref === 'string') {
     const name = rule.$ref.split('/').pop()!;
     return schema(value, object((recipeSchema.$defs as RecordValue)[name], name), path);
@@ -111,6 +120,12 @@ function schema(value: unknown, rule: RecordValue, path: string): void {
     !new RegExp(rule.pattern).test(value)
   )
     throw new Error(`${path}: invalid identifier`);
+  if (
+    typeof value === 'string' &&
+    ((typeof rule.minLength === 'number' && value.length < rule.minLength) ||
+      (typeof rule.maxLength === 'number' && value.length > rule.maxLength))
+  )
+    throw new Error(`${path}: text is outside its supported length`);
   if (Array.isArray(value)) {
     if (
       (typeof rule.minItems === 'number' && value.length < rule.minItems) ||
@@ -141,6 +156,11 @@ function schema(value: unknown, rule: RecordValue, path: string): void {
 export function validateRecipe(value: unknown, path = 'recipe'): asserts value is Recipe {
   schema(value, recipeSchema, path);
   const recipe = value as Recipe;
+  if (recipe.bean.components) {
+    const total = recipe.bean.components.reduce((sum, component) => sum + component.weight, 0);
+    if (!Number.isFinite(total) || total <= 0)
+      throw new Error(`${path}.bean.components: total relative weight must be finite and positive`);
+  }
   const psd = recipe.grinder.psd;
   if (
     psd &&

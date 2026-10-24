@@ -61,9 +61,7 @@ const SECTIONS: readonly SectionSpec[] = [
     title: 'Cup chemistry',
     keys: ['chemistry'],
     summary: (form) =>
-      form.chemistry.enabled === 'no'
-        ? 'Off · legacy species'
-        : 'Acidity · aroma · phases · refractometer',
+      form.chemistry.enabled === 'no' ? 'Off' : 'Acidity · aroma · phases · refractometer',
     render: () => <ChemistrySection />,
   },
   {
@@ -96,14 +94,14 @@ const SECTIONS: readonly SectionSpec[] = [
   },
   {
     id: 'stop',
-    title: 'Stop and numerics',
+    title: 'Shot stop',
     keys: ['stop', 'numerics'],
     summary: stopSummary,
     render: () => <StopSection />,
   },
   {
     id: 'overrides',
-    title: 'Sandbox overrides',
+    title: 'Advanced model parameters',
     keys: ['overrides'],
     summary: (form) => overridesSummary(form),
     render: () => <OverridesSection />,

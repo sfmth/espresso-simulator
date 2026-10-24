@@ -10,6 +10,7 @@
  * the values and the wetted shares.
  */
 import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
+import { HelpButton } from '../help/HelpButton';
 import { rampColor, useChartTheme } from '../components/chartTheme';
 import { BasketOutline, basketFrame } from './BasketDiagram';
 import { wallFromSpec } from './basketGeometry';
@@ -190,6 +191,7 @@ export function CrossSection({ outcome }: { outcome: ShotOutcome }) {
       <div className="section-controls">
         <div className="field">
           <label htmlFor="section-field">Show</label>
+          <HelpButton term={field === 'local_ey' ? 'uniformity' : 'local-solubles'} label="Show" />
           <select
             id="section-field"
             value={field}
@@ -201,6 +203,7 @@ export function CrossSection({ outcome }: { outcome: ShotOutcome }) {
         </div>
         <div className="field">
           <label htmlFor="section-stretch">Depth scale</label>
+          <HelpButton term={'visual-selection'} label="Depth scale" />
           <select
             id="section-stretch"
             value={vScale}
@@ -220,11 +223,13 @@ export function CrossSection({ outcome }: { outcome: ShotOutcome }) {
               onChange={(e) => setFixedScale(e.target.checked)}
             />
             <label htmlFor="section-fixed-scale">Same colour scale for every snapshot</label>
+            <HelpButton term={'visual-selection'} label="Same colour scale for every snapshot" />
           </div>
         </div>
       </div>
       <div className="section-scrubber">
         <label htmlFor="section-time">Snapshot</label>
+        <HelpButton term={'visual-selection'} label="Snapshot" />
         <input
           id="section-time"
           type="range"
@@ -412,7 +417,10 @@ export function CrossSection({ outcome }: { outcome: ShotOutcome }) {
             </caption>
             <thead>
               <tr>
-                <th scope="col">Depth (mm)</th>
+                <th scope="col">
+                  Depth (mm)
+                  <HelpButton term="bed-height" label="Puck depth" />
+                </th>
                 {bands.map((b, col) => (
                   <th scope="col" key={col}>
                     {fixed(b.inner, 1)}–{fixed(b.outer, 1)} mm
@@ -439,7 +447,10 @@ export function CrossSection({ outcome }: { outcome: ShotOutcome }) {
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Depth (mm)</th>
+                  <th scope="col">
+                    Depth (mm)
+                    <HelpButton term="bed-height" label="Puck depth" />
+                  </th>
                   {bands.map((b, col) => (
                     <th scope="col" key={col}>
                       {fixed(b.inner, 1)}–{fixed(b.outer, 1)} mm

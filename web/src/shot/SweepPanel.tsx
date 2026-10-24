@@ -7,6 +7,7 @@
  * Cancel. Sweeps can be pinned and overlaid when they vary the same input.
  */
 import { useMemo, useState } from 'react';
+import { HelpButton } from '../help/HelpButton';
 import type uPlot from 'uplot';
 import { LineChart, type ChartSeriesSpec } from '../components/LineChart';
 import type { Catalog } from '../engine/shotTypes';
@@ -28,6 +29,13 @@ import {
 } from './sweep';
 import { useSweep } from './useSweep';
 
+const sweepTerm = (id: string) =>
+  ({
+    shot_time: 'shot-time',
+    max_pressure: 'pressure',
+    first_drops: 'first-drops',
+    ey_std: 'uniformity',
+  })[id] ?? id;
 interface SweepLine {
   label: string;
   slot: number;
@@ -75,7 +83,7 @@ function OutputChart({
   return (
     <figure className="chart chart-small" data-chart={`sweep-${output}`}>
       <figcaption>
-        {info.label} ({info.unit})
+        {info.label} ({info.unit})<HelpButton term={sweepTerm(output)} label={info.label} />
       </figcaption>
       <LineChart
         data={data}
@@ -116,7 +124,13 @@ function TargetPicker({
   return (
     <>
       <div className="field">
-        <label htmlFor="sweep-target">Vary</label>
+        <div className="field-head">
+          <label htmlFor="sweep-target">Vary</label>
+          <HelpButton
+            term={value.startsWith('override:') ? value.replace('override:', 'overrides.') : value}
+            label="Parameter to vary"
+          />
+        </div>
         <select
           id="sweep-target"
           value={isRegistry ? '__registry__' : value}
@@ -255,6 +269,10 @@ export function SweepPanel({ validation, catalog }: { validation: FormResult; ca
                 {key === 'from' ? 'From' : key === 'to' ? 'To' : `Points (2–${MAX_SWEEP_POINTS})`}
                 {key !== 'points' && target?.unit ? ` (${target.unit})` : ''}
               </label>
+              <HelpButton
+                term="sweep"
+                label={key === 'points' ? 'Number of sweep points' : `Sweep ${key}`}
+              />
               <input
                 id={`sweep-${key}`}
                 type="text"
@@ -274,14 +292,17 @@ export function SweepPanel({ validation, catalog }: { validation: FormResult; ca
             </div>
           ))}
           <div className="field">
-            <label htmlFor="sweep-tier">Tier</label>
+            <div className="field-head">
+              <label htmlFor="sweep-tier">Calculation mode</label>
+              <HelpButton term="numerical" label="Sweep calculation mode" />
+            </div>
             <select
               id="sweep-tier"
               value={config.tier}
               onChange={(e) => patch({ tier: e.target.value === '1' ? '1' : '0' })}
             >
-              <option value="0">Tier 0, fast preview</option>
-              <option value="1">Tier 1, standard (slower)</option>
+              <option value="0">Fast preview</option>
+              <option value="1">Standard (slower)</option>
             </select>
           </div>
         </div>
@@ -289,22 +310,25 @@ export function SweepPanel({ validation, catalog }: { validation: FormResult; ca
           <legend>Plot</legend>
           <div className="radio-options">
             {SWEEP_OUTPUTS.map((o) => (
-              <label key={o.id} className="radio-option">
-                <input
-                  type="checkbox"
-                  checked={config.outputs.includes(o.id)}
-                  onChange={(e) =>
-                    patch({
-                      outputs: e.target.checked
-                        ? SWEEP_OUTPUTS.map((x) => x.id).filter(
-                            (id) => id === o.id || config.outputs.includes(id),
-                          )
-                        : config.outputs.filter((id) => id !== o.id),
-                    })
-                  }
-                />
-                {o.label}
-              </label>
+              <div className="field-head" key={o.id}>
+                <label className="radio-option">
+                  <input
+                    type="checkbox"
+                    checked={config.outputs.includes(o.id)}
+                    onChange={(e) =>
+                      patch({
+                        outputs: e.target.checked
+                          ? SWEEP_OUTPUTS.map((x) => x.id).filter(
+                              (id) => id === o.id || config.outputs.includes(id),
+                            )
+                          : config.outputs.filter((id) => id !== o.id),
+                      })
+                    }
+                  />
+                  {o.label}
+                </label>
+                <HelpButton term={sweepTerm(o.id)} label={o.label} />
+              </div>
             ))}
           </div>
         </fieldset>
@@ -415,7 +439,7 @@ export function SweepPanel({ validation, catalog }: { validation: FormResult; ca
                   <th scope="col">{run.unit ? `${run.label} (${run.unit})` : run.label}</th>
                   {SWEEP_OUTPUTS.map((o) => (
                     <th scope="col" key={o.id}>
-                      {o.label} ({o.unit})
+                      {o.label} ({o.unit})<HelpButton term={sweepTerm(o.id)} label={o.label} />
                     </th>
                   ))}
                 </tr>

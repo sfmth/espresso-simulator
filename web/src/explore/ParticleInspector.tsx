@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import { HelpButton, HelpField } from '../help/HelpButton';
 import { useId } from 'react';
 import type { ParticleProfile } from './microstructure';
 export function ParticleInspector({
@@ -30,9 +31,11 @@ export function ParticleInspector({
       className="panel panel-stack particle-inspector"
       aria-labelledby="particle-inspector-title"
     >
-      <h3 id="particle-inspector-title">Particle inspector</h3>
-      <label>
-        Particle number
+      <h3 id="particle-inspector-title">
+        Particle inspector
+        <HelpButton term="ey" label="Particle extraction yield" />
+      </h3>
+      <HelpField label="Particle number" term="visual-selection">
         <input
           type="number"
           min={1}
@@ -43,7 +46,7 @@ export function ParticleInspector({
             onSelect(Math.max(0, Math.min(count - 1, Math.round(Number(e.target.value)) - 1)))
           }
         />
-      </label>
+      </HelpField>
       <p id={eyId} aria-live={playing ? 'off' : 'polite'} aria-atomic="true">
         Particle {index + 1} extraction yield:{' '}
         {ey !== null && Number.isFinite(ey)

@@ -1,6 +1,6 @@
 # Puckworks: consolidated plan and goals
 
-*Version 0.12.0 · Last updated 2026-10-21 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support, an initial accessibility pass and offline scalar surrogate tooling are available. The first surrogate fails its accuracy gate. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
+*Version 0.13.0 · Last updated 2026-10-23 · Status: M2 integrated; M3 uncertainty/taste, M4 experimental Dial-in and M5 experimental Explore implemented. M6 offline support, an initial accessibility pass and offline scalar surrogate tooling are available. The first surrogate fails its accuracy gate. Scientific validation and target laptop/phone G5 performance gates remain open (see §12 and §15).*
 
 Puckworks is an open-source espresso simulator that runs entirely in the browser. It follows a shot from bean to cup:
 
@@ -10,6 +10,12 @@ Puckworks is an open-source espresso simulator that runs entirely in the browser
 - what reaches the cup: strength (TDS), extraction yield (EY), per-compound amounts, caffeine, and an explainable taste estimate.
 
 Every number carries its provenance and an uncertainty band.
+
+The 0.13.0 practical-controls update adds contextual help, measurement guidance,
+user-number grinder calibration, a sourced US single-origin catalogue and custom
+single-origin mixtures. Published roast facts are preserved separately from model
+estimates. See the [contract](model/practical-controls.md) and
+[exact compatibility receipt](validation/practical-controls-version-replay.json).
 
 This plan consolidates the planning Q&A of 2026-10-13 and three research notes. The notes hold the equations, parameter tables and full references.
 

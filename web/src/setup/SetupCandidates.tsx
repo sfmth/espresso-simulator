@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import { HelpButton } from '../help/HelpButton';
 import type { SetupCandidate, SetupParameter } from './inferenceTypes';
 
 export function CandidateChecks({ candidate }: { candidate: SetupCandidate }) {
@@ -91,7 +92,10 @@ export function SetupCandidates({
               const parameter = parameters.find((p) => p.path === path);
               return (
                 <div key={path}>
-                  <dt>{parameter?.label ?? path}</dt>
+                  <dt>
+                    {parameter?.label ?? path}
+                    <HelpButton term={path} label={parameter?.label ?? path} />
+                  </dt>
                   <dd>
                     {typeof value === 'number'
                       ? Number(value.toPrecision(6)).toString()

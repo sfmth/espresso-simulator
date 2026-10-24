@@ -1,28 +1,28 @@
 {
   "dataset": "scalar-v1.json",
-  "dataset_digest": "ad7c18341d8aa3c9fabbf1f9e55c94fa902010c33a20b836557d95d0f6489c19",
+  "dataset_digest": "4a8bef561c67a281616741c03ee717074ec34c91da97ce85b055bb6c3ceae605",
   "environment": {
     "numpy": "2.5.4",
     "python": "3.14.7",
     "scipy": "1.18.1"
   },
   "failed_rows": 0,
-  "file_sha256": "1fc71030ee842e7330bef5bde8d9d7938ac011d37a870c29c19eb0974695718c",
+  "file_sha256": "f23647f271b34c520f0567fe6a1f62d2be78013f9f1c9bc758c11810906c559b",
   "generation_command": ".venv/bin/puckworks-tools surrogate-generate --output data/surrogates/scalar-v1.json --train 256 --calibration 64 --test 128 --jobs 4 --seed 20261020",
   "generation_wall_time_s": 99.2,
   "generator_sha256": "368990e744599e09185435ab237eb7ceb6d138ce88f07f8f602ef6a3aa23f173",
   "identity_refresh": {
     "changed_frozen_rows": 0,
     "changed_model_weights": 0,
-    "date": "2026-10-21",
-    "from_core_version": "0.11.1",
+    "date": "2026-10-23",
+    "from_core_version": "0.12.0",
     "new_training_runs": 0,
-    "prior_dataset_digest": "907b970c9fedf4fdaaffbf95912453e7421b6821beaa8e397851e1bc66bde308",
-    "prior_model_artifact_digest": "5056d7b63950300e7d2ca2117489d363d72e026f7db884e08c41fe368ef47a1a",
-    "prior_teacher_fingerprint": "3ef32958d2985a69195c52bc1d38ab7186e4d07dd2b51b3fe56f399eb1e73d7c",
-    "reason": "Shared release version bump for equipment inference and setup workflow; Rust solver, registry and presets unchanged.",
-    "replay_report": "../../docs/validation/setup-inference-version-replay.json",
-    "to_core_version": "0.12.0"
+    "prior_dataset_digest": "ad7c18341d8aa3c9fabbf1f9e55c94fa902010c33a20b836557d95d0f6489c19",
+    "prior_model_artifact_digest": "b894331f97687abe6e4b79c1f731f8da4d1bcd008a6bd6dcb726339b629172cb",
+    "prior_teacher_fingerprint": "04b9dcb6246164ba7705ce23a0e4cb017b793b35617b64a70390fd36ccb75f35",
+    "reason": "Opt-in coffee component and grinder coordinate support changes source identity; complete legacy replay is exactly unchanged. Registry and presets are unchanged.",
+    "replay_report": "../../docs/validation/practical-controls-version-replay.json",
+    "to_core_version": "0.13.0"
   },
   "license": "GPL-2.0-or-later",
   "limits": [
@@ -31,7 +31,7 @@
     "First frozen model failed qualification; no held-out-driven tuning.",
     "Wall time is a local observation, not a target-device or browser speed gate."
   ],
-  "model_artifact_digest": "b894331f97687abe6e4b79c1f731f8da4d1bcd008a6bd6dcb726339b629172cb",
+  "model_artifact_digest": "a690bd23d56deccd0f8f1131b5042d5e54390e9dcdba5c6cf3fa267bb72dc7e8",
   "origin": "Synthetic outputs generated locally by the Puckworks Tier 1 solver; no measured coffee shots or personal data.",
   "schema": "puckworks.surrogate-provenance/1",
   "source_module": "python/puckworks_tools/surrogate_data.py",
@@ -42,6 +42,6 @@
     "train": 256
   },
   "successful_rows": 464,
-  "teacher_fingerprint": "04b9dcb6246164ba7705ce23a0e4cb017b793b35617b64a70390fd36ccb75f35",
+  "teacher_fingerprint": "2302a903a89a1f0de14d35e02fef4abefae073acd08fac94bc624d4998dd0f0c",
   "workers": 4
 }

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import { HelpField } from '../help/HelpButton';
 import { useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { rampColor, useChartTheme } from '../components/chartTheme';
 import { BasketOutline, basketFrame } from '../shot/BasketDiagram';
@@ -111,16 +112,14 @@ export function ExploreSection({
   return (
     <section className="panel panel-stack explore-section" aria-labelledby="explore-section-title">
       <h3 id="explore-section-title">Puck cross-section</h3>
-      <label>
-        Cross-section field
+      <HelpField label="Cross-section field" term="visual-selection">
         <select value={field} onChange={(e) => setField(e.target.value as SectionField)}>
           <option value="local_ey">Local extraction yield (%)</option>
           <option value="liquid_conc_kg_m3">Liquid solubles (kg/m³)</option>
         </select>
-      </label>
+      </HelpField>
       <div className="explore-controls">
-        <label>
-          Depth view
+        <HelpField label="Depth view" term="visual-selection">
           <select
             aria-label="Depth view"
             value={depthView}
@@ -129,7 +128,7 @@ export function ExploreSection({
             <option value="overview">Overview</option>
             <option value="detail">Cell detail</option>
           </select>
-        </label>
+        </HelpField>
         <label className="explore-checkbox">
           <input
             type="checkbox"
@@ -207,8 +206,7 @@ export function ExploreSection({
       {selected && (
         <>
           <div className="explore-controls">
-            <label>
-              Column
+            <HelpField label="Column" term="visual-selection">
               <select
                 aria-label="Column"
                 value={selected.col}
@@ -220,9 +218,8 @@ export function ExploreSection({
                   </option>
                 ))}
               </select>
-            </label>
-            <label>
-              Depth cell
+            </HelpField>
+            <HelpField label="Depth cell" term="visual-selection">
               <input
                 type="number"
                 min={1}
@@ -230,7 +227,7 @@ export function ExploreSection({
                 value={selected.cell + 1}
                 onChange={(e) => onSelect({ ...selected, cell: Number(e.target.value) - 1 })}
               />
-            </label>
+            </HelpField>
           </div>
         </>
       )}

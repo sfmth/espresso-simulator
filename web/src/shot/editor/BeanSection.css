@@ -1,0 +1,90 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+.coffee-editor,
+.coffee-leaf,
+.coffee-component-body {
+  display: grid;
+  gap: 1rem;
+}
+.coffee-source {
+  border-left: 3px solid var(--accent, #bd803f);
+  padding: 0.2rem 1rem;
+}
+.coffee-source p {
+  margin: 0.35rem 0;
+}
+.coffee-details {
+  border-top: 1px solid var(--border, #d8d1c5);
+  padding-top: 0.65rem;
+}
+.coffee-details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.coffee-details[open] > .field-grid {
+  margin-top: 0.8rem;
+}
+.coffee-component {
+  border: 1px solid var(--border, #d8d1c5);
+  border-radius: 0.65rem;
+}
+.coffee-component > summary {
+  cursor: pointer;
+  padding: 0.8rem 1rem;
+}
+.coffee-component > summary strong {
+  float: right;
+  margin-left: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.coffee-component-body {
+  padding: 0 1rem 1rem;
+}
+.coffee-component-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.coffee-component-actions .field {
+  flex: 1 1 9rem;
+}
+.coffee-component-actions .button {
+  margin-bottom: 0.25rem;
+}
+.coffee-blend-bar {
+  height: 0.85rem;
+  display: flex;
+  gap: 2px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--border, #d8d1c5);
+}
+.coffee-share {
+  min-width: 0;
+}
+.coffee-share-0 {
+  background: #a66a3e;
+}
+.coffee-share-1 {
+  background: #586b54;
+}
+.coffee-share-2 {
+  background: #657b91;
+}
+.coffee-share-3 {
+  background: #a97481;
+}
+.coffee-share-4 {
+  background: #a99351;
+}
+.coffee-share-5 {
+  background: #79678c;
+}
+@media (max-width: 540px) {
+  .coffee-component-body {
+    padding: 0 0.7rem 0.8rem;
+  }
+  .coffee-component-actions .button {
+    flex: 1 1 auto;
+  }
+}

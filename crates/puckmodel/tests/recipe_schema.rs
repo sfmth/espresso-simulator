@@ -35,10 +35,10 @@ fn assert_same(rust: &Value, schema_obj: &Value, what: &str) {
 #[test]
 fn schema_mirrors_the_rust_types() {
     let schema: Value = serde_json::from_str(SCHEMA).unwrap();
-    // Serde writes every field (None as null), so any recipe shows all field names.
+    // Include the optional coffee additions, which are omitted on legacy recipes.
     let recipe: Recipe = serde_json::from_value(json!({
         "schema": "puckworks.recipe/1",
-        "bean": {}, "grinder": {"psd": {"diameter_um": [1], "volume_fraction": [1]}},
+        "bean": {"coffee":{},"components":[{"weight":1,"bean":{}}]}, "grinder": {"psd": {"diameter_um": [1], "volume_fraction": [1]}},
         "basket": {"custom": {"profile_mm": [[0, 1], [1, 1]], "perforated_diameter_mm": 1}},
         "prep": {"dose_g": 1}, "machine": {"profile": [{"control": "pump"}]}, "stop": {},
         "water": {}, "chemistry": {}
@@ -71,6 +71,11 @@ fn schema_mirrors_the_rust_types() {
         assert_same(&v[field], def(&schema, name), field);
     }
     assert_same(&v["grinder"]["psd"], def(&schema, "psd"), "grinder.psd");
+    assert_same(
+        &v["bean"]["coffee"],
+        def(&schema, "coffee_metadata"),
+        "bean.coffee",
+    );
     assert_same(
         &v["basket"]["custom"],
         def(&schema, "basket_custom"),

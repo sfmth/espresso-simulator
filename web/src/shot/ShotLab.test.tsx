@@ -170,7 +170,7 @@ describe('ShotLab', () => {
     expect(tile('shot-time')).toBe('30.0 s');
     expect(tile('ratio')).toBe('1 : 2.0');
     expect(status()).toBe('Preview (tier 0). Press Run for the tier-1 result.');
-    expect(screen.getByText('Preview, tier 0')).toBeTruthy();
+    expect(screen.getByText('Fast preview')).toBeTruthy();
     expect(screen.getByText('Fixture warning: not a real result.')).toBeTruthy();
     // Previews are quiet for screen readers.
     expect(announcement()).toBe('');
@@ -574,7 +574,7 @@ describe('ShotLab', () => {
     await advance();
     fake.runs[0].resolve();
     await advance();
-    fireEvent.click(screen.getByLabelText('Live preview (tier 0) while editing'));
+    fireEvent.click(screen.getByLabelText('Live preview while editing'));
     await openSection('prep');
     fireEvent.change(screen.getByLabelText('Dose (g)'), { target: { value: '19' } });
     await advance(250);
@@ -751,6 +751,9 @@ describe('ShotLab', () => {
       'Vents the group after the shot (three-way valve)',
     );
     expect(vent.checked).toBe(true);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'What is Venting the group (three-way valve)?' }),
+    );
     expect(screen.getByText('No drip after the stop. From the preset: yes.')).toBeTruthy();
     fireEvent.click(vent);
     await advance(300);
@@ -845,13 +848,22 @@ describe('ShotLab', () => {
     expect(input('machine.pump.free_flow_ml_s').placeholder).toBe('7 from the preset');
     expect(input('machine.pump.stall_pressure_bar').placeholder).toBe('15 from the preset');
     expect(input('machine.pump.opv_bar').placeholder).toBe('11 from the preset');
+    fireEvent.click(
+      input('machine.pump.free_flow_ml_s').closest('.field')!.querySelector('.help-button')!,
+    );
     expect(screen.getByText('Empty fields take the preset pump’s values.')).toBeTruthy();
+    fireEvent.click(
+      input('machine.pump.opv_bar').closest('.field')!.querySelector('.help-button')!,
+    );
     expect(screen.getByText(/Empty keeps the preset’s valve/)).toBeTruthy();
     // Another type: the registry's defaults.
     fireEvent.click(screen.getByLabelText('Ideal (profiling)'));
     fireEvent.change(input('machine.pump.max_flow_ml_s'), { target: { value: '' } });
     expect(input('machine.pump.max_flow_ml_s').placeholder).toMatch(
       /^\d+(\.\d+)? \(registry default\)$/,
+    );
+    fireEvent.click(
+      input('machine.pump.max_flow_ml_s').closest('.field')!.querySelector('.help-button')!,
     );
     expect(
       screen.getByText(

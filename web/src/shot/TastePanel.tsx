@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** Displays the shared Rust taste model; no sensory calculations live in the UI. */
 import type { UncertaintyResult } from '../engine/m3Types';
+import { HelpButton } from '../help/HelpButton';
 import { fixed, sig } from './format';
 import type { ShotOutcome } from './shotStore';
 import { bandText } from './UncertaintyPanel';
@@ -23,22 +24,20 @@ export function TastePanel({
       data-stale={stale ? 'true' : undefined}
     >
       <div>
-        <h4>Explainable taste estimates</h4>
+        <h4>
+          Explainable taste estimates
+          <HelpButton term="output.taste" />
+        </h4>
         <p className="run-warning">
           <strong>Low trust: unvalidated relative indices.</strong> The chemistry suggests acidity,
           bitterness, astringency and body through explicit heuristic weights. These 0–100 indices
           are not sensory ratings, a quality score or a preference prediction.
         </p>
-        <p className="note">
-          Compare the same attribute between recipes under this model. Values across different
-          attributes cannot be compared or added. Input scenario bands exclude uncertainty in the
-          taste mapping itself.
-        </p>
       </div>
       {!taste ? (
         <p className="note">
           {outcome
-            ? 'This engine result has no taste estimates. Run the recipe with the M3 engine.'
+            ? 'This result has no taste estimates. Enable cup chemistry and run the recipe again.'
             : 'Run a shot to see its taste estimates and their drivers.'}
         </p>
       ) : (
@@ -47,8 +46,10 @@ export function TastePanel({
             {stale && <span className="stale-badge">Taste for earlier inputs</span>}
             <span className={outcome.kind === 'preview' ? 'stale-badge' : 'tier-badge'}>
               {outcome.kind === 'preview'
-                ? 'Central preview, Tier 0'
-                : `Central shot, Tier ${outcome.tier}`}
+                ? 'Central shot · fast preview'
+                : outcome.tier === 0
+                  ? 'Central shot · fast calculation'
+                  : 'Central shot · standard calculation'}
             </span>
             <span className="note">{taste.status.replaceAll('_', ' ')}</span>
           </p>
@@ -67,7 +68,10 @@ export function TastePanel({
                 aria-labelledby={`taste-${attribute.id}-title`}
               >
                 <div className="taste-attribute-heading">
-                  <h4 id={`taste-${attribute.id}-title`}>{attribute.label}</h4>
+                  <h4 id={`taste-${attribute.id}-title`}>
+                    {attribute.label}
+                    <HelpButton term={`output.taste.${attribute.id}`} label={attribute.label} />
+                  </h4>
                   <p>
                     <strong className="taste-index">
                       {attribute.index === null ? 'Unavailable' : fixed(attribute.index, 1)}
@@ -80,9 +84,13 @@ export function TastePanel({
                 </div>
                 {interval && (
                   <p className="scenario-interval">
-                    Tier-0 input scenarios: p05–p95 {bandText(interval, (v) => fixed(v, 1))}; median{' '}
+                    Input scenarios: p05–p95 {bandText(interval, (v) => fixed(v, 1))}; median{' '}
                     {fixed(interval.p50, 1)} ({interval.n} members). These are not confidence limits
                     for the central taste estimate.
+                    <HelpButton
+                      term="output.scenarios"
+                      label={`${attribute.label} scenario range`}
+                    />
                   </p>
                 )}
                 <ul className="taste-assumptions">
@@ -101,8 +109,20 @@ export function TastePanel({
                       <thead>
                         <tr>
                           <th scope="col">Driver</th>
-                          <th scope="col">Model value</th>
-                          <th scope="col">Driver term</th>
+                          <th scope="col">
+                            Model value
+                            <HelpButton
+                              term="output.taste.driver"
+                              label={`${attribute.label} driver value`}
+                            />
+                          </th>
+                          <th scope="col">
+                            Driver term
+                            <HelpButton
+                              term="output.taste.term"
+                              label={`${attribute.label} driver term`}
+                            />
+                          </th>
                           <th scope="col">Evidence and parameters</th>
                         </tr>
                       </thead>
@@ -139,8 +159,8 @@ export function TastePanel({
           })}
           {!uncertainty && (
             <p className="note">
-              Run uncertainty with the current inputs and settings to see Tier-0 input-scenario
-              ranges for these indices.
+              Run input scenarios with the current settings to see possible ranges for these
+              indices.
             </p>
           )}
           <details className="model-notes">
@@ -158,7 +178,13 @@ export function TastePanel({
             </ul>
             <dl className="chemistry-accounting">
               <div>
-                <dt>Chemistry reference temperature</dt>
+                <dt>
+                  Chemistry reference temperature
+                  <HelpButton
+                    term="output.taste.conditions"
+                    label="Chemistry reference temperature"
+                  />
+                </dt>
                 <dd>
                   {taste.conditions.chemistry_reference_temperature_c === null
                     ? 'Unavailable'
@@ -166,15 +192,27 @@ export function TastePanel({
                 </dd>
               </div>
               <div>
-                <dt>Serving temperature correction</dt>
+                <dt>
+                  Serving temperature correction
+                  <HelpButton
+                    term="output.taste.conditions"
+                    label="Serving temperature correction"
+                  />
+                </dt>
                 <dd>Not modelled</dd>
               </div>
               <div>
-                <dt>Added dilution water</dt>
+                <dt>
+                  Added dilution water
+                  <HelpButton term="output.taste.conditions" label="Added dilution water" />
+                </dt>
                 <dd>{fixed(taste.conditions.dilution_water_g, 1)} g</dd>
               </div>
               <div>
-                <dt>Time in cup</dt>
+                <dt>
+                  Time in cup
+                  <HelpButton term="output.taste.conditions" label="Time in cup" />
+                </dt>
                 <dd>
                   {taste.conditions.aroma_age_s === null
                     ? 'Unavailable'

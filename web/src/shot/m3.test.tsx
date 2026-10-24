@@ -147,8 +147,8 @@ describe('M3 honest output labels', () => {
   it('leaves the central values intact and labels separate Tier-0 ranges', () => {
     render(<SummaryTiles outcome={outcome()} uncertainty={fixtureUncertainty()} />);
     expect(document.querySelector('[data-tile="ey"] .tile-value')?.textContent).toBe('20.0%');
-    expect(screen.getByText('Tier 0 p05–p95: 17.0%–24.0%')).toBeTruthy();
-    expect(screen.getByText(/not confidence intervals for the central shot/)).toBeTruthy();
+    expect(screen.getByText('Scenario range: 17.0%–24.0%')).toBeTruthy();
+    expect(screen.getByText(/Ranges show separate input scenarios/)).toBeTruthy();
   });
 
   it('explains taste drivers, grade-D mapping and unavailable estimates without inventing scores', () => {
@@ -188,7 +188,7 @@ describe('M3 honest output labels', () => {
       </fake.wrapper>,
     );
     fireEvent.change(screen.getByLabelText('Scenario count'), { target: { value: '8' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Run uncertainty (Tier 0)' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run uncertainty' }));
     await act(async () => {
       fake.pending[0].resolve({ result: scenario, runtimeMs: 12 });
       await Promise.resolve();
@@ -196,7 +196,7 @@ describe('M3 honest output labels', () => {
     expect(screen.getByText(/1 scenarios failed/)).toBeTruthy();
     expect(screen.getByText('Scenario 8: Invalid scenario example')).toBeTruthy();
     expect(
-      screen.getByRole('table', { name: 'Central shot and Tier-0 baseline comparison' }),
+      screen.getByRole('table', { name: 'Central shot and preview baseline comparison' }),
     ).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Find an output interval'), {
       target: { value: '/chemistry/acidity/ph' },

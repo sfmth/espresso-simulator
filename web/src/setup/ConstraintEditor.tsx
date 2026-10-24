@@ -9,6 +9,8 @@ import {
   useSetupConstraints,
 } from './ConstraintContext';
 import './ConstraintEditor.css';
+import { ROAST_ASSUMPTIONS } from '../coffee/roast';
+import { HelpButton } from '../help/HelpButton';
 
 const PAGE_SIZE = 18;
 
@@ -126,6 +128,7 @@ function ParameterConstraint({
         <h4 id={`${id}-heading`}>
           {parameter.label}
           {unit}
+          <HelpButton term={parameter.path} label={parameter.label} />
         </h4>
         <span className={`constraint-badge constraint-badge-${constraint?.mode ?? 'assumed'}`}>
           {constraint?.mode === 'locked'
@@ -137,7 +140,9 @@ function ParameterConstraint({
                 : 'Assumption'}
         </span>
       </div>
-      <p className="note">Current setting: {setupValueText(parameter.value, parameter.unit)}</p>
+      <p className="note">
+        Current setting: {setupValueText(parameter.value, parameter.unit, parameter.path)}
+      </p>
       {parameter.reason && <p className="note">{parameter.reason}</p>}
       <div className="field">
         <label htmlFor={`${id}-mode`}>What is known about {parameter.label}?</label>
@@ -161,14 +166,40 @@ function ParameterConstraint({
           <option value="unknown">Unknown — find a value</option>
         </select>
       </div>
-      {constraint?.mode === 'locked' && parameter.kind === 'number' && (
-        <ConstraintNumber
-          label={`Locked ${parameter.label}${unit}`}
-          value={typeof constraint.value === 'number' ? constraint.value : undefined}
-          onChange={setValue}
-          required
-        />
-      )}
+      {constraint?.mode === 'locked' &&
+        parameter.kind === 'number' &&
+        parameter.path.endsWith('.roast_level') && (
+          <div className="field">
+            <label htmlFor={`${id}-roast`}>
+              Locked {parameter.label}
+              {unit}
+            </label>
+            <select
+              id={`${id}-roast`}
+              value={String(constraint.value)}
+              onChange={(event) => setValue(Number(event.target.value))}
+            >
+              {!ROAST_ASSUMPTIONS.some((roast) => Number(roast.value) === constraint.value) && (
+                <option value={String(constraint.value)}>Imported custom model roast</option>
+              )}
+              {ROAST_ASSUMPTIONS.map((roast) => (
+                <option value={roast.value} key={roast.value}>
+                  {roast.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      {constraint?.mode === 'locked' &&
+        parameter.kind === 'number' &&
+        !parameter.path.endsWith('.roast_level') && (
+          <ConstraintNumber
+            label={`Locked ${parameter.label}${unit}`}
+            value={typeof constraint.value === 'number' ? constraint.value : undefined}
+            onChange={setValue}
+            required
+          />
+        )}
       {constraint?.mode === 'locked' && parameter.kind !== 'number' && (
         <div className="field">
           <label htmlFor={`${id}-value`}>Locked {parameter.label}</label>
@@ -232,8 +263,8 @@ function ParameterConstraint({
       )}
       {parameter.kind === 'number' && parameter.modeled && (
         <p className="note">
-          Supported bounds: {setupValueText(parameter.min)} to{' '}
-          {setupValueText(parameter.max, parameter.unit)}.
+          Supported bounds: {setupValueText(parameter.min, '', parameter.path)} to{' '}
+          {setupValueText(parameter.max, parameter.unit, parameter.path)}.
           {constraint?.mode === 'unknown' ? ' The search may explore this entire range.' : ''}
         </p>
       )}
@@ -312,6 +343,16 @@ export function ConstraintEditor({
   const matching = baseList.filter(
     (parameter) =>
       parameter.path !== requestedParameter?.path &&
+      !(
+        filter === 'selected' &&
+        !selected.length &&
+        !query &&
+        group === 'all' &&
+        (parameter.path.startsWith('overrides.') ||
+          /\.(?:roast_level|arabica_fraction|gap_at_ref_um|gap_per_unit_um|setting_ref)$/.test(
+            parameter.path,
+          ))
+      ) &&
       (group === 'all' || parameter.group === group) &&
       (!query.trim() ||
         `${parameter.label} ${parameter.path} ${parameter.group}`
@@ -453,7 +494,8 @@ export function ConstraintEditor({
             }}
           >
             <option value="selected">
-              My locks and search choices{selected.length === 0 ? ' (none yet — showing all)' : ''}
+              My locks and search choices
+              {selected.length === 0 ? ' (none yet — showing equipment settings)' : ''}
             </option>
             <option value="search">Values to find</option>
             <option value="all">All parameters, including assumptions</option>
@@ -461,8 +503,7 @@ export function ConstraintEditor({
         </div>
       </div>
       <p className="note">
-        {Math.min(limit, sorted.length)} of {sorted.length} matching parameters shown. Numerical
-        accuracy controls are managed by the solver.
+        {Math.min(limit, sorted.length)} of {sorted.length} matching parameters shown.
       </p>
       <div className="constraint-list">
         {sorted.slice(0, limit).map((parameter) => (

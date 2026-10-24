@@ -79,6 +79,7 @@ pub(crate) fn resolve(
     b: &BeanInput,
     presets: &Presets,
 ) -> Result<BeanState, ApiError> {
+    validate_coffee_metadata(b)?;
     let (preset, explicit) = match &b.preset {
         Some(id) => (presets.bean(id)?, true),
         None => (presets.default_bean(), false),
@@ -219,6 +220,221 @@ pub(crate) fn resolve(
         storage,
         temp_c,
     })
+}
+
+fn validate_coffee_metadata(b: &BeanInput) -> Result<(), ApiError> {
+    let Some(c) = &b.coffee else { return Ok(()) };
+    for value in [
+        &c.id,
+        &c.name,
+        &c.roaster,
+        &c.country,
+        &c.region,
+        &c.producer,
+        &c.process_label,
+        &c.roast_label,
+        &c.roast_date,
+        &c.source_url,
+        &c.verified_at,
+        &c.harvest,
+        &c.model_roast_basis,
+    ]
+    .into_iter()
+    .flatten()
+    {
+        if value.chars().count() > 2000 {
+            return Err(ApiError(
+                "bean.coffee: source text must have at most 2000 characters".into(),
+            ));
+        }
+    }
+    if let Some(varieties) = &c.varieties
+        && (varieties.len() > 32 || varieties.iter().any(|v| v.chars().count() > 2000))
+    {
+        return Err(ApiError(
+            "bean.coffee.varieties: use at most 32 names, each at most 2000 characters".into(),
+        ));
+    }
+    if let Some(color) = &c.roast_color
+        && (![
+            "agtron-gourmet",
+            "agtron-commercial",
+            "colorette",
+            "cielab-lstar",
+            "other",
+        ]
+        .contains(&color.scale.as_str())
+            || !["ground", "whole-bean", "unspecified"].contains(&color.sample.as_str())
+            || !color.value.is_finite()
+            || color.value < 0.0
+            || color
+                .instrument
+                .as_ref()
+                .is_some_and(|v| v.chars().count() > 2000))
+    {
+        return Err(ApiError("bean.coffee.roast_color: provide a supported scale, sample type and finite nonnegative reading".into()));
+    }
+    Ok(())
+}
+
+/// Resolve each coffee before mixing its dry-mass inventories. The downstream
+/// bed is a homogeneous aggregate, not a separate extraction model per origin.
+pub(crate) fn resolve_and_model(
+    ctx: &mut Ctx,
+    input: &BeanInput,
+    presets: &Presets,
+) -> Result<(BeanState, BeanOut), ApiError> {
+    let Some(components) = &input.components else {
+        let state = resolve(ctx, input, presets)?;
+        let output = model(ctx, &state)?;
+        return Ok((state, output));
+    };
+    validate_coffee_metadata(input)?;
+    if components.is_empty() || components.len() > 6 {
+        return Err(ApiError(
+            "bean.components: describe between one and six single coffees".into(),
+        ));
+    }
+    if input.preset.is_some()
+        || input.arabica_fraction.is_some()
+        || input.roast_level.is_some()
+        || input.days_off_roast.is_some()
+        || input.process.is_some()
+        || input.bean_temp_c.is_some()
+        || input.altitude_m.is_some()
+        || input.variety_group.is_some()
+        || input.storage.is_some()
+    {
+        return Err(ApiError(
+            "bean.components: put physical descriptors on each coffee, not on the blend".into(),
+        ));
+    }
+    let total: f64 = components.iter().map(|c| c.weight).sum();
+    if !total.is_finite()
+        || total <= 0.0
+        || components
+            .iter()
+            .any(|c| !c.weight.is_finite() || c.weight <= 0.0 || c.bean.components.is_some())
+    {
+        return Err(ApiError(
+            "bean.components: weights must be finite and positive; nested blends are not supported"
+                .into(),
+        ));
+    }
+    let mut leaves = Vec::with_capacity(components.len());
+    for (i, component) in components.iter().enumerate() {
+        let state = resolve(ctx, &component.bean, presets)
+            .map_err(|e| ApiError(format!("bean.components[{i}]: {}", e.0)))?;
+        let output =
+            model(ctx, &state).map_err(|e| ApiError(format!("bean.components[{i}]: {}", e.0)))?;
+        leaves.push((component.weight / total, state, output));
+    }
+    // A one-component wrapper is exactly its leaf, including all nonlinear fits.
+    if leaves.len() == 1 {
+        let (_, state, output) = leaves.remove(0);
+        return Ok((state, output));
+    }
+    let mean = |get: fn(&BeanState) -> f64| leaves.iter().map(|(w, s, _)| w * get(s)).sum::<f64>();
+    let src = "model:dry-mass mixture of individually resolved single-origin coffees";
+    let aggregate = |value| Val::new(value, src);
+    let state = BeanState {
+        preset: "custom-blend".into(),
+        arabica: aggregate(mean(|s| s.arabica.v)),
+        roast: aggregate(mean(|s| s.roast.v)),
+        days: aggregate(mean(|s| s.days.v)),
+        process: None,
+        altitude_m: None,
+        variety_group: None,
+        storage: None,
+        temp_c: aggregate(mean(|s| s.temp_c.v)),
+    };
+    let mut output = leaves[0].2.clone();
+    let mix = |get: fn(&BeanOut) -> f64| leaves.iter().map(|(w, _, b)| w * get(b)).sum::<f64>();
+    output.extractable = aggregate(mix(|b| b.extractable.v));
+    output.co2_beans_mg_g = mix(|b| b.co2_beans_mg_g);
+    output.co2_puck_mg_g = mix(|b| b.co2_puck_mg_g);
+    output.colorette_pt = mix(|b| b.colorette_pt);
+    // Mass / solid volume gives skeletal density. Porous particle volume then
+    // determines intraparticle porosity; averaging porosity by mass is incorrect.
+    let solid_volume = leaves
+        .iter()
+        .map(|(w, _, b)| w / b.skeletal_density.v)
+        .sum::<f64>();
+    let particle_volume = leaves
+        .iter()
+        .map(|(w, _, b)| w / (b.skeletal_density.v * (1.0 - b.intraparticle_porosity.v)))
+        .sum::<f64>();
+    output.skeletal_density = aggregate(1.0 / solid_volume);
+    output.intraparticle_porosity = aggregate(1.0 - solid_volume / particle_volume);
+    for species in &mut output.species {
+        let inventory = leaves
+            .iter()
+            .map(|(w, _, b)| {
+                w * b
+                    .species
+                    .iter()
+                    .find(|s| s.id == species.id)
+                    .map_or(0.0, |s| s.mass_fraction.v)
+            })
+            .sum::<f64>();
+        // The current model shares transport coefficients by chemical species.
+        // Inventory weighting also preserves the proper limit if they diverge.
+        if inventory > 0.0 {
+            let transport = |get: fn(&Species) -> f64| {
+                leaves
+                    .iter()
+                    .map(|(w, _, b)| {
+                        b.species
+                            .iter()
+                            .find(|s| s.id == species.id)
+                            .map_or(0.0, |s| w * s.mass_fraction.v * get(s) / inventory)
+                    })
+                    .sum::<f64>()
+            };
+            species.diffusivity = aggregate(transport(|s| s.diffusivity.v));
+            species.partition = aggregate(transport(|s| s.partition.v));
+            species.surface_scale = aggregate(transport(|s| s.surface_scale.v));
+        }
+        species.mass_fraction = aggregate(inventory);
+    }
+    for phase in &mut output.phase_inventories {
+        let inventory = leaves
+            .iter()
+            .map(|(w, _, b)| {
+                w * b
+                    .phase_inventories
+                    .iter()
+                    .find(|p| p.id == phase.id)
+                    .map_or(0.0, |p| p.mass_fraction.v)
+            })
+            .sum::<f64>();
+        if inventory > 0.0 {
+            phase.cup_transfer_fraction = aggregate(
+                leaves
+                    .iter()
+                    .map(|(w, _, b)| {
+                        b.phase_inventories
+                            .iter()
+                            .find(|p| p.id == phase.id)
+                            .map_or(0.0, |p| {
+                                w * p.mass_fraction.v * p.cup_transfer_fraction.v / inventory
+                            })
+                    })
+                    .sum(),
+            );
+        }
+        phase.mass_fraction = aggregate(inventory);
+    }
+    // Recompute the nonlinear gas penalty from the mixed CO2 inventory, rather
+    // than averaging roast, bean age or each component's permeability penalty.
+    let a_max = ctx.param("model.hydraulics.gas_amplitude_max", "1")?;
+    let c_half = ctx.param("model.hydraulics.gas_half_content", "mg/g")?;
+    output.gas_amplitude = Val::new(
+        a_max.v * output.co2_puck_mg_g / (output.co2_puck_mg_g + c_half.v),
+        join(&[src, &a_max.src, &c_half.src]),
+    );
+    ctx.note("Coffee blend: each component's composition and degassing are resolved before dry-mass mixing. The shot uses one homogeneous bed and an aggregate roast/temperature for grinding; separate origin-specific particles and extraction histories are not resolved.");
+    Ok((state, output))
 }
 
 /// Composition, physical properties and CO₂ of the bean.

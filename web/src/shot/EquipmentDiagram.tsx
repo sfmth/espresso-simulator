@@ -2,11 +2,26 @@
 /** A schematic map into the same recipe form used by the full editor. */
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { Catalog, Distribution } from '../engine/shotTypes';
-import { InlineConstraintControl } from '../setup/ConstraintContext';
+import { COFFEE_CATALOG, coffeeToBeanInput } from '../coffee/catalog';
+import { roastBasisWithOverride } from '../coffee/roastMetadata';
+import {
+  ROAST_ASSUMPTIONS,
+  ROAST_LABEL_BASIS,
+  isSingleCoffeePreset,
+  roastAssumptionName,
+} from '../coffee/roast';
+import { InlineConstraintControl, useSetupConstraints } from '../setup/ConstraintContext';
+import { replaceCoffee } from './coffeeChanges';
 import { findPreset, presetOptions, useEditorContext } from './editor/context';
-import { fieldId } from './fields';
+import { fieldId, useHelp } from './fields';
 import { focusSoon } from './focus';
-import { changeGrinderMode, changeGrinderPreset, changeMachinePreset } from './recipeForm';
+import {
+  changeGrinderMode,
+  changeGrinderPreset,
+  changeMachinePreset,
+  DEFAULT_RECIPE,
+  recipeToForm,
+} from './recipeForm';
 import { useShotStore } from './shotStore';
 import './EquipmentDiagram.css';
 
@@ -101,17 +116,17 @@ function QuickField({
   const { errors } = useEditorContext();
   const id = equipmentId(path);
   const error = errors[path];
-  const described =
-    [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(' ') || undefined;
+  const described = error ? `${id}-error` : undefined;
+  const help = useHelp(id, undefined, { path, label, hint });
   return (
     <div className="field equipment-field">
-      <label htmlFor={id}>Diagram {label}</label>
+      <div className="field-head">
+        <label htmlFor={id}>Diagram {label}</label>
+        {help.button}
+      </div>
+      {help.text}
       {children({ id, 'aria-invalid': error ? true : undefined, 'aria-describedby': described })}
-      {hint && (
-        <p className="field-hint" id={`${id}-hint`}>
-          {hint}
-        </p>
-      )}
+
       {error && (
         <p className="field-error" id={`${id}-error`}>
           {error}
@@ -186,6 +201,8 @@ function QuickSelect({
 }
 
 function QuickSettings({ part, catalog }: { part: PartId; catalog: Catalog }) {
+  const setup = useSetupConstraints();
+  const [coffeeNotice, setCoffeeNotice] = useState('');
   const form = useShotStore((state) => state.form);
   const patch = useShotStore((state) => state.patchForm);
   const undo = useShotStore((state) => state.undo);
@@ -193,29 +210,132 @@ function QuickSettings({ part, catalog }: { part: PartId; catalog: Catalog }) {
   const bean =
     findPreset(catalog.presets.beans, form.bean.preset) ??
     catalog.presets.beans.find((preset) => preset.default);
+  const coffeeEntry = COFFEE_CATALOG.find((c) => c.id === form.bean.coffee?.id);
   const grinder = findPreset(catalog.presets.grinders, form.grinder.preset);
   const machine = findPreset(catalog.presets.machines, form.machine.preset);
   switch (part) {
     case 'bean':
+      if (form.bean.components)
+        return (
+          <>
+            <p>
+              <strong>{form.bean.coffee?.name || 'Your blend'}</strong> ·{' '}
+              {form.bean.components.length} coffees
+            </p>
+            <p className="field-hint">Each component keeps its own roast, age and coffee facts.</p>
+            <button
+              type="button"
+              className="button button-quiet"
+              onClick={() => {
+                useShotStore.getState().revealField('bean.coffee.name');
+                focusSoon([fieldId('bean.coffee.name')]);
+              }}
+            >
+              Edit blend components
+            </button>
+          </>
+        );
       return (
         <>
           <QuickSelect
             path="bean.preset"
-            label="bean preset"
-            value={form.bean.preset}
+            label="coffee"
+            value={
+              coffeeEntry
+                ? `coffee:${coffeeEntry.id}`
+                : form.bean.coffee?.name
+                  ? '__custom-coffee'
+                  : form.bean.preset
+            }
             options={[
               { value: '', label: 'Default bean' },
-              ...presetOptions(catalog.presets.beans),
+              ...(!coffeeEntry && form.bean.coffee?.name
+                ? [{ value: '__custom-coffee', label: form.bean.coffee.name, disabled: true }]
+                : []),
+              ...COFFEE_CATALOG.map((c) => ({
+                value: `coffee:${c.id}`,
+                label: `${c.roaster} — ${c.name}${c.availability === 'archived' ? ' (archived)' : ''}`,
+              })),
+              ...presetOptions(catalog.presets.beans.filter(isSingleCoffeePreset)),
+              ...(bean && !isSingleCoffeePreset(bean)
+                ? [{ value: bean.id, label: `Imported legacy blend: ${bean.name}` }]
+                : []),
             ]}
-            onChange={(preset) => patch('bean', { preset })}
+            onChange={(value) => {
+              const coffee = COFFEE_CATALOG.find((c) => `coffee:${c.id}` === value);
+              const imported = recipeToForm({
+                ...DEFAULT_RECIPE,
+                bean: coffee ? coffeeToBeanInput(coffee) : value ? { preset: value } : {},
+              });
+              if (imported.ok) {
+                try {
+                  const changed = replaceCoffee(
+                    form,
+                    imported.form.bean,
+                    { kind: 'replace', path: 'bean' },
+                    setup,
+                  );
+                  setCoffeeNotice(
+                    changed
+                      ? 'The replaced coffee’s known settings were cleared. Undo restores the coffee and its facts.'
+                      : 'Coffee updated. Undo restores the previous coffee settings.',
+                  );
+                } catch (error) {
+                  setCoffeeNotice(
+                    error instanceof Error ? error.message : 'Could not update coffee settings.',
+                  );
+                }
+              }
+            }}
           />
-          <QuickText
-            path="bean.roast_level"
-            label="roast level (0–1)"
-            value={form.bean.roast_level}
-            placeholder={bean ? `${bean.roast_level} from preset` : undefined}
-            hint="0 is light; 1 is dark. Empty follows the bean preset."
-            onChange={(roast_level) => patch('bean', { roast_level })}
+          {coffeeNotice && (
+            <p className="field-hint" role="status">
+              {coffeeNotice}
+            </p>
+          )}
+          {undo?.label === 'Undo coffee change' && (
+            <button
+              type="button"
+              className="button button-small"
+              onClick={() => {
+                try {
+                  undoLast();
+                  setCoffeeNotice('Restored the previous coffee and its known settings.');
+                } catch (error) {
+                  setCoffeeNotice(
+                    error instanceof Error ? error.message : 'Could not restore coffee settings.',
+                  );
+                }
+              }}
+            >
+              Undo coffee change
+            </button>
+          )}
+          <QuickSelect
+            path="bean.roast-description"
+            label="roast description"
+            value={form.bean.roast_level === '' ? '' : String(Number(form.bean.roast_level))}
+            options={[
+              { value: '', label: `Preset assumption (${roastAssumptionName(bean?.roast_level)})` },
+              ...ROAST_ASSUMPTIONS,
+              ...(form.bean.roast_level !== '' &&
+              !ROAST_ASSUMPTIONS.some((r) => Number(r.value) === Number(form.bean.roast_level))
+                ? [{ value: String(Number(form.bean.roast_level)), label: 'Custom model roast' }]
+                : []),
+            ]}
+            hint="Roaster labels give an approximate model assumption. Measured color is recorded separately in the coffee details."
+            onChange={(roast_level) =>
+              patch('bean', {
+                roast_level,
+                coffee: {
+                  ...form.bean.coffee,
+                  model_roast_basis: roastBasisWithOverride(
+                    form.bean.coffee ?? {},
+                    `${roastAssumptionName(roast_level)}. ${ROAST_LABEL_BASIS}`,
+                  ),
+                },
+              })
+            }
           />
           <QuickText
             path="bean.days_off_roast"
@@ -278,6 +398,13 @@ function QuickSettings({ part, catalog }: { part: PartId; catalog: Catalog }) {
                 onChange={(setting) => patch('grinder', { setting })}
               />
             ))}
+          <button
+            type="button"
+            className="button button-quiet"
+            onClick={() => useShotStore.getState().revealField('grinder.my_number')}
+          >
+            Use my grinder numbers
+          </button>
         </>
       );
     case 'machine': {

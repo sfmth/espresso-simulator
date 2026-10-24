@@ -230,3 +230,36 @@ describe('equipment knowledge controls', () => {
     expect(screen.getByRole('form', { name: 'Equipment setup' })).toBeTruthy();
   });
 });
+
+it('uses named roast choices for known facts and keeps internal coordinates out of the ordinary inventory', () => {
+  const roast: SetupParameter = {
+    path: 'bean.roast_level',
+    label: 'Model roast estimate',
+    unit: '',
+    kind: 'number',
+    value: 0.5,
+    min: 0,
+    max: 1,
+    group: 'Coffee',
+    modeled: true,
+  };
+  const change = vi.fn();
+  const view = render(
+    <ConstraintEditor parameters={[roast, parameters[0]]} constraints={[]} onChange={change} />,
+  );
+  expect(screen.queryByLabelText('What is known about Model roast estimate?')).toBeNull();
+  view.rerender(
+    <ConstraintEditor
+      parameters={[roast, parameters[0]]}
+      constraints={[{ path: roast.path, mode: 'locked', value: 0.5 }]}
+      onChange={change}
+    />,
+  );
+  const choice = screen.getByRole<HTMLSelectElement>('combobox', {
+    name: 'Locked Model roast estimate',
+  });
+  expect(choice.selectedOptions[0].textContent).toBe('Medium');
+  expect(screen.getByText('Current setting: Medium (estimate)')).toBeTruthy();
+  fireEvent.change(choice, { target: { value: '0.25' } });
+  expect(change).toHaveBeenLastCalledWith([{ path: roast.path, mode: 'locked', value: 0.25 }]);
+});

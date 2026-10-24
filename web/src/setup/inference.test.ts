@@ -293,7 +293,7 @@ describe('setup inference', () => {
     expect(new Set(fake.calls.map((r) => r.grinder.setting))).toEqual(new Set([190, 250]));
   });
 
-  it('refuses a family swap that would reinterpret an exactly locked named-dial reference gap', () => {
+  it('preserves a named reference across family swaps and rejects implicit preset reference changes', () => {
     const named = {
       ...structuredClone(recipe),
       grinder: { preset: 'mahlkoenig-e65s', setting: 1.7, gap_at_ref_um: 195, gap_per_unit_um: 25 },
@@ -305,10 +305,13 @@ describe('setup inference', () => {
       { path: 'grinder.gap_per_unit_um', mode: 'locked', value: 25 },
       { path: 'grinder.family', mode: 'locked', value: 'conical' },
     ];
-    expect(() => applySetupLocks(named, known, catalog)).toThrow('named dial reference');
+    const swapped = applySetupLocks(named, known, catalog);
+    expect(swapped.grinder.setting_ref).toBe(1.4);
+    expect(swapped.grinder.family).toBe('conical');
+    expect(fixtureBuild(swapped).derived.psd?.gap_um).toBeCloseTo(202.5);
     expect(() =>
       validateInferenceRequest(request({ recipe: named, constraints: known }), catalog),
-    ).toThrow('named dial reference');
+    ).not.toThrow();
     known[3].value = 'flat-traditional';
     expect(fixtureBuild(applySetupLocks(named, known, catalog)).derived.psd?.gap_um).toBeCloseTo(
       202.5,
@@ -524,6 +527,65 @@ describe('setup inference', () => {
   });
 
   // Native Tier 1 replay can exceed the default timeout on shared CI runners.
+  it('replays two known numbers on one reverse dial calibration with the actual engine', async () => {
+    const core = loadPuckcore();
+    const base: Recipe = {
+      ...structuredClone(DEFAULT_RECIPE),
+      grinder: {
+        family: 'flat-traditional',
+        setting: 4.5,
+        setting_ref: 4.5,
+        gap_at_ref_um: 190,
+        gap_per_unit_um: -10,
+      },
+      stop: { time_s: 30 },
+    };
+    const run = (input: Recipe) =>
+      JSON.parse(core.simulateRecipe(JSON.stringify(input))) as {
+        build: ReturnType<typeof fixtureBuild>;
+        result: ShotResult;
+      };
+    const observations = [4.5, 5.5].map((setting, i) => {
+      const shot = { ...structuredClone(base), grinder: { ...base.grinder, setting } };
+      const actual = run(shot).result.summary;
+      return measured({
+        id: String(i),
+        recipe: shot,
+        changes: ['grinder.setting'],
+        timeS: actual.shot_time_s,
+        yieldG: actual.beverage_mass_kg * 1000,
+        tdsPercent: actual.tds * 100,
+        tdsTolerancePercent: 0.001,
+        yieldToleranceG: 0.001,
+      });
+    });
+    const engine = {
+      coreVersion: () => Promise.resolve({ result: catalog.coreVersion, runtimeMs: 0 }),
+      simulateRecipe: (input: Recipe) => {
+        const raw = run(input);
+        return Promise.resolve({
+          result: { build: raw.build, ...toShotRunData(raw.result, 0) },
+          runtimeMs: 0,
+        });
+      },
+    } as unknown as Engine;
+    const result = await inferSetups(engine, catalog, {
+      recipe: base,
+      observations,
+      maxEvaluations: 16,
+      constraints: [
+        { path: 'grinder.setting', mode: 'locked', value: 4.5 },
+        { path: 'grinder.setting_ref', mode: 'locked', value: 4.5 },
+        { path: 'grinder.gap_at_ref_um', mode: 'range', min: 190, max: 190 },
+        { path: 'grinder.gap_per_unit_um', mode: 'range', min: -10, max: -10 },
+      ],
+    });
+    expect(result.candidates, JSON.stringify(result)).toHaveLength(1);
+    expect(result.candidates[0].checks).toHaveLength(2);
+    expect(result.candidates[0].checks.every((c) => c.matches)).toBe(true);
+    expect(result.candidates[0].recipe.grinder).toEqual(base.grinder);
+  }, 30_000);
+
   it('replays one real native-engine observation with exact physical locks', async () => {
     const core = loadPuckcore();
     const realRecipe = { ...structuredClone(DEFAULT_RECIPE), stop: { time_s: 30 } };

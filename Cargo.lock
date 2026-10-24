@@ -61,14 +61,14 @@ dependencies = [
 
 [[package]]
 name = "puckcore"
-version = "0.12.0"
+version = "0.13.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "puckcore-py"
-version = "0.12.0"
+version = "0.13.0"
 dependencies = [
  "puckcore",
  "puckmodel",
@@ -77,7 +77,7 @@ dependencies = [
 
 [[package]]
 name = "puckcore-wasm"
-version = "0.12.0"
+version = "0.13.0"
 dependencies = [
  "puckcore",
  "puckmodel",
@@ -86,7 +86,7 @@ dependencies = [
 
 [[package]]
 name = "puckmodel"
-version = "0.12.0"
+version = "0.13.0"
 dependencies = [
  "puckcore",
  "serde",

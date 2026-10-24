@@ -29,6 +29,7 @@ import {
   type BeanStorage,
   type BeanVariety,
   type Catalog,
+  type CoffeeMetadata,
   type Distribution,
   type GrinderInput,
   type GrinderPreset,
@@ -38,6 +39,7 @@ import {
   type PsdMethod,
   type PumpInput,
   type Recipe,
+  type RoastColor,
 } from '../engine/shotTypes';
 import { parseDecimal } from '../lab/sphereForm';
 import { checkProfile } from './basketGeometry';
@@ -51,6 +53,7 @@ import {
   type FieldMeta,
   type PhaseField,
 } from './recipeFields';
+import { ROAST_COLOR_SAMPLES, ROAST_COLOR_SCALES } from '../coffee/roast';
 
 // ---------------------------------------------------------------- form state
 
@@ -101,20 +104,31 @@ export const CHEMISTRY_FIELDS = [
   'sample_temperature_c',
 ] as const;
 
+export interface CoffeeForm extends Omit<CoffeeMetadata, 'roast_color'> {
+  roast_color?: Omit<RoastColor, 'value'> & { value: string };
+}
+
+export interface BeanLeafForm {
+  /** '' = the default bean preset. */
+  preset: string;
+  /** Displayed in percent. */
+  arabica_fraction: string;
+  roast_level: string;
+  days_off_roast: string;
+  process: '' | BeanProcess;
+  bean_temp_c: string;
+  altitude_m: string;
+  variety_group: '' | BeanVariety;
+  storage: '' | BeanStorage;
+  coffee?: CoffeeForm;
+}
+
+export interface BeanForm extends BeanLeafForm {
+  components?: { key: string; weight: string; bean: BeanLeafForm }[];
+}
+
 export interface RecipeForm {
-  bean: {
-    /** '' = the default bean preset. */
-    preset: string;
-    /** Displayed in percent. */
-    arabica_fraction: string;
-    roast_level: string;
-    days_off_roast: string;
-    process: '' | BeanProcess;
-    bean_temp_c: string;
-    altitude_m: string;
-    variety_group: '' | BeanVariety;
-    storage: '' | BeanStorage;
-  };
+  bean: BeanForm;
   water: Record<keyof NonNullable<Recipe['water']>, string>;
   chemistry: {
     enabled: '' | 'yes' | 'no';
@@ -133,6 +147,7 @@ export interface RecipeForm {
     psdText: string;
     psdMethod: '' | PsdMethod;
     gap_at_ref_um: string;
+    setting_ref: string;
     gap_per_unit_um: string;
     x50_gap_ratio: string;
     fines_at_340_pct: string;
@@ -268,6 +283,7 @@ export function emptyForm(): RecipeForm {
       psdText: '',
       psdMethod: '',
       gap_at_ref_um: '',
+      setting_ref: '',
       gap_per_unit_um: '',
       x50_gap_ratio: '',
       fines_at_340_pct: '',
@@ -412,24 +428,88 @@ export function formToRecipe(form: RecipeForm, context: ValidationContext = {}):
   const unknownPreset = (path: string, id: string) =>
     c.error(path, `Unknown preset "${id}": it is not in this version's presets.`);
 
-  // Bean.
-  const bean: BeanInput = {};
-  const b = form.bean;
-  if (b.preset) {
-    if (!presetExists(catalog, 'beans', b.preset)) unknownPreset('bean.preset', b.preset);
-    bean.preset = b.preset;
-  }
   const setNumber = <T extends object>(target: T, key: keyof T & string, value?: number) => {
     if (value !== undefined) (target as Record<string, unknown>)[key] = value;
   };
-  setNumber(bean, 'arabica_fraction', c.optional('bean.arabica_fraction', b.arabica_fraction));
-  setNumber(bean, 'roast_level', c.optional('bean.roast_level', b.roast_level));
-  setNumber(bean, 'days_off_roast', c.optional('bean.days_off_roast', b.days_off_roast));
-  if (b.process) bean.process = b.process;
-  setNumber(bean, 'bean_temp_c', c.optional('bean.bean_temp_c', b.bean_temp_c));
-  setNumber(bean, 'altitude_m', c.optional('bean.altitude_m', b.altitude_m));
-  if (b.variety_group) bean.variety_group = b.variety_group;
-  if (b.storage) bean.storage = b.storage;
+  // Coffee facts remain distinct from the model inputs. Components carry their own inputs.
+  const coffeeInput = (
+    coffee: CoffeeForm | undefined,
+    path: string,
+  ): CoffeeMetadata | undefined => {
+    if (!coffee) return undefined;
+    const { roast_color, ...facts } = coffee;
+    for (const [key, value] of Object.entries(facts)) {
+      if (key === 'varieties') {
+        if (Array.isArray(value) && (value.length > 32 || value.some((v) => v.length > 2000)))
+          c.error(
+            `${path}.varieties`,
+            'Use up to 32 variety names of at most 2000 characters each.',
+          );
+      } else if (typeof value === 'string' && value.length > 2000)
+        c.error(`${path}.${key}`, 'Use at most 2000 characters.');
+    }
+    if (!roast_color) return { ...facts };
+    if ((roast_color.instrument?.length ?? 0) > 2000)
+      c.error(`${path}.roast_color.instrument`, 'Use at most 2000 characters.');
+    const value = c.required(
+      `${path}.roast_color.value`,
+      roast_color.value,
+      FIELDS['bean.coffee.roast_color.value'],
+    );
+    if (value !== undefined && value < 0)
+      c.error(`${path}.roast_color.value`, 'Roast color must be a nonnegative measured value.');
+    if (value !== undefined && roast_color.scale === 'cielab-lstar' && value > 100)
+      c.error(`${path}.roast_color.value`, 'CIELAB L* must be between 0 and 100.');
+    return { ...facts, ...(value === undefined ? {} : { roast_color: { ...roast_color, value } }) };
+  };
+  const beanLeaf = (b: BeanLeafForm, path: string): BeanInput => {
+    const result: BeanInput = {};
+    if ((b as BeanForm).components !== undefined)
+      c.error(`${path}.components`, 'Nested coffee blends are not supported.');
+    if (b.preset) {
+      if (!presetExists(catalog, 'beans', b.preset)) unknownPreset(`${path}.preset`, b.preset);
+      result.preset = b.preset;
+    }
+    for (const key of [
+      'arabica_fraction',
+      'roast_level',
+      'days_off_roast',
+      'bean_temp_c',
+      'altitude_m',
+    ] as const)
+      setNumber(result, key, c.optional(`${path}.${key}`, b[key], FIELDS[`bean.${key}`]));
+    if (b.process) result.process = b.process;
+    if (b.variety_group) result.variety_group = b.variety_group;
+    if (b.storage) result.storage = b.storage;
+    if (b.coffee) result.coffee = coffeeInput(b.coffee, `${path}.coffee`);
+    return result;
+  };
+  let bean: BeanInput;
+  if (form.bean.components !== undefined) {
+    if (form.bean.components.length < 1 || form.bean.components.length > 6)
+      c.error('bean.components', 'Use between one and six coffee components.');
+    if (
+      Object.entries(form.bean).some(
+        ([key, value]) => key !== 'components' && key !== 'coffee' && value !== '',
+      )
+    )
+      c.error(
+        'bean.components',
+        'A blend uses the settings of its components; remove conflicting shared coffee settings.',
+      );
+    bean = {
+      components: form.bean.components.map((component, i) => {
+        const path = `bean.components.${i}`;
+        const weight = c.required(`${path}.weight`, component.weight);
+        if (weight !== undefined && weight <= 0)
+          c.error(`${path}.weight`, 'Each coffee needs a positive weight.');
+        return { weight: weight ?? 0, bean: beanLeaf(component.bean, `${path}.bean`) };
+      }),
+      ...(form.bean.coffee ? { coffee: coffeeInput(form.bean.coffee, 'bean.coffee') } : {}),
+    };
+    if (!Number.isFinite(bean.components?.reduce((sum, component) => sum + component.weight, 0)))
+      c.error('bean.components', 'The combined coffee weights must be finite.');
+  } else bean = beanLeaf(form.bean, 'bean');
 
   const water: NonNullable<Recipe['water']> = {};
   for (const key of WATER_FIELDS) {
@@ -484,6 +564,7 @@ export function formToRecipe(form: RecipeForm, context: ValidationContext = {}):
           ? c.required('grinder.setting', g.setting, settingMeta)
           : c.optional('grinder.setting', g.setting, settingMeta);
       setNumber(grinder, 'setting', setting);
+      setNumber(grinder, 'setting_ref', c.optional('grinder.setting_ref', g.setting_ref));
       const calibration = g.mode === 'family' ? c.required.bind(c) : c.optional.bind(c);
       setNumber(grinder, 'gap_at_ref_um', calibration('grinder.gap_at_ref_um', g.gap_at_ref_um));
       setNumber(
@@ -491,6 +572,8 @@ export function formToRecipe(form: RecipeForm, context: ValidationContext = {}):
         'gap_per_unit_um',
         calibration('grinder.gap_per_unit_um', g.gap_per_unit_um),
       );
+      if (grinder.gap_per_unit_um === 0)
+        c.error('grinder.gap_per_unit_um', 'The dial sensitivity must be nonzero.');
     }
     setNumber(grinder, 'x50_gap_ratio', c.optional('grinder.x50_gap_ratio', g.x50_gap_ratio));
     setNumber(
@@ -715,6 +798,8 @@ const KNOWN_KEYS: Record<string, readonly string[]> = {
     'overrides',
   ],
   bean: [
+    'coffee',
+    'components',
     'preset',
     'arabica_fraction',
     'roast_level',
@@ -749,6 +834,7 @@ const KNOWN_KEYS: Record<string, readonly string[]> = {
     'burr_diameter_mm',
     'rpm',
     'gap_at_ref_um',
+    'setting_ref',
     'gap_per_unit_um',
     'x50_gap_ratio',
     'fines_at_340_pct',
@@ -856,22 +942,126 @@ export function recipeToForm(input: unknown): ImportResult {
 
   const form = emptyForm();
 
-  const bean = block('bean');
-  form.bean = {
-    preset: text('bean.preset', bean.preset),
-    arabica_fraction: number(
-      'bean.arabica_fraction',
-      bean.arabica_fraction,
-      FIELDS['bean.arabica_fraction'],
-    ),
-    roast_level: number('bean.roast_level', bean.roast_level),
-    days_off_roast: number('bean.days_off_roast', bean.days_off_roast),
-    process: choice('bean.process', bean.process, BEAN_PROCESSES),
-    bean_temp_c: number('bean.bean_temp_c', bean.bean_temp_c),
-    altitude_m: number('bean.altitude_m', bean.altitude_m),
-    variety_group: choice('bean.variety_group', bean.variety_group, BEAN_VARIETIES),
-    storage: choice('bean.storage', bean.storage, BEAN_STORAGE),
+  const readCoffee = (raw: unknown, path: string): CoffeeForm | undefined => {
+    if (raw === undefined || raw === null) return undefined;
+    if (!isRecord(raw)) throw new Error(`${path}: coffee facts must be an object.`);
+    const textKeys = [
+      'id',
+      'name',
+      'roaster',
+      'country',
+      'region',
+      'producer',
+      'process_label',
+      'roast_label',
+      'roast_date',
+      'source_url',
+      'verified_at',
+      'harvest',
+      'model_roast_basis',
+    ] as const;
+    unknown(path, raw, [...textKeys, 'varieties', 'roast_color']);
+    const coffee: CoffeeForm = {};
+    for (const key of textKeys) {
+      if (raw[key] === undefined || raw[key] === null) continue;
+      if (typeof raw[key] !== 'string' || raw[key].length > 2000)
+        throw new Error(`${path}.${key}: use text of at most 2000 characters.`);
+      coffee[key] = raw[key];
+    }
+    if (raw.varieties !== undefined && raw.varieties !== null) {
+      if (
+        !Array.isArray(raw.varieties) ||
+        raw.varieties.length > 32 ||
+        raw.varieties.some((v) => typeof v !== 'string' || v.length > 2000)
+      )
+        throw new Error(`${path}.varieties: use up to 32 variety names.`);
+      coffee.varieties = raw.varieties as string[];
+    }
+    if (raw.roast_color !== undefined && raw.roast_color !== null) {
+      const color = raw.roast_color;
+      if (!isRecord(color)) throw new Error(`${path}.roast_color: expected a measurement.`);
+      unknown(`${path}.roast_color`, color, ['scale', 'value', 'sample', 'instrument']);
+      if (
+        !ROAST_COLOR_SCALES.some((s) => s.value === color.scale) ||
+        !ROAST_COLOR_SAMPLES.some((s) => s.value === color.sample) ||
+        typeof color.value !== 'number' ||
+        !Number.isFinite(color.value) ||
+        color.value < 0 ||
+        (color.scale === 'cielab-lstar' && color.value > 100) ||
+        (color.instrument != null &&
+          (typeof color.instrument !== 'string' || color.instrument.length > 2000))
+      )
+        throw new Error(
+          `${path}.roast_color: include a valid scale, sample and finite measurement.`,
+        );
+      coffee.roast_color = {
+        scale: color.scale as RoastColor['scale'],
+        sample: color.sample as RoastColor['sample'],
+        value: String(color.value),
+        ...(typeof color.instrument === 'string' ? { instrument: color.instrument } : {}),
+      };
+    }
+    return coffee;
   };
+  const readBean = (bean: Json, path: string, allowComponents: boolean): BeanForm => {
+    if (path !== 'bean') unknown(path, bean, KNOWN_KEYS.bean);
+    const result: BeanForm = {
+      preset: text(`${path}.preset`, bean.preset),
+      arabica_fraction: number(
+        `${path}.arabica_fraction`,
+        bean.arabica_fraction,
+        FIELDS['bean.arabica_fraction'],
+      ),
+      roast_level: number(`${path}.roast_level`, bean.roast_level),
+      days_off_roast: number(`${path}.days_off_roast`, bean.days_off_roast),
+      process: choice(`${path}.process`, bean.process, BEAN_PROCESSES),
+      bean_temp_c: number(`${path}.bean_temp_c`, bean.bean_temp_c),
+      altitude_m: number(`${path}.altitude_m`, bean.altitude_m),
+      variety_group: choice(`${path}.variety_group`, bean.variety_group, BEAN_VARIETIES),
+      storage: choice(`${path}.storage`, bean.storage, BEAN_STORAGE),
+    };
+    const coffee = readCoffee(bean.coffee, `${path}.coffee`);
+    if (coffee) result.coffee = coffee;
+    if (bean.components !== undefined && bean.components !== null) {
+      if (!allowComponents) throw new Error(`${path}: nested coffee blends are not supported.`);
+      if (
+        !Array.isArray(bean.components) ||
+        bean.components.length < 1 ||
+        bean.components.length > 6
+      )
+        throw new Error(`${path}.components: use between one and six coffees.`);
+      if (
+        KNOWN_KEYS.bean.some((key) => key !== 'coffee' && key !== 'components' && bean[key] != null)
+      )
+        throw new Error(`${path}: shared coffee settings cannot override blend components.`);
+      result.components = bean.components.map((raw, i) => {
+        const at = `${path}.components.${i}`;
+        if (
+          !isRecord(raw) ||
+          !isRecord(raw.bean) ||
+          typeof raw.weight !== 'number' ||
+          !Number.isFinite(raw.weight) ||
+          raw.weight <= 0
+        )
+          throw new Error(`${at}: each component needs coffee settings and a positive weight.`);
+        unknown(at, raw, ['weight', 'bean']);
+        return {
+          key: `coffee-${i}`,
+          weight: String(raw.weight),
+          bean: readBean(raw.bean, `${at}.bean`, false),
+        };
+      });
+    }
+    return result;
+  };
+  try {
+    form.bean = readBean(block('bean'), 'bean', true);
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Invalid coffee description.',
+    };
+  }
 
   const water = block('water');
   for (const key of WATER_FIELDS) form.water[key] = number(`water.${key}`, water[key]);
@@ -1059,6 +1249,7 @@ export function withTier(recipe: Recipe, tier: 0 | 1): Recipe {
 /** Grinder fields that describe one grinder: calibration, PSD shape, burrs. */
 export const GRINDER_ADVANCED = [
   'gap_at_ref_um',
+  'setting_ref',
   'gap_per_unit_um',
   'x50_gap_ratio',
   'fines_at_340_pct',
@@ -1083,9 +1274,13 @@ function clearedAdvanced(): Record<GrinderAdvancedField, string> {
 }
 
 /** Burr gap of a dial setting: g = g_ref + Δ (s − s_ref). */
-function dialGap(preset: GrinderPreset, setting: number): number {
+function dialGap(preset: GrinderPreset, setting: number, grinder: RecipeForm['grinder']): number {
   const d = preset.dial;
-  return d.gap_at_ref_um + d.gap_per_unit_um * (setting - d.ref);
+  return (
+    (parseDecimal(grinder.gap_at_ref_um) ?? d.gap_at_ref_um) +
+    (parseDecimal(grinder.gap_per_unit_um) ?? d.gap_per_unit_um) *
+      (setting - (parseDecimal(grinder.setting_ref) ?? d.ref))
+  );
 }
 
 /**
@@ -1125,7 +1320,11 @@ export function changeGrinderMode(
   const gap = parseDecimal(grinder.gap_um);
   if (grinder.mode === 'preset' && mode === 'family') {
     const g =
-      grinder.by === 'gap' ? gap : preset ? dialGap(preset, setting ?? preset.dial.default) : null;
+      grinder.by === 'gap'
+        ? gap
+        : preset
+          ? dialGap(preset, setting ?? preset.dial.default, grinder)
+          : null;
     next.by = 'gap';
     next.gap_um = g !== null && g > 0 ? shiftedText(Number(g.toPrecision(12))) : grinder.gap_um;
     if (preset) next.family = preset.family;

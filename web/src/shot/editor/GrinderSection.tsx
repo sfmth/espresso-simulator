@@ -27,6 +27,7 @@ import {
 import { useShotStore } from '../shotStore';
 import { findPreset, presetOptions, useEditorContext } from './context';
 import { GrinderInternals } from '../equipment/GrinderInternals';
+import { GrinderDialCalibration } from './GrinderDialCalibration';
 
 const METHOD_LABELS: Record<string, string> = {
   dry_laser: 'Laser diffraction, dry',
@@ -106,7 +107,8 @@ export function GrinderSection() {
   const patch = useShotStore((s) => s.patchForm);
   const reveal = useShotStore((s) => s.reveal);
   const set = (p: Partial<Grinder>) => patch('grinder', p);
-  const preset = findPreset(catalog.presets.grinders, grinder.preset);
+  const preset =
+    grinder.mode === 'preset' ? findPreset(catalog.presets.grinders, grinder.preset) : undefined;
   const familyId = grinder.mode === 'preset' ? preset?.family : grinder.family;
   const family = findPreset(catalog.presets.grinder_families, familyId ?? '');
   const dial = preset?.dial;
@@ -122,7 +124,7 @@ export function GrinderSection() {
     if (ADVANCED_PATHS.has(reveal.path)) setAdvancedOpen(true);
   }
   const advancedErrors = [...ADVANCED_PATHS].some((p) => errors[p]);
-  const open = advancedOpen || filled.length > 0 || advancedErrors;
+  const open = advancedOpen || advancedErrors;
   const shape = (
     key: 'x50_gap_ratio' | 'fines_at_340_pct' | 'coarse_log_width' | 'boulder_weight',
   ) => {
@@ -138,6 +140,7 @@ export function GrinderSection() {
 
   return (
     <>
+      <GrinderDialCalibration />
       <div id="grinder-internals" tabIndex={-1}>
         <GrinderInternals />
       </div>
@@ -150,7 +153,7 @@ export function GrinderSection() {
         }
         options={[
           { value: 'preset', label: 'Preset and setting' },
-          { value: 'family', label: 'Burr family and gap' },
+          { value: 'family', label: 'My dial or burr family' },
           { value: 'psd', label: 'Measured PSD' },
         ]}
       />
@@ -217,43 +220,50 @@ export function GrinderSection() {
           ) : (
             <TextField
               path="grinder.setting"
-              label={dial ? `Dial setting (${dial.label})` : 'Dial setting'}
+              label={
+                grinder.mode === 'preset' && dial
+                  ? `Dial setting (${dial.label})`
+                  : 'My grinder setting'
+              }
               value={grinder.setting}
               onChange={(setting) => set({ setting })}
               placeholder={dial ? `${dial.default} (the dial's default)` : undefined}
               error={errors['grinder.setting']}
               hint={
-                dial
+                grinder.mode === 'preset' && dial
                   ? `Dial ${dial.min}–${dial.max}; gap = ${grinder.gap_at_ref_um || dial.gap_at_ref_um} µm + ` +
-                    `${grinder.gap_per_unit_um || dial.gap_per_unit_um} µm per unit from ${dial.ref}` +
+                    `${grinder.gap_per_unit_um || dial.gap_per_unit_um} µm per unit from ${grinder.setting_ref || dial.ref}` +
                     `${grinder.gap_at_ref_um || grinder.gap_per_unit_um ? ' (your calibration)' : ''}. ` +
                     (dial.anchored
                       ? `Its particle sizes were measured at settings ${dial.anchored.min}–${dial.anchored.max}; outside that the model extrapolates. `
                       : '') +
                     'Settings outside the dial are clamped.'
                   : grinder.mode === 'family'
-                    ? 'With a family, a dial setting needs the dial calibration below.'
+                    ? 'Your own dial number. The conversion below controls how this changes simulated fineness.'
                     : undefined
               }
             />
           )}
           {grinder.mode === 'family' && grinder.by === 'setting' && (
-            <div className="field-grid">
-              <TextField
-                path="grinder.gap_at_ref_um"
-                label="Gap at setting 0 (µm)"
-                value={grinder.gap_at_ref_um}
-                onChange={(gap_at_ref_um) => set({ gap_at_ref_um })}
-                error={errors['grinder.gap_at_ref_um']}
-              />
-              <TextField
-                path="grinder.gap_per_unit_um"
-                label={labelWithUnit(FIELDS['grinder.gap_per_unit_um'])}
-                value={grinder.gap_per_unit_um}
-                onChange={(gap_per_unit_um) => set({ gap_per_unit_um })}
-                error={errors['grinder.gap_per_unit_um']}
-              />
-            </div>
+            <details className="advanced">
+              <summary>Dial conversion: reference fineness and sensitivity</summary>
+              <div className="field-grid">
+                <TextField
+                  path="grinder.gap_at_ref_um"
+                  label={`Effective gap at setting ${grinder.setting_ref || 0} (µm)`}
+                  value={grinder.gap_at_ref_um}
+                  onChange={(gap_at_ref_um) => set({ gap_at_ref_um })}
+                  error={errors['grinder.gap_at_ref_um']}
+                />
+                <TextField
+                  path="grinder.gap_per_unit_um"
+                  label={labelWithUnit(FIELDS['grinder.gap_per_unit_um'])}
+                  value={grinder.gap_per_unit_um}
+                  onChange={(gap_per_unit_um) => set({ gap_per_unit_um })}
+                  error={errors['grinder.gap_per_unit_um']}
+                />
+              </div>
+            </details>
           )}
           <details
             className="advanced"
@@ -268,7 +278,7 @@ export function GrinderSection() {
               <div className="field-grid">
                 <TextField
                   path="grinder.gap_at_ref_um"
-                  label={`Gap at setting ${dial?.ref ?? 0} (µm)`}
+                  label={`Effective gap at setting ${grinder.setting_ref || dial?.ref || 0} (µm)`}
                   value={grinder.gap_at_ref_um}
                   onChange={(gap_at_ref_um) => set({ gap_at_ref_um })}
                   placeholder={dial ? `${dial.gap_at_ref_um} from the preset` : undefined}
@@ -285,6 +295,17 @@ export function GrinderSection() {
               </div>
             )}
             <div className="field-grid">
+              {grinder.by === 'setting' && (
+                <TextField
+                  path="grinder.setting_ref"
+                  label="Reference dial number"
+                  value={grinder.setting_ref}
+                  onChange={(setting_ref) => set({ setting_ref })}
+                  placeholder={String(grinder.mode === 'preset' ? (dial?.ref ?? 0) : 0)}
+                  error={errors['grinder.setting_ref']}
+                  hint="The dial number where the reference effective gap applies. It need not be zero."
+                />
+              )}
               {(
                 ['x50_gap_ratio', 'fines_at_340_pct', 'coarse_log_width', 'boulder_weight'] as const
               ).map((key) => (

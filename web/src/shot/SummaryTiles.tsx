@@ -22,6 +22,7 @@ import {
 } from './format';
 import { GLOSSARY } from './glossary';
 import { ModelStatusNote } from './ModelStatusNote';
+import { HelpButton } from '../help/HelpButton';
 
 function Tile({
   label,
@@ -41,7 +42,10 @@ function Tile({
 }) {
   return (
     <div className="tile" data-tile={name}>
-      <dt>{label}</dt>
+      <dt>
+        {label}
+        <HelpButton term={name} label={label} />
+      </dt>
       <dd>
         <span
           className="tile-value"
@@ -51,7 +55,7 @@ function Tile({
         </span>
         {hint && <span className="tile-hint">{hint}</span>}
         {interval && (
-          <span className="tile-hint scenario-interval">Tier 0 p05–p95: {interval}</span>
+          <span className="tile-hint scenario-interval">Scenario range: {interval}</span>
         )}
       </dd>
     </div>
@@ -158,38 +162,46 @@ export function SummaryTiles({
               : undefined
           }
         />
-        <Tile
-          name="mass-balance"
-          label="Mass balance error"
-          value={d ? scientific(d.mass_balance_error) : '—'}
-          raw={d?.mass_balance_error}
-          hint={d ? `${d.steps.toLocaleString('en-US')} steps` : undefined}
-        />
-        {d?.outflow_integral_error !== undefined && (
-          <Tile
-            name="outflow-check"
-            label="Outflow check"
-            value={scientific(d.outflow_integral_error)}
-            raw={d.outflow_integral_error}
-            hint="cup solute vs ∫ flow × concentration"
-          />
-        )}
-        <Tile
-          name="runtime"
-          label="Runtime"
-          value={outcome ? `${fixed(outcome.coreMs, outcome.coreMs < 10 ? 1 : 0)} ms` : '—'}
-          raw={outcome?.coreMs}
-          hint={outcome ? `tier ${outcome.tier}, in the worker` : undefined}
-        />
       </dl>
+      <details className="calculation-details">
+        <summary>Calculation diagnostics</summary>
+        <dl className="tiles shot-tiles" aria-label="Calculation diagnostics">
+          <Tile
+            name="mass-balance"
+            label="Mass balance error"
+            value={d ? scientific(d.mass_balance_error) : '—'}
+            raw={d?.mass_balance_error}
+            hint={d ? `${d.steps.toLocaleString('en-US')} steps` : undefined}
+          />
+          {d?.outflow_integral_error !== undefined && (
+            <Tile
+              name="outflow-check"
+              label="Outflow check"
+              value={scientific(d.outflow_integral_error)}
+              raw={d.outflow_integral_error}
+              hint="cup solute vs ∫ flow × concentration"
+            />
+          )}
+          <Tile
+            name="runtime"
+            label="Runtime"
+            value={outcome ? `${fixed(outcome.coreMs, outcome.coreMs < 10 ? 1 : 0)} ms` : '—'}
+            raw={outcome?.coreMs}
+            hint={outcome ? `tier ${outcome.tier}, in the worker` : undefined}
+          />
+        </dl>
+      </details>
       {uncertainty && (
         <p className="note scenario-interval">
-          Ranges show input scenarios from the separate Tier-0 ensemble. They exclude model error
-          and Tier-0/Tier-1 discrepancy; they are not confidence intervals for the central shot. See
-          Uncertainty for the baseline comparison.
+          Ranges show separate input scenarios. They exclude model error and the difference between
+          fast and standard calculations. See Uncertainty for the baseline comparison.
+          <HelpButton term="output.scenarios" label="Scenario ranges" />
         </p>
       )}
-      <ModelStatusNote />
+      <details className="calculation-details">
+        <summary>Model scope and evidence</summary>
+        <ModelStatusNote />
+      </details>
       <details className="glossary">
         <summary>What do these mean?</summary>
         <dl>

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_RECIPE } from '../shot/recipeForm';
+import { DEFAULT_RECIPE, defaultForm } from '../shot/recipeForm';
+import { resetShotStore, useShotStore } from '../shot/shotStore';
 import {
   emptySetupDocument,
   INFERENCE_STORAGE_KEY,
@@ -15,6 +16,7 @@ import type { SetupCandidate, SetupCheck, SetupObservation } from './inferenceTy
 beforeEach(() => {
   localStorage.clear();
   resetEquipmentStore();
+  resetShotStore();
 });
 afterEach(() => vi.restoreAllMocks());
 const specified = (): SavedSetup => ({
@@ -356,4 +358,20 @@ describe('local equipment inference records', () => {
       ),
     ).toThrow('smaller');
   });
+});
+
+it('invalidates an older paired recipe Undo when another setup backup is imported', () => {
+  const restoreKnowledge = vi.fn();
+  const form = defaultForm();
+  form.prep.dose_g = '19';
+  useShotStore.getState().loadForm(form, 'Undo coffee change', restoreKnowledge);
+  expect(useShotStore.getState().undo).not.toBeNull();
+  const document = emptySetupDocument();
+  document.constraints = [{ path: 'prep.dose_g', mode: 'locked', value: 20 }];
+  useEquipmentStore.getState().importDocument(JSON.stringify(document));
+  expect(useShotStore.getState().undo).toBeNull();
+  useShotStore.getState().undoLast();
+  expect(restoreKnowledge).not.toHaveBeenCalled();
+  expect(useEquipmentStore.getState().document.constraints).toEqual(document.constraints);
+  expect(useShotStore.getState().form.prep.dose_g).toBe('19');
 });

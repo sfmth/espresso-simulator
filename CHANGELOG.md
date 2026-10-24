@@ -2,6 +2,59 @@
 
 All notable changes are recorded here. Versions follow semantic versioning. While the major version is 0, minor versions add features and patch versions fix problems.
 
+## [0.13.0] - 2026-10-23
+
+### Added
+- Contextual help beside illustrated and detailed input controls and calculated
+  metrics: meaning, simulation effect, how to obtain the value, and relevant
+  measuring tools. Setup starts with a practical information checklist. US tool
+  suggestions link to checked prices/specifications, distinguish display
+  resolution from accuracy, and keep coffee refractometers optional.
+- Grinder calibration in the user’s printed numbers or click counts, with a
+  reference setting and a signed sensitivity for either scale direction. Adopting
+  a number preserves current effective fineness; multiple observed shots can fit
+  reference fineness and sensitivity. Advanced two-anchor entry remains available.
+- Thirteen source-linked single-origin coffees from eight US roasters, checked
+  2026-10-23. Published origin, variety, processing, roast description and optional
+  color readings retain their provenance. Named roast assumptions replace the
+  ordinary 0–1 control; exact model indices remain under technical details.
+- Custom mixtures of up to six single origins with normalized dry-mass shares.
+  Native Rust/Python/WASM model each component before combining soluble/phase
+  inventories, remaining CO₂, density and intraparticle porosity. Setup inference
+  can constrain each component and its relative amount. This is a homogeneous
+  mixture approximation, without separate component particles downstream.
+- Optional factual roast-color scale/sample/instrument and roast-date metadata.
+  No universal Agtron/Colorette conversion or fabricated lot chemistry is applied.
+  The catalogue includes a factual-data provenance/rights sidecar. An explicit
+  roast-date/shot-date calculator supplies age without changing historical shots.
+
+### Changed
+- Normal menus use practical names. Sources, assumptions, model scope and
+  calculation diagnostics are expandable; internal milestone and tier wording is
+  removed from the main equipment and prediction controls.
+- Normal coffee pickers omit canned mixed-bean presets; legacy files still work.
+  Dial in retains the selected coffee or custom blend from equipment setup.
+
+### Fixed
+- Structural coffee changes remap retained component locks and discard superseded
+  facts. Coffee and grinder calibration Undo restore equipment knowledge together
+  with the recipe; later setup edits invalidate stale recovery actions. Historical
+  per-component shot changes are rejected for review after incompatible coffee
+  structure/identity changes rather than being applied to the wrong coffee.
+- Hardness and individual calcium/magnesium inputs are explicitly recorded-only;
+  alkalinity, starting water pH and total water TDS retain their modeled effects.
+
+### Verified compatibility
+- All 218,221 golden values, 58,804 M3 report values, and complete payloads for
+  464 frozen native cases (13,036,890 numeric values) match 0.12.0 exactly.
+  New metadata does not change physics, and omitted grinder reference fields
+  preserve the old conversion. Frozen surrogate weights, split roles, errors and
+  failed qualification are unchanged; identity metadata was refreshed only after
+  exact old/new replay. See the [receipt](docs/validation/practical-controls-version-replay.json).
+- The [contract](docs/model/practical-controls.md) records calibration ambiguity,
+  seasonal catalogue scope, measured-fact boundaries and mixture assumptions.
+  These additions do not establish new real-shot or sensory accuracy.
+
 ## [0.12.0] - 2026-10-21
 
 ### Added
